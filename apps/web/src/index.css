@@ -1,0 +1,266 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    font-family: Inter, system-ui, sans-serif;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+    --primary: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    /* Canonical design tokens - STRICT */
+    --border: 220 10% 14%; /* Subtle gray */
+    --input: 220 10% 14%;
+    --ring: 222.2 84% 4.9%;
+    --radius: 14px;
+
+    /* Spacing & sizing tokens */
+    --page-px: 24px;
+    --page-py: 24px;
+    --section-gap: 24px; /* Increased to match visual separation */
+    --card-p: 24px; /* Standard card padding */
+    --table-cell-px: 12px;
+    --table-cell-py: 10px;
+    --row-h: 60px; /* Comfortable row height */
+
+    /* Semantic Colors */
+    --success: 160.1 84.1% 39.4%;
+    --warning: 37.7 92.1% 50.2%;
+    --info: 217.2 91.2% 59.8%;
+    --brand: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    /* Canonical design tokens - STRICT */
+    --border: 220 10% 14%; /* Subtle gray, must be same as reference */
+    --input: 220 10% 14%;
+    --ring: 212.7 26.8% 83.9%;
+
+    /* Spacing & sizing tokens - Shared */
+    --page-px: 24px;
+    --page-py: 24px;
+    --section-gap: 24px;
+    --card-p: 24px;
+    --table-cell-px: 12px;
+    --table-cell-py: 10px;
+    --row-h: 60px;
+    --radius: 14px;
+
+    /* Semantic Colors */
+    --success: 150 100% 38%; /* Vibrant Green */
+    --warning: 45 100% 55%; /* Vibrant Yellow/Orange */
+    --info: 210 100% 60%; /* Vibrant Blue */
+    --brand: 217.2 91.2% 59.8%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+  }
+
+  /* Make native dropdown menus match dark UI (select option list background/text). */
+  select {
+    color-scheme: dark;
+  }
+
+  select option,
+  select optgroup {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+
+  /* Hide native date-picker icon when we provide our own calendar button */
+  input[type='date'].date-input-no-indicator {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  input[type='date'].date-input-no-indicator::-webkit-calendar-picker-indicator {
+    opacity: 0 !important;
+    display: block;
+    width: 0;
+    height: 0;
+    margin: 0;
+    padding: 0;
+    pointer-events: none;
+  }
+
+  input[type='date'].date-input-no-indicator::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+
+  input[type='date'].date-input-no-indicator::-webkit-clear-button {
+    display: none;
+  }
+
+  input[type='date'].date-input-no-indicator {
+    padding-right: 0.75rem;
+  }
+}
+
+/* Custom scrollbar for dark mode dashboards */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--muted));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
+
+@layer components {
+  /* Utility class to be used by PageShell ONLY */
+  .page-container {
+    @apply mx-auto w-full max-w-screen-2xl px-page-x py-page-y space-y-section;
+  }
+
+  /* Utility class to be used by PageHeader ONLY */
+  .page-header {
+    @apply flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6;
+  }
+
+  .page-title {
+    @apply text-3xl font-bold tracking-tight text-foreground;
+  }
+
+  .page-subtitle {
+    @apply text-base text-muted-foreground;
+  }
+
+  .page-meta {
+    @apply text-sm text-muted-foreground;
+  }
+
+  .section-title {
+    @apply text-xl font-semibold tracking-tight text-foreground mb-4;
+  }
+
+  /* Utility class to be used by Card ONLY */
+  .surface-card {
+    @apply rounded-lg border border-border bg-card p-card shadow-sm transition-all;
+  }
+
+  .surface-card-compact {
+    @apply rounded-lg border border-border bg-card p-4 shadow-sm;
+  }
+
+  /* Table base classes */
+  .table-base {
+    @apply w-full text-left text-sm border-collapse;
+  }
+
+  .table-head-row {
+    @apply h-row border-b border-border bg-muted/30 text-muted-foreground text-xs uppercase tracking-wider font-semibold text-left;
+  }
+
+  .table-row {
+    @apply h-row border-b border-border transition-colors hover:bg-muted/30;
+  }
+
+  .table-cell {
+    @apply px-cell-x py-cell-y align-middle text-left;
+  }
+
+  /* Animation utilities */
+  .animate-in {
+    animation: animateIn 0.3s ease-in-out;
+  }
+
+  @keyframes animateIn {
+    from {
+      opacity: 0;
+      transform: translateY(5px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .glass-panel {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  .glow-button {
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    transition: all 0.3s ease;
+  }
+  .glow-button:hover {
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+  }
+  .logo-ring {
+    stroke-dasharray: 100;
+    animation: rotate 10s linear infinite;
+  }
+  @keyframes rotate {
+    from {
+      transform: rotate(0deg);
+    }
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  /* LiveSync page utilities (avoid arbitrary Tailwind values in pages) */
+  .live-text-2xs {
+    font-size: 11px;
+    line-height: 1.4;
+  }
+  .live-text-3xs {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+  .live-truncate-name {
+    max-width: 200px;
+  }
+  .live-truncate-name-sm {
+    max-width: 180px;
+  }
+  .live-bar-fill {
+    transition: width 0.7s ease-out;
+  }
+}

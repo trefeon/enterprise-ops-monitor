@@ -1,0 +1,141 @@
+services:
+  # enterprise-ops API
+  api:
+    build:
+      context: apps/api
+      dockerfile: Dockerfile
+    image: eom-api:latest
+    container_name: eom-api
+    restart: always
+    labels:
+      autoheal: "true"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./backups:/backups
+      - ./agent_updates:/agent_updates
+      # DEV ONLY: Uncomment for live code reload (requires `npm install` on host)
+      # - ./apps/api:/app
+    environment:
+      - DATABASE_URL=postgresql://${DB_USER:-eom_user}:${DB_PASS:?DB_PASS is required}@eom-db:5432/${DB_NAME:-eom_db}
+      - JWT_SECRET=${JWT_SECRET:?JWT_SECRET is required}
+      - PORT=3000
+      - BACKUP_DIR=/backups
+      - HOSTNAME=0.0.0.0
+      - TZ=Asia/Jakarta
+      # Internal data scheduler enabled for enterprise-ops
+      - DATA_SCHEDULER_ENABLED=${DATA_SCHEDULER_ENABLED:-true}
+    env_file:
+      - .env
+    depends_on:
+      eom-db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'node -e "require(''http'').get(''http://localhost:3000/'', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on(''error'', () => process.exit(1));"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      - app-network
+
+  # enterprise-ops Web
+  web:
+    build:
+      context: apps/web
+      dockerfile: Dockerfile
+    image: eom-web:latest
+    container_name: eom-web
+    restart: always
+    labels:
+      autoheal: "true"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    ports:
+      - "127.0.0.1:5173:5173"
+    environment:
+      - VITE_API_URL=/api
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test:
+        ["CMD-SHELL", "wget -q -O /dev/null http://localhost:5173/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - app-network
+
+  # enterprise-ops Dedicated Database
+  eom-db:
+    image: postgres:15-alpine
+    container_name: eom-db
+    restart: always
+    labels:
+      autoheal: "true"
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    volumes:
+      # IMPORTANT: Use external volume to preserve data across compose file changes
+      - eom_postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=${DB_USER:-eom_user}
+      - POSTGRES_PASSWORD=${DB_PASS:?DB_PASS is required}
+      - POSTGRES_DB=${DB_NAME:-eom_db}
+      - TZ=Asia/Jakarta
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${DB_USER:-eom_user} -d ${DB_NAME:-eom_db}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "127.0.0.1:5433:5432"
+    networks:
+      - app-network
+
+  # Auto-restart unhealthy containers
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: eom-autoheal
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    environment:
+      - AUTOHEAL_CONTAINER_LABEL=autoheal
+      - AUTOHEAL_INTERVAL=30
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - app-network
+
+volumes:
+  # PRODUCTION: Mark as external to prevent accidental recreation
+  # Run once: docker volume create eom_postgres_data
+  eom_postgres_data:
+    external: true
+
+networks:
+  app-network:
+    driver: bridge

@@ -1,0 +1,46 @@
+{
+  "name": "enterprise-ops-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "dev:api": "pnpm --filter api dev",
+    "build": "pnpm --filter web build",
+    "lint": "pnpm -r lint",
+    "typecheck": "pnpm -r typecheck",
+    "format:check": "pnpm -r format:check",
+    "format:write": "pnpm -r format",
+    "test": "pnpm -r test",
+    "check:all": "pnpm lint && pnpm typecheck && pnpm format:check && pnpm test",
+    "up": "docker compose up -d",
+    "down": "docker compose down",
+    "logs": "docker compose logs -f"
+  },
+  "lint-staged": {
+    "apps/api/**/*.{js,json}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "apps/web/src/**/*.{js,jsx,ts,tsx,css}": [
+      "eslint --fix",
+      "prettier --write"
+    ]
+  },
+  "devDependencies": {
+    "lint-staged": "^16.2.7",
+    "typescript": "^5.9.3"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "sharp",
+      "unrs-resolver"
+    ]
+  }
+}

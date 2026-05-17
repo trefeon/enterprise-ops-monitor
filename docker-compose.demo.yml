@@ -1,0 +1,36 @@
+services:
+  # Mock API - standalone dummy data server (no database required)
+  mock-api:
+    build:
+      context: ./mock-api
+      dockerfile: Dockerfile
+    image: eom-mock-api:latest
+    container_name: eom-mock-api
+    restart: always
+    ports:
+      - "4000:4000"
+    environment:
+      - MOCK_API_PORT=4000
+    networks:
+      - demo-network
+
+  # Enterprise Ops Monitor Web
+  web:
+    build:
+      context: apps/web
+      dockerfile: Dockerfile
+    image: eom-web:latest
+    container_name: eom-web-demo
+    restart: always
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:4000
+    depends_on:
+      - mock-api
+    networks:
+      - demo-network
+
+networks:
+  demo-network:
+    driver: bridge
