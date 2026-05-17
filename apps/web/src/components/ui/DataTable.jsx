@@ -86,18 +86,19 @@ const DataTable = ({
           </TableBody>
         </Table>
         {pagination && (
-          <div className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+          <div className="flex flex-col gap-3 border-t border-border bg-card px-cell-x py-cell-y text-xs sm:flex-row sm:items-center sm:justify-between">
             <div className="text-muted-foreground">
               Showing <span className="font-medium text-foreground">{rangeStart}</span> to{' '}
               <span className="font-medium text-foreground">{rangeEnd}</span> of{' '}
               <span className="font-medium text-foreground">{total}</span>
             </div>
-            <div className="flex gap-2">
+            <div className="flex w-full gap-2 sm:w-auto">
               <Button
                 size="sm"
                 variant="secondary"
                 disabled={pagination.page <= 1}
                 onClick={() => onPageChange?.(pagination.page - 1)}
+                className="flex-1 sm:flex-none"
               >
                 Previous
               </Button>
@@ -106,6 +107,7 @@ const DataTable = ({
                 variant="secondary"
                 disabled={pagination.page * pagination.pageSize >= pagination.total}
                 onClick={() => onPageChange?.(pagination.page + 1)}
+                className="flex-1 sm:flex-none"
               >
                 Next
               </Button>

@@ -195,7 +195,7 @@ const IdentityCheck = () => {
                     value: val
                   }
                 })}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="All Branches" /></SelectTrigger>
                 <SelectContent><SelectItem value="">All Branches</SelectItem>{BRANCH_OPTIONS.map((opt) => (
                     <SelectItem key={opt.id} value={opt.id}>
                       {opt.label}
@@ -209,7 +209,7 @@ const IdentityCheck = () => {
                     value: val
                   }
                 })}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="All Roles" /></SelectTrigger>
                 <SelectContent><SelectItem value="">All Roles</SelectItem>{roles.map((role) => (
                     <SelectItem key={role} value={role}>
                       {role}

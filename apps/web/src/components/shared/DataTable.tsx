@@ -109,11 +109,11 @@ export function DataTable<T>({
       </Table>
 
       {pagination && totalPages > 1 && (
-        <div className="flex items-center justify-between border-t px-4 py-3">
+        <div className="flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
           <span className="text-xs text-muted-foreground">
             Showing {rangeStart} to {rangeEnd} of {pagination.total}
           </span>
-          <div className="flex gap-1">
+          <div className="flex w-full justify-end gap-1 sm:w-auto">
             <Button
               variant="ghost"
               size="icon"

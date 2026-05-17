@@ -396,22 +396,36 @@ const AgentUpdater = () => {
             replaces and restarts DemoAgentPublisher.exe.
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="secondary" onClick={handleRefresh} disabled={loading}>
-            <Loader2 className="animate-spin mr-2" />
+        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+          <Button
+            variant="secondary"
+            onClick={handleRefresh}
+            disabled={loading}
+            className="w-full sm:w-auto"
+          >
+            {loading && <Loader2 className="animate-spin mr-2" />}
             <span className="material-symbols-outlined mr-2">refresh</span>
             Refresh
           </Button>
-          <Button variant="secondary" onClick={handleExportExcel} disabled={exporting || loading}>
+          <Button
+            variant="secondary"
+            onClick={handleExportExcel}
+            disabled={exporting || loading}
+            className="w-full sm:w-auto"
+          >
             {exporting && <Loader2 className="animate-spin mr-2" />}
             <span className="material-symbols-outlined mr-2">download</span>
             Export Excel
           </Button>
-          <Button variant="secondary" onClick={handleDownloadSetup}>
+          <Button
+            variant="secondary"
+            onClick={handleDownloadSetup}
+            className="w-full sm:w-auto"
+          >
             <span className="material-symbols-outlined mr-2">download</span>
             Setup Script
           </Button>
-          <Button onClick={handleOpenDeployModal}>
+          <Button onClick={handleOpenDeployModal} className="w-full sm:w-auto">
             <span className="material-symbols-outlined mr-2">cloud_upload</span>
             Deploy Update
           </Button>
@@ -505,8 +519,8 @@ const AgentUpdater = () => {
           </CardContent>
         </Card>
       </section>
-      <section className="flex flex-wrap items-end gap-3">
-        <div className="relative w-full flex-1 min-w-48"><span
+      <section className="grid grid-cols-1 gap-2 md:flex md:flex-wrap md:items-end md:gap-3">
+        <div className="relative w-full md:min-w-48 md:flex-1"><span
             className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
             placeholder="Search by store code or name..."
             name="q"
@@ -521,7 +535,7 @@ const AgentUpdater = () => {
               value: val
             }
           })}>
-          <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+          <SelectTrigger><SelectValue placeholder="All Branches" /></SelectTrigger>
           <SelectContent><SelectItem value="">All Branches</SelectItem>{AREA_OPTIONS.map((branch) => (
               <SelectItem key={branch.id} value={branch.id}>
                 {branch.label}
@@ -535,14 +549,14 @@ const AgentUpdater = () => {
               value: val
             }
           })}>
-          <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+          <SelectTrigger><SelectValue placeholder="All Regional Heads" /></SelectTrigger>
           <SelectContent><SelectItem value="">All Regional Heads</SelectItem>{regionalHeads.map((rh) => (
               <SelectItem key={rh} value={rh}>
                 {rh}
               </SelectItem>
             ))}</SelectContent>
         </Select>
-        <Button variant="secondary" onClick={applyFilters}>
+        <Button variant="secondary" onClick={applyFilters} className="w-full md:w-auto">
           <span className="material-symbols-outlined mr-2">search</span>
           Apply
         </Button>
@@ -593,7 +607,7 @@ const AgentUpdater = () => {
 
                     return (
                       <TableRow key={node.store_id} className={isLegacyWorker ? 'bg-warning/5' : ''}>
-                        <TableCell className="font-semibold font-mono text-xs">
+                        <TableCell className="text-xs font-semibold tabular-nums">
                           {node.store_id || 'Unknown'}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
@@ -629,7 +643,7 @@ const AgentUpdater = () => {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-right text-muted-foreground">
+                        <TableCell className="text-right text-muted-foreground tabular-nums">
                           <div className="flex items-center justify-end gap-2">
                             {node.last_check_at ? formatDateTime(node.last_check_at) : '-'}
                             {node.last_check_at && (

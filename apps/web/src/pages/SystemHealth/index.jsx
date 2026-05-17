@@ -507,7 +507,7 @@ const SystemHealth = () => {
             <h3 className="section-title">Services Status</h3>
             {loadingServices && <span className="text-xs text-muted-foreground">Loading...</span>}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-section">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {services.length === 0 && !loadingServices ? (
               <div className="col-span-full text-sm text-muted-foreground">
                 No services available.
@@ -519,35 +519,37 @@ const SystemHealth = () => {
                 const timestampLabel = hasLastSeenAt ? 'Last seen' : 'Checked';
                 const timestampValue = service.lastSeenAt || service.lastCheckedAt;
                 return (
-                  <Card key={service.name} className="py-3 flex items-center justify-between group">
-                    <CardContent>
-                      <div className="flex items-center gap-4">
-                        <span className="material-symbols-outlined text-3xl text-foreground">
+                  <Card key={service.name} size="sm" className="group">
+                    <CardContent className="flex items-center justify-between gap-4">
+                      <div className="flex min-w-0 flex-1 items-center gap-3">
+                        <span className="material-symbols-outlined shrink-0 text-3xl leading-none text-foreground">
                           {getServiceIcon(service.name)}
                         </span>
-                        <div className="flex flex-col">
-                          <span className="text-foreground font-medium text-sm">
+                        <div className="flex min-w-0 flex-col">
+                          <span className="truncate text-sm font-medium leading-5 text-foreground">
                             {service.name}
                           </span>
-                          <span className="text-xs text-muted-foreground">
+                          <span className="truncate text-xs leading-4 text-muted-foreground">
                             {timestampLabel} {formatTime(timestampValue)}
                           </span>
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex shrink-0 items-center gap-2">
                         <StatusBadge variant={status.variant}>{status.label}</StatusBadge>
                         <div className={`h-2 w-2 rounded-full ${status.dot}`} />
                         <Guard user={user} permission="SYSTEM_RESTART">
                           <button
                             type="button"
-                            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100"
                             onClick={() => {
                               setRestartTarget(service);
                               setRestartConfirm('');
                             }}
                             aria-label={`Restart ${service.name}`}
                           >
-                            <span className="material-symbols-outlined text-lg">restart_alt</span>
+                            <span className="material-symbols-outlined text-lg leading-none">
+                              restart_alt
+                            </span>
                           </button>
                         </Guard>
                       </div>
@@ -562,7 +564,7 @@ const SystemHealth = () => {
         <div className="flex flex-col gap-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <h3 className="section-title">System Logs</h3>
-            <div className="flex flex-wrap gap-3">
+            <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
               <div className="relative group">
                 <div className="relative w-full"><span
                     className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
@@ -570,7 +572,7 @@ const SystemHealth = () => {
                     type="text"
                     value={logQuery}
                     onChange={(event) => setLogQuery(event.target.value)}
-                    className="pl-10 w-52 md:w-72" /></div>
+                    className="w-full pl-10 sm:w-72" /></div>
               </div>
               <Select
                 value={logLevel}
@@ -583,7 +585,7 @@ const SystemHealth = () => {
 
                   return setLogLevel(event.target.value);
                 }}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Level: All" /></SelectTrigger>
                 <SelectContent>{LEVEL_OPTIONS.map((level) => (
                     <SelectItem key={level} value={level}>
                       {level}
@@ -597,7 +599,7 @@ const SystemHealth = () => {
             <CardContent className="p-0">
               <Table>
                 <TableHeader><TableRow>
-                    <TableHead className="w-48 font-mono">
+                    <TableHead className="w-48 tabular-nums">
                       Timestamp
                     </TableHead>
                     <TableHead className="w-28 text-center">
@@ -617,7 +619,7 @@ const SystemHealth = () => {
                   ) : (
                     filteredLogs.map((log) => (
                       <TableRow key={log.id} className="group">
-                        <TableCell className="text-muted-foreground font-mono text-xs">
+                        <TableCell className="text-xs text-muted-foreground tabular-nums">
                           {formatDateTime(log.createdAt)}
                         </TableCell>
                         <TableCell className="text-center">
@@ -628,7 +630,9 @@ const SystemHealth = () => {
                         <TableCell className="text-foreground text-center">
                           {log.component || '-'}
                         </TableCell>
-                        <TableCell className="text-foreground font-mono text-xs">{log.message}</TableCell>
+                        <TableCell className="min-w-80 max-w-2xl whitespace-normal text-sm leading-5 text-foreground">
+                          {log.message}
+                        </TableCell>
                         <TableCell className="text-center">
                           <button
                             type="button"
@@ -646,11 +650,11 @@ const SystemHealth = () => {
                 </tbody>
               </Table>
               <div
-                className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+                className="flex flex-col gap-3 border-t border-border bg-card px-cell-x py-cell-y text-xs sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-xs text-muted-foreground">
                   Showing {rangeStart} to {rangeEnd} of {totalLogs} logs
                 </span>
-                <div className="flex gap-2">
+                <div className="flex w-full justify-end gap-2 sm:w-auto">
                   <button
                     className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-50 border border-transparent hover:border-border transition-all"
                     onClick={() =>

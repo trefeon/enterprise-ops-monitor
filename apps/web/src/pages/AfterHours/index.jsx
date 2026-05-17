@@ -1237,7 +1237,7 @@ export default function AfterHours() {
                     ))}</SelectContent>
                 </Select>
 
-                <div className="relative w-full w-full min-w-0"><span
+                <div className="relative w-full min-w-0"><span
                     className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">calendar_today</span><Input
                     type="date"
                     value={date}
@@ -1391,7 +1391,7 @@ export default function AfterHours() {
                             </TableCell>
                             <TableCell>
                               <div className="flex flex-col">
-                                <span className="font-mono text-xs text-foreground">
+                                <span className="text-xs text-foreground tabular-nums">
                                   {v.store_code}
                                 </span>
                                 <span className="text-xs text-muted-foreground">
@@ -1405,13 +1405,13 @@ export default function AfterHours() {
                               </span>
                             </TableCell>
                             <TableCell
-                              className={`font-mono text-xs ${
+                              className={`text-xs tabular-nums ${
                                 v.last_sync_at ? 'text-status-warning' : 'text-muted-foreground'
                               }`}
                             >
                               {formatWibTime(v.last_sync_at)}
                             </TableCell>
-                            <TableCell className="text-xs text-muted-foreground">
+                            <TableCell className="text-xs text-muted-foreground tabular-nums">
                               {formatWibTime(v.detected_at)}
                             </TableCell>
                           </TableRow>
@@ -1423,18 +1423,19 @@ export default function AfterHours() {
                   {/* Pagination */}
                   {pagination && totalPages > 1 && (
                     <div
-                      className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+                      className="flex flex-col gap-3 border-t border-border bg-card px-cell-x py-cell-y text-xs sm:flex-row sm:items-center sm:justify-between">
                       <span className="text-muted-foreground">
                         Showing <span className="font-medium text-foreground">{rangeStart}</span> to{' '}
                         <span className="font-medium text-foreground">{rangeEnd}</span> of{' '}
                         <span className="font-medium text-foreground">{totalItems}</span> results
                       </span>
-                      <div className="flex gap-2">
+                      <div className="flex w-full gap-2 sm:w-auto">
                         <Button
                           variant="secondary"
                           size="sm"
                           disabled={page <= 1}
                           onClick={() => setPage((p) => Math.max(1, p - 1))}
+                          className="flex-1 sm:flex-none"
                         >
                           Previous
                         </Button>
@@ -1443,6 +1444,7 @@ export default function AfterHours() {
                           size="sm"
                           disabled={page >= totalPages}
                           onClick={() => setPage((p) => p + 1)}
+                          className="flex-1 sm:flex-none"
                         >
                           Next
                         </Button>

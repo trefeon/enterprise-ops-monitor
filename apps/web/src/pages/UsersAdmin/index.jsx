@@ -438,7 +438,7 @@ export default function UsersAdmin() {
                     return setCreateForm((s) => ({ ...s, role: e.target.value }));
                   }}
                   disabled={assignableRoles.length === 0}>
-                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectTrigger><SelectValue placeholder="Select Role" /></SelectTrigger>
                   <SelectContent>{assignableRoles.map((r) => (
                       <SelectItem key={r.id} value={r.name}>
                         {r.label}

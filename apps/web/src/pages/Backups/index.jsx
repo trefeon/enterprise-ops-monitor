@@ -302,13 +302,18 @@ const Backups = () => {
             </p>
             <div className="page-meta">Latest backup {formatDateTime(summary?.latestBackupAt)}</div>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={handleRefresh} disabled={isLoading}>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+            <Button
+              variant="secondary"
+              onClick={handleRefresh}
+              disabled={isLoading}
+              className="w-full sm:w-auto"
+            >
               <span className="material-symbols-outlined mr-2">refresh</span>
               Refresh
             </Button>
             <Guard user={user} permission="BACKUPS_RUN">
-              <Button onClick={runManualBackup}>
+              <Button onClick={runManualBackup} className="w-full sm:w-auto">
                 {manualLoading && <Loader2 className="animate-spin mr-2" />}
                 <span className="material-symbols-outlined mr-2">play_arrow</span>
                 Run Backup Now
@@ -469,7 +474,7 @@ const Backups = () => {
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-muted-foreground font-mono text-right">
+                      <TableCell className="text-right text-muted-foreground tabular-nums">
                         {formatBytes(file.sizeBytes)}
                       </TableCell>
                       <TableCell className="text-muted-foreground text-center">
@@ -517,13 +522,13 @@ const Backups = () => {
                 )}
               </TableBody>
             </Table>
-            <div className="flex items-center justify-between border-t border-border px-6 py-4">
+            <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-muted-foreground">
                 Showing <span className="font-medium text-foreground">{rangeStart}</span> to{' '}
                 <span className="font-medium text-foreground">{rangeEnd}</span> of{' '}
                 <span className="font-medium text-foreground">{totalItems}</span> results
               </p>
-              <div className="flex gap-2">
+              <div className="flex w-full gap-2 sm:w-auto">
                 <Button
                   size="sm"
                   variant="secondary"
@@ -531,6 +536,7 @@ const Backups = () => {
                   onClick={() =>
                     setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
                   }
+                  className="flex-1 sm:flex-none"
                 >
                   Previous
                 </Button>
@@ -544,6 +550,7 @@ const Backups = () => {
                       page: prev.page * prev.pageSize < totalItems ? prev.page + 1 : prev.page,
                     }))
                   }
+                  className="flex-1 sm:flex-none"
                 >
                   Next
                 </Button>

@@ -35,7 +35,7 @@ function formatHeartbeat(value: string) {
 
 function MetricCell({ value }: { value: number }) {
   return (
-    <div className="min-w-28 space-y-1">
+    <div className="mx-auto min-w-28 space-y-1">
       <div className="text-sm font-medium tabular-nums">{value}%</div>
       <Progress value={value} indicatorClassName={getHealthColor(value)} />
     </div>
@@ -56,10 +56,10 @@ export function MachineTable({ machines, onView, onEditLabel }: MachineTableProp
                 <TableHead className="min-w-44">Hostname</TableHead>
                 <TableHead className="min-w-40">Label</TableHead>
                 <TableHead className="min-w-72">Specs</TableHead>
-                <TableHead className="min-w-32">CPU</TableHead>
-                <TableHead className="min-w-32">RAM</TableHead>
-                <TableHead className="min-w-32">Disk</TableHead>
-                <TableHead className="min-w-28">Status</TableHead>
+                <TableHead className="min-w-32 text-center">CPU</TableHead>
+                <TableHead className="min-w-32 text-center">RAM</TableHead>
+                <TableHead className="min-w-32 text-center">Disk</TableHead>
+                <TableHead className="min-w-28 text-center">Status</TableHead>
                 <TableHead className="min-w-44">Last Heartbeat</TableHead>
                 <TableHead className="min-w-24 text-right">Actions</TableHead>
               </TableRow>
@@ -101,23 +101,23 @@ export function MachineTable({ machines, onView, onEditLabel }: MachineTableProp
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <MetricCell value={machine.metrics.cpu_percent} />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <MetricCell value={machine.metrics.ram_percent} />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <MetricCell value={machine.metrics.disk_percent} />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="text-center">
                       <StatusBadge
                         variant={machine.status === 'online' ? 'success' : 'destructive'}
                       >
                         {machine.status === 'online' ? 'Online' : 'Offline'}
                       </StatusBadge>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="tabular-nums">
                       <span
                         className={
                           machine.status === 'offline'

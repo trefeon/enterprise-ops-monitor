@@ -13,8 +13,10 @@ import ProgressBar from '../../components/ui/ProgressBar';
 import EmptyState from '../../components/ui/EmptyState';
 import Modal from '../../components/ui/Modal';
 import { formatDate, formatDateTime, formatTime, getWibParts, getWibToday } from '../../lib/date';
+import { getFeatureStory } from '../../data/stories';
 import { Loader2, Store, CheckCircle, AlertTriangle, Clock, RefreshCw, Search } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 
 const AUTO_REFRESH_INTERVAL = 10000; // stores table refresh: 10 seconds
 const STATUS_REFRESH_INTERVAL = 10000; // KPI/status refresh: 10 seconds
@@ -424,383 +426,376 @@ const StoreSync = () => {
 
   return (
     <PageShell>
-      <div>
-        <div className="flex flex-col gap-4">
-          <PageHeader
-            title="Store Sync Monitor"
-            description="Real-time store data synchronization status. Stores sync from their computers every ~3 minutes."
-            meta={`Updated ${updatedLabel} • Auto-refresh ${countdown}s${sourceMeta ? ` • ${sourceMeta}` : ''}`}
-            actions={
-              <Button onClick={handleRefresh}>
-                {refreshing && <Loader2 className="animate-spin mr-2" />}
-                <RefreshCw className="mr-2 size-4" />
-                {refreshing ? 'Refreshing...' : 'Refresh Now'}
-              </Button>
-            }
-          />
-        </div>
+      <FeatureStoryBanner story={getFeatureStory('store-sync')} />
 
-        {(summaryError || statusError || storesError) && (
-          <Card className="py-3 border-status-warning/30 bg-status-warning/5">
-            <CardContent>
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
-                <div className="text-sm text-foreground">
-                  {summaryError ? `Summary error: ${summaryError}` : null}
-                  {summaryError && (statusError || storesError) ? ' • ' : null}
-                  {statusError ? `Status error: ${statusError}` : null}
-                  {statusError && storesError ? ' • ' : null}
-                  {storesError ? `Stores error: ${storesError}` : null}
-                </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="secondary"
-                    onClick={() => Promise.all([fetchSummary(), fetchStatus(), fetchStores()])}
-                  >
-                    <span className="material-symbols-outlined mr-2">refresh</span>
-                    Retry
-                  </Button>
-                </div>
+      <PageHeader
+        title="Store Sync Monitor"
+        description="Real-time store data synchronization status. Stores sync from their computers every ~3 minutes."
+        meta={`Updated ${updatedLabel} • Auto-refresh ${countdown}s${sourceMeta ? ` • ${sourceMeta}` : ''}`}
+        actions={
+          <Button onClick={handleRefresh}>
+            {refreshing && <Loader2 className="animate-spin mr-2" />}
+            <RefreshCw className="mr-2 size-4" />
+            {refreshing ? 'Refreshing...' : 'Refresh Now'}
+          </Button>
+        }
+      />
+
+      {(summaryError || statusError || storesError) && (
+        <Card className="py-3 border-status-warning/30 bg-status-warning/5">
+          <CardContent>
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+              <div className="text-sm text-foreground">
+                {summaryError ? `Summary error: ${summaryError}` : null}
+                {summaryError && (statusError || storesError) ? ' • ' : null}
+                {statusError ? `Status error: ${statusError}` : null}
+                {statusError && storesError ? ' • ' : null}
+                {storesError ? `Stores error: {storesError}` : null}
               </div>
-            </CardContent>
-          </Card>
-        )}
+              <div className="flex gap-2">
+                <Button
+                  variant="secondary"
+                  onClick={() => Promise.all([fetchSummary(), fetchStatus(), fetchStores()])}
+                >
+                  <RefreshCw className="mr-2 size-4" />
+                  Retry
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-section">
-          <StatCard
-            title="Total Stores"
-            icon={<Store className="size-5" />}
-            value={summary?.totalStores ?? '-'}
-            subtext="Across all branches"
-            onClick={handleTotalStoresClick}
-            className={statusFilter === '' ? 'ring-2 ring-ring' : ''}
-          />
+      {/* Summary Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+        <StatCard
+          title="Total Stores"
+          icon={<Store className="size-5" />}
+          value={summary?.totalStores ?? '-'}
+          subtext="Across all branches"
+          onClick={handleTotalStoresClick}
+          className={statusFilter === '' ? 'ring-2 ring-ring' : ''}
+        />
 
-          <StatCard
-            title="On-time"
-            icon={<CheckCircle className="size-5" />}
-            value={<span className="text-status-success">{summary?.synced ?? '-'}</span>}
-            subtext={`Last sync 0–${syncedMaxLabel}`}
-            accent="text-status-success"
-            onClick={() => handleKpiStatusClick('synced')}
-            className={isStatusSelected('synced') ? 'ring-2 ring-ring' : ''}
-          />
+        <StatCard
+          title="On-time"
+          icon={<CheckCircle className="size-5" />}
+          value={<span className="text-status-success">{summary?.synced ?? '-'}</span>}
+          subtext={`Last sync 0–${syncedMaxLabel}`}
+          accent="text-status-success"
+          onClick={() => handleKpiStatusClick('synced')}
+          className={isStatusSelected('synced') ? 'ring-2 ring-ring' : ''}
+        />
 
-          <StatCard
-            title="Warning"
-            icon={<AlertTriangle className="size-5" />}
-            value={
-              <span
-                className={
-                  (Number(summary?.stale) || 0) > 0 ? 'text-status-warning' : 'text-foreground'
-                }
-              >
-                {summary?.stale ?? '-'}
-              </span>
-            }
-            subtext={`Last sync ${syncedMaxLabel}–${staleMaxLabel}`}
-            accent={
-              (Number(summary?.stale) || 0) > 0 ? 'text-status-warning' : 'text-muted-foreground'
-            }
-            onClick={() => handleKpiStatusClick('stale')}
-            className={isStatusSelected('stale') ? 'ring-2 ring-ring' : ''}
-          />
+        <StatCard
+          title="Warning"
+          icon={<AlertTriangle className="size-5" />}
+          value={
+            <span
+              className={
+                (Number(summary?.stale) || 0) > 0 ? 'text-status-warning' : 'text-foreground'
+              }
+            >
+              {summary?.stale ?? '-'}
+            </span>
+          }
+          subtext={`Last sync ${syncedMaxLabel}–${staleMaxLabel}`}
+          accent={
+            (Number(summary?.stale) || 0) > 0 ? 'text-status-warning' : 'text-muted-foreground'
+          }
+          onClick={() => handleKpiStatusClick('stale')}
+          className={isStatusSelected('stale') ? 'ring-2 ring-ring' : ''}
+        />
 
-          <StatCard
-            title="Late"
-            icon={<AlertTriangle className="size-5" />}
-            value={
-              <span
-                className={
-                  (Number(status?.late) || 0) > 0 ? 'text-status-error' : 'text-foreground'
-                }
-              >
-                {status?.late ?? '-'}
-              </span>
-            }
-            subtext={`Last sync ${staleMaxLabel}+ • Total late ${summary?.problem ?? '-'} • No timestamp ${status?.noTimestamp ?? '-'}`}
-            accent={
-              (Number(summary?.problem) || 0) > 0 ? 'text-status-error' : 'text-muted-foreground'
-            }
-            onClick={() => handleKpiStatusClick('problem')}
-            className={isStatusSelected('problem') ? 'ring-2 ring-ring' : ''}
-          />
+        <StatCard
+          title="Late"
+          icon={<AlertTriangle className="size-5" />}
+          value={
+            <span
+              className={
+                (Number(status?.late) || 0) > 0 ? 'text-status-error' : 'text-foreground'
+              }
+            >
+              {status?.late ?? '-'}
+            </span>
+          }
+          subtext={`Last sync ${staleMaxLabel}+ • Total late ${summary?.problem ?? '-'} • No timestamp ${status?.noTimestamp ?? '-'}`}
+          accent={
+            (Number(summary?.problem) || 0) > 0 ? 'text-status-error' : 'text-muted-foreground'
+          }
+          onClick={() => handleKpiStatusClick('problem')}
+          className={isStatusSelected('problem') ? 'ring-2 ring-ring' : ''}
+        />
 
-          <StatCard
-            title="Oldest Last Sync"
-            icon={<Clock className="size-5" />}
-            value={summary?.oldest?.ageSec != null ? formatDuration(summary.oldest.ageSec) : '-'}
-            subtext={
-              <span className="block truncate" title={summary?.oldest?.namaToko}>
-                {summary?.oldest?.namaToko || '-'}
-              </span>
-            }
-            onClick={handleOldestClick}
-          />
-        </div>
+        <StatCard
+          title="Oldest Last Sync"
+          icon={<Clock className="size-5" />}
+          value={summary?.oldest?.ageSec != null ? formatDuration(summary.oldest.ageSec) : '-'}
+          subtext={
+            <span className="block truncate" title={summary?.oldest?.namaToko}>
+              {summary?.oldest?.namaToko || '-'}
+            </span>
+          }
+          onClick={handleOldestClick}
+        />
+      </div>
 
-        {/* Branch Health */}
-        {status?.branches && status.branches.length > 0 && (
-          <div className="flex flex-col gap-4">
-            <h3 className="section-title">Branch Network Health</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-section">
-              {status.branches.map((branch) => {
-                const hasData = branch.total > 0;
-                const hasSourceError = sourceErrorBranchIds.has(String(branch.id));
-                const staleCount = branch.stale || 0;
-                const problemCount = branch.problem || 0;
-                const syncedCount = branch.synced || 0;
-                const healthPercent = hasData ? (syncedCount / branch.total) * 100 : 0;
-                const statusVariant = hasData
-                  ? healthPercent < 80
-                    ? 'error'
-                    : healthPercent < 90
-                      ? 'warning'
-                      : 'success'
-                  : hasSourceError
-                    ? 'error'
-                    : 'neutral';
-                const badgeLabel = hasData
-                  ? problemCount > 0
-                    ? `${problemCount} late`
-                    : staleCount > 0
-                      ? `${staleCount} warning`
-                      : 'On-time'
-                  : hasSourceError
-                    ? 'Source error'
-                    : 'No data';
+      {/* Branch Health */}
+      {status?.branches && status.branches.length > 0 && (
+        <div>
+          <h3 className="section-title">Branch Network Health</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {status.branches.map((branch) => {
+              const hasData = branch.total > 0;
+              const hasSourceError = sourceErrorBranchIds.has(String(branch.id));
+              const staleCount = branch.stale || 0;
+              const problemCount = branch.problem || 0;
+              const syncedCount = branch.synced || 0;
+              const healthPercent = hasData ? (syncedCount / branch.total) * 100 : 0;
+              const statusVariant = hasData
+                ? healthPercent < 80
+                  ? 'error'
+                  : healthPercent < 90
+                    ? 'warning'
+                    : 'success'
+                : hasSourceError
+                  ? 'error'
+                  : 'neutral';
+              const badgeLabel = hasData
+                ? problemCount > 0
+                  ? `${problemCount} late`
+                  : staleCount > 0
+                    ? `${staleCount} warning`
+                    : 'On-time'
+                : hasSourceError
+                  ? 'Source error'
+                  : 'No data';
 
-                const isBranchSelected = String(branchFilter || '') === String(branch.id || '');
-                return (
-                  <Card
-                    key={branch.id}
-                    onClick={() => {
-                      setBranchFilter((prev) =>
-                        String(prev || '') === String(branch.id || '')
-                          ? ''
-                          : String(branch.id || '')
-                      );
-                      resetPagination();
-                      scrollToStoreTable();
-                    }}
-                    className={`flex flex-col gap-3 transition-all hover:border-primary/50 hover:shadow-md active:scale-95 cursor-pointer ${isBranchSelected ? 'ring-2 ring-ring' : ''}`}
-                  >
-                    <div className="flex flex-col gap-3 p-4">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-foreground">{branch.name}</span>
-                        <StatusBadge variant={statusVariant}>{badgeLabel}</StatusBadge>
-                      </div>
-                      <ProgressBar
-                        value={healthPercent}
-                        trackClassName="bg-secondary border border-border h-2"
-                        barClassName={`h-2 ${
-                          hasData
-                            ? statusVariant === 'error'
-                              ? 'bg-status-error'
-                              : statusVariant === 'warning'
-                                ? 'bg-status-warning'
-                                : 'bg-status-success'
-                            : 'bg-muted'
-                        }`}
-                      />
-                      <div className="text-xs text-muted-foreground">
-                        {hasData
-                          ? `${syncedCount} on-time • ${staleCount} warning • ${problemCount} late`
-                          : hasSourceError
-                            ? 'Upstream source error for this branch'
-                            : 'No store data yet'}
-                      </div>
+              const isBranchSelected = String(branchFilter || '') === String(branch.id || '');
+              return (
+                <Card
+                  key={branch.id}
+                  onClick={() => {
+                    setBranchFilter((prev) =>
+                      String(prev || '') === String(branch.id || '')
+                        ? ''
+                        : String(branch.id || '')
+                    );
+                    resetPagination();
+                    scrollToStoreTable();
+                  }}
+                  className={`transition-all hover:border-primary/50 hover:shadow-md active:scale-95 cursor-pointer ${isBranchSelected ? 'ring-2 ring-ring' : ''}`}
+                >
+                  <div className="flex flex-col gap-3 p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-foreground">{branch.name}</span>
+                      <StatusBadge variant={statusVariant}>{badgeLabel}</StatusBadge>
                     </div>
-                  </Card>
-                );
-              })}
-            </div>
+                    <ProgressBar
+                      value={healthPercent}
+                      trackClassName="bg-secondary border border-border h-2"
+                      barClassName={`h-2 ${
+                        hasData
+                          ? statusVariant === 'error'
+                            ? 'bg-status-error'
+                            : statusVariant === 'warning'
+                              ? 'bg-status-warning'
+                              : 'bg-status-success'
+                          : 'bg-muted'
+                      }`}
+                    />
+                    <div className="text-xs text-muted-foreground">
+                      {hasData
+                        ? `${syncedCount} on-time • ${staleCount} warning • ${problemCount} late`
+                        : hasSourceError
+                          ? 'Upstream source error for this branch'
+                          : 'No store data yet'}
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
           </div>
-        )}
-
-        {/* Store Table */}
-        <div className="flex flex-col gap-4" ref={storeTableRef}>
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <h3 className="section-title">Store Sync Status</h3>
-            <div className="flex flex-wrap gap-3">
-              <label className="flex min-h-11 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
-                <input
-                  type="checkbox"
-                  checked={excludeBazar}
-                  onChange={(e) => {
-                    setExcludeBazar(e.target.checked);
-                    setPagination((p) => ({ ...p, page: 1 }));
-                  }}
-                />
-                Exclude &gt; 7 days
-              </label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-                <Input
-                  placeholder="Search store..."
-                  type="text"
-                  value={search}
-                  onChange={(e) => {
-                    setSearch(e.target.value);
-                    setPagination((p) => ({ ...p, page: 1 }));
-                  }}
-                  className="pl-10 w-52"
-                />
-              </div>
-              <Select
-                value={branchFilter}
-                onValueChange={(val) => {
-                  setBranchFilter(val);
-                  setPagination((p) => ({ ...p, page: 1 }));
-                }}
-              >
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Branches</SelectItem>
-                  {branchOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={statusFilter}
-                onValueChange={(val) => {
-                  setStatusFilter(val);
-                  setPagination((p) => ({ ...p, page: 1 }));
-                }}
-              >
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
-                  <SelectItem value="problem">Late (last sync {staleMaxLabel}+ or no timestamp)</SelectItem>
-                  <SelectItem value="stale">Warning (last sync {syncedMaxLabel}–{staleMaxLabel})</SelectItem>
-                  <SelectItem value="synced">On-time (last sync 0–{syncedMaxLabel})</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          <Card className="p-0 overflow-hidden flex flex-col">
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader><TableRow>
-                    <TableHead className="w-28 text-right">
-                      Store Code
-                    </TableHead>
-                    <TableHead>Store Name</TableHead>
-                    <TableHead className="w-32">
-                      Branch
-                    </TableHead>
-                    <TableHead className="w-40">
-                      Last Sync
-                    </TableHead>
-                    <TableHead className="w-28 text-center">
-                      Status
-                    </TableHead>
-                    <TableHead className="w-20 text-center"></TableHead>
-                  </TableRow></TableHeader>
-                <TableBody>
-                  {loadingStores && stores.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Loading stores...</TableCell></TableRow>
-                  ) : storesError && stores.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                        <div className="flex flex-col items-center gap-2">
-                          <div>Failed to load stores: {storesError}</div>
-                          <Button variant="secondary" onClick={fetchStores}>
-                            <RefreshCw className="mr-2 size-4" />
-                            Retry
-                          </Button>
-                        </div>
-                      </TableCell></TableRow>
-                  ) : stores.length === 0 ? (
-                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No stores match the current filters.</TableCell></TableRow>
-                  ) : (
-                    stores.map((store) => (
-                      <TableRow
-                        key={store.storeCode}
-                        className={`group ${store.isProblem || store.status === 'problem' ? 'bg-status-error/10' : store.isStale || store.status === 'stale' ? 'bg-status-warning/5' : ''}`}
-                        onClick={() => openHistory(store.storeCode, store.storeName)}
-                      >
-                        <TableCell className="font-mono text-sm text-right">{store.storeCode}</TableCell>
-                        <TableCell className="text-foreground">{store.storeName || '-'}</TableCell>
-                        <TableCell className="text-muted-foreground">{store.branchName}</TableCell>
-                        <TableCell className="text-muted-foreground text-sm">
-                          <div>{store.lastSyncAt ? formatTime(store.lastSyncAt) : '-'}</div>
-                          <div className="text-xs">{formatDuration(store.lastSyncAgoSec)}</div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <StatusBadge
-                            variant={
-                              store.isProblem || store.status === 'problem'
-                                ? 'error'
-                                : store.isStale || store.status === 'stale'
-                                  ? 'warning'
-                                  : 'success'
-                            }
-                          >
-                            {store.isProblem || store.status === 'problem'
-                              ? 'Late'
-                              : store.isStale || store.status === 'stale'
-                                ? 'Warning'
-                                : 'On-time'}
-                          </StatusBadge>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <button
-                            type="button"
-                            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              openHistory(store.storeCode, store.storeName);
-                            }}
-                            title="View sync history"
-                          >
-                            <span className="material-symbols-outlined text-base">history</span>
-                          </button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-              <div
-                className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-                <span className="text-xs text-muted-foreground">
-                  Page {pagination.page} of {totalPages || 1} ({pagination.total} stores)
-                </span>
-                <div className="flex gap-1">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={() =>
-                      setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
-                    }
-                    disabled={pagination.page <= 1}
-                  >
-                    <span className="material-symbols-outlined text-lg">chevron_left</span>
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 w-8 p-0"
-                    onClick={() =>
-                      setPagination((prev) => ({
-                        ...prev,
-                        page: Math.min(prev.page + 1, totalPages),
-                      }))
-                    }
-                    disabled={pagination.page >= totalPages}
-                  >
-                    <span className="material-symbols-outlined text-lg">chevron_right</span>
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
+      )}
+
+      {/* Store Table */}
+      <div ref={storeTableRef}>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+          <h3 className="section-title mb-0">Store Sync Status</h3>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:flex-wrap xl:items-center">
+            <label className="flex min-h-11 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
+              <input
+                type="checkbox"
+                checked={excludeBazar}
+                onChange={(e) => {
+                  setExcludeBazar(e.target.checked);
+                  setPagination((p) => ({ ...p, page: 1 }));
+                }}
+              />
+              Exclude &gt; 7 days
+            </label>
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder="Search store..."
+                type="text"
+                value={search}
+                onChange={(e) => {
+                  setSearch(e.target.value);
+                  setPagination((p) => ({ ...p, page: 1 }));
+                }}
+                className="w-full pl-10 xl:w-52"
+              />
+            </div>
+            <Select
+              value={branchFilter}
+              onValueChange={(val) => {
+                setBranchFilter(val);
+                setPagination((p) => ({ ...p, page: 1 }));
+              }}
+            >
+              <SelectTrigger><SelectValue placeholder="All Branches" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Branches</SelectItem>
+                {branchOptions.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={statusFilter}
+              onValueChange={(val) => {
+                setStatusFilter(val);
+                setPagination((p) => ({ ...p, page: 1 }));
+              }}
+            >
+              <SelectTrigger><SelectValue placeholder="All statuses" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All statuses</SelectItem>
+                <SelectItem value="problem">Late (last sync {staleMaxLabel}+ or no timestamp)</SelectItem>
+                <SelectItem value="stale">Warning (last sync {syncedMaxLabel}–{staleMaxLabel})</SelectItem>
+                <SelectItem value="synced">On-time (last sync 0–{syncedMaxLabel})</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        <Card className="p-0 overflow-hidden flex flex-col">
+          <CardContent className="p-0">
+            <Table className="table-fixed whitespace-nowrap">
+              <TableHeader>
+                <TableRow className="border-b bg-muted/50">
+                  <TableHead className="w-28">Store Code</TableHead>
+                  <TableHead className="w-64">Store Name</TableHead>
+                  <TableHead className="w-40">Branch</TableHead>
+                  <TableHead className="w-44">Last Sync</TableHead>
+                  <TableHead className="w-28 text-center">Status</TableHead>
+                  <TableHead className="w-16 text-center"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {loadingStores && stores.length === 0 ? (
+                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Loading stores...</TableCell></TableRow>
+                ) : storesError && stores.length === 0 ? (
+                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      <div className="flex flex-col items-center gap-2">
+                        <div>Failed to load stores: {storesError}</div>
+                        <Button variant="secondary" onClick={fetchStores}>
+                          <RefreshCw className="mr-2 size-4" />
+                          Retry
+                        </Button>
+                      </div>
+                    </TableCell></TableRow>
+                ) : stores.length === 0 ? (
+                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No stores match the current filters.</TableCell></TableRow>
+                ) : (
+                  stores.map((store) => (
+                    <TableRow
+                      key={store.storeCode}
+                      className={`group even:bg-muted/20 hover:bg-muted/30 ${store.isProblem || store.status === 'problem' ? 'bg-status-error/10 even:bg-status-error/10 hover:bg-status-error/15' : store.isStale || store.status === 'stale' ? 'bg-status-warning/5 even:bg-status-warning/5 hover:bg-status-warning/10' : ''}`}
+                      onClick={() => openHistory(store.storeCode, store.storeName)}
+                    >
+                      <TableCell className="tabular-nums">{store.storeCode}</TableCell>
+                      <TableCell className="text-foreground">{store.storeName || '-'}</TableCell>
+                      <TableCell className="text-muted-foreground">{store.branchName}</TableCell>
+                      <TableCell className="text-muted-foreground tabular-nums">
+                        <div>{store.lastSyncAt ? formatTime(store.lastSyncAt) : '-'}</div>
+                        <div className="text-xs">{formatDuration(store.lastSyncAgoSec)}</div>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <StatusBadge
+                          variant={
+                            store.isProblem || store.status === 'problem'
+                              ? 'error'
+                              : store.isStale || store.status === 'stale'
+                                ? 'warning'
+                                : 'success'
+                          }
+                        >
+                          {store.isProblem || store.status === 'problem'
+                            ? 'Late'
+                            : store.isStale || store.status === 'stale'
+                              ? 'Warning'
+                              : 'On-time'}
+                        </StatusBadge>
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <button
+                          type="button"
+                          className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            openHistory(store.storeCode, store.storeName);
+                          }}
+                          title="View sync history"
+                        >
+                          <span className="material-symbols-outlined text-base">history</span>
+                        </button>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+            <div className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+              <span className="text-xs text-muted-foreground">
+                Page {pagination.page} of {totalPages || 1} ({pagination.total} stores)
+              </span>
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
+                  }
+                  disabled={pagination.page <= 1}
+                >
+                  <span className="material-symbols-outlined text-lg">chevron_left</span>
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() =>
+                    setPagination((prev) => ({
+                      ...prev,
+                      page: Math.min(prev.page + 1, totalPages),
+                    }))
+                  }
+                  disabled={pagination.page >= totalPages}
+                >
+                  <span className="material-symbols-outlined text-lg">chevron_right</span>
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
       <Modal
         open={Boolean(historyStore)}
         onClose={() => setHistoryStore(null)}
@@ -819,7 +814,7 @@ const StoreSync = () => {
                     value={historyMode}
                     onValueChange={(val) => setHistoryMode(val)}
                   >
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder="Last 30 minutes" /></SelectTrigger>
                     <SelectContent>
                       {HISTORY_VIEWS.map((view) => (
                         <SelectItem key={view.value} value={view.value}>
@@ -913,8 +908,7 @@ const StoreSync = () => {
           </div>
         )}
       </Modal>
-    </div>
-  </PageShell>
+    </PageShell>
   );
 };
 

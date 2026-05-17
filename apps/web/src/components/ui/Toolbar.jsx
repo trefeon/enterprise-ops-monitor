@@ -9,11 +9,15 @@ export default function Toolbar({ left = null, right = null, children = null, cl
           {children || (
             <>
               {left && (
-                <div className="flex flex-col gap-2 md:flex-row md:items-center md:flex-1">
+                <div className="flex min-w-0 flex-col gap-2 md:flex-1 md:flex-row md:items-center">
                   {left}
                 </div>
               )}
-              {right && <div className="flex items-center gap-2">{right}</div>}
+              {right && (
+                <div className="flex w-full flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center md:w-auto md:justify-end [&>*]:w-full sm:[&>*]:w-auto">
+                  {right}
+                </div>
+              )}
             </>
           )}
         </div>

@@ -502,15 +502,17 @@ const EODMonitor = () => {
           <>
             <Button
               variant={autoRefresh ? 'primary' : 'secondary'}
-              icon={autoRefresh ? 'autorenew' : 'pause_circle'}
               onClick={() => setAutoRefresh((prev) => !prev)}
             >
+              <span className="material-symbols-outlined mr-2">
+                {autoRefresh ? 'autorenew' : 'pause_circle'}
+              </span>
               {autoRefresh ? `Auto-refresh: On (${autoRefreshSeconds}s)` : 'Auto-refresh: Off'}
             </Button>
             <Button variant="secondary" onClick={handleRefresh}>
+              <span className="material-symbols-outlined mr-2">refresh</span>
               Refresh
             </Button>
-            <span className="material-symbols-outlined mr-2">refresh</span>
             <Guard user={user} permission="EOD_SYNC" fallback={null}>
               <Button onClick={() => setSyncOpen(true)}>
                 <span className="material-symbols-outlined mr-2">sync</span>
@@ -610,31 +612,37 @@ const EODMonitor = () => {
                   className="block w-full text-left border-0 bg-transparent p-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   onClick={() => openBranchModal(branch)}
                 >
-                  <Card className="py-3 flex flex-col gap-3 transition-shadow hover:shadow-md hover:ring-1 hover:ring-ring cursor-pointer min-h-32 justify-between">
-                    <CardContent>
-                      <div className="flex items-center justify-between">
-                        <div className="font-semibold text-foreground">{branch.areaName}</div>
+                  <Card className="transition-all hover:shadow-md hover:ring-1 hover:ring-ring cursor-pointer min-h-36 justify-between border border-border/50">
+                    <CardContent className="p-4 flex flex-col gap-3.5 h-full justify-between">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="font-semibold text-foreground tracking-tight">{branch.areaName}</div>
                         <div
-                          className={`px-2 py-1 rounded text-xs font-medium ${
+                          className={`px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-semibold ${
                             hasFailed
                               ? 'bg-status-error/10 text-status-error border border-status-error/20'
-                              : 'bg-muted text-muted-foreground border border-border'
+                              : 'bg-secondary text-muted-foreground border border-border/30'
                           }`}
                         >
                           {failed > 0 ? `${failed} failed` : '0 failed'}
                         </div>
                       </div>
-                      <ProgressBar
-                        value={completionPercent}
-                        trackClassName="bg-secondary border border-border h-2"
-                        barClassName={`h-2 ${barClassName}`}
-                      />
-                      <div className="text-sm text-muted-foreground">
+                      <div className="space-y-1">
+                        <ProgressBar
+                          value={completionPercent}
+                          trackClassName="bg-secondary border border-border/20 h-2"
+                          barClassName={`h-2 transition-all ${barClassName}`}
+                        />
+                        <div className="flex items-center justify-between text-[11px] text-muted-foreground/80 font-medium">
+                          <span>Progress</span>
+                          <span>{completionPercent}%</span>
+                        </div>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground font-medium">
                         <span>{done} done</span>
-                        {' • '}
+                        <span className="text-muted-foreground/30">•</span>
                         <span>{pending} pending</span>
-                        {' • '}
-                        <span>{failed} failed</span>
+                        <span className="text-muted-foreground/30">•</span>
+                        <span className={failed > 0 ? "text-status-error font-semibold" : ""}>{failed} failed</span>
                       </div>
                     </CardContent>
                   </Card>
@@ -647,7 +655,7 @@ const EODMonitor = () => {
       <Toolbar
         left={
           <>
-            <div className="relative w-full w-full md:max-w-sm"><span
+            <div className="relative w-full md:max-w-sm"><span
                 className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
                 placeholder="Search Store Code or Name"
                 type="text"
@@ -662,7 +670,7 @@ const EODMonitor = () => {
                   value: val
                 }
               })}>
-              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Branch: All" /></SelectTrigger>
               <SelectContent><SelectItem value="">Branch: All</SelectItem><SelectItem value="2">NORTH HUB</SelectItem><SelectItem value="3">EAST HUB</SelectItem><SelectItem value="4">CENTRAL HUB</SelectItem><SelectItem value="5">COASTAL HUB</SelectItem><SelectItem value="6">HIGHLAND HUB</SelectItem><SelectItem value="7">WEST HUB</SelectItem><SelectItem value="8">RIVER HUB</SelectItem><SelectItem value="9">SOUTH HUB</SelectItem></SelectContent>
             </Select>
             <Select
@@ -672,10 +680,10 @@ const EODMonitor = () => {
                   value: val
                 }
               })}>
-              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectTrigger><SelectValue placeholder="Status: All" /></SelectTrigger>
               <SelectContent><SelectItem value="">Status: All</SelectItem><SelectItem value="done">Done</SelectItem><SelectItem value="pending">Pending</SelectItem><SelectItem value="failed">Failed</SelectItem></SelectContent>
             </Select>
-            <div className="relative w-fit shrink-0">
+            <div className="relative w-full shrink-0 md:w-fit">
               <div className="relative"><button
                   type="button"
                   className="absolute right-0 inset-y-0 inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent"
@@ -688,7 +696,7 @@ const EODMonitor = () => {
                   readOnly
                   onClick={openDatePicker}
                   rightIconAriaLabel="Choose date"
-                  className="pr-12 w-auto tabular-nums cursor-pointer" /></div>
+                  className="w-full cursor-pointer pr-12 tabular-nums md:w-auto" /></div>
               <input
                 ref={hiddenDateInputRef}
                 type="date"
@@ -703,7 +711,7 @@ const EODMonitor = () => {
           </>
         }
         right={
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
             <Button
               variant="secondary"
               size="sm"
@@ -715,9 +723,9 @@ const EODMonitor = () => {
               {exportButtonLabel}
             </Button>
             <Button variant="ghost" size="sm" onClick={handleResetFilters}>
+              <span className="material-symbols-outlined mr-2 text-base">restart_alt</span>
               Reset
             </Button>
-            <span className="material-symbols-outlined mr-2">restart_alt</span>
           </div>
         }
       />
@@ -839,14 +847,14 @@ const EODMonitor = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Select
-                    value={pagination.pageSize}
+                    value={pagination.pageSize.toString()}
                     onValueChange={val => handlePageSizeChange({
                       target: {
-                        value: val
+                        value: parseInt(val, 10)
                       }
                     })}>
-                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent><SelectItem value={10}>10 rows</SelectItem><SelectItem value={20}>20 rows</SelectItem><SelectItem value={50}>50 rows</SelectItem><SelectItem value={100}>100 rows</SelectItem></SelectContent>
+                    <SelectTrigger><SelectValue placeholder="10 rows" /></SelectTrigger>
+                    <SelectContent><SelectItem value="10">10 rows</SelectItem><SelectItem value="20">20 rows</SelectItem><SelectItem value="50">50 rows</SelectItem><SelectItem value="100">100 rows</SelectItem></SelectContent>
                   </Select>
                   <div className="flex gap-1">
                     <IconButton

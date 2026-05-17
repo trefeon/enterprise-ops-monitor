@@ -233,12 +233,12 @@ export default function DashboardPage() {
         title="Dashboard Summary"
         description={`Business date ${formatDate(eod?.date)}.`}
         meta={
-          <>
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
             <span>Last sync {formatTime(eod?.lastSyncAt)}</span>
             <span>Interactions {interactionsToday ?? 0}</span>
             <span>Employees {employees?.total ?? 0}</span>
             <span>Backups {backups?.available ?? 0}</span>
-          </>
+          </div>
         }
       />
       <div className="grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-8">
@@ -306,15 +306,20 @@ export default function DashboardPage() {
         <StatCard
           title="System Health"
           icon={<HeartPulse className="size-5" />}
-          value={
-            <div className="flex items-center gap-2">
-              <span
-                className={`relative flex h-2.5 w-2.5 ${health.pulse ? 'animate-ping' : ''} rounded-full ${health.dot}`}
-              />
-              <span>{health.label}</span>
-            </div>
+          value={health.label}
+          subtext={
+            <span className="inline-flex items-center gap-2">
+              <span>{health.subtext}</span>
+              <span className="relative inline-flex h-2.5 w-2.5">
+                {health.pulse && (
+                  <span
+                    className={`absolute inline-flex h-full w-full animate-ping rounded-full ${health.pulse}`}
+                  />
+                )}
+                <span className={`relative inline-flex h-2.5 w-2.5 rounded-full ${health.dot}`} />
+              </span>
+            </span>
           }
-          subtext={health.subtext}
           onClick={
             hasPermission(user, Permissions.SYSTEM_VIEW) ? () => navigate('/system') : undefined
           }

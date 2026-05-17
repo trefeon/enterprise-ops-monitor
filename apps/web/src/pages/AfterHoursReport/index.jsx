@@ -607,7 +607,7 @@ export default function AfterHoursReport() {
 
                             return setMonth(e.target.value);
                           }}>
-                          <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                          <SelectTrigger><SelectValue placeholder="Select Month" /></SelectTrigger>
                           <SelectContent>{monthOptions.map((value) => (
                               <SelectItem key={value} value={value}>
                                 {formatMonthLabel(`${value}-01`)}
@@ -676,7 +676,7 @@ export default function AfterHoursReport() {
 
                           return setBranch(e.target.value);
                         }}>
-                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Branch: All" /></SelectTrigger>
                         <SelectContent>{BRANCH_OPTIONS.map((b) => (
                             <SelectItem key={b.id} value={b.id}>
                               {b.label}
@@ -698,7 +698,7 @@ export default function AfterHoursReport() {
 
                           return setLimit(e.target.value);
                         }}>
-                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectTrigger><SelectValue placeholder="Limit: Top 20" /></SelectTrigger>
                         <SelectContent>{LIMIT_OPTIONS.map((opt) => (
                             <SelectItem key={opt.value} value={opt.value}>
                               {opt.label}

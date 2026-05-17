@@ -226,7 +226,7 @@ const StoreManagement = () => {
                     value: val
                   }
                 })}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="All Branches" /></SelectTrigger>
                 <SelectContent><SelectItem value="">All Branches</SelectItem>{AREA_OPTIONS.map((branch) => (
                     <SelectItem key={branch.id} value={branch.id}>
                       {branch.label}
@@ -240,7 +240,7 @@ const StoreManagement = () => {
                     value: val
                   }
                 })}>
-                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="All Regional Heads" /></SelectTrigger>
                 <SelectContent><SelectItem value="">All Regional Heads</SelectItem>{regionalHeads.map((rh) => (
                     <SelectItem key={rh} value={rh}>
                       {rh}
