@@ -20,7 +20,8 @@ import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { formatDateTime, formatTime, getWibToday } from '../../lib/date';
 import { getFeatureStory } from '../../data/stories';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Clock, User, Shield, RotateCw, Pause, Play, RefreshCw } from 'lucide-react';
+import { hasPermission } from '../../lib/auth/permissions';
 import { Card, CardContent } from '@/components/ui/card';
 
 const AUTO_REFRESH_INTERVAL = 30000;
@@ -292,6 +293,15 @@ const EODMonitor = () => {
   };
 
   const handleSync = useCallback(async () => {
+    if (isDemoUser) {
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
+      setSyncOpen(false);
+      return;
+    }
     try {
       const res = await api.post('/eod/sync', { date: filters.date, scope: 'all' });
       if (!res.ok) throw new Error(res.error?.message || 'Sync failed');
@@ -307,10 +317,19 @@ const EODMonitor = () => {
     } finally {
       setSyncOpen(false);
     }
-  }, [api, fetchData, fetchStats, filters.date, push]);
+  }, [api, fetchData, fetchStats, filters.date, isDemoUser, push]);
 
   const handleRetry = useCallback(async () => {
     if (!retryTarget) return;
+    if (isDemoUser) {
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
+      setRetryTarget(null);
+      return;
+    }
     try {
       const res = await api.post('/eod/retry', {
         storeCode: retryTarget.storeCode,
@@ -329,7 +348,7 @@ const EODMonitor = () => {
     } finally {
       setRetryTarget(null);
     }
-  }, [api, fetchData, fetchStats, filters.date, push, retryTarget]);
+  }, [api, fetchData, fetchStats, filters.date, isDemoUser, push, retryTarget]);
 
   const handleExport = useCallback(async () => {
     if (isDemoUser) {
@@ -386,7 +405,7 @@ const EODMonitor = () => {
     } finally {
       setExporting(false);
     }
-  }, [api, displayDate, filters.areaId, filters.date, filters.q, filters.status, push]);
+  }, [api, displayDate, filters.areaId, filters.date, filters.q, filters.status, isDemoUser, push]);
 
   const openDetail = useCallback(
     async (row) => {
@@ -492,33 +511,58 @@ const EODMonitor = () => {
         title="EOD Monitor"
         subtitle="Real-time EOD status by store."
         meta={
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <span>Last updated {lastUpdatedLabel}</span>
-            <span>User {user?.username || 'Admin User'}</span>
-            <span>Role {user?.role ? user.role.replace(/_/g, ' ') : 'IT Operations'}</span>
+          <div className="flex flex-wrap items-center gap-2 mt-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/30 py-1 px-3 text-xs text-muted-foreground font-medium transition-colors hover:bg-muted/50">
+              <Clock className="size-3.5 text-muted-foreground/75" />
+              <span>Last updated: {lastUpdatedLabel}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/30 py-1 px-3 text-xs text-muted-foreground font-medium transition-colors hover:bg-muted/50">
+              <User className="size-3.5 text-muted-foreground/75" />
+              <span>User: {user?.username || 'Admin User'}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/30 py-1 px-3 text-xs text-muted-foreground font-medium transition-colors hover:bg-muted/50">
+              <Shield className="size-3.5 text-muted-foreground/75" />
+              <span>Role: {user?.role ? user.role.replace(/_/g, ' ') : 'IT Operations'}</span>
+            </span>
           </div>
         }
         actions={
           <>
             <Button
-              variant={autoRefresh ? 'primary' : 'secondary'}
+              variant={autoRefresh ? 'default' : 'secondary'}
               onClick={() => setAutoRefresh((prev) => !prev)}
             >
-              <span className="material-symbols-outlined mr-2">
-                {autoRefresh ? 'autorenew' : 'pause_circle'}
-              </span>
+              {autoRefresh ? (
+                <RefreshCw className="mr-2 size-4 animate-spin" />
+              ) : (
+                <Pause className="mr-2 size-4" />
+              )}
               {autoRefresh ? `Auto-refresh: On (${autoRefreshSeconds}s)` : 'Auto-refresh: Off'}
             </Button>
             <Button variant="secondary" onClick={handleRefresh}>
-              <span className="material-symbols-outlined mr-2">refresh</span>
+              <RotateCw className="mr-2 size-4" />
               Refresh
             </Button>
-            <Guard user={user} permission="EOD_SYNC" fallback={null}>
-              <Button onClick={() => setSyncOpen(true)}>
-                <span className="material-symbols-outlined mr-2">sync</span>
+            {(hasPermission(user, 'EOD_SYNC') || isDemoUser) && (
+              <Button
+                variant="default"
+                className={isDemoUser ? 'opacity-60 cursor-not-allowed' : ''}
+                onClick={() => {
+                  if (isDemoUser) {
+                    push({
+                      variant: 'warning',
+                      title: 'Demo Account',
+                      message: 'This action is not available in the demo account.',
+                    });
+                    return;
+                  }
+                  setSyncOpen(true);
+                }}
+              >
+                <RefreshCw className="mr-2 size-4" />
                 Sync All
               </Button>
-            </Guard>
+            )}
           </>
         }
       />
@@ -695,7 +739,6 @@ const EODMonitor = () => {
                   size={10}
                   readOnly
                   onClick={openDatePicker}
-                  rightIconAriaLabel="Choose date"
                   className="w-full cursor-pointer pr-12 tabular-nums md:w-auto" /></div>
               <input
                 ref={hiddenDateInputRef}

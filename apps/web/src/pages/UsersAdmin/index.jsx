@@ -376,7 +376,7 @@ export default function UsersAdmin() {
         subtitle="Manage accounts, roles, and access permissions"
         actions={
           canCreate ? (
-            <Button onClick={() => setCreateOpen((v) => !v)} variant="primary">
+            <Button onClick={() => setCreateOpen((v) => !v)} variant="default">
               {createOpen ? 'Close' : 'Add User'}
             </Button>
           ) : null

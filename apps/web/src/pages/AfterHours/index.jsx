@@ -962,7 +962,7 @@ export default function AfterHours() {
                     </p>
                     <div className="flex flex-wrap items-center gap-2">
                       <Button
-                        variant={notificationEditorMode === 'branch' ? 'primary' : 'ghost'}
+                        variant={notificationEditorMode === 'branch' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => handleNotificationModeChange('branch')}
                       >
@@ -970,7 +970,7 @@ export default function AfterHours() {
                         Per Branch Form
                       </Button>
                       <Button
-                        variant={notificationEditorMode === 'advanced' ? 'primary' : 'ghost'}
+                        variant={notificationEditorMode === 'advanced' ? 'default' : 'ghost'}
                         size="sm"
                         onClick={() => handleNotificationModeChange('advanced')}
                       >

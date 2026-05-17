@@ -233,11 +233,23 @@ export default function DashboardPage() {
         title="Dashboard Summary"
         description={`Business date ${formatDate(eod?.date)}.`}
         meta={
-          <div className="flex flex-wrap gap-x-4 gap-y-1">
-            <span>Last sync {formatTime(eod?.lastSyncAt)}</span>
-            <span>Interactions {interactionsToday ?? 0}</span>
-            <span>Employees {employees?.total ?? 0}</span>
-            <span>Backups {backups?.available ?? 0}</span>
+          <div className="flex flex-wrap items-center gap-2 mt-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/30 py-1 px-3 text-xs text-muted-foreground font-medium transition-colors hover:bg-muted/50">
+              <Clock className="size-3.5 text-muted-foreground/75" />
+              <span>Last sync: {formatTime(eod?.lastSyncAt)}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/30 py-1 px-3 text-xs text-muted-foreground font-medium transition-colors hover:bg-muted/50">
+              <Cpu className="size-3.5 text-muted-foreground/75" />
+              <span>Interactions: {interactionsToday ?? 0}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/30 py-1 px-3 text-xs text-muted-foreground font-medium transition-colors hover:bg-muted/50">
+              <Monitor className="size-3.5 text-muted-foreground/75" />
+              <span>Employees: {employees?.total ?? 0}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/30 py-1 px-3 text-xs text-muted-foreground font-medium transition-colors hover:bg-muted/50">
+              <Cloud className="size-3.5 text-muted-foreground/75" />
+              <span>Backups: {backups?.available ?? 0}</span>
+            </span>
           </div>
         }
       />
@@ -467,7 +479,7 @@ export default function DashboardPage() {
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-start gap-3"
+                className={`w-full justify-start gap-3 ${user?.isDemo ? 'opacity-60 cursor-not-allowed' : ''}`}
                 onClick={handleBackup}
               >
                 <Cloud className="size-4 text-primary" /> Trigger Manual Backup{' '}
@@ -475,8 +487,16 @@ export default function DashboardPage() {
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-start gap-3"
+                className={`w-full justify-start gap-3 ${user?.isDemo ? 'opacity-60 cursor-not-allowed' : ''}`}
                 onClick={async () => {
+                  if (user?.isDemo) {
+                    push({
+                      variant: 'warning',
+                      title: 'Demo Account',
+                      message: 'This action is not available in the demo account.',
+                    });
+                    return;
+                  }
                   push({
                     variant: 'info',
                     title: 'Running Store Audit',
@@ -504,8 +524,16 @@ export default function DashboardPage() {
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-start gap-3"
+                className={`w-full justify-start gap-3 ${user?.isDemo ? 'opacity-60 cursor-not-allowed' : ''}`}
                 onClick={() => {
+                  if (user?.isDemo) {
+                    push({
+                      variant: 'warning',
+                      title: 'Demo Account',
+                      message: 'This action is not available in the demo account.',
+                    });
+                    return;
+                  }
                   push({
                     variant: 'success',
                     title: 'Deploying Agent Update',
@@ -518,8 +546,16 @@ export default function DashboardPage() {
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-start gap-3"
+                className={`w-full justify-start gap-3 ${user?.isDemo ? 'opacity-60 cursor-not-allowed' : ''}`}
                 onClick={() => {
+                  if (user?.isDemo) {
+                    push({
+                      variant: 'warning',
+                      title: 'Demo Account',
+                      message: 'This action is not available in the demo account.',
+                    });
+                    return;
+                  }
                   push({
                     variant: 'success',
                     title: 'Violations Refreshed',

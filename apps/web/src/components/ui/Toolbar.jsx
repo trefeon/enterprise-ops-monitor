@@ -4,7 +4,7 @@ import { Card, CardContent } from './card';
 export default function Toolbar({ left = null, right = null, children = null, className = '' }) {
   return (
     <Card className={className}>
-      <CardContent>
+      <CardContent className="py-2.5 px-4 sm:py-3.5 sm:px-5">
         <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
           {children || (
             <>
