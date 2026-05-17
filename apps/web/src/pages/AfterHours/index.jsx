@@ -315,7 +315,7 @@ function NotificationTargetRow({ label, helperText, value, onChange, placeholder
         <p className="text-sm font-medium text-foreground">{label}</p>
         <p className="text-xs text-muted-foreground">{helperText}</p>
       </div>
-      <div className="relative w-full w-full min-w-0"><span
+      <div className="relative w-full min-w-0"><span
           className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">{icon}</span><Input
           type="text"
           value={value}
@@ -1204,7 +1204,7 @@ export default function AfterHours() {
           <Card className="py-3 overflow-hidden rounded-2xl">
             <CardContent>
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-                <div className="relative w-full w-full min-w-0 md:col-span-2 xl:col-span-2"><span
+                <div className="relative w-full min-w-0 md:col-span-2 xl:col-span-2"><span
                     className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
                     type="text"
                     value={search}
