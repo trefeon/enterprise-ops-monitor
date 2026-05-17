@@ -248,7 +248,7 @@ export default function DashboardPage() {
 
       <PageHeader
         title="Operations Hub"
-        subtitle={`Business date ${formatDate(getWibToday())}`}
+        description={`Business date ${formatDate(getWibToday())}`}
         actions={
           <div className="flex items-center gap-2">
             <Button
@@ -265,7 +265,7 @@ export default function DashboardPage() {
               )}
               <span className="hidden sm:inline ml-2">Refresh</span>
             </Button>
-            <Guard permission={Permissions.EOD_SYNC}>
+            <Guard permission={Permissions.EOD_SYNC as any}>
               <Button
                 size="sm"
                 onClick={handleManualSync}
@@ -407,10 +407,13 @@ export default function DashboardPage() {
                   <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
                     Recent Alerts
                   </CardTitle>
-                  <Button variant="ghost" size="sm" className="h-7 text-[10px] font-bold" asChild>
-                    <Link to="/sync">
-                      VIEW ALL <ArrowRight className="ml-1 size-3" />
-                    </Link>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-7 text-[10px] font-bold"
+                    onClick={() => navigate('/sync')}
+                  >
+                    VIEW ALL <ArrowRight className="ml-1 size-3" />
                   </Button>
                 </div>
               </CardHeader>

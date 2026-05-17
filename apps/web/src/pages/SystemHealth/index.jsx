@@ -574,7 +574,7 @@ const SystemHealth = () => {
                         <div className="flex items-center gap-1.5">
                           <StatusBadge
                             variant={status.variant}
-                            className="h-5 px-1.5 text-[10px] uppercase font-bold tracking-wider"
+                            className="h-4 px-1.5 live-text-3xs uppercase font-bold tracking-wider"
                           >
                             {status.label}
                           </StatusBadge>
@@ -586,7 +586,7 @@ const SystemHealth = () => {
                         <span className="truncate text-sm font-semibold text-foreground tracking-tight">
                           {service.name}
                         </span>
-                        <span className="truncate text-[10px] text-muted-foreground uppercase font-medium tracking-wide">
+                        <span className="truncate live-text-3xs text-muted-foreground uppercase font-medium tracking-wide">
                           {timestampLabel} {formatTime(timestampValue)}
                         </span>
                       </div>

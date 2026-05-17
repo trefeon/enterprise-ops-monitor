@@ -3,6 +3,27 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission, Permissions } from '../lib/auth/permissions';
 import { Button } from './ui/button';
+import {
+  LayoutDashboard,
+  RefreshCw,
+  ClipboardCheck,
+  Store,
+  Contact,
+  Database,
+  Activity,
+  ShieldCheck,
+  Laptop,
+  Users,
+  Lock,
+  Moon,
+  Info,
+  Menu,
+  X,
+  LineChart,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const Sidebar = ({ setMobileOpen, inSheet = false }) => {
   const [collapsed, setCollapsed] = useState(() => {
@@ -40,106 +61,106 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
 
   // Navigation items with required permissions
   const allNavItems = [
-    { path: '/', label: 'Dashboard', icon: 'dashboard', permission: Permissions.DASHBOARD_VIEW },
-    { path: '/sync', label: 'Store Sync', icon: 'sync', permission: Permissions.SYNC_VIEW },
-    { path: '/eod', label: 'EOD Monitor', icon: 'schedule', permission: Permissions.EOD_VIEW },
+    {
+      path: '/',
+      label: 'Dashboard',
+      icon: LayoutDashboard,
+      permission: Permissions.DASHBOARD_VIEW,
+    },
+    { path: '/sync', label: 'Store Sync', icon: RefreshCw, permission: Permissions.SYNC_VIEW },
+    { path: '/eod', label: 'EOD Monitor', icon: ClipboardCheck, permission: Permissions.EOD_VIEW },
     {
       path: '/stores',
       label: 'Store Directory',
-      icon: 'store',
+      icon: Store,
       permission: Permissions.STORES_VIEW,
     },
     {
       path: '/identity',
       label: 'Employee Directory',
-      icon: 'badge',
+      icon: Contact,
       permission: Permissions.EMPLOYEES_VIEW,
     },
-    { path: '/backups', label: 'Backups', icon: 'backup', permission: Permissions.BACKUPS_VIEW },
+    { path: '/backups', label: 'Backups', icon: Database, permission: Permissions.BACKUPS_VIEW },
     {
       path: '/system',
       label: 'System',
-      icon: 'settings_suggest',
+      icon: Activity,
       permission: Permissions.SYSTEM_VIEW,
     },
     {
       path: '/agent-updater',
       label: 'Agent Updater',
-      icon: 'browser_updated',
+      icon: ShieldCheck,
       permission: Permissions.AGENT_UPDATE,
     },
     {
       path: '/office-agents',
       label: 'Office Agents',
-      icon: 'computer',
+      icon: Laptop,
       permission: Permissions.AGENT_UPDATE,
     },
     {
       path: '/admin/users',
       label: 'Accounts',
-      icon: 'manage_accounts',
+      icon: Users,
       permission: Permissions.ACCOUNTS_VIEW,
     },
     {
       path: '/admin/roles',
       label: 'Roles',
-      icon: 'admin_panel_settings',
+      icon: Lock,
       permission: Permissions.ROLES_VIEW,
     },
     {
       path: '/admin/afterhours',
       label: 'After Hours',
-      icon: 'nightlight',
+      icon: Moon,
       permission: Permissions.AFTERHOURS_VIEW,
     },
   ];
 
   // Filter nav items based on user permissions
   const navItems = allNavItems.filter((item) => hasPermission(user, item.permission));
-  const supportNavItems = [{ path: '/about', label: 'About This Project', icon: 'info' }];
+  const supportNavItems = [{ path: '/about', label: 'Portfolio Context', icon: Info }];
 
   return (
     <aside
-      className={
-        inSheet
-          ? 'relative z-50 flex h-full w-64 flex-col border-r border-border bg-card'
-          : `
-              relative z-50 flex h-full flex-col border-r border-border bg-card transition-all duration-300
-              ${collapsed ? 'md:w-20' : 'md:w-64'}
-              w-64
-            `
-      }
+      className={cn(
+        'relative z-50 flex h-full flex-col border-r border-border bg-card transition-all duration-300 ease-in-out',
+        collapsed ? 'md:w-20' : 'md:w-64',
+        inSheet ? 'w-64' : 'w-64'
+      )}
     >
       {/* Logo Area */}
       <div
-        className={`
-          h-16 flex items-center border-b border-border
-          ${collapsed ? 'md:justify-center md:px-2' : 'justify-between px-4'}
-        `}
+        className={cn(
+          'h-16 flex items-center border-b border-border',
+          collapsed ? 'md:justify-center md:px-2' : 'justify-between px-5'
+        )}
       >
         <div
-          className={`
-            flex items-center gap-3 text-foreground font-bold whitespace-nowrap
-            ${collapsed ? 'md:hidden' : 'overflow-hidden'}
-          `}
+          className={cn(
+            'flex items-center gap-3 text-foreground font-black tracking-tight whitespace-nowrap',
+            collapsed ? 'md:hidden' : 'overflow-hidden'
+          )}
         >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
-            <span className="material-symbols-outlined text-xl">monitoring</span>
-          </span>
-          <span className="truncate text-sm">Enterprise Ops Monitor</span>
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
+            <LineChart className="size-5" />
+          </div>
+          <span className="text-sm uppercase tracking-wider">Ops Hub</span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           {/* Desktop Collapse Toggle */}
           <Button
             variant="ghost"
             size="icon"
             onClick={toggleCollapsed}
-            className="hidden md:flex"
-            aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-            title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+            className="hidden md:flex text-muted-foreground hover:text-primary transition-colors"
+            aria-label={collapsed ? 'Expand' : 'Collapse'}
           >
-            <span className="material-symbols-outlined text-xl leading-none">menu</span>
+            {collapsed ? <ChevronRight className="size-5" /> : <ChevronLeft className="size-5" />}
           </Button>
 
           {/* Mobile Close Button */}
@@ -149,72 +170,117 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
             onClick={() => setMobileOpen(false)}
             className="md:hidden"
           >
-            <span className="material-symbols-outlined">close</span>
+            <X className="size-5" />
           </Button>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-4 space-y-2 px-4">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.path}
-            to={item.path}
-            onClick={() => setMobileOpen(false)}
-            className={({ isActive }) => `
-                            flex min-h-[44px] items-center gap-4 px-4 py-2 rounded-lg transition-colors group
-                            ${
-                              isActive
-                                ? 'bg-secondary text-secondary-foreground font-medium'
-                                : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
-                            }
-                            ${collapsed ? 'md:justify-center' : ''}
-                        `}
-            title={collapsed ? item.label : ''}
-          >
-            <span className="material-symbols-outlined text-xl">{item.icon}</span>
-            <span className={`${collapsed ? 'md:hidden' : 'block'}`}>{item.label}</span>
-          </NavLink>
-        ))}
-
-        <div className="mt-4 border-t border-border pt-4">
-          {supportNavItems.map((item) => (
+      <nav className="flex-1 overflow-y-auto py-6 space-y-1.5 px-4 scrollbar-none">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          return (
             <NavLink
               key={item.path}
               to={item.path}
               onClick={() => setMobileOpen(false)}
-              className={({ isActive }) => `
-                              flex min-h-[44px] items-center gap-4 px-4 py-2 rounded-lg transition-colors group
-                              ${
-                                isActive
-                                  ? 'bg-secondary text-secondary-foreground font-medium'
-                                  : 'text-muted-foreground hover:bg-secondary/50 hover:text-foreground'
-                              }
-                              ${collapsed ? 'md:justify-center' : ''}
-                          `}
+              className={({ isActive }) =>
+                cn(
+                  'flex min-h-[44px] items-center gap-4 px-4 py-2 rounded-xl transition-all duration-200 group relative',
+                  isActive
+                    ? 'bg-primary/10 text-primary font-bold'
+                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+                  collapsed ? 'md:justify-center' : ''
+                )
+              }
               title={collapsed ? item.label : ''}
             >
-              <span className="material-symbols-outlined text-xl">{item.icon}</span>
-              <span className={`${collapsed ? 'md:hidden' : 'block'}`}>{item.label}</span>
+              <Icon
+                className={cn(
+                  'size-5 shrink-0 transition-transform group-hover:scale-110',
+                  collapsed ? '' : ''
+                )}
+              />
+              <span
+                className={cn(
+                  'text-sm font-semibold tracking-tight transition-opacity duration-300',
+                  collapsed ? 'md:hidden' : 'block'
+                )}
+              >
+                {item.label}
+              </span>
+              {/* Active Indicator Dot */}
+              <div className="absolute left-0 w-1 h-6 bg-primary rounded-r-full opacity-0 scale-y-0 transition-all duration-300 group-[.active]:opacity-100 group-[.active]:scale-y-100" />
             </NavLink>
-          ))}
+          );
+        })}
+
+        <div className="mt-8 border-t border-border/50 pt-6">
+          <p
+            className={cn(
+              'px-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-4',
+              collapsed ? 'md:hidden' : 'block'
+            )}
+          >
+            Portfolio
+          </p>
+          {supportNavItems.map((item) => {
+            const Icon = item.icon;
+            return (
+              <NavLink
+                key={item.path}
+                to={item.path}
+                onClick={() => setMobileOpen(false)}
+                className={({ isActive }) =>
+                  cn(
+                    'flex min-h-[44px] items-center gap-4 px-4 py-2 rounded-xl transition-all duration-200 group relative',
+                    isActive
+                      ? 'bg-status-info/10 text-status-info font-bold'
+                      : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+                    collapsed ? 'md:justify-center' : ''
+                  )
+                }
+                title={collapsed ? item.label : ''}
+              >
+                <Icon className="size-5 shrink-0 transition-transform group-hover:scale-110" />
+                <span
+                  className={cn(
+                    'text-sm font-semibold tracking-tight',
+                    collapsed ? 'md:hidden' : 'block'
+                  )}
+                >
+                  {item.label}
+                </span>
+              </NavLink>
+            );
+          })}
         </div>
       </nav>
 
       {/* User Profile Summary (Bottom) */}
-      <div className="p-4 border-t border-border mt-auto">
+      <div className="p-4 border-t border-border/50 mt-auto">
         <Button
           variant="ghost"
           onClick={handleProfile}
-          className={`h-auto w-full justify-start p-2 hover:bg-secondary/50 ${collapsed ? 'md:justify-center' : ''}`}
+          className={cn(
+            'h-auto w-full justify-start p-2 rounded-2xl hover:bg-muted/50 transition-all border border-transparent hover:border-border',
+            collapsed ? 'md:justify-center' : ''
+          )}
           title={collapsed ? 'Profile' : ''}
         >
-          <div className="w-9 h-9 shrink-0 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs ring-2 ring-ring/30">
+          <div className="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground font-black text-xs shadow-md shadow-primary/20">
             {initials}
           </div>
-          <div className={`${collapsed ? 'md:hidden' : 'block'} min-w-0 text-left`}>
-            <div className="text-sm font-semibold text-foreground truncate">{usernameLabel}</div>
-            <div className="text-xs text-muted-foreground uppercase tracking-wide truncate">
+          <div
+            className={cn(
+              'min-w-0 text-left ml-3 transition-opacity duration-300',
+              collapsed ? 'md:hidden' : 'block'
+            )}
+          >
+            <div className="text-sm font-bold text-foreground truncate leading-tight">
+              {usernameLabel}
+            </div>
+            <div className="text-[10px] text-muted-foreground uppercase font-black tracking-widest truncate">
               {roleLabel}
             </div>
           </div>

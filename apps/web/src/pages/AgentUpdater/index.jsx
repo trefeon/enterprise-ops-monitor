@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/ui/ToastContext';
 import { Button } from '@/components/ui/button';
@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/table';
 import { formatDateTime } from '../../lib/date';
 import EmptyState from '../../components/ui/EmptyState';
-import PageHeader from '../../components/ui/PageHeader';
+import { PageHeader } from '@/components/shared/PageHeader';
 import PageShell from '../../components/ui/PageShell';
 import { StatCard } from '@/components/shared/StatCard';
 import { SearchBar } from '@/components/shared/SearchBar';
@@ -472,7 +472,7 @@ const AgentUpdater = () => {
           subtext={
             <div className="flex justify-between items-center w-full">
               <span>{runningPublisherCount} node(s) synced</span>
-              <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-[4px] font-bold text-[9px] uppercase tracking-wider flex items-center gap-1">
+              <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-sm font-bold live-text-3xs uppercase tracking-widest flex items-center gap-1">
                 <span className="relative flex h-1.5 w-1.5">
                   {activeDownloads > 0 && (
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
@@ -500,7 +500,7 @@ const AgentUpdater = () => {
                       ? 'success'
                       : 'warning'
                 }
-                className="h-4.5 text-[9px] font-bold"
+                className="h-4 live-text-3xs font-bold"
               >
                 {metricsLoading
                   ? 'Loading'

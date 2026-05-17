@@ -305,4 +305,21 @@
   .modal-scroll-70 {
     max-height: 70vh;
   }
+  /* Portfolio Storytelling Utilities */
+  .portfolio-hero-monitor {
+    width: 400px;
+    height: 400px;
+  }
+  .portfolio-pillar-title {
+    @apply text-2xl font-black tracking-tight uppercase;
+  }
+  .portfolio-feature-tag {
+    @apply inline-flex items-center gap-2 px-2 py-0.5 rounded bg-background border text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3;
+  }
+  .portfolio-story-label {
+    @apply text-[10px] font-black uppercase tracking-widest;
+  }
+  .portfolio-tech-note {
+    @apply flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10;
+  }
 }

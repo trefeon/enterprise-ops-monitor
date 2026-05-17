@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-
+import { Menu } from 'lucide-react';
 import { Button } from './ui/button';
 
 const Header = ({ onMobileMenuClick }) => {
@@ -25,12 +25,12 @@ const Header = ({ onMobileMenuClick }) => {
           variant="ghost"
           size="icon"
           onClick={onMobileMenuClick}
-          className="md:hidden"
+          className="md:hidden text-muted-foreground hover:text-primary transition-colors"
         >
-          <span className="material-symbols-outlined text-xl leading-none">menu</span>
+          <Menu className="size-5" />
         </Button>
-        <div className="text-sm text-muted-foreground hidden sm:block">
-          Enterprise Operations Monitor
+        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 hidden sm:block">
+          Enterprise Operations Platform
         </div>
       </div>
 
@@ -38,8 +38,7 @@ const Header = ({ onMobileMenuClick }) => {
       <div className="flex items-center gap-4 md:hidden">
         <Button
           onClick={() => navigate('/profile')}
-          size="icon"
-          className="rounded-full font-bold text-xs ring-2 ring-ring/30"
+          className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-xs shadow-md shadow-primary/20 ring-2 ring-ring/30"
           aria-label="Open profile"
           title="Profile"
         >

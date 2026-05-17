@@ -1,66 +1,138 @@
 import React, { useState } from 'react';
+import {
+  ChevronDown,
+  ChevronUp,
+  Info,
+  Zap,
+  LayoutDashboard,
+  RefreshCw,
+  ClipboardCheck,
+  Store,
+  Contact,
+  Database,
+  Activity,
+  ShieldCheck,
+  Laptop,
+  Users,
+  Lock,
+  Moon,
+  FileText,
+  LogOut,
+  UserCircle,
+  Tv,
+  AlertCircle,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+const ICON_MAP = {
+  dashboard: LayoutDashboard,
+  sync: RefreshCw,
+  fact_check: ClipboardCheck,
+  store: Store,
+  badge: Contact,
+  backup: Database,
+  monitor_heart: Activity,
+  browser_updated: ShieldCheck,
+  computer: Laptop,
+  manage_accounts: Users,
+  admin_panel_settings: Lock,
+  nightlight: Moon,
+  summarize: FileText,
+  logout: LogOut,
+  account_circle: UserCircle,
+  info: Info,
+  live_tv: Tv,
+};
 
 export default function FeatureStoryBanner({ story }) {
   const [open, setOpen] = useState(false);
 
   if (!story || story.banner === false) return null;
 
+  const Icon = ICON_MAP[story.materialIcon] || ICON_MAP.info;
+
   return (
-    <section className="rounded-lg border border-border bg-muted/20 shadow-sm">
+    <section className="group rounded-2xl border border-primary/20 bg-primary/[0.03] shadow-sm transition-all hover:border-primary/30">
       <button
         type="button"
-        className="flex w-full items-center justify-between gap-4 px-4 py-3 text-left transition-colors hover:bg-muted/30"
+        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
       >
-        <span className="flex min-w-0 items-center gap-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-status-info/15 text-status-info">
-            <span className="material-symbols-outlined text-lg">
-              {story.materialIcon || 'info'}
-            </span>
+        <span className="flex min-w-0 items-center gap-4">
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+            <Icon className="size-5" />
           </span>
           <span className="min-w-0">
-            <span className="block text-sm font-semibold text-foreground">
-              Why this feature exists
+            <span className="block text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">
+              Feature Narrative
             </span>
-            <span className="block truncate text-sm text-muted-foreground">{story.tagline}</span>
+            <span className="block truncate text-base font-bold text-foreground">
+              {story.tagline}
+            </span>
           </span>
         </span>
-        <span className="material-symbols-outlined text-xl text-muted-foreground">
-          {open ? 'expand_less' : 'expand_more'}
-        </span>
+        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-background border text-muted-foreground group-hover:text-primary transition-colors">
+          {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+        </div>
       </button>
 
       {open && (
-        <div className="border-t border-border px-4 pb-4 pt-4">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-            <StoryBlock label="Problem" tone="text-status-error" text={story.problem} />
-            <StoryBlock label="Solution" tone="text-status-info" text={story.solution} />
-            <StoryBlock label="Impact" tone="text-status-success" text={story.impact} />
+        <div className="animate-in slide-in-from-top-2 fade-in duration-200 border-t border-primary/10 px-5 pb-5 pt-5">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            <StoryBlock
+              label="The Problem"
+              tone="text-status-error"
+              text={story.problem}
+              icon={<AlertCircle className="size-3" />}
+            />
+            <StoryBlock
+              label="The Solution"
+              tone="text-status-info"
+              text={story.solution}
+              icon={<Zap className="size-3" />}
+            />
+            <StoryBlock
+              label="Business Impact"
+              tone="text-status-success"
+              text={story.impact}
+              icon={<ShieldCheck className="size-3" />}
+            />
           </div>
 
           {(story.metrics?.length || story.techHighlight) && (
-            <div className="mt-4 flex flex-col gap-3">
+            <div className="mt-6 flex flex-col gap-4 border-t border-primary/10 pt-5">
               {story.metrics?.length ? (
                 <div className="flex flex-wrap gap-2">
                   {story.metrics.map((metric) => (
-                    <span
+                    <div
                       key={`${metric.label}-${metric.value}`}
-                      className="inline-flex items-center gap-1 rounded-md border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground"
+                      className="flex flex-col gap-0.5 rounded-lg border border-border bg-background px-3 py-1.5"
                     >
-                      {metric.label}
-                      <span className="font-semibold text-foreground">{metric.value}</span>
-                    </span>
+                      <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground leading-none">
+                        {metric.label}
+                      </span>
+                      <span className="text-xs font-bold text-foreground leading-none">
+                        {metric.value}
+                      </span>
+                    </div>
                   ))}
                 </div>
               ) : null}
 
-              {story.techHighlight ? (
-                <div className="rounded-md border border-status-info/20 bg-status-info/10 px-3 py-2 text-xs text-muted-foreground">
-                  <span className="font-semibold text-status-info">Technical note: </span>
-                  {story.techHighlight}
+              {story.techHighlight && (
+                <div className="flex items-start gap-3 rounded-xl border border-primary/10 bg-primary/[0.02] px-4 py-3">
+                  <div className="mt-0.5 text-primary shrink-0">
+                    <Zap className="size-4" />
+                  </div>
+                  <p className="text-xs leading-relaxed text-muted-foreground">
+                    <span className="font-black uppercase tracking-wider text-primary mr-1.5">
+                      Engineering Note:
+                    </span>
+                    {story.techHighlight}
+                  </p>
                 </div>
-              ) : null}
+              )}
             </div>
           )}
         </div>
@@ -69,10 +141,13 @@ export default function FeatureStoryBanner({ story }) {
   );
 }
 
-function StoryBlock({ label, tone, text }) {
+function StoryBlock({ label, tone, text, icon }) {
   return (
-    <div className="space-y-1">
-      <p className={`text-xs font-semibold uppercase tracking-wide ${tone}`}>{label}</p>
+    <div className="space-y-2">
+      <div className={cn('flex items-center gap-1.5', tone)}>
+        {icon}
+        <p className="text-[10px] font-black uppercase tracking-widest">{label}</p>
+      </div>
       <p className="text-sm leading-relaxed text-muted-foreground">{text}</p>
     </div>
   );
