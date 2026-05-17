@@ -89,6 +89,12 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
       permission: Permissions.SYSTEM_VIEW,
     },
     {
+      path: '/admin/afterhours',
+      label: 'After Hours',
+      icon: Moon,
+      permission: Permissions.AFTERHOURS_VIEW,
+    },
+    {
       path: '/agent-updater',
       label: 'Agent Updater',
       icon: ShieldCheck,
@@ -111,12 +117,6 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
       label: 'Roles',
       icon: Lock,
       permission: Permissions.ROLES_VIEW,
-    },
-    {
-      path: '/admin/afterhours',
-      label: 'After Hours',
-      icon: Moon,
-      permission: Permissions.AFTERHOURS_VIEW,
     },
   ];
 

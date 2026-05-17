@@ -21,7 +21,7 @@ export function SearchBar({
   };
 
   return (
-    <div className={cn('relative', className)}>
+    <div className={cn('relative w-full', className)}>
       <div className="pointer-events-none absolute left-3 inset-y-0 flex items-center text-muted-foreground">
         <Search className="size-5" />
       </div>
@@ -29,7 +29,7 @@ export function SearchBar({
         value={value}
         onChange={handleChange}
         placeholder={placeholder}
-        className="pl-10"
+        className={cn('pl-10', className)}
         {...props}
       />
     </div>

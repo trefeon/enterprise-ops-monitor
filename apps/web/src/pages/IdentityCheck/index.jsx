@@ -207,7 +207,11 @@ const IdentityCheck = () => {
                 }
               >
                 <SelectTrigger className="w-full md:w-40">
-                  <SelectValue placeholder="All Branches" />
+                  <SelectValue placeholder="All Branches">
+                    {filters.branchId
+                      ? BRANCH_OPTIONS.find((b) => b.id === String(filters.branchId))?.label
+                      : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">All Branches</SelectItem>

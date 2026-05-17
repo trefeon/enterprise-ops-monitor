@@ -238,7 +238,11 @@ const StoreManagement = () => {
                 }
               >
                 <SelectTrigger className="w-full md:w-40">
-                  <SelectValue placeholder="All Branches" />
+                  <SelectValue placeholder="All Branches">
+                    {filters.areaId
+                      ? AREA_OPTIONS.find((a) => a.id === String(filters.areaId))?.label
+                      : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">All Branches</SelectItem>

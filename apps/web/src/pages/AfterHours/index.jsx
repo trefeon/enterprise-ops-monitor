@@ -27,7 +27,7 @@ import {
 import { useToast } from '../../components/ui/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { getFeatureStory } from '../../data/stories';
-import { Loader2 } from 'lucide-react';
+import { Loader2, RefreshCw, Clock } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const AfterHoursReport = lazy(() => import('../AfterHoursReport'));
@@ -1230,59 +1230,83 @@ export default function AfterHours() {
               </>
             )}
           </Card>
-          <Card className="py-3 overflow-hidden rounded-2xl">
-            <CardContent>
-              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-                <SearchBar
-                  value={search}
-                  onValueChange={(val) => {
-                    setSearch(val);
-                    setPage(1);
-                  }}
-                  placeholder="Search by store code or name..."
-                  className="md:col-span-2 xl:col-span-2"
-                />
+          <Card className="py-2 overflow-hidden rounded-[2rem] bg-muted/5 border-border/40 shadow-sm">
+            <CardContent className="py-2 px-4">
+              <div className="flex flex-col xl:flex-row items-center gap-3">
+                <div className="relative flex-1 w-full">
+                  <span className="absolute left-10 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 pointer-events-none hidden md:block">
+                    SEARCH FOR
+                  </span>
+                  <SearchBar
+                    value={search}
+                    onValueChange={(val) => {
+                      setSearch(val);
+                      setPage(1);
+                    }}
+                    placeholder="Search by store code or name..."
+                    className="rounded-full h-11 border-border/60 bg-background/50 hover:bg-background transition-colors md:pl-28"
+                  />
+                </div>
 
-                <Select
-                  value={branch}
-                  onValueChange={(val) => {
-                    setBranch(val);
-                    setPage(1);
-                  }}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {BRANCH_OPTIONS.map((b) => (
-                      <SelectItem key={b.id} value={b.id}>
-                        {b.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="flex flex-col sm:flex-row items-center gap-2 w-full xl:w-auto">
+                  <div className="relative w-full sm:w-auto">
+                    <Select
+                      value={branch}
+                      onValueChange={(val) => {
+                        setBranch(val);
+                        setPage(1);
+                      }}
+                    >
+                      <SelectTrigger className="w-full md:w-56 h-11 rounded-full border-border/60 bg-background/50 hover:bg-background transition-colors px-5">
+                        <SelectValue placeholder="Branch: All">
+                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mr-2">
+                            BRANCH:
+                          </span>
+                          <span className="font-bold text-foreground">
+                            {branch
+                              ? BRANCH_OPTIONS.find((b) => b.id === String(branch))?.label
+                              : 'ALL BRANCHES'}
+                          </span>
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {BRANCH_OPTIONS.map((b) => (
+                          <SelectItem key={b.id} value={b.id}>
+                            {b.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-                <DatePicker
-                  value={date}
-                  onValueChange={(val) => {
-                    setDate(val);
-                    setPage(1);
-                  }}
-                />
+                  <div className="relative w-full sm:w-auto">
+                    <span className="absolute left-10 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 pointer-events-none hidden md:block z-10">
+                      DATE:
+                    </span>
+                    <DatePicker
+                      value={date}
+                      onValueChange={(val) => {
+                        setDate(val);
+                        setPage(1);
+                      }}
+                      className="rounded-full h-11 border-border/60 bg-background/50 hover:bg-background transition-colors w-full md:w-56 md:pl-20"
+                    />
+                  </div>
 
-                <Button
-                  variant="ghost"
-                  size="md"
-                  className={`${TOOLBAR_BUTTON_CLASS} md:col-span-2 xl:col-span-1`}
-                  onClick={() => {
-                    setSearch('');
-                    setBranch('');
-                    setPage(1);
-                  }}
-                >
-                  <span className="material-symbols-outlined mr-2">filter_list</span>
-                  Reset
-                </Button>
+                  <Button
+                    variant="ghost"
+                    size="md"
+                    className="h-11 rounded-full border border-border/60 bg-background/50 hover:bg-foreground hover:text-background transition-all px-6 w-full sm:w-auto group/reset"
+                    onClick={() => {
+                      setSearch('');
+                      setBranch('');
+                      setPage(1);
+                    }}
+                  >
+                    <RefreshCw className="mr-2 size-4 group-hover/reset:rotate-180 transition-transform duration-500" />
+                    Reset
+                  </Button>
+                </div>
               </div>
             </CardContent>
           </Card>

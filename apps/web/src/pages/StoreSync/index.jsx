@@ -668,7 +668,11 @@ const StoreSync = () => {
                   }}
                 >
                   <SelectTrigger className="flex-1 sm:w-40">
-                    <SelectValue placeholder="All Branches" />
+                    <SelectValue placeholder="All Branches">
+                      {branchFilter
+                        ? branchOptions.find((o) => String(o.value) === String(branchFilter))?.label
+                        : undefined}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">All Branches</SelectItem>

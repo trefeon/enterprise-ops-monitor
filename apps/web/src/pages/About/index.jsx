@@ -209,7 +209,7 @@ export default function About() {
                             <Button
                               variant="outline"
                               size="sm"
-                              className="w-fit h-9 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all"
+                              className="w-fit h-9 hover:bg-foreground hover:text-background transition-all group/btn"
                               onClick={() => navigate(story.route)}
                             >
                               Explore Feature <ExternalLink className="ml-2 size-3" />
@@ -294,7 +294,7 @@ export default function About() {
         </p>
         <Button
           size="lg"
-          className="rounded-full px-8 h-12 text-base font-bold shadow-xl shadow-primary/20"
+          className="rounded-full px-8 h-12 text-base font-bold shadow-xl shadow-primary/20 hover:bg-foreground hover:text-background transition-all"
           onClick={() => navigate('/')}
         >
           Launch Operations Hub <ChevronRight className="ml-2 size-5" />
