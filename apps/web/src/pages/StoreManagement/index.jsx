@@ -5,11 +5,18 @@ import { Button } from '@/components/ui/button';
 import PageHeader from '../../components/ui/PageHeader';
 import PageShell from '../../components/ui/PageShell';
 import Toolbar from '../../components/ui/Toolbar';
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import DataTable from '../../components/ui/DataTable';
 import EmptyState from '../../components/ui/EmptyState';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
+import { SearchBar } from '@/components/shared/SearchBar';
 import { getFeatureStory } from '../../data/stories';
 
 const AREA_OPTIONS = [
@@ -210,49 +217,67 @@ const StoreManagement = () => {
       <Toolbar
         left={
           <>
-            <div className="relative w-full flex-1"><span
-                className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
-                placeholder="Search stores by code or name..."
-                name="q"
-                value={filters.q}
-                onChange={handleFilterChange}
-                onKeyDown={handleSearch}
-                className="pl-10" /></div>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:w-96">
+            <SearchBar
+              placeholder="Search stores by code or name..."
+              name="q"
+              value={filters.q}
+              onChange={handleFilterChange}
+              onKeyDown={handleSearch}
+              className="flex-1"
+            />
+            <div className="flex w-full items-center gap-2 md:w-auto">
               <Select
                 value={filters.areaId}
-                onValueChange={val => handleFilterChange({
-                  target: {
-                    value: val
-                  }
-                })}>
-                <SelectTrigger><SelectValue placeholder="All Branches" /></SelectTrigger>
-                <SelectContent><SelectItem value="">All Branches</SelectItem>{AREA_OPTIONS.map((branch) => (
+                onValueChange={(val) =>
+                  handleFilterChange({
+                    target: {
+                      name: 'areaId',
+                      value: val,
+                    },
+                  })
+                }
+              >
+                <SelectTrigger className="w-full md:w-40">
+                  <SelectValue placeholder="All Branches" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Branches</SelectItem>
+                  {AREA_OPTIONS.map((branch) => (
                     <SelectItem key={branch.id} value={branch.id}>
                       {branch.label}
                     </SelectItem>
-                  ))}</SelectContent>
+                  ))}
+                </SelectContent>
               </Select>
               <Select
                 value={filters.region}
-                onValueChange={val => handleFilterChange({
-                  target: {
-                    value: val
-                  }
-                })}>
-                <SelectTrigger><SelectValue placeholder="All Regional Heads" /></SelectTrigger>
-                <SelectContent><SelectItem value="">All Regional Heads</SelectItem>{regionalHeads.map((rh) => (
+                onValueChange={(val) =>
+                  handleFilterChange({
+                    target: {
+                      name: 'region',
+                      value: val,
+                    },
+                  })
+                }
+              >
+                <SelectTrigger className="w-full md:w-48">
+                  <SelectValue placeholder="All Regional Heads" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Regional Heads</SelectItem>
+                  {regionalHeads.map((rh) => (
                     <SelectItem key={rh} value={rh}>
                       {rh}
                     </SelectItem>
-                  ))}</SelectContent>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
           </>
         }
         right={
           <Button variant="secondary" onClick={applyFilters}>
-            <span className="material-symbols-outlined mr-2">search</span>
+            <span className="material-symbols-outlined mr-2 text-base">search</span>
             Apply
           </Button>
         }

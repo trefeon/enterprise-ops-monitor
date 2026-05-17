@@ -104,7 +104,7 @@ export default function OfficeAgentsPage() {
         <CardContent className="flex flex-col gap-3 py-4 md:flex-row md:items-center">
           <SearchBar
             value={search}
-            onChange={setSearch}
+            onValueChange={setSearch}
             placeholder="Search by hostname, CPU, OS..."
             className="w-full md:max-w-md"
           />

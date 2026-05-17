@@ -11,7 +11,7 @@ const { passwordSchema } = require("../utils/validators");
 // Security: Strict rate limiter for login to prevent brute force
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login requests per windowMs
+  max: 100, // Relaxed for demo: 100 attempts per 15 minutes
   message: {
     ok: false,
     error: {
@@ -20,7 +20,7 @@ const loginLimiter = rateLimit({
     },
   },
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
+  legacyHeaders: false, // Disable the `X-Limit-Limit-*` headers
 });
 
 const loginBody = z.object({

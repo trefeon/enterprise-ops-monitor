@@ -1,17 +1,44 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/ui/ToastContext';
 import { Button } from '@/components/ui/button';
 import Modal from '../../components/ui/Modal';
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import StatusBadge from '../../components/ui/StatusBadge';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
 import { formatDateTime } from '../../lib/date';
 import EmptyState from '../../components/ui/EmptyState';
+import PageHeader from '../../components/ui/PageHeader';
+import PageShell from '../../components/ui/PageShell';
+import { StatCard } from '@/components/shared/StatCard';
+import { SearchBar } from '@/components/shared/SearchBar';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
-import { Loader2 } from 'lucide-react';
+import {
+  Loader2,
+  RefreshCw,
+  Download,
+  UploadCloud,
+  CheckCircle2,
+  Monitor,
+  Zap,
+  History,
+  Search,
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 function base64ToBlob(base64, contentType) {
@@ -386,178 +413,174 @@ const AgentUpdater = () => {
   }).length;
 
   return (
-    <div className="page-container">
+    <PageShell>
       <FeatureStoryBanner story={getFeatureStory('agent-updater')} />
-      <header className="page-header">
-        <div className="space-y-1">
-          <h1 className="page-title">Agent Updater</h1>
-          <p className="page-subtitle">
-            One-way update flow: worker checks server version, downloads publisher if outdated, then
-            replaces and restarts DemoAgentPublisher.exe.
-          </p>
-        </div>
-        <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
-          <Button
-            variant="secondary"
-            onClick={handleRefresh}
-            disabled={loading}
-            className="w-full sm:w-auto"
-          >
-            {loading && <Loader2 className="animate-spin mr-2" />}
-            <span className="material-symbols-outlined mr-2">refresh</span>
-            Refresh
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handleExportExcel}
-            disabled={exporting || loading}
-            className="w-full sm:w-auto"
-          >
-            {exporting && <Loader2 className="animate-spin mr-2" />}
-            <span className="material-symbols-outlined mr-2">download</span>
-            Export Excel
-          </Button>
-          <Button
-            variant="secondary"
-            onClick={handleDownloadSetup}
-            className="w-full sm:w-auto"
-          >
-            <span className="material-symbols-outlined mr-2">download</span>
-            Setup Script
-          </Button>
-          <Button onClick={handleOpenDeployModal} className="w-full sm:w-auto">
-            <span className="material-symbols-outlined mr-2">cloud_upload</span>
-            Deploy Update
-          </Button>
-        </div>
-      </header>
-      <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card className="flex flex-col gap-2">
-          <CardContent>
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Current Deployed Version
-            </span>
-            <div className="flex items-center gap-2">
-              <span className="text-3xl font-bold text-foreground">
-                {metricsLoading ? '...' : currentVersion || 'None'}
-              </span>
-              {!metricsLoading && currentVersion && (
-                <span className="material-symbols-outlined text-success">verified</span>
+      <PageHeader
+        title="Agent Updater"
+        description="One-way update flow: worker checks server version, downloads publisher if outdated, then replaces and restarts DemoAgentPublisher.exe."
+        actions={
+          <>
+            <Button
+              variant="secondary"
+              onClick={handleRefresh}
+              disabled={loading}
+              className="w-full sm:w-auto"
+            >
+              {loading ? (
+                <Loader2 className="animate-spin mr-2 size-4" />
+              ) : (
+                <RefreshCw className="mr-2 size-4" />
               )}
-            </div>
-          </CardContent>
-        </Card>
+              Refresh
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={handleExportExcel}
+              disabled={exporting || loading}
+              className="w-full sm:w-auto"
+            >
+              {exporting ? (
+                <Loader2 className="animate-spin mr-2 size-4" />
+              ) : (
+                <Download className="mr-2 size-4" />
+              )}
+              Export Excel
+            </Button>
+            <Button variant="secondary" onClick={handleDownloadSetup} className="w-full sm:w-auto">
+              <Download className="mr-2 size-4" />
+              Setup Script
+            </Button>
+            <Button onClick={handleOpenDeployModal} className="w-full sm:w-auto">
+              <UploadCloud className="mr-2 size-4" />
+              Deploy Update
+            </Button>
+          </>
+        }
+      />
+      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatCard
+          title="Current Deployed Version"
+          value={metricsLoading ? '...' : currentVersion || 'None'}
+          icon={<CheckCircle2 className="size-5" />}
+          accent={currentVersion ? 'text-status-success' : 'text-muted-foreground'}
+        />
 
-        <Card className="flex flex-col gap-2">
-          <CardContent>
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Active Nodes
-            </span>
-            <span className="text-3xl font-bold text-foreground">
-              {metricsLoading ? '--' : installedAgents.length}
-            </span>
-            {!metricsLoading && (
-              <div className="flex justify-between items-center text-xs text-muted-foreground mt-auto">
-                <span>{runningPublisherCount} node(s) synced</span>
-                <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
-                  <span className="relative flex h-2 w-2 mr-1">
-                    {activeDownloads > 0 && (
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                    )}
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                  </span>
-                  {activeDownloads}/10 Active DLs
+        <StatCard
+          title="Active Nodes"
+          value={metricsLoading ? '--' : installedAgents.length}
+          icon={<Monitor className="size-5" />}
+          subtext={
+            <div className="flex justify-between items-center w-full">
+              <span>{runningPublisherCount} node(s) synced</span>
+              <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-[4px] font-bold text-[9px] uppercase tracking-wider flex items-center gap-1">
+                <span className="relative flex h-1.5 w-1.5">
+                  {activeDownloads > 0 && (
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                  )}
+                  <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span>
                 </span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card className="flex flex-col gap-2">
-          <CardContent>
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Publisher Sync
-            </span>
-            <div className="flex items-center justify-between">
-              <span className="text-3xl font-bold text-foreground">
-                {metricsLoading ? '--' : publisherSyncedPercent}
+                {activeDownloads}/10 DLs
               </span>
+            </div>
+          }
+        />
+
+        <StatCard
+          title="Publisher Sync"
+          value={metricsLoading ? '--' : publisherSyncedPercent}
+          icon={<Zap className="size-5" />}
+          subtext={
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted-foreground">Sync Progress</span>
               <StatusBadge
                 variant={
-                  metricsLoading
-                    ? 'neutral'
-                    : installedAgents.length === 0
-                      ? 'neutral'
-                      : publisherOutdatedCount === 0
-                        ? 'success'
-                        : 'warning'
+                  metricsLoading || installedAgents.length === 0
+                    ? 'secondary'
+                    : publisherOutdatedCount === 0
+                      ? 'success'
+                      : 'warning'
                 }
+                className="h-4.5 text-[9px] font-bold"
               >
                 {metricsLoading
                   ? 'Loading'
                   : installedAgents.length === 0
-                    ? 'No Active Agents'
+                    ? 'No Agents'
                     : publisherOutdatedCount === 0
-                      ? 'Publisher Synced'
+                      ? 'Synced'
                       : `${publisherOutdatedCount} Outdated`}
               </StatusBadge>
             </div>
-          </CardContent>
-        </Card>
+          }
+        />
 
-        <Card className="flex flex-col gap-2">
-          <CardContent>
-            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-              Legacy Worker Scripts
-            </span>
-            <span className="text-3xl font-bold text-foreground">
-              {metricsLoading ? '--' : nonModernWorkers}
-            </span>
-            <span className="text-xs text-muted-foreground">
-              Setup script terbaru membersihkan jejak migrator palsu saat dijalankan.
-            </span>
-          </CardContent>
-        </Card>
+        <StatCard
+          title="Legacy Worker Scripts"
+          value={metricsLoading ? '--' : nonModernWorkers}
+          icon={<History className="size-5" />}
+          subtext="Setup script required for non-modern workers"
+          accent={nonModernWorkers > 0 ? 'text-status-warning' : 'text-muted-foreground'}
+        />
       </section>
-      <section className="grid grid-cols-1 gap-2 md:flex md:flex-wrap md:items-end md:gap-3">
-        <div className="relative w-full md:min-w-48 md:flex-1"><span
-            className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
-            placeholder="Search by store code or name..."
-            name="q"
-            value={filters.q}
-            onChange={handleFilterChange}
-            onKeyDown={handleSearch}
-            className="pl-10" /></div>
-        <Select
-          value={filters.areaId}
-          onValueChange={val => handleFilterChange({
-            target: {
-              value: val
+      <section className="grid grid-cols-1 gap-2 md:flex md:flex-wrap md:items-center md:gap-3 py-4">
+        <SearchBar
+          placeholder="Search by store code or name..."
+          name="q"
+          value={filters.q}
+          onChange={handleFilterChange}
+          onKeyDown={handleSearch}
+          className="flex-1"
+        />
+        <div className="flex items-center gap-2 w-full md:w-auto">
+          <Select
+            value={filters.areaId}
+            onValueChange={(val) =>
+              handleFilterChange({
+                target: {
+                  name: 'areaId',
+                  value: val,
+                },
+              })
             }
-          })}>
-          <SelectTrigger><SelectValue placeholder="All Branches" /></SelectTrigger>
-          <SelectContent><SelectItem value="">All Branches</SelectItem>{AREA_OPTIONS.map((branch) => (
-              <SelectItem key={branch.id} value={branch.id}>
-                {branch.label}
-              </SelectItem>
-            ))}</SelectContent>
-        </Select>
-        <Select
-          value={filters.region}
-          onValueChange={val => handleFilterChange({
-            target: {
-              value: val
+          >
+            <SelectTrigger className="w-full md:w-40">
+              <SelectValue placeholder="All Branches" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Branches</SelectItem>
+              {AREA_OPTIONS.map((branch) => (
+                <SelectItem key={branch.id} value={branch.id}>
+                  {branch.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Select
+            value={filters.region}
+            onValueChange={(val) =>
+              handleFilterChange({
+                target: {
+                  name: 'region',
+                  value: val,
+                },
+              })
             }
-          })}>
-          <SelectTrigger><SelectValue placeholder="All Regional Heads" /></SelectTrigger>
-          <SelectContent><SelectItem value="">All Regional Heads</SelectItem>{regionalHeads.map((rh) => (
-              <SelectItem key={rh} value={rh}>
-                {rh}
-              </SelectItem>
-            ))}</SelectContent>
-        </Select>
+          >
+            <SelectTrigger className="w-full md:w-48">
+              <SelectValue placeholder="All Regional Heads" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">All Regional Heads</SelectItem>
+              {regionalHeads.map((rh) => (
+                <SelectItem key={rh} value={rh}>
+                  {rh}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
         <Button variant="secondary" onClick={applyFilters} className="w-full md:w-auto">
-          <span className="material-symbols-outlined mr-2">search</span>
+          <Search className="mr-2 size-4" />
           Apply
         </Button>
       </section>
@@ -574,28 +597,30 @@ const AgentUpdater = () => {
         <Card className="p-0 overflow-hidden">
           <CardContent className="p-0">
             <Table>
-              <TableHeader><TableRow>
+              <TableHeader>
+                <TableRow>
                   <TableHead>Store Code</TableHead>
                   <TableHead>Store Name</TableHead>
                   <TableHead>Branch</TableHead>
-                  <TableHead className="text-center">
-                    Publisher
-                  </TableHead>
-                  <TableHead className="text-center">
-                    Worker
-                  </TableHead>
-                  <TableHead className="text-center">
-                    Status
-                  </TableHead>
-                  <TableHead className="text-right">
-                    Last Check-in
-                  </TableHead>
-                </TableRow></TableHeader>
+                  <TableHead className="text-center">Publisher</TableHead>
+                  <TableHead className="text-center">Worker</TableHead>
+                  <TableHead className="text-center">Status</TableHead>
+                  <TableHead className="text-right">Last Check-in</TableHead>
+                </TableRow>
+              </TableHeader>
               <TableBody>
                 {loading && monitoring.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Loading nodes...</TableCell></TableRow>
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                      Loading nodes...
+                    </TableCell>
+                  </TableRow>
                 ) : monitoring.length === 0 ? (
-                  <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No nodes registered yet.</TableCell></TableRow>
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                      No nodes registered yet.
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   monitoring.map((node) => {
                     const status = getNodeStatus(node, currentVersion);
@@ -606,14 +631,19 @@ const AgentUpdater = () => {
                       workerVersionNum < 4;
 
                     return (
-                      <TableRow key={node.store_id} className={isLegacyWorker ? 'bg-warning/5' : ''}>
+                      <TableRow
+                        key={node.store_id}
+                        className={isLegacyWorker ? 'bg-warning/5' : ''}
+                      >
                         <TableCell className="text-xs font-semibold tabular-nums">
                           {node.store_id || 'Unknown'}
                         </TableCell>
                         <TableCell className="text-muted-foreground">
                           {node.store_name || node.hostname || '-'}
                         </TableCell>
-                        <TableCell className="text-muted-foreground">{node.branch_name || '-'}</TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {node.branch_name || '-'}
+                        </TableCell>
                         <TableCell className="text-center">
                           <code className="bg-muted px-1.5 py-0.5 rounded text-sm">
                             {node.version || '-'}
@@ -727,7 +757,7 @@ const AgentUpdater = () => {
           </div>
         </form>
       </Modal>
-    </div>
+    </PageShell>
   );
 };
 

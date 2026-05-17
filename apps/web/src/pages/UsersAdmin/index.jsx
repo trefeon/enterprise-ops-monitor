@@ -2,8 +2,14 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PageShell from '../../components/ui/PageShell';
 import PageHeader from '../../components/ui/PageHeader';
 import { Button } from '@/components/ui/button';
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import DataTable from '../../components/ui/DataTable';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import Modal from '../../components/ui/Modal';
@@ -173,60 +179,75 @@ export default function UsersAdmin() {
         header: 'Actions',
         className: 'min-w-[320px] text-center',
         render: (row) => {
+          const isDemoUser =
+            user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo';
           const canManageAccess = canEditRoles || canEditScope || canEditPerms;
+
+          const withDemoCheck = (action) => (e) => {
+            e.stopPropagation();
+            if (isDemoUser) {
+              push({
+                variant: 'warning',
+                title: 'Demo Account',
+                message: 'This action is restricted in the demo environment.',
+              });
+              return;
+            }
+            action();
+          };
 
           return (
             <div className="flex flex-row flex-nowrap items-center justify-center gap-2">
-              {canManageAccess && (
+              {(canManageAccess || isDemoUser) && (
                 <Button
                   size="sm"
                   variant="secondary"
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  className={isDemoUser ? 'opacity-50 cursor-not-allowed' : ''}
+                  onClick={withDemoCheck(() => {
                     setAccessModalUser(row);
                     setAccessModalOpen(true);
-                  }}
+                  })}
                 >
                   Edit Access
                 </Button>
               )}
-              {canChangePassword && (
+              {(canChangePassword || isDemoUser) && (
                 <Button
                   size="sm"
                   variant="secondary"
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  className={isDemoUser ? 'opacity-50 cursor-not-allowed' : ''}
+                  onClick={withDemoCheck(() => {
                     setChangePassUser(row);
                     setChangePassForm('');
                     setChangePassOpen(true);
-                  }}
+                  })}
                 >
                   Change Pass
                 </Button>
               )}
-              {canReset && (
+              {(canReset || isDemoUser) && (
                 <Button
                   size="sm"
                   variant="destructive"
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  className={isDemoUser ? 'opacity-50 cursor-not-allowed' : ''}
+                  onClick={withDemoCheck(() => {
                     setResetUser(row);
                     setTempPassword(null);
                     setResetOpen(true);
-                  }}
+                  })}
                 >
                   Reset
                 </Button>
               )}
-              {canDelete && (
+              {(canDelete || isDemoUser) && (
                 <Button
                   size="sm"
                   variant="destructive"
-                  onClick={(e) => {
-                    e.stopPropagation();
+                  className={isDemoUser ? 'opacity-50 cursor-not-allowed' : ''}
+                  onClick={withDemoCheck(() => {
                     setDeleteUser(row);
                     setDeleteOpen(true);
-                  }}
+                  })}
                 >
                   Delete
                 </Button>
@@ -387,15 +408,20 @@ export default function UsersAdmin() {
           <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
             <div className="w-full md:max-w-sm">
               <label className="text-xs text-muted-foreground">Search username</label>
-              <div className="relative w-full"><span
-                  className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
+              <div className="relative w-full">
+                <span className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">
+                  search
+                </span>
+                <Input
                   value={q}
                   onChange={(e) => {
                     setQ(e.target.value);
                     setPage(1);
                   }}
                   placeholder="Search..."
-                  className="pl-10" /></div>
+                  className="pl-10"
+                />
+              </div>
             </div>
           </div>
         </CardContent>
@@ -428,22 +454,27 @@ export default function UsersAdmin() {
                 <label className="text-xs text-muted-foreground">Role</label>
                 <Select
                   value={createForm.role}
-                  onValueChange={val => {
+                  onValueChange={(val) => {
                     const e = {
                       target: {
-                        value: val
-                      }
+                        value: val,
+                      },
                     };
 
                     return setCreateForm((s) => ({ ...s, role: e.target.value }));
                   }}
-                  disabled={assignableRoles.length === 0}>
-                  <SelectTrigger><SelectValue placeholder="Select Role" /></SelectTrigger>
-                  <SelectContent>{assignableRoles.map((r) => (
+                  disabled={assignableRoles.length === 0}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select Role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {assignableRoles.map((r) => (
                       <SelectItem key={r.id} value={r.name}>
                         {r.label}
                       </SelectItem>
-                    ))}</SelectContent>
+                    ))}
+                  </SelectContent>
                 </Select>
               </div>
             </div>

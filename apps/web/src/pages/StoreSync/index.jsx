@@ -2,21 +2,35 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/ui/ToastContext';
 import { Button } from '@/components/ui/button';
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import PageShell from '../../components/ui/PageShell';
 import { StatCard } from '@/components/shared/StatCard';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
 import StatusBadge from '../../components/ui/StatusBadge';
 import ProgressBar from '../../components/ui/ProgressBar';
 import EmptyState from '../../components/ui/EmptyState';
 import Modal from '../../components/ui/Modal';
 import { formatDate, formatDateTime, formatTime, getWibParts, getWibToday } from '../../lib/date';
 import { getFeatureStory } from '../../data/stories';
-import { Loader2, Store, CheckCircle, AlertTriangle, Clock, RefreshCw, Search } from 'lucide-react';
+import { Loader2, Store, CheckCircle, AlertTriangle, Clock, RefreshCw } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
+import { SearchBar } from '@/components/shared/SearchBar';
 
 const AUTO_REFRESH_INTERVAL = 10000; // stores table refresh: 10 seconds
 const STATUS_REFRESH_INTERVAL = 10000; // KPI/status refresh: 10 seconds
@@ -512,9 +526,7 @@ const StoreSync = () => {
           icon={<AlertTriangle className="size-5" />}
           value={
             <span
-              className={
-                (Number(status?.late) || 0) > 0 ? 'text-status-error' : 'text-foreground'
-              }
+              className={(Number(status?.late) || 0) > 0 ? 'text-status-error' : 'text-foreground'}
             >
               {status?.late ?? '-'}
             </span>
@@ -577,9 +589,7 @@ const StoreSync = () => {
                   key={branch.id}
                   onClick={() => {
                     setBranchFilter((prev) =>
-                      String(prev || '') === String(branch.id || '')
-                        ? ''
-                        : String(branch.id || '')
+                      String(prev || '') === String(branch.id || '') ? '' : String(branch.id || '')
                     );
                     resetPagination();
                     scrollToStoreTable();
@@ -620,68 +630,79 @@ const StoreSync = () => {
       )}
 
       {/* Store Table */}
-      <div ref={storeTableRef}>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
-          <h3 className="section-title mb-0">Store Sync Status</h3>
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 xl:flex xl:flex-wrap xl:items-center">
-            <label className="flex min-h-11 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground">
-              <input
-                type="checkbox"
-                checked={excludeBazar}
-                onChange={(e) => {
-                  setExcludeBazar(e.target.checked);
-                  setPagination((p) => ({ ...p, page: 1 }));
-                }}
-              />
-              Exclude &gt; 7 days
-            </label>
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-              <Input
+      <div ref={storeTableRef} className="space-y-4">
+        <PageHeader
+          title="Store Sync Status"
+          className="mb-0"
+          actions={
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <label className="flex h-11 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground cursor-pointer transition-colors hover:bg-muted/30">
+                <input
+                  type="checkbox"
+                  checked={excludeBazar}
+                  onChange={(e) => {
+                    setExcludeBazar(e.target.checked);
+                    setPagination((p) => ({ ...p, page: 1 }));
+                  }}
+                  className="rounded border-border bg-transparent text-primary focus:ring-primary/50"
+                />
+                Exclude &gt; 7 days
+              </label>
+
+              <SearchBar
                 placeholder="Search store..."
-                type="text"
                 value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
+                onValueChange={(val) => {
+                  setSearch(val);
                   setPagination((p) => ({ ...p, page: 1 }));
                 }}
-                className="w-full pl-10 xl:w-52"
+                className="w-full sm:w-52"
               />
+
+              <div className="flex w-full sm:w-auto items-center gap-2">
+                <Select
+                  value={branchFilter}
+                  onValueChange={(val) => {
+                    setBranchFilter(val);
+                    setPagination((p) => ({ ...p, page: 1 }));
+                  }}
+                >
+                  <SelectTrigger className="flex-1 sm:w-40">
+                    <SelectValue placeholder="All Branches" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Branches</SelectItem>
+                    {branchOptions.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        {opt.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select
+                  value={statusFilter}
+                  onValueChange={(val) => {
+                    setStatusFilter(val);
+                    setPagination((p) => ({ ...p, page: 1 }));
+                  }}
+                >
+                  <SelectTrigger className="flex-1 sm:w-40">
+                    <SelectValue placeholder="All statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All statuses</SelectItem>
+                    <SelectItem value="problem">Late (last sync {staleMaxLabel}+)</SelectItem>
+                    <SelectItem value="stale">
+                      Warning ({syncedMaxLabel}–{staleMaxLabel})
+                    </SelectItem>
+                    <SelectItem value="synced">On-time (0–{syncedMaxLabel})</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-            <Select
-              value={branchFilter}
-              onValueChange={(val) => {
-                setBranchFilter(val);
-                setPagination((p) => ({ ...p, page: 1 }));
-              }}
-            >
-              <SelectTrigger><SelectValue placeholder="All Branches" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All Branches</SelectItem>
-                {branchOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select
-              value={statusFilter}
-              onValueChange={(val) => {
-                setStatusFilter(val);
-                setPagination((p) => ({ ...p, page: 1 }));
-              }}
-            >
-              <SelectTrigger><SelectValue placeholder="All statuses" /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="">All statuses</SelectItem>
-                <SelectItem value="problem">Late (last sync {staleMaxLabel}+ or no timestamp)</SelectItem>
-                <SelectItem value="stale">Warning (last sync {syncedMaxLabel}–{staleMaxLabel})</SelectItem>
-                <SelectItem value="synced">On-time (last sync 0–{syncedMaxLabel})</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
+          }
+        />
 
         <Card className="p-0 overflow-hidden flex flex-col">
           <CardContent className="p-0">
@@ -698,9 +719,14 @@ const StoreSync = () => {
               </TableHeader>
               <TableBody>
                 {loadingStores && stores.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Loading stores...</TableCell></TableRow>
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      Loading stores...
+                    </TableCell>
+                  </TableRow>
                 ) : storesError && stores.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
                       <div className="flex flex-col items-center gap-2">
                         <div>Failed to load stores: {storesError}</div>
                         <Button variant="secondary" onClick={fetchStores}>
@@ -708,9 +734,14 @@ const StoreSync = () => {
                           Retry
                         </Button>
                       </div>
-                    </TableCell></TableRow>
+                    </TableCell>
+                  </TableRow>
                 ) : stores.length === 0 ? (
-                  <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No stores match the current filters.</TableCell></TableRow>
+                  <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
+                      No stores match the current filters.
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   stores.map((store) => (
                     <TableRow
@@ -810,11 +841,10 @@ const StoreSync = () => {
             <div className="modal-scroll-70 overflow-y-auto">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div className="flex flex-wrap items-center gap-3">
-                  <Select
-                    value={historyMode}
-                    onValueChange={(val) => setHistoryMode(val)}
-                  >
-                    <SelectTrigger><SelectValue placeholder="Last 30 minutes" /></SelectTrigger>
+                  <Select value={historyMode} onValueChange={(val) => setHistoryMode(val)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Last 30 minutes" />
+                    </SelectTrigger>
                     <SelectContent>
                       {HISTORY_VIEWS.map((view) => (
                         <SelectItem key={view.value} value={view.value}>

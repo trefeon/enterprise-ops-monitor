@@ -5,11 +5,18 @@ import { Button } from '@/components/ui/button';
 import PageHeader from '../../components/ui/PageHeader';
 import PageShell from '../../components/ui/PageShell';
 import Toolbar from '../../components/ui/Toolbar';
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import DataTable from '../../components/ui/DataTable';
 import EmptyState from '../../components/ui/EmptyState';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
+import { SearchBar } from '@/components/shared/SearchBar';
 import { getFeatureStory } from '../../data/stories';
 
 const BRANCH_OPTIONS = [
@@ -179,49 +186,67 @@ const IdentityCheck = () => {
       <Toolbar
         left={
           <>
-            <div className="relative w-full flex-1"><span
-                className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
-                placeholder="Search employees by NIK or name..."
-                name="q"
-                value={filters.q}
-                onChange={handleFilterChange}
-                onKeyDown={handleSearchKeyDown}
-                className="pl-10" /></div>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:w-96">
+            <SearchBar
+              placeholder="Search employees by NIK or name..."
+              name="q"
+              value={filters.q}
+              onChange={handleFilterChange}
+              onKeyDown={handleSearchKeyDown}
+              className="flex-1"
+            />
+            <div className="flex w-full items-center gap-2 md:w-auto">
               <Select
                 value={filters.branchId}
-                onValueChange={val => handleFilterChange({
-                  target: {
-                    value: val
-                  }
-                })}>
-                <SelectTrigger><SelectValue placeholder="All Branches" /></SelectTrigger>
-                <SelectContent><SelectItem value="">All Branches</SelectItem>{BRANCH_OPTIONS.map((opt) => (
+                onValueChange={(val) =>
+                  handleFilterChange({
+                    target: {
+                      name: 'branchId',
+                      value: val,
+                    },
+                  })
+                }
+              >
+                <SelectTrigger className="w-full md:w-40">
+                  <SelectValue placeholder="All Branches" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Branches</SelectItem>
+                  {BRANCH_OPTIONS.map((opt) => (
                     <SelectItem key={opt.id} value={opt.id}>
                       {opt.label}
                     </SelectItem>
-                  ))}</SelectContent>
+                  ))}
+                </SelectContent>
               </Select>
               <Select
                 value={filters.role}
-                onValueChange={val => handleFilterChange({
-                  target: {
-                    value: val
-                  }
-                })}>
-                <SelectTrigger><SelectValue placeholder="All Roles" /></SelectTrigger>
-                <SelectContent><SelectItem value="">All Roles</SelectItem>{roles.map((role) => (
+                onValueChange={(val) =>
+                  handleFilterChange({
+                    target: {
+                      name: 'role',
+                      value: val,
+                    },
+                  })
+                }
+              >
+                <SelectTrigger className="w-full md:w-48">
+                  <SelectValue placeholder="All Roles" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Roles</SelectItem>
+                  {roles.map((role) => (
                     <SelectItem key={role} value={role}>
                       {role}
                     </SelectItem>
-                  ))}</SelectContent>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
           </>
         }
         right={
           <Button variant="secondary" onClick={applyFilters}>
-            <span className="material-symbols-outlined mr-2">search</span>
+            <span className="material-symbols-outlined mr-2 text-base">search</span>
             Apply
           </Button>
         }

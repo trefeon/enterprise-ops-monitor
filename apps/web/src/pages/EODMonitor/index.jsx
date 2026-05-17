@@ -6,8 +6,14 @@ import EmptyState from '../../components/ui/EmptyState';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/ToastContext';
 import Toolbar from '../../components/ui/Toolbar';
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import ProgressBar from '../../components/ui/ProgressBar';
 import { Button } from '@/components/ui/button';
 import IconButton from '../../components/ui/IconButton';
@@ -17,8 +23,17 @@ import StatCard from '../../components/ui/StatCard';
 import Modal from '../../components/ui/Modal';
 import StatusBadge from '../../components/ui/StatusBadge';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { formatDateTime, formatTime, getWibToday } from '../../lib/date';
+import { SearchBar } from '../../components/shared/SearchBar';
+import { DatePicker } from '../../components/shared/DatePicker';
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
+import { formatDate, formatDateTime, formatTime, getWibToday } from '../../lib/date';
 import { getFeatureStory } from '../../data/stories';
 import { Loader2, Clock, User, Shield, RotateCw, Pause, Play, RefreshCw } from 'lucide-react';
 import { hasPermission } from '../../lib/auth/permissions';
@@ -105,29 +120,6 @@ const EODMonitor = () => {
   const [syncOpen, setSyncOpen] = useState(false);
   const [retryTarget, setRetryTarget] = useState(null);
   const [lastUpdatedAt, setLastUpdatedAt] = useState(null);
-
-  const hiddenDateInputRef = useRef(null);
-
-  const openDatePicker = useCallback(() => {
-    const el = hiddenDateInputRef.current;
-    if (!el) return;
-    if (typeof el.showPicker === 'function') {
-      el.showPicker();
-      return;
-    }
-    el.focus();
-    el.click();
-  }, []);
-
-  const displayDate = useMemo(() => {
-    const value = filters.date;
-    if (!value || typeof value !== 'string') return '';
-    const parts = value.split('-');
-    if (parts.length !== 3) return value;
-    const [yyyy, mm, dd] = parts;
-    if (!yyyy || !mm || !dd) return value;
-    return `${dd}/${mm}/${yyyy}`;
-  }, [filters.date]);
 
   const [stats, setStats] = useState({ total: 0, done: 0, pending: 0, failed: 0 });
   const [branches, setBranches] = useState([]);
@@ -394,7 +386,7 @@ const EODMonitor = () => {
       push({
         variant: 'success',
         title: 'Export ready',
-        message: `EOD Excel exported for ${displayDate}`,
+        message: `EOD Excel exported for ${formatDate(filters.date)}`,
       });
     } catch (error) {
       push({
@@ -405,7 +397,7 @@ const EODMonitor = () => {
     } finally {
       setExporting(false);
     }
-  }, [api, displayDate, filters.areaId, filters.date, filters.q, filters.status, isDemoUser, push]);
+  }, [api, filters.areaId, filters.date, filters.q, filters.status, isDemoUser, push]);
 
   const openDetail = useCallback(
     async (row) => {
@@ -502,7 +494,9 @@ const EODMonitor = () => {
 
   const lastUpdatedLabel = lastUpdatedAt ? formatTime(lastUpdatedAt) : '--';
   const autoRefreshSeconds = Math.round(AUTO_REFRESH_INTERVAL / 1000);
-  const exportButtonLabel = displayDate ? `Export ${displayDate}` : 'Export Excel';
+  const exportButtonLabel = formatDate(filters.date)
+    ? `Export ${formatDate(filters.date)}`
+    : 'Export Excel';
 
   return (
     <PageShell>
@@ -659,9 +653,11 @@ const EODMonitor = () => {
                   <Card className="transition-all hover:shadow-md hover:ring-1 hover:ring-ring cursor-pointer min-h-36 justify-between border border-border/50">
                     <CardContent className="p-4 flex flex-col gap-3.5 h-full justify-between">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="font-semibold text-foreground tracking-tight">{branch.areaName}</div>
+                        <div className="font-semibold text-foreground tracking-tight">
+                          {branch.areaName}
+                        </div>
                         <div
-                          className={`px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-semibold ${
+                          className={`px-2 py-0.5 rounded live-text-3xs uppercase tracking-wider font-semibold ${
                             hasFailed
                               ? 'bg-status-error/10 text-status-error border border-status-error/20'
                               : 'bg-secondary text-muted-foreground border border-border/30'
@@ -676,7 +672,7 @@ const EODMonitor = () => {
                           trackClassName="bg-secondary border border-border/20 h-2"
                           barClassName={`h-2 transition-all ${barClassName}`}
                         />
-                        <div className="flex items-center justify-between text-[11px] text-muted-foreground/80 font-medium">
+                        <div className="flex items-center justify-between live-text-2xs text-muted-foreground/80 font-medium">
                           <span>Progress</span>
                           <span>{completionPercent}%</span>
                         </div>
@@ -686,7 +682,9 @@ const EODMonitor = () => {
                         <span className="text-muted-foreground/30">•</span>
                         <span>{pending} pending</span>
                         <span className="text-muted-foreground/30">•</span>
-                        <span className={failed > 0 ? "text-status-error font-semibold" : ""}>{failed} failed</span>
+                        <span className={failed > 0 ? 'text-status-error font-semibold' : ''}>
+                          {failed} failed
+                        </span>
                       </div>
                     </CardContent>
                   </Card>
@@ -699,58 +697,64 @@ const EODMonitor = () => {
       <Toolbar
         left={
           <>
-            <div className="relative w-full md:max-w-sm"><span
-                className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
-                placeholder="Search Store Code or Name"
-                type="text"
-                name="q"
-                value={filters.q}
-                onChange={handleFilterChange}
-                className="pl-10" /></div>
+            <SearchBar
+              placeholder="Search Store Code or Name"
+              name="q"
+              value={filters.q}
+              onChange={handleFilterChange}
+              className="w-full md:max-w-sm"
+            />
             <Select
               value={filters.areaId}
-              onValueChange={val => handleFilterChange({
-                target: {
-                  value: val
-                }
-              })}>
-              <SelectTrigger><SelectValue placeholder="Branch: All" /></SelectTrigger>
-              <SelectContent><SelectItem value="">Branch: All</SelectItem><SelectItem value="2">NORTH HUB</SelectItem><SelectItem value="3">EAST HUB</SelectItem><SelectItem value="4">CENTRAL HUB</SelectItem><SelectItem value="5">COASTAL HUB</SelectItem><SelectItem value="6">HIGHLAND HUB</SelectItem><SelectItem value="7">WEST HUB</SelectItem><SelectItem value="8">RIVER HUB</SelectItem><SelectItem value="9">SOUTH HUB</SelectItem></SelectContent>
+              onValueChange={(val) =>
+                handleFilterChange({
+                  target: {
+                    value: val,
+                  },
+                })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Branch: All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Branch: All</SelectItem>
+                <SelectItem value="2">NORTH HUB</SelectItem>
+                <SelectItem value="3">EAST HUB</SelectItem>
+                <SelectItem value="4">CENTRAL HUB</SelectItem>
+                <SelectItem value="5">COASTAL HUB</SelectItem>
+                <SelectItem value="6">HIGHLAND HUB</SelectItem>
+                <SelectItem value="7">WEST HUB</SelectItem>
+                <SelectItem value="8">RIVER HUB</SelectItem>
+                <SelectItem value="9">SOUTH HUB</SelectItem>
+              </SelectContent>
             </Select>
             <Select
               value={filters.status}
-              onValueChange={val => handleFilterChange({
-                target: {
-                  value: val
-                }
-              })}>
-              <SelectTrigger><SelectValue placeholder="Status: All" /></SelectTrigger>
-              <SelectContent><SelectItem value="">Status: All</SelectItem><SelectItem value="done">Done</SelectItem><SelectItem value="pending">Pending</SelectItem><SelectItem value="failed">Failed</SelectItem></SelectContent>
+              onValueChange={(val) =>
+                handleFilterChange({
+                  target: {
+                    value: val,
+                  },
+                })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Status: All" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">Status: All</SelectItem>
+                <SelectItem value="done">Done</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="failed">Failed</SelectItem>
+              </SelectContent>
             </Select>
-            <div className="relative w-full shrink-0 md:w-fit">
-              <div className="relative"><button
-                  type="button"
-                  className="absolute right-0 inset-y-0 inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent"
-                  onClick={openDatePicker}>
-                  <span className="material-symbols-outlined text-xl leading-none">calendar_month</span>
-                </button><Input
-                  type="text"
-                  value={displayDate}
-                  size={10}
-                  readOnly
-                  onClick={openDatePicker}
-                  className="w-full cursor-pointer pr-12 tabular-nums md:w-auto" /></div>
-              <input
-                ref={hiddenDateInputRef}
-                type="date"
-                name="date"
-                value={filters.date}
-                onChange={handleFilterChange}
-                className="absolute opacity-0 pointer-events-none w-0 h-0"
-                tabIndex={-1}
-                aria-hidden="true"
-              />
-            </div>
+            <DatePicker
+              name="date"
+              value={filters.date}
+              onChange={handleFilterChange}
+              className="w-full shrink-0 md:w-auto"
+            />
           </>
         }
         right={
@@ -759,7 +763,7 @@ const EODMonitor = () => {
               variant="secondary"
               size="sm"
               onClick={handleExport}
-              title={`Export Excel for ${displayDate}`}
+              title={`Export Excel for ${formatDate(filters.date)}`}
             >
               {exporting && <Loader2 className="animate-spin mr-2" />}
               <span className="material-symbols-outlined mr-2">download</span>
@@ -786,29 +790,17 @@ const EODMonitor = () => {
           ) : (
             <>
               <Table wrapperClassName="flex-1 overflow-auto">
-                <TableHeader><TableRow>
-                    <TableHead className="w-28 text-right">
-                      Store Code
-                    </TableHead>
-                    <TableHead className="min-w-48">
-                      Store Name
-                    </TableHead>
-                    <TableHead className="w-32">
-                      Branch
-                    </TableHead>
-                    <TableHead className="w-24 text-center">
-                      Status
-                    </TableHead>
-                    <TableHead className="w-36 text-center">
-                      Last EOD
-                    </TableHead>
-                    <TableHead className="w-20 text-center">
-                      Source
-                    </TableHead>
-                    <TableHead className="w-56">
-                      Error Message
-                    </TableHead>
-                  </TableRow></TableHeader>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-28 text-right">Store Code</TableHead>
+                    <TableHead className="min-w-48">Store Name</TableHead>
+                    <TableHead className="w-32">Branch</TableHead>
+                    <TableHead className="w-24 text-center">Status</TableHead>
+                    <TableHead className="w-36 text-center">Last EOD</TableHead>
+                    <TableHead className="w-20 text-center">Source</TableHead>
+                    <TableHead className="w-56">Error Message</TableHead>
+                  </TableRow>
+                </TableHeader>
                 <tbody>
                   {loading &&
                     Array.from({ length: 6 }).map((_, idx) => (
@@ -837,15 +829,22 @@ const EODMonitor = () => {
                       </TableRow>
                     ))}
                   {!loading && data.length === 0 && (
-                    <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No EOD results found. Adjust filters or try again.
-                                            </TableCell></TableRow>
+                    <TableRow>
+                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                        No EOD results found. Adjust filters or try again.
+                      </TableCell>
+                    </TableRow>
                   )}
                   {!loading &&
                     data.length > 0 &&
                     data.map((row) => {
                       const statusConfig = getStatusConfig(row.status);
                       return (
-                        <TableRow key={row.storeId} onClick={() => openDetail(row)} className="group">
+                        <TableRow
+                          key={row.storeId}
+                          onClick={() => openDetail(row)}
+                          className="group"
+                        >
                           <TableCell className="whitespace-nowrap font-mono font-medium text-foreground text-right">
                             {row.storeCode}
                           </TableCell>
@@ -881,8 +880,7 @@ const EODMonitor = () => {
                     })}
                 </tbody>
               </Table>
-              <div
-                className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+              <div className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
                 <div className="text-muted-foreground">
                   Showing <span className="font-medium text-foreground">{rangeStart}</span> to{' '}
                   <span className="font-medium text-foreground">{rangeEnd}</span> of{' '}
@@ -891,13 +889,23 @@ const EODMonitor = () => {
                 <div className="flex items-center gap-2">
                   <Select
                     value={pagination.pageSize.toString()}
-                    onValueChange={val => handlePageSizeChange({
-                      target: {
-                        value: parseInt(val, 10)
-                      }
-                    })}>
-                    <SelectTrigger><SelectValue placeholder="10 rows" /></SelectTrigger>
-                    <SelectContent><SelectItem value="10">10 rows</SelectItem><SelectItem value="20">20 rows</SelectItem><SelectItem value="50">50 rows</SelectItem><SelectItem value="100">100 rows</SelectItem></SelectContent>
+                    onValueChange={(val) =>
+                      handlePageSizeChange({
+                        target: {
+                          value: parseInt(val, 10),
+                        },
+                      })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="10 rows" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="10">10 rows</SelectItem>
+                      <SelectItem value="20">20 rows</SelectItem>
+                      <SelectItem value="50">50 rows</SelectItem>
+                      <SelectItem value="100">100 rows</SelectItem>
+                    </SelectContent>
                   </Select>
                   <div className="flex gap-1">
                     <IconButton
@@ -1018,23 +1026,29 @@ const EODMonitor = () => {
             </p>
             <div className="modal-scroll-65 overflow-y-auto">
               <Table>
-                <TableHeader><TableRow>
-                    <TableHead className="w-28 text-right">
-                      Store Code
-                    </TableHead>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-28 text-right">Store Code</TableHead>
                     <TableHead>Store Name</TableHead>
-                    <TableHead className="w-24 text-center">
-                      Status
-                    </TableHead>
-                    <TableHead className="w-36">
-                      Last EOD
-                    </TableHead>
+                    <TableHead className="w-24 text-center">Status</TableHead>
+                    <TableHead className="w-36">Last EOD</TableHead>
                     <TableHead>Error Message</TableHead>
-                  </TableRow></TableHeader>
+                  </TableRow>
+                </TableHeader>
                 <tbody>
-                  {branchStoresLoading && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Loading stores...</TableCell></TableRow>}
+                  {branchStoresLoading && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                        Loading stores...
+                      </TableCell>
+                    </TableRow>
+                  )}
                   {!branchStoresLoading && branchStores.length === 0 && (
-                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No stores found for this branch.</TableCell></TableRow>
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                        No stores found for this branch.
+                      </TableCell>
+                    </TableRow>
                   )}
                   {!branchStoresLoading &&
                     branchStores.map((store) => {
@@ -1044,8 +1058,12 @@ const EODMonitor = () => {
                           key={store.storeCode}
                           className={store.status === 'failed' ? 'bg-status-error/10' : ''}
                         >
-                          <TableCell className="font-mono text-sm text-right">{store.storeCode}</TableCell>
-                          <TableCell className="text-foreground">{store.storeName || '-'}</TableCell>
+                          <TableCell className="font-mono text-sm text-right">
+                            {store.storeCode}
+                          </TableCell>
+                          <TableCell className="text-foreground">
+                            {store.storeName || '-'}
+                          </TableCell>
                           <TableCell className="text-center">
                             <StatusBadge variant={statusConfig.variant}>
                               {statusConfig.label}

@@ -5,27 +5,60 @@ import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import EmptyState from '../../components/ui/EmptyState';
 import { useToast } from '../../components/ui/ToastContext';
 import { Button } from '@/components/ui/button';
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import ProgressBar from '../../components/ui/ProgressBar';
 import PageShell from '../../components/ui/PageShell';
 import PageHeader from '../../components/ui/PageHeader';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
 import { formatDateTime, formatTime } from '../../lib/date';
 import StatusBadge from '../../components/ui/StatusBadge';
 import { getFeatureStory } from '../../data/stories';
-import { Loader2 } from 'lucide-react';
+import {
+  Loader2,
+  Database,
+  Globe,
+  Bot,
+  Clock,
+  Cloud,
+  Settings,
+  RotateCw,
+  Monitor,
+  Timer,
+  Cpu,
+  HardDrive,
+  Search,
+  Activity,
+  Download,
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const LEVEL_OPTIONS = ['ALL', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'];
 
 const SERVICE_ICONS = {
-  Database: 'database',
-  API: 'api',
-  'Bot Service': 'smart_toy',
-  Scheduler: 'schedule',
-  'Backup Service': 'backup',
+  Database: Database,
+  API: Globe,
+  'Bot Service': Bot,
+  Scheduler: Clock,
+  'Backup Service': Cloud,
+};
+
+const getServiceIcon = (name) => {
+  return SERVICE_ICONS[name] || Settings;
 };
 
 const STATUS_STYLES = {
@@ -99,10 +132,6 @@ function normalizeSystemLogsExportFileName(fileName, contentType) {
   if (rawName.toLowerCase().endsWith('.xls')) return `${rawName.slice(0, -4)}.xlsx`;
   return `${rawName}.xlsx`;
 }
-
-const getServiceIcon = (name) => {
-  return SERVICE_ICONS[name] || 'settings_suggest';
-};
 
 const SystemHealth = () => {
   const { api, user } = useAuth();
@@ -368,18 +397,30 @@ const SystemHealth = () => {
             meta={`Updated ${formatDateTime(overview?.generatedAt)}`}
             actions={
               <>
-                <Button variant="secondary" onClick={refreshAll} disabled={loadingOverview || loadingServices || loadingLogs} ><Loader2 className="animate-spin mr-2" /><span className="material-symbols-outlined mr-2">refresh</span>
+                <Button
+                  variant="secondary"
+                  onClick={refreshAll}
+                  disabled={loadingOverview || loadingServices || loadingLogs}
+                >
+                  {loadingOverview || loadingServices || loadingLogs ? (
+                    <Loader2 className="animate-spin mr-2" />
+                  ) : (
+                    <RotateCw className="mr-2 size-4" />
+                  )}
                   Refresh
                 </Button>
                 <Guard user={user} permission="SYSTEM_HEALTHCHECK">
                   <Button variant="secondary" onClick={handleHealthCheck}>
-                    {healthLoading && <Loader2 className="animate-spin mr-2" />}
-                    <span className="material-symbols-outlined mr-2">monitoring</span>
+                    {healthLoading ? (
+                      <Loader2 className="animate-spin mr-2" />
+                    ) : (
+                      <Activity className="mr-2 size-4" />
+                    )}
                     {healthLoading ? 'Checking...' : 'Run Health Check'}
                   </Button>
                 </Guard>
                 <Button onClick={handleExportLogs}>
-                  <span className="material-symbols-outlined mr-2">download</span>
+                  <Download className="mr-2 size-4" />
                   Export Logs
                 </Button>
               </>
@@ -395,7 +436,7 @@ const SystemHealth = () => {
                   <p className="text-muted-foreground text-sm font-medium mb-1">Operating System</p>
                   <h3 className="text-foreground text-xl font-bold">{overview?.platform || '-'}</h3>
                 </div>
-                <span className="material-symbols-outlined text-foreground text-4xl">computer</span>
+                <Monitor className="size-8 text-muted-foreground" />
               </div>
               <div className="text-xs text-muted-foreground">Host {overview?.hostname || '-'}</div>
             </CardContent>
@@ -410,7 +451,7 @@ const SystemHealth = () => {
                     {formatUptime(overview?.uptimeSeconds)}
                   </h3>
                 </div>
-                <span className="material-symbols-outlined text-foreground text-4xl">timer</span>
+                <Timer className="size-8 text-muted-foreground" />
               </div>
               <div className="text-xs text-muted-foreground">
                 Updated {formatTime(overview?.generatedAt)}
@@ -427,7 +468,7 @@ const SystemHealth = () => {
                     {overview?.cpuUsage != null ? `${overview.cpuUsage.toFixed(1)}%` : '-'}
                   </h3>
                 </div>
-                <span className="material-symbols-outlined text-foreground text-4xl">memory</span>
+                <Cpu className="size-8 text-muted-foreground" />
               </div>
               <ProgressBar
                 value={overview?.cpuUsage || 0}
@@ -455,7 +496,7 @@ const SystemHealth = () => {
                     {memoryUsedPercent != null ? `${memoryUsedPercent.toFixed(1)}%` : '-'}
                   </h3>
                 </div>
-                <span className="material-symbols-outlined text-foreground text-4xl">storage</span>
+                <HardDrive className="size-8 text-muted-foreground" />
               </div>
               <ProgressBar
                 value={memoryUsedPercent != null ? Math.min(memoryUsedPercent, 100) : 0}
@@ -507,7 +548,7 @@ const SystemHealth = () => {
             <h3 className="section-title">Services Status</h3>
             {loadingServices && <span className="text-xs text-muted-foreground">Loading...</span>}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {services.length === 0 && !loadingServices ? (
               <div className="col-span-full text-sm text-muted-foreground">
                 No services available.
@@ -516,43 +557,53 @@ const SystemHealth = () => {
               services.map((service) => {
                 const status = STATUS_STYLES[service.status] || STATUS_STYLES.UNKNOWN;
                 const hasLastSeenAt = Boolean(service.lastSeenAt);
-                const timestampLabel = hasLastSeenAt ? 'Last seen' : 'Checked';
+                const timestampLabel = hasLastSeenAt ? 'seen' : 'checked';
                 const timestampValue = service.lastSeenAt || service.lastCheckedAt;
+                const Icon = getServiceIcon(service.name);
+
                 return (
-                  <Card key={service.name} size="sm" className="group">
-                    <CardContent className="flex items-center justify-between gap-4">
-                      <div className="flex min-w-0 flex-1 items-center gap-3">
-                        <span className="material-symbols-outlined shrink-0 text-3xl leading-none text-foreground">
-                          {getServiceIcon(service.name)}
-                        </span>
-                        <div className="flex min-w-0 flex-col">
-                          <span className="truncate text-sm font-medium leading-5 text-foreground">
-                            {service.name}
-                          </span>
-                          <span className="truncate text-xs leading-4 text-muted-foreground">
-                            {timestampLabel} {formatTime(timestampValue)}
-                          </span>
+                  <Card
+                    key={service.name}
+                    className="group relative overflow-hidden transition-all hover:border-primary/50"
+                  >
+                    <CardContent className="p-4 flex flex-col gap-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex size-10 items-center justify-center rounded-lg bg-muted/50 text-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                          <Icon className="size-5" />
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <StatusBadge
+                            variant={status.variant}
+                            className="h-5 px-1.5 text-[10px] uppercase font-bold tracking-wider"
+                          >
+                            {status.label}
+                          </StatusBadge>
+                          <div className={`size-2 shrink-0 rounded-full ${status.dot}`} />
                         </div>
                       </div>
-                      <div className="flex shrink-0 items-center gap-2">
-                        <StatusBadge variant={status.variant}>{status.label}</StatusBadge>
-                        <div className={`h-2 w-2 rounded-full ${status.dot}`} />
-                        <Guard user={user} permission="SYSTEM_RESTART">
-                          <button
-                            type="button"
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground group-hover:opacity-100"
-                            onClick={() => {
-                              setRestartTarget(service);
-                              setRestartConfirm('');
-                            }}
-                            aria-label={`Restart ${service.name}`}
-                          >
-                            <span className="material-symbols-outlined text-lg leading-none">
-                              restart_alt
-                            </span>
-                          </button>
-                        </Guard>
+
+                      <div className="flex min-w-0 flex-col">
+                        <span className="truncate text-sm font-semibold text-foreground tracking-tight">
+                          {service.name}
+                        </span>
+                        <span className="truncate text-[10px] text-muted-foreground uppercase font-medium tracking-wide">
+                          {timestampLabel} {formatTime(timestampValue)}
+                        </span>
                       </div>
+
+                      <Guard user={user} permission="SYSTEM_RESTART">
+                        <button
+                          type="button"
+                          className="absolute bottom-2 right-2 flex size-8 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100 focus:opacity-100"
+                          onClick={() => {
+                            setRestartTarget(service);
+                            setRestartConfirm('');
+                          }}
+                          aria-label={`Restart ${service.name}`}
+                        >
+                          <RotateCw className="size-4" />
+                        </button>
+                      </Guard>
                     </CardContent>
                   </Card>
                 );
@@ -566,31 +617,41 @@ const SystemHealth = () => {
             <h3 className="section-title">System Logs</h3>
             <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
               <div className="relative group">
-                <div className="relative w-full"><span
-                    className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
+                <div className="relative w-full">
+                  <span className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">
+                    search
+                  </span>
+                  <Input
                     placeholder="Filter logs..."
                     type="text"
                     value={logQuery}
                     onChange={(event) => setLogQuery(event.target.value)}
-                    className="w-full pl-10 sm:w-72" /></div>
+                    className="w-full pl-10 sm:w-72"
+                  />
+                </div>
               </div>
               <Select
                 value={logLevel}
-                onValueChange={val => {
+                onValueChange={(val) => {
                   const event = {
                     target: {
-                      value: val
-                    }
+                      value: val,
+                    },
                   };
 
                   return setLogLevel(event.target.value);
-                }}>
-                <SelectTrigger><SelectValue placeholder="Level: All" /></SelectTrigger>
-                <SelectContent>{LEVEL_OPTIONS.map((level) => (
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Level: All" />
+                </SelectTrigger>
+                <SelectContent>
+                  {LEVEL_OPTIONS.map((level) => (
                     <SelectItem key={level} value={level}>
                       {level}
                     </SelectItem>
-                  ))}</SelectContent>
+                  ))}
+                </SelectContent>
               </Select>
             </div>
           </div>
@@ -598,24 +659,28 @@ const SystemHealth = () => {
           <Card className="p-0 overflow-hidden flex flex-col">
             <CardContent className="p-0">
               <Table>
-                <TableHeader><TableRow>
-                    <TableHead className="w-48 tabular-nums">
-                      Timestamp
-                    </TableHead>
-                    <TableHead className="w-28 text-center">
-                      Level
-                    </TableHead>
-                    <TableHead className="w-40 text-center">
-                      Source
-                    </TableHead>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-48 tabular-nums">Timestamp</TableHead>
+                    <TableHead className="w-28 text-center">Level</TableHead>
+                    <TableHead className="w-40 text-center">Source</TableHead>
                     <TableHead>Message</TableHead>
                     <TableHead className="w-16 text-center"></TableHead>
-                  </TableRow></TableHeader>
+                  </TableRow>
+                </TableHeader>
                 <tbody>
                   {loadingLogs && logs.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Loading logs...</TableCell></TableRow>
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                        Loading logs...
+                      </TableCell>
+                    </TableRow>
                   ) : filteredLogs.length === 0 ? (
-                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No logs match the current filters.</TableCell></TableRow>
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
+                        No logs match the current filters.
+                      </TableCell>
+                    </TableRow>
                   ) : (
                     filteredLogs.map((log) => (
                       <TableRow key={log.id} className="group">
@@ -649,8 +714,7 @@ const SystemHealth = () => {
                   )}
                 </tbody>
               </Table>
-              <div
-                className="flex flex-col gap-3 border-t border-border bg-card px-cell-x py-cell-y text-xs sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 border-t border-border bg-card px-cell-x py-cell-y text-xs sm:flex-row sm:items-center sm:justify-between">
                 <span className="text-xs text-muted-foreground">
                   Showing {rangeStart} to {rangeEnd} of {totalLogs} logs
                 </span>

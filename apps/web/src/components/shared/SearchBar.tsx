@@ -1,27 +1,36 @@
 import { Search } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+import type { InputHTMLAttributes, ChangeEvent } from 'react';
 
-interface SearchBarProps {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  className?: string;
+interface SearchBarProps extends InputHTMLAttributes<HTMLInputElement> {
+  onValueChange?: (value: string) => void;
 }
 
 export function SearchBar({
   value,
+  onValueChange,
   onChange,
   placeholder = 'Search...',
   className,
+  ...props
 }: SearchBarProps) {
+  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+    onChange?.(event);
+    onValueChange?.(event.target.value);
+  };
+
   return (
-    <div className={`relative ${className ?? ''}`.trim()}>
-      <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+    <div className={cn('relative', className)}>
+      <div className="pointer-events-none absolute left-3 inset-y-0 flex items-center text-muted-foreground">
+        <Search className="size-5" />
+      </div>
       <Input
         value={value}
-        onChange={(event) => onChange(event.target.value)}
+        onChange={handleChange}
         placeholder={placeholder}
-        className="pl-9"
+        className="pl-10"
+        {...props}
       />
     </div>
   );
