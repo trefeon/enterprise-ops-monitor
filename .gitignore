@@ -35,3 +35,7 @@ agent_updates/
 .qoder/
 coverage/
 .eslintcache
+
+# Agent config — local/personal overrides (DO NOT ignore .agent/ — Antigravity needs it)
+.opencode/local/
+**/.opencode/**/*.local.*

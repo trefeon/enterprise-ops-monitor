@@ -171,6 +171,26 @@ export const featureStories = [
     ],
   },
   {
+    id: 'office-agents',
+    featureName: 'Office Agent Monitor',
+    route: '/office-agents',
+    materialIcon: 'computer',
+    tagline: 'Laptop health signals are visible before support tickets arrive.',
+    problem:
+      'Office machines can go offline, run hot, fill disks, or stop reporting while users still expect support to know what changed.',
+    solution:
+      'Office Agent Monitor shows machine inventory, online/offline status, metric thresholds, process load, heartbeat history, label editing, and a fake installer workflow.',
+    impact:
+      'Support can identify which laptop needs attention, whether the issue is resource pressure or missed heartbeats, and when it last checked in.',
+    metrics: [
+      { label: 'Heartbeat cadence', value: '60 sec' },
+      { label: 'Machines modeled', value: '6' },
+      { label: 'Detail depth', value: '10 heartbeats' },
+    ],
+    techHighlight:
+      'The page uses frontend-only mock state so the portfolio can demonstrate real-time monitoring behavior without requiring a Windows agent backend.',
+  },
+  {
     id: 'accounts',
     featureName: 'Accounts',
     route: '/admin/users',
@@ -227,6 +247,96 @@ export const featureStories = [
     ],
   },
   {
+    id: 'after-hours-report',
+    featureName: 'After Hours Report',
+    route: '/admin/afterhours',
+    materialIcon: 'summarize',
+    tagline: 'Monthly violation patterns are turned into a reviewable branch report.',
+    problem:
+      'Daily after-hours alerts are useful, but repeated off-window activity needs a monthly view that can be reviewed and shared.',
+    solution:
+      'The report view summarizes monthly violation days, branch rankings, report windows, generated timestamps, and export-ready detail tables.',
+    impact:
+      'Managers can see recurring patterns instead of isolated events, then focus follow-up on branches and stores with repeat violations.',
+    metrics: [
+      { label: 'Report grain', value: 'Monthly' },
+      { label: 'Ranking view', value: 'Branch + store' },
+      { label: 'Export', value: 'XLSX' },
+    ],
+  },
+  {
+    id: 'login',
+    featureName: 'Login',
+    route: '/login',
+    materialIcon: 'login',
+    tagline: 'Portfolio access starts with a clear demo-safe sign-in path.',
+    problem:
+      'A portfolio dashboard needs authentication realism without exposing real credentials or making reviewers hunt for demo access.',
+    solution:
+      'The login page presents demo account guidance, credential animation, support affordances, and a route to the public Live Sync wallboard.',
+    impact:
+      'Reviewers can enter the product quickly while still seeing that the app models an authenticated operations environment.',
+    metrics: [
+      { label: 'Demo account', value: 'Read-only' },
+      { label: 'Auth model', value: 'JWT' },
+      { label: 'Public route', value: '/live' },
+    ],
+  },
+  {
+    id: 'logout',
+    featureName: 'Logout',
+    route: '/logout',
+    materialIcon: 'logout',
+    tagline: 'Session exit is explicit instead of hidden behind a sidebar click.',
+    problem:
+      'Operational users need a safe way to end sessions, especially when shared workstations or demo environments are involved.',
+    solution:
+      'The logout page confirms intent, calls the logout endpoint, handles API failure gracefully, and clears local auth state before returning to login.',
+    impact:
+      'Session cleanup is visible, recoverable, and consistent with the rest of the permission-gated workflow.',
+    metrics: [
+      { label: 'Confirmation', value: 'Required' },
+      { label: 'Fallback', value: 'Local logout' },
+      { label: 'Redirect', value: '/login' },
+    ],
+  },
+  {
+    id: 'profile',
+    featureName: 'Profile',
+    route: '/profile',
+    materialIcon: 'account_circle',
+    tagline: 'Current-user context and account actions stay close to the operator.',
+    problem:
+      'Users need to confirm which account and role are active before taking guarded operational actions.',
+    solution:
+      'Profile displays username, role, initials, account-management navigation, password change controls, and logout access.',
+    impact:
+      'Reviewers can see how account identity connects to permissions without opening the admin console first.',
+    metrics: [
+      { label: 'Password flow', value: 'Self-service' },
+      { label: 'Admin shortcut', value: 'Conditional' },
+      { label: 'Session action', value: 'Logout' },
+    ],
+  },
+  {
+    id: 'about',
+    featureName: 'About This Project',
+    route: '/about',
+    materialIcon: 'info',
+    tagline: 'The portfolio context is documented inside the product, not only in README files.',
+    problem:
+      'A reviewer needs to understand the project purpose, simulated data boundary, tech stack, and feature intent while using the app.',
+    solution:
+      'About centralizes the project story, demo disclosure, tech stack, verified surfaces, and per-feature Problem/Solution/Impact narratives.',
+    impact:
+      'The app can explain itself during a live review and connect each operational screen to the portfolio goals it demonstrates.',
+    metrics: [
+      { label: 'Story catalog', value: 'All routes' },
+      { label: 'Disclosure', value: 'In-app' },
+      { label: 'Backend changes', value: 'None' },
+    ],
+  },
+  {
     id: 'live-sync',
     featureName: 'Live Sync',
     route: '/live',
@@ -241,9 +351,8 @@ export const featureStories = [
     metrics: [
       { label: 'Routes', value: '/live + /live.html' },
       { label: 'Mode', value: 'Read-only' },
-      { label: 'Banner', value: 'About only' },
+      { label: 'Display', value: 'Wallboard' },
     ],
-    banner: false,
   },
 ];
 

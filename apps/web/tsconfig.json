@@ -8,7 +8,11 @@
     "moduleResolution": "Bundler",
     "target": "ES2020",
     "skipLibCheck": true,
-    "strict": false
+    "strict": false,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": ["src/**/*"]
 }

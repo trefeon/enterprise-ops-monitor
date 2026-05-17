@@ -1,8 +1,10 @@
 import React from 'react';
+import { Card, CardContent } from './card';
 
 export default function Toolbar({ left = null, right = null, children = null, className = '' }) {
   return (
-    <div className={`surface-card-compact ${className}`.trim()}>
+    <Card className={className}>
+      <CardContent>
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         {children || (
           <>
@@ -15,6 +17,7 @@ export default function Toolbar({ left = null, right = null, children = null, cl
           </>
         )}
       </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

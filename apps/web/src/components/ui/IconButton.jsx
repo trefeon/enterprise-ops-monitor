@@ -31,7 +31,7 @@ export const IconButton = ({
   return (
     <button
       onClick={onClick}
-      className={`relative p-2 rounded-md transition-colors flex items-center justify-center ${colorClass} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
+      className={`relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-md p-2 transition-colors ${colorClass} ${disabled ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
       title={label}
       aria-label={label}
       disabled={disabled}

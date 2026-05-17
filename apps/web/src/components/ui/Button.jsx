@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button as ShadButton } from './button';
 
 export default function Button({
   variant = 'primary',
@@ -11,30 +12,25 @@ export default function Button({
   icon = null,
   ...rest
 }) {
-  const baseStyles =
-    'inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background';
-
   const variants = {
-    primary: 'bg-primary text-primary-foreground hover:bg-primary/90',
-    secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
-    danger: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
-    ghost: 'text-muted-foreground hover:text-foreground hover:bg-accent',
+    primary: 'default',
+    secondary: 'secondary',
+    danger: 'destructive',
+    ghost: 'ghost',
   };
-
   const sizes = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-sm',
-    lg: 'px-5 py-2.5 text-base',
+    sm: 'sm',
+    md: 'default',
+    lg: 'lg',
   };
 
   const iconSize = size === 'sm' ? 'text-lg' : size === 'lg' ? 'text-2xl' : 'text-xl';
 
   return (
-    <button
+    <ShadButton
+      variant={variants[variant] || 'default'}
+      size={sizes[size] || 'default'}
       className={`
-                ${baseStyles}
-                ${variants[variant] || variants.primary}
-                ${sizes[size] || sizes.md}
                 ${fullWidth ? 'w-full' : ''}
                 ${disabled || loading ? 'opacity-60 cursor-not-allowed' : ''}
                 ${className}
@@ -47,6 +43,6 @@ export default function Button({
       )}
       {!loading && icon && <span className={`material-symbols-outlined ${iconSize}`}>{icon}</span>}
       {children}
-    </button>
+    </ShadButton>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
 export default function FeatureStoryBanner({ story }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(true);
 
   if (!story || story.banner === false) return null;
 

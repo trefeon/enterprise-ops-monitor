@@ -1,4 +1,6 @@
 import React from 'react';
+import Button from './ui/Button';
+import Card from './ui/Card';
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -38,7 +40,7 @@ export default class ErrorBoundary extends React.Component {
 
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center p-6">
-        <div className="max-w-2xl w-full surface-card">
+        <Card className="max-w-2xl w-full">
           <div className="flex items-center gap-3 mb-2">
             <span className="material-symbols-outlined text-status-error">error</span>
             <h1 className="text-lg font-semibold">UI crashed</h1>
@@ -49,26 +51,26 @@ export default class ErrorBoundary extends React.Component {
           </p>
 
           <div className="flex flex-wrap gap-2 mb-4">
-            <button
+            <Button
               type="button"
-              className="px-3 py-2 rounded-lg bg-secondary text-secondary-foreground text-sm"
+              variant="secondary"
               onClick={this.handleReload}
             >
               Reload
-            </button>
-            <button
+            </Button>
+            <Button
               type="button"
-              className="px-3 py-2 rounded-lg bg-destructive text-destructive-foreground text-sm"
+              variant="danger"
               onClick={this.handleClearAuthAndReload}
             >
               Clear login and go to /login
-            </button>
+            </Button>
           </div>
 
           <div className="rounded-lg border border-border bg-muted/40 p-3 font-mono text-xs whitespace-pre-wrap break-words">
             {String(error?.stack || error?.message || error || 'Unknown error')}
           </div>
-        </div>
+        </Card>
       </div>
     );
   }

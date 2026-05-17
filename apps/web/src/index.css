@@ -1,3 +1,6 @@
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -42,6 +45,19 @@
     --warning: 37.7 92.1% 50.2%;
     --info: 217.2 91.2% 59.8%;
     --brand: 217.2 91.2% 59.8%;
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.985 0 0);
+    --sidebar-foreground: oklch(0.145 0 0);
+    --sidebar-primary: oklch(0.205 0 0);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.97 0 0);
+    --sidebar-accent-foreground: oklch(0.205 0 0);
+    --sidebar-border: oklch(0.922 0 0);
+    --sidebar-ring: oklch(0.708 0 0);
   }
 
   .dark {
@@ -82,14 +98,27 @@
     --warning: 45 100% 55%; /* Vibrant Yellow/Orange */
     --info: 210 100% 60%; /* Vibrant Blue */
     --brand: 217.2 91.2% 59.8%;
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: oklch(0.205 0 0);
+    --sidebar-foreground: oklch(0.985 0 0);
+    --sidebar-primary: oklch(0.488 0.243 264.376);
+    --sidebar-primary-foreground: oklch(0.985 0 0);
+    --sidebar-accent: oklch(0.269 0 0);
+    --sidebar-accent-foreground: oklch(0.985 0 0);
+    --sidebar-border: oklch(1 0 0 / 10%);
+    --sidebar-ring: oklch(0.556 0 0);
   }
 
   * {
-    @apply border-border;
+    @apply border-border outline-ring/50;
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply antialiased bg-background text-foreground;
   }
 
   /* Make native dropdown menus match dark UI (select option list background/text). */
@@ -130,6 +159,13 @@
   input[type='date'].date-input-no-indicator {
     padding-right: 0.75rem;
   }
+  .theme {
+    --font-heading: var(--font-sans);
+    --font-sans: 'Geist Variable', sans-serif;
+  }
+  html {
+    @apply font-sans;
+  }
 }
 
 /* Custom scrollbar for dark mode dashboards */
@@ -154,16 +190,16 @@
 @layer components {
   /* Utility class to be used by PageShell ONLY */
   .page-container {
-    @apply mx-auto w-full max-w-screen-2xl px-page-x py-page-y space-y-section;
+    @apply mx-auto w-full max-w-screen-2xl px-4 py-6 sm:px-6 lg:px-8 space-y-6;
   }
 
   /* Utility class to be used by PageHeader ONLY */
   .page-header {
-    @apply flex flex-col md:flex-row md:items-start justify-between gap-4 mb-6;
+    @apply flex flex-col md:flex-row md:items-start justify-between gap-4;
   }
 
   .page-title {
-    @apply text-3xl font-bold tracking-tight text-foreground;
+    @apply text-2xl font-semibold tracking-tight text-foreground;
   }
 
   .page-subtitle {
@@ -175,7 +211,7 @@
   }
 
   .section-title {
-    @apply text-xl font-semibold tracking-tight text-foreground mb-4;
+    @apply text-lg font-semibold tracking-tight text-foreground mb-4;
   }
 
   /* Utility class to be used by Card ONLY */
@@ -262,5 +298,19 @@
   }
   .live-bar-fill {
     transition: width 0.7s ease-out;
+  }
+  .login-text-2xs {
+    font-size: 10px;
+    line-height: 1rem;
+  }
+  .login-badge-text {
+    font-size: 9px;
+    line-height: 0.875rem;
+  }
+  .modal-scroll-65 {
+    max-height: 65vh;
+  }
+  .modal-scroll-70 {
+    max-height: 70vh;
   }
 }

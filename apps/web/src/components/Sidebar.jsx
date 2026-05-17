@@ -3,7 +3,7 @@ import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission, Permissions } from '../lib/auth/permissions';
 
-const Sidebar = ({ mobileOpen, setMobileOpen }) => {
+const Sidebar = ({ setMobileOpen, inSheet = false }) => {
   const [collapsed, setCollapsed] = useState(() => {
     if (typeof window === 'undefined') return false;
     return localStorage.getItem('sidebarCollapsed') === 'true';
@@ -68,6 +68,12 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
       permission: Permissions.AGENT_UPDATE,
     },
     {
+      path: '/office-agents',
+      label: 'Office Agents',
+      icon: 'computer',
+      permission: Permissions.AGENT_UPDATE,
+    },
+    {
       path: '/admin/users',
       label: 'Accounts',
       icon: 'manage_accounts',
@@ -93,13 +99,15 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
 
   return (
     <aside
-      className={`
-                fixed inset-y-0 left-0 z-50 bg-card border-r border-border transition-all duration-300 flex flex-col h-full
-                md:static md:translate-x-0
-                ${mobileOpen ? 'translate-x-0 shadow-xl' : '-translate-x-full'}
-                ${collapsed ? 'md:w-20' : 'md:w-64'}
-                w-64
-            `}
+      className={
+        inSheet
+          ? 'relative z-50 flex h-full w-64 flex-col border-r border-border bg-card'
+          : `
+              relative z-50 flex h-full flex-col border-r border-border bg-card transition-all duration-300
+              ${collapsed ? 'md:w-20' : 'md:w-64'}
+              w-64
+            `
+      }
     >
       {/* Logo Area */}
       <div
@@ -124,7 +132,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           {/* Desktop Collapse Toggle */}
           <button
             onClick={toggleCollapsed}
-            className="hidden md:flex w-10 h-10 rounded-md items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="hidden md:flex min-h-[44px] min-w-[44px] rounded-md items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
@@ -134,7 +142,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
           {/* Mobile Close Button */}
           <button
             onClick={() => setMobileOpen(false)}
-            className="md:hidden p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+            className="md:hidden min-h-[44px] min-w-[44px] rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
           >
             <span className="material-symbols-outlined">close</span>
           </button>
@@ -149,7 +157,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
             to={item.path}
             onClick={() => setMobileOpen(false)}
             className={({ isActive }) => `
-                            flex items-center gap-4 px-4 py-2 rounded-lg transition-colors group
+                            flex min-h-[44px] items-center gap-4 px-4 py-2 rounded-lg transition-colors group
                             ${
                               isActive
                                 ? 'bg-secondary text-secondary-foreground font-medium'
@@ -171,7 +179,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
               to={item.path}
               onClick={() => setMobileOpen(false)}
               className={({ isActive }) => `
-                              flex items-center gap-4 px-4 py-2 rounded-lg transition-colors group
+                              flex min-h-[44px] items-center gap-4 px-4 py-2 rounded-lg transition-colors group
                               ${
                                 isActive
                                   ? 'bg-secondary text-secondary-foreground font-medium'
@@ -192,7 +200,7 @@ const Sidebar = ({ mobileOpen, setMobileOpen }) => {
       <div className="p-4 border-t border-border mt-auto">
         <button
           onClick={handleProfile}
-          className={`flex items-center gap-3 transition-colors w-full p-2 rounded-lg hover:bg-secondary/50 ${collapsed ? 'md:justify-center' : ''}`}
+          className={`flex min-h-[44px] items-center gap-3 transition-colors w-full p-2 rounded-lg hover:bg-secondary/50 ${collapsed ? 'md:justify-center' : ''}`}
           title={collapsed ? 'Profile' : ''}
         >
           <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs ring-2 ring-ring/30">

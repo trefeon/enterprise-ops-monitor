@@ -22,6 +22,7 @@ const UsersAdmin = lazy(() => import('./pages/UsersAdmin'));
 const RolesAdmin = lazy(() => import('./pages/RolesAdmin'));
 const AfterHours = lazy(() => import('./pages/AfterHours'));
 const AgentUpdater = lazy(() => import('./pages/AgentUpdater'));
+const OfficeAgents = lazy(() => import('./pages/office-agents'));
 const About = lazy(() => import('./pages/About'));
 
 function App() {
@@ -126,6 +127,14 @@ function App() {
                       element={
                         <PrivateRoute requiredPerm={Permissions.AGENT_UPDATE}>
                           <AgentUpdater />
+                        </PrivateRoute>
+                      }
+                    />
+                    <Route
+                      path="/office-agents"
+                      element={
+                        <PrivateRoute requiredPerm={Permissions.AGENT_UPDATE}>
+                          <OfficeAgents />
                         </PrivateRoute>
                       }
                     />

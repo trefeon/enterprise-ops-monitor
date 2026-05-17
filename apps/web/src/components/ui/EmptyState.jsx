@@ -1,5 +1,6 @@
 import React from 'react';
 import Button from './Button';
+import { Card, CardContent } from './card';
 
 const EmptyState = ({
   title = 'No data available',
@@ -8,7 +9,8 @@ const EmptyState = ({
   action = null,
 }) => {
   return (
-    <div className="flex flex-col items-center justify-center p-8 text-center bg-card border border-border rounded-lg border-dashed">
+    <Card className="border-dashed">
+      <CardContent className="flex flex-col items-center justify-center p-8 text-center">
       <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
         <span className="material-symbols-outlined text-muted-foreground text-2xl">{icon}</span>
       </div>
@@ -19,7 +21,8 @@ const EmptyState = ({
           {action.label}
         </Button>
       )}
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 

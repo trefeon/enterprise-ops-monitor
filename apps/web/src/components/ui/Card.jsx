@@ -1,9 +1,15 @@
 import React from 'react';
+import {
+  Card as ShadCard,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from './card';
 
 const variants = {
-  default: 'surface-card',
-  compact: 'surface-card-compact',
-  table: 'surface-card p-0 overflow-hidden',
+  default: '',
+  compact: 'py-3',
+  table: 'p-0 overflow-hidden',
 };
 
 export default function Card({
@@ -21,18 +27,18 @@ export default function Card({
     : '';
 
   return (
-    <div
+    <ShadCard
       className={`${baseClass} ${interactiveClass} ${className}`.trim()}
       onClick={onClick}
       {...props}
     >
       {(title || actions) && (
-        <div className="flex items-center justify-between mb-4">
-          {title && <h3 className="section-title mb-0">{title}</h3>}
+        <CardHeader className="flex flex-row items-center justify-between gap-3">
+          {title && <CardTitle>{title}</CardTitle>}
           {actions && <div className="flex items-center gap-2">{actions}</div>}
-        </div>
+        </CardHeader>
       )}
-      {children}
-    </div>
+      <CardContent className={variant === 'table' ? 'p-0' : ''}>{children}</CardContent>
+    </ShadCard>
   );
 }

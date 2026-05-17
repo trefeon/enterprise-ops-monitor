@@ -1,5 +1,14 @@
 import React from 'react';
 import Button from './Button';
+import Input from './Input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from './dialog';
 
 export function ConfirmDialog({
   open,
@@ -17,31 +26,30 @@ export function ConfirmDialog({
   confirmHint = null,
   confirmDisabled = false,
 }) {
-  if (!open) return null;
   const needsMatch = typeof confirmExpected === 'string';
   const canConfirm = !needsMatch || confirmValue === confirmExpected;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-md rounded-lg border border-border bg-card p-6 shadow-2xl">
-        <div className="text-lg font-semibold text-foreground">{title}</div>
-        {desc && <div className="mt-2 text-sm text-muted-foreground">{desc}</div>}
-
+    <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onClose(); }}>
+      <DialogContent className="sm:max-w-md">
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+          {desc && <DialogDescription>{desc}</DialogDescription>}
+        </DialogHeader>
         {needsMatch && (
-          <div className="mt-4 space-y-2">
+          <div className="space-y-2">
             <label className="text-xs text-muted-foreground">{confirmLabel}</label>
-            <input
+            <Input
               value={confirmValue || ''}
               onChange={(e) => onConfirmValueChange && onConfirmValueChange(e.target.value)}
               placeholder={confirmPlaceholder}
-              className="w-full rounded-md border border-border bg-background px-4 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
             />
           </div>
         )}
 
-        {confirmHint && <div className="mt-3">{confirmHint}</div>}
+        {confirmHint && <div>{confirmHint}</div>}
 
-        <div className="mt-6 flex justify-end gap-4">
+        <DialogFooter>
           <Button variant="secondary" onClick={onClose}>
             Cancel
           </Button>
@@ -52,8 +60,8 @@ export function ConfirmDialog({
           >
             {confirmText}
           </Button>
-        </div>
-      </div>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

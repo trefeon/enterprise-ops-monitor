@@ -21,7 +21,7 @@ const Header = ({ onMobileMenuClick }) => {
       <div className="flex items-center gap-4">
         <button
           onClick={onMobileMenuClick}
-          className="md:hidden w-10 h-10 rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+          className="md:hidden min-h-[44px] min-w-[44px] rounded-md flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
         >
           <span className="material-symbols-outlined text-xl leading-none">menu</span>
         </button>
@@ -34,7 +34,7 @@ const Header = ({ onMobileMenuClick }) => {
       <div className="flex items-center gap-4 md:hidden">
         <button
           onClick={() => navigate('/profile')}
-          className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs ring-2 ring-ring/30"
+          className="min-h-[44px] min-w-[44px] rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs ring-2 ring-ring/30"
           aria-label="Open profile"
           title="Profile"
         >

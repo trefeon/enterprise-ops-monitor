@@ -3,21 +3,22 @@ import { Outlet } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Header from './Header';
 import PageLoader from './PageLoader';
+import { Sheet, SheetContent } from './ui/sheet';
 
 const Layout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
     <div className="dark bg-background text-foreground overflow-hidden h-screen flex font-display">
-      <Sidebar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+      <div className="hidden md:flex">
+        <Sidebar setMobileOpen={setMobileOpen} />
+      </div>
 
-      {/* Mobile Overlay */}
-      {mobileOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-40 md:hidden"
-          onClick={() => setMobileOpen(false)}
-        />
-      )}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" showCloseButton={false} className="w-64 p-0 sm:max-w-64">
+          <Sidebar setMobileOpen={setMobileOpen} inSheet />
+        </SheetContent>
+      </Sheet>
 
       <div className="flex-1 flex flex-col min-w-0 relative">
         <Header onMobileMenuClick={() => setMobileOpen(!mobileOpen)} />
