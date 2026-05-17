@@ -20,6 +20,7 @@ import {
 import { PageHeader } from '@/components/shared/PageHeader';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { StatCard } from '@/components/shared/StatCard';
+import PageShell from '@/components/ui/PageShell';
 import FeatureStoryBanner from '@/components/FeatureStoryBanner';
 import { getFeatureStory } from '@/data/stories';
 import { useOfficeAgents } from './hooks/useOfficeAgents';
@@ -55,7 +56,7 @@ export default function OfficeAgentsPage() {
   const [labelTarget, setLabelTarget] = useState<AgentMachine | null>(null);
 
   return (
-    <div className="mx-auto w-full max-w-screen-2xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
+    <PageShell>
       <FeatureStoryBanner story={getFeatureStory('office-agents')} />
       <PageHeader
         title="Office Agent Monitor"
@@ -100,36 +101,34 @@ export default function OfficeAgentsPage() {
         />
       </div>
       <Card>
-        <CardContent>
-          <CardContent className="flex flex-col gap-3 py-4 md:flex-row md:items-center">
-            <SearchBar
-              value={search}
-              onChange={setSearch}
-              placeholder="Search by hostname, CPU, OS..."
-              className="w-full md:max-w-md"
-            />
-            <Select
-              value={statusFilter}
-              onValueChange={(value) => setStatusFilter(value as typeof statusFilter)}
-            >
-              <SelectTrigger className="w-full min-h-[44px] md:w-56">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {STATUS_OPTIONS.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {stats.critical > 0 && (
-              <div className="flex min-h-[44px] items-center gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-3 text-sm text-red-500">
-                <AlertCircle className="size-4" />
-                {stats.critical} machine(s) need attention
-              </div>
-            )}
-          </CardContent>
+        <CardContent className="flex flex-col gap-3 py-4 md:flex-row md:items-center">
+          <SearchBar
+            value={search}
+            onChange={setSearch}
+            placeholder="Search by hostname, CPU, OS..."
+            className="w-full md:max-w-md"
+          />
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => setStatusFilter(value as typeof statusFilter)}
+          >
+            <SelectTrigger className="w-full min-h-[44px] md:w-56">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {stats.critical > 0 && (
+            <div className="flex min-h-[44px] items-center gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-3 text-sm text-red-500">
+              <AlertCircle className="size-4" />
+              {stats.critical} machine(s) need attention
+            </div>
+          )}
         </CardContent>
       </Card>
       <MachineTable machines={machines} onView={setSelectedMachine} onEditLabel={setLabelTarget} />
@@ -144,6 +143,6 @@ export default function OfficeAgentsPage() {
           onSave={updateLabel}
         />
       )}
-    </div>
+    </PageShell>
   );
 }

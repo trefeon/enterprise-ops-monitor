@@ -897,9 +897,8 @@ export default function AfterHours() {
         </Suspense>
       ) : (
         (<>
-          <Card className="p-0 overflow-hidden">
-            <CardContent>
-              <div className="flex flex-col gap-3 border-b border-border bg-muted/20 px-6 py-4 md:flex-row md:items-center md:justify-between">
+          <Card className="overflow-hidden">
+            <div className="flex flex-col gap-3 border-b border-border bg-muted/20 px-6 py-4 md:flex-row md:items-center md:justify-between">
                 <div className="flex items-center gap-3">
                   <span className="material-symbols-outlined text-primary">
                     notifications_active
@@ -1201,7 +1200,6 @@ export default function AfterHours() {
                   </div>
                 </>
               )}
-            </CardContent>
           </Card>
           <Card className="py-3 overflow-hidden rounded-2xl">
             <CardContent>

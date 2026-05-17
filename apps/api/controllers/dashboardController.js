@@ -1,4 +1,4 @@
-const { SystemLog, BackupLog, SyncAlertState } = require("../models");
+const { SystemLog, BackupLog, SyncAlertState, AgentMonitoring, sequelize } = require("../models");
 const { Op } = require("sequelize");
 const { ok, fail } = require("../utils/response");
 const { toWibDate, toWibIso } = require("../utils/time");
@@ -173,6 +173,93 @@ async function buildDashboardSummary({ allowedBranches = null } = {}) {
     },
   });
 
+  // ENRICHED DATA FOR NEW DASHBOARD STAT CARDS
+  
+  // 1. Fetch Agent stats
+  let agents = { activeCount: 0, totalCount: totalStores, onlineCount: 0, updatePending: 0 };
+  try {
+    const totalAgentsCount = await AgentMonitoring.count();
+    const onlineAgentsCount = await AgentMonitoring.count({
+      where: {
+        agent_status: {
+          [Op.in]: ["online", "up_to_date", "checking", "downloading", "updating", "waiting"]
+        }
+      }
+    });
+    const updatePendingCount = await AgentMonitoring.count({
+      where: { agent_status: "need_update" }
+    });
+    agents = {
+      activeCount: totalAgentsCount,
+      totalCount: totalStores,
+      onlineCount: onlineAgentsCount,
+      updatePending: updatePendingCount
+    };
+  } catch (err) {
+    console.error("[dashboardController] fetch agents stats failed:", err);
+  }
+
+  // 2. Fetch After-Hours violations
+  let violations = { todayCount: 0, activeTerminals: 0 };
+  try {
+    const [violationRows] = await sequelize.query(
+      `SELECT COUNT(*)::int AS count FROM afterhours_pc_log WHERE check_date = $1`,
+      { bind: [today] }
+    );
+    const count = violationRows[0]?.count || 0;
+    violations = {
+      todayCount: count,
+      activeTerminals: count
+    };
+  } catch (err) {
+    console.error("[dashboardController] fetch violations failed:", err);
+  }
+
+  // 3. Fetch Store Sync health
+  let sync = { healthyPercentage: 100, syncedCount: totalStores, staleCount: 0, problemCount: 0 };
+  try {
+    if (SyncAlertState) {
+      const staleCount = await SyncAlertState.count({ where: { is_stale: true, is_problem: false } });
+      const problemCount = await SyncAlertState.count({ where: { is_problem: true } });
+      const syncedCount = Math.max(0, totalStores - staleCount - problemCount);
+      const healthyPercentage = totalStores > 0 ? Math.round((syncedCount / totalStores) * 100) : 100;
+      sync = {
+        healthyPercentage,
+        syncedCount,
+        staleCount,
+        problemCount
+      };
+    }
+  } catch (err) {
+    console.error("[dashboardController] fetch sync health failed:", err);
+  }
+
+  // 4. Fetch Backup success rate in last 7 days
+  let backupStats = {
+    available: backupFiles.length,
+    latestAt: latestBackupAt,
+    successRate: 100,
+    failedCount: 0
+  };
+  try {
+    const last7Days = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    const successCount = await BackupLog.count({
+      where: { status: "SUCCESS", createdAt: { [Op.gte]: last7Days } }
+    });
+    const failedCount = await BackupLog.count({
+      where: { status: "FAILED", createdAt: { [Op.gte]: last7Days } }
+    });
+    const totalBackups = successCount + failedCount;
+    backupStats = {
+      available: backupFiles.length,
+      latestAt: latestBackupAt,
+      successRate: totalBackups > 0 ? Math.round((successCount / totalBackups) * 100) : 100,
+      failedCount
+    };
+  } catch (err) {
+    console.error("[dashboardController] fetch backup stats failed:", err);
+  }
+
   return {
     storesTotal: totalStores,
     eod: {
@@ -183,16 +270,16 @@ async function buildDashboardSummary({ allowedBranches = null } = {}) {
       lastSyncAt: lastSyncAt ? toWibIso(lastSyncAt) : null,
     },
     interactionsToday,
-    backups: {
-      available: backupFiles.length,
-      latestAt: latestBackupAt,
-    },
+    backups: backupStats,
     employees: {
       total: employeesTotal,
       branches: employeesBranches,
       syncedAt: employeesSyncedAt,
     },
     systemHealth,
+    agents,
+    violations,
+    sync,
     _sourceData: {
       eodRowsRaw,
       employeeRowsRaw,

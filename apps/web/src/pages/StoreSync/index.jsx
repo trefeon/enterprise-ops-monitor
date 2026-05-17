@@ -5,17 +5,15 @@ import { Button } from '@/components/ui/button';
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import PageShell from '../../components/ui/PageShell';
-import PageHeader from '../../components/ui/PageHeader';
-import StatCard from '../../components/ui/StatCard';
+import { StatCard } from '@/components/shared/StatCard';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import StatusBadge from '../../components/ui/StatusBadge';
 import ProgressBar from '../../components/ui/ProgressBar';
 import EmptyState from '../../components/ui/EmptyState';
 import Modal from '../../components/ui/Modal';
-import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { formatDate, formatDateTime, formatTime, getWibParts, getWibToday } from '../../lib/date';
-import { getFeatureStory } from '../../data/stories';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Store, CheckCircle, AlertTriangle, Clock, RefreshCw, Search } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const AUTO_REFRESH_INTERVAL = 10000; // stores table refresh: 10 seconds
@@ -427,17 +425,15 @@ const StoreSync = () => {
   return (
     <PageShell>
       <div>
-        <FeatureStoryBanner story={getFeatureStory('store-sync')} />
-
         <div className="flex flex-col gap-4">
           <PageHeader
             title="Store Sync Monitor"
-            subtitle="Real-time store data synchronization status. Stores sync from their computers every ~3 minutes."
+            description="Real-time store data synchronization status. Stores sync from their computers every ~3 minutes."
             meta={`Updated ${updatedLabel} • Auto-refresh ${countdown}s${sourceMeta ? ` • ${sourceMeta}` : ''}`}
             actions={
               <Button onClick={handleRefresh}>
                 {refreshing && <Loader2 className="animate-spin mr-2" />}
-                <span className="material-symbols-outlined mr-2">sync</span>
+                <RefreshCw className="mr-2 size-4" />
                 {refreshing ? 'Refreshing...' : 'Refresh Now'}
               </Button>
             }
@@ -470,20 +466,19 @@ const StoreSync = () => {
         )}
 
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-section">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-section">
           <StatCard
             title="Total Stores"
-            icon="store"
+            icon={<Store className="size-5" />}
             value={summary?.totalStores ?? '-'}
             subtext="Across all branches"
-            accent="text-foreground"
             onClick={handleTotalStoresClick}
             className={statusFilter === '' ? 'ring-2 ring-ring' : ''}
           />
 
           <StatCard
             title="On-time"
-            icon="check_circle"
+            icon={<CheckCircle className="size-5" />}
             value={<span className="text-status-success">{summary?.synced ?? '-'}</span>}
             subtext={`Last sync 0–${syncedMaxLabel}`}
             accent="text-status-success"
@@ -493,7 +488,7 @@ const StoreSync = () => {
 
           <StatCard
             title="Warning"
-            icon="warning"
+            icon={<AlertTriangle className="size-5" />}
             value={
               <span
                 className={
@@ -513,7 +508,7 @@ const StoreSync = () => {
 
           <StatCard
             title="Late"
-            icon="sync_problem"
+            icon={<AlertTriangle className="size-5" />}
             value={
               <span
                 className={
@@ -533,14 +528,13 @@ const StoreSync = () => {
 
           <StatCard
             title="Oldest Last Sync"
-            icon="schedule"
+            icon={<Clock className="size-5" />}
             value={summary?.oldest?.ageSec != null ? formatDuration(summary.oldest.ageSec) : '-'}
             subtext={
               <span className="block truncate" title={summary?.oldest?.namaToko}>
                 {summary?.oldest?.namaToko || '-'}
               </span>
             }
-            accent="text-foreground"
             onClick={handleOldestClick}
           />
         </div>
@@ -589,10 +583,9 @@ const StoreSync = () => {
                       resetPagination();
                       scrollToStoreTable();
                     }}
-                    size="sm"
                     className={`flex flex-col gap-3 transition-all hover:border-primary/50 hover:shadow-md active:scale-95 cursor-pointer ${isBranchSelected ? 'ring-2 ring-ring' : ''}`}
                   >
-                    <CardContent>
+                    <div className="flex flex-col gap-3 p-4">
                       <div className="flex items-center justify-between">
                         <span className="font-medium text-foreground">{branch.name}</span>
                         <StatusBadge variant={statusVariant}>{badgeLabel}</StatusBadge>
@@ -617,7 +610,7 @@ const StoreSync = () => {
                             ? 'Upstream source error for this branch'
                             : 'No store data yet'}
                       </div>
-                    </CardContent>
+                    </div>
                   </Card>
                 );
               })}
@@ -641,8 +634,9 @@ const StoreSync = () => {
                 />
                 Exclude &gt; 7 days
               </label>
-              <div className="relative w-full"><span
-                  className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+                <Input
                   placeholder="Search store..."
                   type="text"
                   value={search}
@@ -650,45 +644,40 @@ const StoreSync = () => {
                     setSearch(e.target.value);
                     setPagination((p) => ({ ...p, page: 1 }));
                   }}
-                  className="pl-10 w-52" /></div>
+                  className="pl-10 w-52"
+                />
+              </div>
               <Select
                 value={branchFilter}
-                onValueChange={val => {
-                  const e = {
-                    target: {
-                      value: val
-                    }
-                  };
-
-                  {
-                    setBranchFilter(e.target.value);
-                    setPagination((p) => ({ ...p, page: 1 }));
-                  }
-                }}>
+                onValueChange={(val) => {
+                  setBranchFilter(val);
+                  setPagination((p) => ({ ...p, page: 1 }));
+                }}
+              >
                 <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent><SelectItem value="">All Branches</SelectItem>{branchOptions.map((opt) => (
+                <SelectContent>
+                  <SelectItem value="">All Branches</SelectItem>
+                  {branchOptions.map((opt) => (
                     <SelectItem key={opt.value} value={opt.value}>
                       {opt.label}
                     </SelectItem>
-                  ))}</SelectContent>
+                  ))}
+                </SelectContent>
               </Select>
               <Select
                 value={statusFilter}
-                onValueChange={val => {
-                  const e = {
-                    target: {
-                      value: val
-                    }
-                  };
-
-                  {
-                    setStatusFilter(e.target.value);
-                    setPagination((p) => ({ ...p, page: 1 }));
-                  }
-                }}>
+                onValueChange={(val) => {
+                  setStatusFilter(val);
+                  setPagination((p) => ({ ...p, page: 1 }));
+                }}
+              >
                 <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                <SelectContent><SelectItem value="">All statuses</SelectItem><SelectItem value="problem">Late (last sync {staleMaxLabel}+ or no timestamp)</SelectItem><SelectItem value="stale">Warning (last sync {syncedMaxLabel}–{staleMaxLabel})
-                                    </SelectItem><SelectItem value="synced">On-time (last sync 0–{syncedMaxLabel})</SelectItem></SelectContent>
+                <SelectContent>
+                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value="problem">Late (last sync {staleMaxLabel}+ or no timestamp)</SelectItem>
+                  <SelectItem value="stale">Warning (last sync {syncedMaxLabel}–{staleMaxLabel})</SelectItem>
+                  <SelectItem value="synced">On-time (last sync 0–{syncedMaxLabel})</SelectItem>
+                </SelectContent>
               </Select>
             </div>
           </div>
@@ -712,7 +701,7 @@ const StoreSync = () => {
                     </TableHead>
                     <TableHead className="w-20 text-center"></TableHead>
                   </TableRow></TableHeader>
-                <tbody>
+                <TableBody>
                   {loadingStores && stores.length === 0 ? (
                     <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Loading stores...</TableCell></TableRow>
                   ) : storesError && stores.length === 0 ? (
@@ -720,9 +709,9 @@ const StoreSync = () => {
                         <div className="flex flex-col items-center gap-2">
                           <div>Failed to load stores: {storesError}</div>
                           <Button variant="secondary" onClick={fetchStores}>
+                            <RefreshCw className="mr-2 size-4" />
                             Retry
                           </Button>
-                          <span className="material-symbols-outlined mr-2">refresh</span>
                         </div>
                       </TableCell></TableRow>
                   ) : stores.length === 0 ? (
@@ -774,7 +763,7 @@ const StoreSync = () => {
                       </TableRow>
                     ))
                   )}
-                </tbody>
+                </TableBody>
               </Table>
               <div
                 className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
@@ -828,21 +817,16 @@ const StoreSync = () => {
                 <div className="flex flex-wrap items-center gap-3">
                   <Select
                     value={historyMode}
-                    onValueChange={val => {
-                      const e = {
-                        target: {
-                          value: val
-                        }
-                      };
-
-                      return setHistoryMode(e.target.value);
-                    }}>
+                    onValueChange={(val) => setHistoryMode(val)}
+                  >
                     <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
-                    <SelectContent>{HISTORY_VIEWS.map((view) => (
+                    <SelectContent>
+                      {HISTORY_VIEWS.map((view) => (
                         <SelectItem key={view.value} value={view.value}>
                           {view.label}
                         </SelectItem>
-                      ))}</SelectContent>
+                      ))}
+                    </SelectContent>
                   </Select>
                   <Input
                     type="date"

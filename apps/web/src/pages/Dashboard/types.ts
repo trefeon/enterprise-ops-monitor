@@ -12,11 +12,29 @@ export interface DashboardSummary {
   backups: {
     available: number;
     latestAt?: string;
+    successRate?: number;
+    failedCount?: number;
   };
   employees: {
     total: number;
     branches: number;
     syncedAt?: string;
+  };
+  agents?: {
+    activeCount: number;
+    totalCount: number;
+    onlineCount: number;
+    updatePending: number;
+  };
+  violations?: {
+    todayCount: number;
+    activeTerminals: number;
+  };
+  sync?: {
+    healthyPercentage: number;
+    syncedCount: number;
+    staleCount: number;
+    problemCount: number;
   };
 }
 

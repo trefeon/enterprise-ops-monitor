@@ -3,8 +3,6 @@ import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../components/ui/ToastContext';
-import FeatureStoryBanner from '../../components/FeatureStoryBanner';
-import { getFeatureStory } from '../../data/stories';
 
 const DEMO_ACCOUNTS = [
   {
@@ -224,30 +222,8 @@ const Login = () => {
 
       {/* Right Section: Login Form */}
       <main className="flex-1 flex flex-col justify-center items-center p-6 md:p-12 relative bg-background-light dark:bg-gradient-to-br dark:from-zinc-950 dark:via-zinc-950 dark:to-zinc-950">
-        <div className="absolute top-8 right-8 flex items-center gap-4">
-          <button
-            type="button"
-            className="flex items-center gap-1.5 text-sm text-emerald-500/70 hover:text-emerald-400 transition-colors"
-            onClick={() => window.open('/live', '_blank', 'noopener')}
-          >
-            <span className="material-symbols-outlined text-lg">live_tv</span>
-            Live TV
-          </button>
-          <button
-            type="button"
-            className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
-            onClick={() => setHelpOpen(true)}
-          >
-            <span className="material-symbols-outlined text-lg">help_outline</span>
-            Need Help?
-          </button>
-        </div>
 
         <div className="w-full max-w-lg">
-          <div className="mb-4">
-            <FeatureStoryBanner story={getFeatureStory('login')} />
-          </div>
-
           <div className="rounded-2xl border border-zinc-800/80 bg-zinc-950/40 backdrop-blur-md shadow-2xl shadow-black/40 p-6 sm:p-8">
             <div className="text-center md:text-left">
               <h2 className="text-3xl font-display font-semibold text-zinc-900 dark:text-white">
@@ -371,26 +347,20 @@ const Login = () => {
               <p className="text-xs font-medium text-zinc-500 uppercase tracking-wider text-center mb-3">
                 Quick Demo Login
               </p>
-              <div className="flex justify-center">
+              <div className="flex flex-col gap-3">
                 {DEMO_ACCOUNTS.map((acc) => (
                   <button
                     key={acc.username}
                     type="button"
                     disabled={isAnimating || isLoading}
                     onClick={() => typeCredentials(acc.username, acc.password)}
-                    className={`group relative flex flex-col items-center gap-1 p-3 rounded-xl border transition-all disabled:opacity-50 disabled:cursor-not-allowed ${acc.primary ? 'border-emerald-700/60 bg-emerald-900/20 hover:bg-emerald-800/40 hover:border-emerald-600/60' : 'border-zinc-800/60 bg-zinc-900/20 hover:bg-zinc-800/40 hover:border-zinc-700/60'}`}
+                    className="w-full bg-white text-zinc-900 py-3.5 px-4 rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-zinc-100 active:scale-95 transition-all shadow-lg shadow-black/20 hover:shadow-xl hover:shadow-black/30 disabled:opacity-70 disabled:cursor-not-allowed"
                   >
-                    <span className="text-xs font-semibold text-zinc-300 group-hover:text-white transition-colors">
-                      {acc.label}
-                    </span>
-                    <span className="login-text-2xs font-mono text-zinc-500 group-hover:text-zinc-400 transition-colors">
+                    <span className="material-symbols-outlined text-xl">vpn_key</span>
+                    <span>{acc.label}</span>
+                    <span className="text-xs font-mono text-zinc-500 bg-zinc-100 px-2 py-0.5 rounded border border-zinc-200">
                       {acc.username}
                     </span>
-                    {acc.note && (
-                      <span className="login-badge-text absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-emerald-400 font-semibold uppercase tracking-wider">
-                        {acc.note}
-                      </span>
-                    )}
                   </button>
                 ))}
               </div>
@@ -405,6 +375,25 @@ const Login = () => {
               </p>
             </div>
           </div>
+        </div>
+
+        <div className="mt-6 flex items-center gap-6">
+          <button
+            type="button"
+            className="flex items-center gap-1.5 text-sm text-emerald-500/70 hover:text-emerald-400 transition-colors"
+            onClick={() => window.open('/live', '_blank', 'noopener')}
+          >
+            <span className="material-symbols-outlined text-lg">live_tv</span>
+            Live TV
+          </button>
+          <button
+            type="button"
+            className="flex items-center gap-1.5 text-sm text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200 transition-colors"
+            onClick={() => setHelpOpen(true)}
+          >
+            <span className="material-symbols-outlined text-lg">help_outline</span>
+            Need Help?
+          </button>
         </div>
       </main>
 

@@ -9,19 +9,18 @@ export function SectionCard({
   className = '',
 }) {
   return (
-    <Card className={className}><CardContent>
-        <CardContent>
-          {(title || right) && (
-            <div className="mb-3 flex items-start justify-between gap-4">
-              <div>
-                {title && <div className="text-sm font-semibold text-foreground">{title}</div>}
-                {subtitle && <div className="text-xs text-muted-foreground">{subtitle}</div>}
-              </div>
-              {right}
+    <Card className={className}>
+      <CardContent>
+        {(title || right) && (
+          <div className="mb-3 flex items-start justify-between gap-4">
+            <div>
+              {title && <div className="text-sm font-semibold text-foreground">{title}</div>}
+              {subtitle && <div className="text-xs text-muted-foreground">{subtitle}</div>}
             </div>
-          )}
-          {children}
-        </CardContent>
+            {right}
+          </div>
+        )}
+        {children}
       </CardContent>
     </Card>
   );

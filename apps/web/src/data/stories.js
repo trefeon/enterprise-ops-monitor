@@ -265,24 +265,6 @@ export const featureStories = [
     ],
   },
   {
-    id: 'login',
-    featureName: 'Login',
-    route: '/login',
-    materialIcon: 'login',
-    tagline: 'Portfolio access starts with a clear demo-safe sign-in path.',
-    problem:
-      'A portfolio dashboard needs authentication realism without exposing real credentials or making reviewers hunt for demo access.',
-    solution:
-      'The login page presents demo account guidance, credential animation, support affordances, and a route to the public Live Sync wallboard.',
-    impact:
-      'Reviewers can enter the product quickly while still seeing that the app models an authenticated operations environment.',
-    metrics: [
-      { label: 'Demo account', value: 'Read-only' },
-      { label: 'Auth model', value: 'JWT' },
-      { label: 'Public route', value: '/live' },
-    ],
-  },
-  {
     id: 'logout',
     featureName: 'Logout',
     route: '/logout',

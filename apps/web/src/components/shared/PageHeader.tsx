@@ -11,16 +11,16 @@ interface PageHeaderProps {
 export function PageHeader({ title, description, meta, actions, className }: PageHeaderProps) {
   return (
     <div
-      className={`flex flex-col gap-4 md:flex-row md:items-start md:justify-between ${className ?? ''}`}
+      className={`page-header ${className ?? ''}`}
     >
-      <div className="space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-        {description && <p className="text-sm text-muted-foreground">{description}</p>}
+      <div className="flex flex-col gap-1">
+        <h1 className="page-title">{title}</h1>
+        {description && <p className="page-subtitle">{description}</p>}
         {meta && (
-          <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">{meta}</div>
+          <div className="page-meta mt-1">{meta}</div>
         )}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
     </div>
   );
 }

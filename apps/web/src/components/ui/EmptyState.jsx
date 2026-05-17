@@ -10,19 +10,18 @@ const EmptyState = ({
 }) => {
   return (
     <Card className="border-dashed">
-      <CardContent>
-        <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-          <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
-            <span className="material-symbols-outlined text-muted-foreground text-2xl">{icon}</span>
-          </div>
-          <h3 className="text-lg font-medium text-foreground mb-1">{title}</h3>
-          <p className="text-sm text-muted-foreground max-w-sm mb-6">{description}</p>
-          {action && (
-            <Button onClick={action.onClick} icon={action.icon}>
-              {action.label}
-            </Button>
-          )}
-        </CardContent>
+      <CardContent className="flex flex-col items-center justify-center p-8 text-center">
+        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
+          <span className="material-symbols-outlined text-muted-foreground text-2xl">{icon}</span>
+        </div>
+        <h3 className="text-lg font-medium text-foreground mb-1">{title}</h3>
+        <p className="text-sm text-muted-foreground max-w-sm mb-6">{description}</p>
+        {action && (
+          <Button onClick={action.onClick}>
+            {action.icon && <span className="material-symbols-outlined mr-1.5">{action.icon}</span>}
+            {action.label}
+          </Button>
+        )}
       </CardContent>
     </Card>
   );
