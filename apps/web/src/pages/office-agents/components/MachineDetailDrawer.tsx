@@ -1,6 +1,12 @@
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
-import { Progress } from "@/components/ui/progress"
-import { Separator } from "@/components/ui/separator"
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+} from '@/components/ui/sheet';
+import { Progress } from '@/components/ui/progress';
+import { Separator } from '@/components/ui/separator';
 import {
   Table,
   TableBody,
@@ -8,36 +14,51 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { getHealthColor } from "../types"
-import type { AgentMachine } from "../types"
+} from '@/components/ui/table';
+import { getHealthColor } from '../types';
+import type { AgentMachine } from '../types';
 
 interface Props {
-  machine: AgentMachine | null
-  onClose: () => void
+  machine: AgentMachine | null;
+  onClose: () => void;
 }
 
 function formatHb(iso: string) {
   try {
-    const d = new Date(iso)
-    return d.toLocaleDateString("en-US", { month: "short", day: "2-digit" }) + ", " + d.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false })
+    const d = new Date(iso);
+    return (
+      d.toLocaleDateString('en-US', { month: 'short', day: '2-digit' }) +
+      ', ' +
+      d.toLocaleTimeString('en-US', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+      })
+    );
   } catch {
-    return iso
+    return iso;
   }
 }
 
 export function MachineDetailDrawer({ machine, onClose }: Props) {
-  if (!machine) return null
+  if (!machine) return null;
 
-  const { specs, metrics, top_processes, heartbeat_history } = machine
+  const { specs, metrics, top_processes, heartbeat_history } = machine;
 
   return (
-    <Sheet open={!!machine} onOpenChange={(open) => { if (!open) onClose() }}>
+    <Sheet
+      open={!!machine}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto">
         <SheetHeader className="mb-6">
           <SheetTitle className="text-lg">{machine.hostname}</SheetTitle>
           <SheetDescription>
-            {machine.label ?? "No label"} &middot; {machine.status === "online" ? "Online" : "Offline"}
+            {machine.label ?? 'No label'} &middot;{' '}
+            {machine.status === 'online' ? 'Online' : 'Offline'}
           </SheetDescription>
         </SheetHeader>
 
@@ -46,10 +67,18 @@ export function MachineDetailDrawer({ machine, onClose }: Props) {
           <div>
             <h4 className="text-sm font-semibold mb-2">Specifications</h4>
             <div className="space-y-1 text-sm text-muted-foreground">
-              <p><span className="text-foreground">CPU:</span> {specs.cpu_model}</p>
-              <p><span className="text-foreground">RAM:</span> {specs.ram_gb} GB</p>
-              <p><span className="text-foreground">Disk:</span> {specs.disk_gb} GB</p>
-              <p><span className="text-foreground">OS:</span> {specs.os} ({specs.os_build})</p>
+              <p>
+                <span className="text-foreground">CPU:</span> {specs.cpu_model}
+              </p>
+              <p>
+                <span className="text-foreground">RAM:</span> {specs.ram_gb} GB
+              </p>
+              <p>
+                <span className="text-foreground">Disk:</span> {specs.disk_gb} GB
+              </p>
+              <p>
+                <span className="text-foreground">OS:</span> {specs.os} ({specs.os_build})
+              </p>
             </div>
           </div>
 
@@ -64,21 +93,30 @@ export function MachineDetailDrawer({ machine, onClose }: Props) {
                   <span className="text-muted-foreground">CPU</span>
                   <span className="font-medium">{metrics.cpu_percent}%</span>
                 </div>
-                <Progress value={metrics.cpu_percent} indicatorClassName={getHealthColor(metrics.cpu_percent)} />
+                <Progress
+                  value={metrics.cpu_percent}
+                  indicatorClassName={getHealthColor(metrics.cpu_percent)}
+                />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-muted-foreground">RAM</span>
                   <span className="font-medium">{metrics.ram_percent}%</span>
                 </div>
-                <Progress value={metrics.ram_percent} indicatorClassName={getHealthColor(metrics.ram_percent)} />
+                <Progress
+                  value={metrics.ram_percent}
+                  indicatorClassName={getHealthColor(metrics.ram_percent)}
+                />
               </div>
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-muted-foreground">Disk</span>
                   <span className="font-medium">{metrics.disk_percent}%</span>
                 </div>
-                <Progress value={metrics.disk_percent} indicatorClassName={getHealthColor(metrics.disk_percent)} />
+                <Progress
+                  value={metrics.disk_percent}
+                  indicatorClassName={getHealthColor(metrics.disk_percent)}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4 pt-2">
                 <div>
@@ -128,7 +166,9 @@ export function MachineDetailDrawer({ machine, onClose }: Props) {
             <div className="space-y-1">
               {heartbeat_history.map((hb, idx) => (
                 <div key={idx} className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <span className={`size-1.5 rounded-full ${idx === 0 ? "bg-emerald-500" : "bg-muted-foreground/30"}`} />
+                  <span
+                    className={`size-1.5 rounded-full ${idx === 0 ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`}
+                  />
                   {formatHb(hb)}
                 </div>
               ))}
@@ -137,5 +177,5 @@ export function MachineDetailDrawer({ machine, onClose }: Props) {
         </div>
       </SheetContent>
     </Sheet>
-  )
+  );
 }

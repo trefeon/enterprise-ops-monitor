@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/ui/PageHeader';
 import PageShell from '../../components/ui/PageShell';
 import { SectionCard } from '../../components/ui/SectionCard';
-import Button from '../../components/ui/Button';
+import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/ui/ToastContext';
@@ -50,7 +50,7 @@ const Logout = () => {
               <Button variant="secondary" onClick={() => navigate('/')}>
                 Cancel
               </Button>
-              <Button variant="danger" onClick={() => setOpen(true)} loading={loading}>
+              <Button variant="destructive" onClick={() => setOpen(true)} loading={loading}>
                 Confirm Logout
               </Button>
             </div>

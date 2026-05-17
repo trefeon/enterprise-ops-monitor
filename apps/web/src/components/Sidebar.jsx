@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission, Permissions } from '../lib/auth/permissions';
+import { Button } from './ui/button';
 
 const Sidebar = ({ setMobileOpen, inSheet = false }) => {
   const [collapsed, setCollapsed] = useState(() => {
@@ -130,22 +131,26 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
 
         <div className="flex items-center gap-2">
           {/* Desktop Collapse Toggle */}
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={toggleCollapsed}
-            className="hidden md:flex min-h-[44px] min-w-[44px] rounded-md items-center justify-center text-muted-foreground hover:text-foreground hover:bg-accent transition-colors"
+            className="hidden md:flex"
             aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
             title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           >
             <span className="material-symbols-outlined text-xl leading-none">menu</span>
-          </button>
+          </Button>
 
           {/* Mobile Close Button */}
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setMobileOpen(false)}
-            className="md:hidden min-h-[44px] min-w-[44px] rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+            className="md:hidden"
           >
             <span className="material-symbols-outlined">close</span>
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -198,12 +203,13 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
 
       {/* User Profile Summary (Bottom) */}
       <div className="p-4 border-t border-border mt-auto">
-        <button
+        <Button
+          variant="ghost"
           onClick={handleProfile}
-          className={`flex min-h-[44px] items-center gap-3 transition-colors w-full p-2 rounded-lg hover:bg-secondary/50 ${collapsed ? 'md:justify-center' : ''}`}
+          className={`h-auto w-full justify-start p-2 hover:bg-secondary/50 ${collapsed ? 'md:justify-center' : ''}`}
           title={collapsed ? 'Profile' : ''}
         >
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs ring-2 ring-ring/30">
+          <div className="w-9 h-9 shrink-0 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-xs ring-2 ring-ring/30">
             {initials}
           </div>
           <div className={`${collapsed ? 'md:hidden' : 'block'} min-w-0 text-left`}>
@@ -212,7 +218,7 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
               {roleLabel}
             </div>
           </div>
-        </button>
+        </Button>
       </div>
     </aside>
   );

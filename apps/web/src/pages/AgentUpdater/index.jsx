@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/ui/ToastContext';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
+import { Button } from '@/components/ui/button';
 import Modal from '../../components/ui/Modal';
-import Input from '../../components/ui/Input';
-import Select from '../../components/ui/Select';
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StatusBadge from '../../components/ui/StatusBadge';
-import { Table, TableEmpty, Tbody, Tcell, Thead, Trow } from '../../components/ui/Table';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { formatDateTime } from '../../lib/date';
 import EmptyState from '../../components/ui/EmptyState';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
+import { Loader2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 function base64ToBlob(base64, contentType) {
   const binary = atob(String(base64 || ''));
@@ -100,7 +101,11 @@ const AgentUpdater = () => {
 
   const handleRefresh = () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     fetchData();
@@ -166,7 +171,11 @@ const AgentUpdater = () => {
 
   const handleDeleteAgent = async (storeId) => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     if (
@@ -200,7 +209,11 @@ const AgentUpdater = () => {
 
   const handleDownloadSetup = async () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     try {
@@ -232,7 +245,11 @@ const AgentUpdater = () => {
 
   const handleExportExcel = async () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     setExporting(true);
@@ -280,7 +297,11 @@ const AgentUpdater = () => {
 
   const handleOpenDeployModal = () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     setVersion(suggestedVersion || currentVersion || '');
@@ -367,7 +388,6 @@ const AgentUpdater = () => {
   return (
     <div className="page-container">
       <FeatureStoryBanner story={getFeatureStory('agent-updater')} />
-
       <header className="page-header">
         <div className="space-y-1">
           <h1 className="page-title">Agent Updater</h1>
@@ -377,139 +397,156 @@ const AgentUpdater = () => {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="secondary" icon="refresh" onClick={handleRefresh} disabled={loading}>
+          <Button variant="secondary" onClick={handleRefresh} disabled={loading}>
+            <Loader2 className="animate-spin mr-2" />
+            <span className="material-symbols-outlined mr-2">refresh</span>
             Refresh
           </Button>
-          <Button
-            variant="secondary"
-            icon="download"
-            onClick={handleExportExcel}
-            loading={exporting}
-            disabled={exporting || loading}
-          >
+          <Button variant="secondary" onClick={handleExportExcel} disabled={exporting || loading}>
+            {exporting && <Loader2 className="animate-spin mr-2" />}
+            <span className="material-symbols-outlined mr-2">download</span>
             Export Excel
           </Button>
-          <Button variant="secondary" icon="download" onClick={handleDownloadSetup}>
+          <Button variant="secondary" onClick={handleDownloadSetup}>
+            <span className="material-symbols-outlined mr-2">download</span>
             Setup Script
           </Button>
-          <Button variant="primary" icon="cloud_upload" onClick={handleOpenDeployModal}>
+          <Button onClick={handleOpenDeployModal}>
+            <span className="material-symbols-outlined mr-2">cloud_upload</span>
             Deploy Update
           </Button>
         </div>
       </header>
-
       <section className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card className="flex flex-col gap-2">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Current Deployed Version
-          </span>
-          <div className="flex items-center gap-2">
-            <span className="text-3xl font-bold text-foreground">
-              {metricsLoading ? '...' : currentVersion || 'None'}
+          <CardContent>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Current Deployed Version
             </span>
-            {!metricsLoading && currentVersion && (
-              <span className="material-symbols-outlined text-success">verified</span>
-            )}
-          </div>
-        </Card>
-
-        <Card className="flex flex-col gap-2">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Active Nodes
-          </span>
-          <span className="text-3xl font-bold text-foreground">
-            {metricsLoading ? '--' : installedAgents.length}
-          </span>
-          {!metricsLoading && (
-            <div className="flex justify-between items-center text-xs text-muted-foreground mt-auto">
-              <span>{runningPublisherCount} node(s) synced</span>
-              <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
-                <span className="relative flex h-2 w-2 mr-1">
-                  {activeDownloads > 0 && (
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                  )}
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                </span>
-                {activeDownloads}/10 Active DLs
+            <div className="flex items-center gap-2">
+              <span className="text-3xl font-bold text-foreground">
+                {metricsLoading ? '...' : currentVersion || 'None'}
               </span>
+              {!metricsLoading && currentVersion && (
+                <span className="material-symbols-outlined text-success">verified</span>
+              )}
             </div>
-          )}
+          </CardContent>
         </Card>
 
         <Card className="flex flex-col gap-2">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Publisher Sync
-          </span>
-          <div className="flex items-center justify-between">
-            <span className="text-3xl font-bold text-foreground">
-              {metricsLoading ? '--' : publisherSyncedPercent}
+          <CardContent>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Active Nodes
             </span>
-            <StatusBadge
-              variant={
-                metricsLoading
-                  ? 'neutral'
-                  : installedAgents.length === 0
-                    ? 'neutral'
-                    : publisherOutdatedCount === 0
-                      ? 'success'
-                      : 'warning'
-              }
-            >
-              {metricsLoading
-                ? 'Loading'
-                : installedAgents.length === 0
-                  ? 'No Active Agents'
-                  : publisherOutdatedCount === 0
-                    ? 'Publisher Synced'
-                    : `${publisherOutdatedCount} Outdated`}
-            </StatusBadge>
-          </div>
+            <span className="text-3xl font-bold text-foreground">
+              {metricsLoading ? '--' : installedAgents.length}
+            </span>
+            {!metricsLoading && (
+              <div className="flex justify-between items-center text-xs text-muted-foreground mt-auto">
+                <span>{runningPublisherCount} node(s) synced</span>
+                <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded font-medium flex items-center gap-1">
+                  <span className="relative flex h-2 w-2 mr-1">
+                    {activeDownloads > 0 && (
+                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    )}
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                  </span>
+                  {activeDownloads}/10 Active DLs
+                </span>
+              </div>
+            )}
+          </CardContent>
         </Card>
 
         <Card className="flex flex-col gap-2">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Legacy Worker Scripts
-          </span>
-          <span className="text-3xl font-bold text-foreground">
-            {metricsLoading ? '--' : nonModernWorkers}
-          </span>
-          <span className="text-xs text-muted-foreground">
-            Setup script terbaru membersihkan jejak migrator palsu saat dijalankan.
-          </span>
+          <CardContent>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Publisher Sync
+            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-3xl font-bold text-foreground">
+                {metricsLoading ? '--' : publisherSyncedPercent}
+              </span>
+              <StatusBadge
+                variant={
+                  metricsLoading
+                    ? 'neutral'
+                    : installedAgents.length === 0
+                      ? 'neutral'
+                      : publisherOutdatedCount === 0
+                        ? 'success'
+                        : 'warning'
+                }
+              >
+                {metricsLoading
+                  ? 'Loading'
+                  : installedAgents.length === 0
+                    ? 'No Active Agents'
+                    : publisherOutdatedCount === 0
+                      ? 'Publisher Synced'
+                      : `${publisherOutdatedCount} Outdated`}
+              </StatusBadge>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="flex flex-col gap-2">
+          <CardContent>
+            <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+              Legacy Worker Scripts
+            </span>
+            <span className="text-3xl font-bold text-foreground">
+              {metricsLoading ? '--' : nonModernWorkers}
+            </span>
+            <span className="text-xs text-muted-foreground">
+              Setup script terbaru membersihkan jejak migrator palsu saat dijalankan.
+            </span>
+          </CardContent>
         </Card>
       </section>
-
       <section className="flex flex-wrap items-end gap-3">
-        <Input
-          icon="search"
-          wrapperClassName="flex-1 min-w-48"
-          placeholder="Search by store code or name..."
-          name="q"
-          value={filters.q}
-          onChange={handleFilterChange}
-          onKeyDown={handleSearch}
-        />
-        <Select name="areaId" value={filters.areaId} onChange={handleFilterChange}>
-          <option value="">All Branches</option>
-          {AREA_OPTIONS.map((branch) => (
-            <option key={branch.id} value={branch.id}>
-              {branch.label}
-            </option>
-          ))}
+        <div className="relative w-full flex-1 min-w-48"><span
+            className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
+            placeholder="Search by store code or name..."
+            name="q"
+            value={filters.q}
+            onChange={handleFilterChange}
+            onKeyDown={handleSearch}
+            className="pl-10" /></div>
+        <Select
+          value={filters.areaId}
+          onValueChange={val => handleFilterChange({
+            target: {
+              value: val
+            }
+          })}>
+          <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+          <SelectContent><SelectItem value="">All Branches</SelectItem>{AREA_OPTIONS.map((branch) => (
+              <SelectItem key={branch.id} value={branch.id}>
+                {branch.label}
+              </SelectItem>
+            ))}</SelectContent>
         </Select>
-        <Select name="region" value={filters.region} onChange={handleFilterChange}>
-          <option value="">All Regional Heads</option>
-          {regionalHeads.map((rh) => (
-            <option key={rh} value={rh}>
-              {rh}
-            </option>
-          ))}
+        <Select
+          value={filters.region}
+          onValueChange={val => handleFilterChange({
+            target: {
+              value: val
+            }
+          })}>
+          <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+          <SelectContent><SelectItem value="">All Regional Heads</SelectItem>{regionalHeads.map((rh) => (
+              <SelectItem key={rh} value={rh}>
+                {rh}
+              </SelectItem>
+            ))}</SelectContent>
         </Select>
-        <Button variant="secondary" icon="search" onClick={applyFilters}>
+        <Button variant="secondary" onClick={applyFilters}>
+          <span className="material-symbols-outlined mr-2">search</span>
           Apply
         </Button>
       </section>
-
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="section-title">Deployment Monitoring</h2>
@@ -520,98 +557,103 @@ const AgentUpdater = () => {
           )}
         </div>
 
-        <Card variant="table">
-          <Table>
-            <Thead>
-              <Tcell as="th">Store Code</Tcell>
-              <Tcell as="th">Store Name</Tcell>
-              <Tcell as="th">Branch</Tcell>
-              <Tcell as="th" className="text-center">
-                Publisher
-              </Tcell>
-              <Tcell as="th" className="text-center">
-                Worker
-              </Tcell>
-              <Tcell as="th" className="text-center">
-                Status
-              </Tcell>
-              <Tcell as="th" className="text-right">
-                Last Check-in
-              </Tcell>
-            </Thead>
-            <Tbody>
-              {loading && monitoring.length === 0 ? (
-                <TableEmpty colSpan={7}>Loading nodes...</TableEmpty>
-              ) : monitoring.length === 0 ? (
-                <TableEmpty colSpan={7}>No nodes registered yet.</TableEmpty>
-              ) : (
-                monitoring.map((node) => {
-                  const status = getNodeStatus(node, currentVersion);
-                  const workerVersionNum = Number.parseInt(node.worker_version, 10);
-                  const isLegacyWorker =
-                    !node.worker_version || Number.isNaN(workerVersionNum) || workerVersionNum < 4;
+        <Card className="p-0 overflow-hidden">
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader><TableRow>
+                  <TableHead>Store Code</TableHead>
+                  <TableHead>Store Name</TableHead>
+                  <TableHead>Branch</TableHead>
+                  <TableHead className="text-center">
+                    Publisher
+                  </TableHead>
+                  <TableHead className="text-center">
+                    Worker
+                  </TableHead>
+                  <TableHead className="text-center">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-right">
+                    Last Check-in
+                  </TableHead>
+                </TableRow></TableHeader>
+              <TableBody>
+                {loading && monitoring.length === 0 ? (
+                  <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Loading nodes...</TableCell></TableRow>
+                ) : monitoring.length === 0 ? (
+                  <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No nodes registered yet.</TableCell></TableRow>
+                ) : (
+                  monitoring.map((node) => {
+                    const status = getNodeStatus(node, currentVersion);
+                    const workerVersionNum = Number.parseInt(node.worker_version, 10);
+                    const isLegacyWorker =
+                      !node.worker_version ||
+                      Number.isNaN(workerVersionNum) ||
+                      workerVersionNum < 4;
 
-                  return (
-                    <Trow key={node.store_id} className={isLegacyWorker ? 'bg-warning/5' : ''}>
-                      <Tcell className="font-semibold font-mono text-xs">
-                        {node.store_id || 'Unknown'}
-                      </Tcell>
-                      <Tcell className="text-muted-foreground">
-                        {node.store_name || node.hostname || '-'}
-                      </Tcell>
-                      <Tcell className="text-muted-foreground">{node.branch_name || '-'}</Tcell>
-                      <Tcell className="text-center">
-                        <code className="bg-muted px-1.5 py-0.5 rounded text-sm">
-                          {node.version || '-'}
-                        </code>
-                      </Tcell>
-                      <Tcell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          {isLegacyWorker ? (
-                            <span className="text-warning text-xs font-semibold">legacy</span>
-                          ) : (
-                            <code className="bg-muted px-1.5 py-0.5 rounded text-sm">
-                              v{node.worker_version}
-                            </code>
-                          )}
-                        </div>
-                      </Tcell>
-                      <Tcell className="text-center">
-                        <div className="flex items-center justify-center gap-1">
-                          {getStatusBadge(status)}
-                          {node.last_error && (
-                            <span
-                              className="material-symbols-outlined text-danger text-sm cursor-help"
-                              title={node.last_error}
-                            >
-                              error
-                            </span>
-                          )}
-                        </div>
-                      </Tcell>
-                      <Tcell className="text-right text-muted-foreground">
-                        <div className="flex items-center justify-end gap-2">
-                          {node.last_check_at ? formatDateTime(node.last_check_at) : '-'}
-                          {node.last_check_at && (
-                            <button
-                              onClick={() => handleDeleteAgent(node.store_id)}
-                              className="text-danger hover:bg-danger/10 p-1 rounded transition-colors"
-                              title="Delete Agent Record"
-                            >
-                              <span className="material-symbols-outlined text-sm">delete</span>
-                            </button>
-                          )}
-                        </div>
-                      </Tcell>
-                    </Trow>
-                  );
-                })
-              )}
-            </Tbody>
-          </Table>
+                    return (
+                      <TableRow key={node.store_id} className={isLegacyWorker ? 'bg-warning/5' : ''}>
+                        <TableCell className="font-semibold font-mono text-xs">
+                          {node.store_id || 'Unknown'}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">
+                          {node.store_name || node.hostname || '-'}
+                        </TableCell>
+                        <TableCell className="text-muted-foreground">{node.branch_name || '-'}</TableCell>
+                        <TableCell className="text-center">
+                          <code className="bg-muted px-1.5 py-0.5 rounded text-sm">
+                            {node.version || '-'}
+                          </code>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            {isLegacyWorker ? (
+                              <span className="text-warning text-xs font-semibold">legacy</span>
+                            ) : (
+                              <code className="bg-muted px-1.5 py-0.5 rounded text-sm">
+                                v{node.worker_version}
+                              </code>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <div className="flex items-center justify-center gap-1">
+                            {getStatusBadge(status)}
+                            {node.last_error && (
+                              <span
+                                className="material-symbols-outlined text-danger text-sm cursor-help"
+                                title={node.last_error}
+                              >
+                                error
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right text-muted-foreground">
+                          <div className="flex items-center justify-end gap-2">
+                            {node.last_check_at ? formatDateTime(node.last_check_at) : '-'}
+                            {node.last_check_at && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => handleDeleteAgent(node.store_id)}
+                                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                title="Delete Agent Record"
+                              >
+                                <span className="material-symbols-outlined text-sm">delete</span>
+                              </Button>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </CardContent>
         </Card>
       </section>
-
       <Modal
         open={deployModalOpen}
         onClose={() => !isDeploying && setDeployModalOpen(false)}
@@ -664,7 +706,8 @@ const AgentUpdater = () => {
             >
               Cancel
             </Button>
-            <Button variant="primary" type="submit" loading={isDeploying}>
+            <Button type="submit">
+              {isDeploying && <Loader2 className="animate-spin mr-2" />}
               Confirm Deployment
             </Button>
           </div>

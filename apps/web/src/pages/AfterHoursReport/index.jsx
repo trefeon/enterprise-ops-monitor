@@ -1,16 +1,17 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { apiGet, apiPost, apiPut } from '../../lib/api/client';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Select from '../../components/ui/Select';
+import { Button } from '@/components/ui/button';
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StatCard from '../../components/ui/StatCard';
 import EmptyState from '../../components/ui/EmptyState';
-import { Table, Thead, Tbody, Trow, Tcell, TableFooter } from '../../components/ui/Table';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { useToast } from '../../components/ui/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
+import { Loader2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 const BRANCH_OPTIONS = [
   { id: '', label: 'All Branches' },
@@ -371,7 +372,11 @@ export default function AfterHoursReport() {
 
   const handleDownloadReport = async () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     setDownloading(true);
@@ -457,299 +462,310 @@ export default function AfterHoursReport() {
       <div className="space-y-5">
         <FeatureStoryBanner story={getFeatureStory('after-hours-report')} />
 
-        <Card
-          variant="compact"
-          className="overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-background via-background to-muted/20 shadow-sm"
-        >
-          <div className="grid gap-5 border-b border-border/60 px-5 py-5 lg:grid-cols-2 lg:px-6">
-            <div className="space-y-3">
-              <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                <span className="material-symbols-outlined text-sm text-status-info">
-                  assessment
-                </span>
-                After-Hours Monthly Report
-              </div>
+        <Card className="py-3 overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-background via-background to-muted/20 shadow-sm">
+          <CardContent>
+            <div className="grid gap-5 border-b border-border/60 px-5 py-5 lg:grid-cols-2 lg:px-6">
+              <div className="space-y-3">
+                <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  <span className="material-symbols-outlined text-sm text-status-info">
+                    assessment
+                  </span>
+                  After-Hours Monthly Report
+                </div>
 
-              <div className="space-y-2">
-                <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                  Report bulanan yang rapi, bisa dicari, dan siap dibagikan
-                </h2>
-                <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                  Pilih bulan, filter branch atau nama toko, generate Excel untuk Excel/WPS, lalu
-                  kirim otomatis ke WhatsApp setiap tanggal 1 pukul 09:00 WIB. Report ini mengikuti
-                  final check sesuai konfigurasi after-hours produksi, termasuk log jam 00:00 yang
-                  dihitung ke hari report sebelumnya.
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                <span className="rounded-full border border-border/60 bg-background/70 px-3 py-1">
-                  Search + filters
-                </span>
-                <span className="rounded-full border border-border/60 bg-background/70 px-3 py-1">
-                  XLSX export
-                </span>
-                <span className="rounded-full border border-border/60 bg-background/70 px-3 py-1">
-                  Final check window
-                </span>
-                <span className="rounded-full border border-border/60 bg-background/70 px-3 py-1">
-                  WhatsApp auto-send 09:00 WIB
-                </span>
-              </div>
-            </div>
-
-            <div className="rounded-2xl border border-border/60 bg-background/90 p-4 shadow-sm">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="text-sm font-semibold text-foreground">
-                    WhatsApp Broadcast Target
-                  </h3>
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    Isi chat atau group ID tujuan untuk auto-send monthly report.
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                    Report bulanan yang rapi, bisa dicari, dan siap dibagikan
+                  </h2>
+                  <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
+                    Pilih bulan, filter branch atau nama toko, generate Excel untuk Excel/WPS, lalu
+                    kirim otomatis ke WhatsApp setiap tanggal 1 pukul 09:00 WIB. Report ini
+                    mengikuti final check sesuai konfigurasi after-hours produksi, termasuk log jam
+                    00:00 yang dihitung ke hari report sebelumnya.
                   </p>
                 </div>
 
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
-                    monthlyReportBroadcastEnabled
-                      ? 'bg-status-success/10 text-status-success'
-                      : 'bg-muted text-muted-foreground'
-                  }`}
-                >
-                  {monthlyReportBroadcastEnabled ? 'Enabled' : 'Disabled'}
-                </span>
-              </div>
-
-              <div className="mt-4 space-y-3">
-                <Input
-                  type="text"
-                  icon="send"
-                  value={monthlyReportWhatsappTargets}
-                  onChange={(e) => setMonthlyReportWhatsappTargets(e.target.value)}
-                  placeholder={MONTHLY_REPORT_WHATSAPP_TARGETS_SAMPLE}
-                  disabled={loadingMonthlyReportSettings}
-                  className="!h-11 !rounded-xl !bg-background shadow-sm"
-                />
-
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-xs text-muted-foreground">
-                    Pisahkan lebih dari satu target dengan koma. Contoh:{' '}
-                    <code className="text-foreground">
-                      {MONTHLY_REPORT_WHATSAPP_TARGETS_SAMPLE}
-                    </code>
-                  </p>
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    icon="save"
-                    onClick={handleSaveMonthlyReportSettings}
-                    loading={savingMonthlyReportSettings}
-                    disabled={loadingMonthlyReportSettings}
-                  >
-                    Save Target
-                  </Button>
+                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
+                  <span className="rounded-full border border-border/60 bg-background/70 px-3 py-1">
+                    Search + filters
+                  </span>
+                  <span className="rounded-full border border-border/60 bg-background/70 px-3 py-1">
+                    XLSX export
+                  </span>
+                  <span className="rounded-full border border-border/60 bg-background/70 px-3 py-1">
+                    Final check window
+                  </span>
+                  <span className="rounded-full border border-border/60 bg-background/70 px-3 py-1">
+                    WhatsApp auto-send 09:00 WIB
+                  </span>
                 </div>
               </div>
-            </div>
-          </div>
 
-          <div className="px-5 py-5 lg:px-6">
-            <div className="rounded-3xl border border-border/60 bg-muted/20 p-4 sm:p-5">
-              <div className="grid gap-4 xl:grid-cols-12">
-                <div className={`${TOOLBAR_PANEL_CLASS} xl:col-span-5`}>
-                  <div className="space-y-2">
-                    <p className={TOOLBAR_LABEL_CLASS}>Search Store</p>
-                    <Input
-                      type="text"
-                      icon="search"
-                      value={search}
-                      onChange={(e) => {
-                        setSearch(e.target.value);
-                        setExpandedRow(null);
-                      }}
-                      placeholder="Search violating store code or name..."
-                      wrapperClassName="w-full"
-                      className={TOOLBAR_FIELD_CLASS}
-                    />
-                    <p className="text-xs leading-5 text-muted-foreground">
-                      Cari berdasarkan store code atau nama toko yang melanggar.
+              <div className="rounded-2xl border border-border/60 bg-background/90 p-4 shadow-sm">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h3 className="text-sm font-semibold text-foreground">
+                      WhatsApp Broadcast Target
+                    </h3>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Isi chat atau group ID tujuan untuk auto-send monthly report.
                     </p>
                   </div>
+
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
+                      monthlyReportBroadcastEnabled
+                        ? 'bg-status-success/10 text-status-success'
+                        : 'bg-muted text-muted-foreground'
+                    }`}
+                  >
+                    {monthlyReportBroadcastEnabled ? 'Enabled' : 'Disabled'}
+                  </span>
                 </div>
 
-                <div className={`${TOOLBAR_PANEL_CLASS} xl:col-span-4`}>
-                  <div className="space-y-3">
-                    <div className="space-y-1">
-                      <p className={TOOLBAR_LABEL_CLASS}>Report Period</p>
-                      <p className="text-sm font-semibold text-foreground">
-                        {formatMonthLabel(month + '-01')}
+                <div className="mt-4 space-y-3">
+                  <div className="relative w-full"><span
+                      className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">send</span><Input
+                      type="text"
+                      value={monthlyReportWhatsappTargets}
+                      onChange={(e) => setMonthlyReportWhatsappTargets(e.target.value)}
+                      placeholder={MONTHLY_REPORT_WHATSAPP_TARGETS_SAMPLE}
+                      disabled={loadingMonthlyReportSettings}
+                      className="pl-10 !h-11 !rounded-xl !bg-background shadow-sm" /></div>
+
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs text-muted-foreground">
+                      Pisahkan lebih dari satu target dengan koma. Contoh:{' '}
+                      <code className="text-foreground">
+                        {MONTHLY_REPORT_WHATSAPP_TARGETS_SAMPLE}
+                      </code>
+                    </p>
+                    <Button
+                      size="sm"
+                      onClick={handleSaveMonthlyReportSettings}
+                      disabled={loadingMonthlyReportSettings}
+                    >
+                      {savingMonthlyReportSettings && <Loader2 className="animate-spin mr-2" />}
+                      <span className="material-symbols-outlined mr-2">save</span>
+                      Save Target
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="px-5 py-5 lg:px-6">
+              <div className="rounded-3xl border border-border/60 bg-muted/20 p-4 sm:p-5">
+                <div className="grid gap-4 xl:grid-cols-12">
+                  <div className={`${TOOLBAR_PANEL_CLASS} xl:col-span-5`}>
+                    <div className="space-y-2">
+                      <p className={TOOLBAR_LABEL_CLASS}>Search Store</p>
+                      <div className="relative w-full w-full"><span
+                          className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
+                          type="text"
+                          value={search}
+                          onChange={(e) => {
+                            setSearch(e.target.value);
+                            setExpandedRow(null);
+                          }}
+                          placeholder="Search violating store code or name..."
+                          className={TOOLBAR_FIELD_CLASS} /></div>
+                      <p className="text-xs leading-5 text-muted-foreground">
+                        Cari berdasarkan store code atau nama toko yang melanggar.
                       </p>
                     </div>
+                  </div>
 
-                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="md"
-                        icon="chevron_left"
-                        className={TOOLBAR_ICON_BUTTON_CLASS}
-                        onClick={() => setMonth((prev) => shiftMonth(prev, -1))}
-                        aria-label="Previous month"
-                      />
+                  <div className={`${TOOLBAR_PANEL_CLASS} xl:col-span-4`}>
+                    <div className="space-y-3">
+                      <div className="space-y-1">
+                        <p className={TOOLBAR_LABEL_CLASS}>Report Period</p>
+                        <p className="text-sm font-semibold text-foreground">
+                          {formatMonthLabel(month + '-01')}
+                        </p>
+                      </div>
 
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="md"
+                          className={TOOLBAR_ICON_BUTTON_CLASS}
+                          onClick={() => setMonth((prev) => shiftMonth(prev, -1))}
+                          aria-label="Previous month"
+                        >
+                          <span className="material-symbols-outlined">chevron_left</span>
+                        </Button>
+
+                        <Select
+                          value={month}
+                          onValueChange={val => {
+                            const e = {
+                              target: {
+                                value: val
+                              }
+                            };
+
+                            return setMonth(e.target.value);
+                          }}>
+                          <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                          <SelectContent>{monthOptions.map((value) => (
+                              <SelectItem key={value} value={value}>
+                                {formatMonthLabel(`${value}-01`)}
+                              </SelectItem>
+                            ))}</SelectContent>
+                        </Select>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="md"
+                          className={TOOLBAR_ICON_BUTTON_CLASS}
+                          onClick={() => setMonth((prev) => shiftMonth(prev, 1))}
+                          disabled={month >= currentMonth}
+                          aria-label="Next month"
+                        >
+                          <span className="material-symbols-outlined">chevron_right</span>
+                        </Button>
+
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="md"
+                          className={`${TOOLBAR_BUTTON_CLASS} sm:w-36`}
+                          onClick={() => setMonth(currentMonth)}
+                        >
+                          <span className="material-symbols-outlined mr-2">today</span>
+                          This Month
+                        </Button>
+                      </div>
+
+                      <div className="space-y-2">
+                        <p className={TOOLBAR_LABEL_CLASS}>Violation Window</p>
+                        <div className="relative w-full w-full"><span
+                            className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">schedule</span><Input
+                            type="time"
+                            value={windowStart}
+                            onChange={(e) => {
+                              windowStartEditedRef.current = true;
+                              setWindowStart(e.target.value);
+                              setExpandedRow(null);
+                            }}
+                            step="300"
+                            className={TOOLBAR_FIELD_CLASS} /></div>
+                        <p className="text-xs leading-5 text-muted-foreground">
+                          Default report mulai mencatat violation dari 23:15 WIB. Ubah nilai ini
+                          hanya untuk custom report sebelum Generate / Download.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    className={`${TOOLBAR_PANEL_CLASS} grid gap-4 sm:grid-cols-2 xl:col-span-3 xl:grid-cols-1`}
+                  >
+                    <div className="space-y-2">
+                      <p className={TOOLBAR_LABEL_CLASS}>Branch</p>
                       <Select
-                        value={month}
-                        onChange={(e) => setMonth(e.target.value)}
-                        icon="calendar_month"
-                        wrapperClassName="w-full min-w-0 sm:flex-1"
-                        className={TOOLBAR_FIELD_CLASS}
-                      >
-                        {monthOptions.map((value) => (
-                          <option key={value} value={value}>
-                            {formatMonthLabel(`${value}-01`)}
-                          </option>
-                        ))}
+                        value={branch}
+                        onValueChange={val => {
+                          const e = {
+                            target: {
+                              value: val
+                            }
+                          };
+
+                          return setBranch(e.target.value);
+                        }}>
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent>{BRANCH_OPTIONS.map((b) => (
+                            <SelectItem key={b.id} value={b.id}>
+                              {b.label}
+                            </SelectItem>
+                          ))}</SelectContent>
                       </Select>
-
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="md"
-                        icon="chevron_right"
-                        className={TOOLBAR_ICON_BUTTON_CLASS}
-                        onClick={() => setMonth((prev) => shiftMonth(prev, 1))}
-                        disabled={month >= currentMonth}
-                        aria-label="Next month"
-                      />
-
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="md"
-                        icon="today"
-                        className={`${TOOLBAR_BUTTON_CLASS} sm:w-36`}
-                        onClick={() => setMonth(currentMonth)}
-                      >
-                        This Month
-                      </Button>
                     </div>
 
                     <div className="space-y-2">
-                      <p className={TOOLBAR_LABEL_CLASS}>Violation Window</p>
-                      <Input
-                        type="time"
-                        value={windowStart}
-                        onChange={(e) => {
-                          windowStartEditedRef.current = true;
-                          setWindowStart(e.target.value);
-                          setExpandedRow(null);
-                        }}
-                        step="300"
-                        icon="schedule"
-                        wrapperClassName="w-full"
-                        className={TOOLBAR_FIELD_CLASS}
-                      />
-                      <p className="text-xs leading-5 text-muted-foreground">
-                        Default report mulai mencatat violation dari 23:15 WIB. Ubah nilai ini hanya
-                        untuk custom report sebelum Generate / Download.
-                      </p>
+                      <p className={TOOLBAR_LABEL_CLASS}>Ranking Limit</p>
+                      <Select
+                        value={limit}
+                        onValueChange={val => {
+                          const e = {
+                            target: {
+                              value: val
+                            }
+                          };
+
+                          return setLimit(e.target.value);
+                        }}>
+                        <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                        <SelectContent>{LIMIT_OPTIONS.map((opt) => (
+                            <SelectItem key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </SelectItem>
+                          ))}</SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
 
-                <div
-                  className={`${TOOLBAR_PANEL_CLASS} grid gap-4 sm:grid-cols-2 xl:col-span-3 xl:grid-cols-1`}
-                >
-                  <div className="space-y-2">
-                    <p className={TOOLBAR_LABEL_CLASS}>Branch</p>
-                    <Select
-                      value={branch}
-                      onChange={(e) => setBranch(e.target.value)}
-                      wrapperClassName="w-full min-w-0"
-                      className={TOOLBAR_FIELD_CLASS}
-                    >
-                      {BRANCH_OPTIONS.map((b) => (
-                        <option key={b.id} value={b.id}>
-                          {b.label}
-                        </option>
-                      ))}
-                    </Select>
+                <div className="mt-4 flex flex-col gap-4 border-t border-border/60 pt-4 xl:flex-row xl:items-center xl:justify-between">
+                  <div className="flex flex-wrap gap-2">
+                    {activeFilters.map((item) => (
+                      <span key={item} className={TOOLBAR_META_PILL_CLASS}>
+                        {item}
+                      </span>
+                    ))}
                   </div>
 
-                  <div className="space-y-2">
-                    <p className={TOOLBAR_LABEL_CLASS}>Ranking Limit</p>
-                    <Select
-                      value={limit}
-                      onChange={(e) => setLimit(e.target.value)}
-                      wrapperClassName="w-full min-w-0"
-                      className={TOOLBAR_FIELD_CLASS}
-                    >
-                      {LIMIT_OPTIONS.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </Select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 flex flex-col gap-4 border-t border-border/60 pt-4 xl:flex-row xl:items-center xl:justify-between">
-                <div className="flex flex-wrap gap-2">
-                  {activeFilters.map((item) => (
-                    <span key={item} className={TOOLBAR_META_PILL_CLASS}>
-                      {item}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
-                  <Button
-                    variant="ghost"
-                    size="md"
-                    icon="filter_list"
-                    className={`${TOOLBAR_BUTTON_CLASS} sm:w-32`}
-                    onClick={() => {
-                      setBranch('');
-                      setSearch('');
-                      setLimit('20');
-                      windowStartEditedRef.current = false;
-                      setWindowStart(DEFAULT_WINDOW_START);
-                      setMonth(getDefaultMonth());
-                      setExpandedRow(null);
-                    }}
-                  >
-                    Reset
-                  </Button>
-
-                  {hasExportableReport && (
+                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
                     <Button
-                      variant="secondary"
+                      variant="ghost"
                       size="md"
-                      icon={downloading ? 'hourglass_top' : 'download'}
-                      className={`${TOOLBAR_BUTTON_CLASS} sm:w-40`}
-                      onClick={handleDownloadReport}
-                      loading={downloading}
-                      disabled={loading || generating || downloading}
+                      className={`${TOOLBAR_BUTTON_CLASS} sm:w-32`}
+                      onClick={() => {
+                        setBranch('');
+                        setSearch('');
+                        setLimit('20');
+                        windowStartEditedRef.current = false;
+                        setWindowStart(DEFAULT_WINDOW_START);
+                        setMonth(getDefaultMonth());
+                        setExpandedRow(null);
+                      }}
                     >
-                      {downloading ? 'Downloading...' : 'Download Excel'}
+                      <span className="material-symbols-outlined mr-2">filter_list</span>
+                      Reset
                     </Button>
-                  )}
 
-                  <Button
-                    icon={generating ? 'hourglass_top' : 'summarize'}
-                    onClick={handleGenerate}
-                    variant="primary"
-                    size="md"
-                    className={`${TOOLBAR_PRIMARY_BUTTON_CLASS} sm:w-44`}
-                    loading={generating}
-                  >
-                    {generating ? 'Generating...' : 'Generate Report'}
-                  </Button>
+                    {hasExportableReport && (
+                      <Button
+                        variant="secondary"
+                        size="md"
+                        icon={downloading ? 'hourglass_top' : 'download'}
+                        className={`${TOOLBAR_BUTTON_CLASS} sm:w-40`}
+                        onClick={handleDownloadReport}
+                        loading={downloading}
+                        disabled={loading || generating || downloading}
+                      >
+                        <Loader2 className="animate-spin mr-2" />
+                        {downloading ? 'Downloading...' : 'Download Excel'}
+                      </Button>
+                    )}
+
+                    <Button
+                      icon={generating ? 'hourglass_top' : 'summarize'}
+                      onClick={handleGenerate}
+                      size="md"
+                      className={`${TOOLBAR_PRIMARY_BUTTON_CLASS} sm:w-44`}
+                    >
+                      {generating && <Loader2 className="animate-spin mr-2" />}
+                      {generating ? 'Generating...' : 'Generate Report'}
+                    </Button>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          </CardContent>
         </Card>
         {/* Month Chips */}
         {availableMonths.length > 0 && (
@@ -761,17 +777,15 @@ export default function AfterHoursReport() {
                   ? m.report_month.slice(0, 7)
                   : new Date(m.report_month).toISOString().slice(0, 7);
               return (
-                <button
+                <Button
                   key={monthStr}
+                  size="sm"
+                  variant={monthStr === month ? 'default' : 'secondary'}
                   onClick={() => setMonth(monthStr)}
-                  className={`rounded-full px-3 py-1 text-xs transition-colors ${
-                    monthStr === month
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                  }`}
+                  className="h-7 rounded-full px-3 text-xs"
                 >
                   {formatMonthLabel(m.report_month)} ({m.store_count})
-                </button>
+                </Button>
               );
             })}
           </div>
@@ -823,145 +837,146 @@ export default function AfterHoursReport() {
         </div>
 
         {/* Ranking Table */}
-        <Card variant="table">
-          {!loading && ranking.length > 0 && (
-            <div className="flex flex-col gap-1 border-b border-border bg-muted/20 px-4 py-3 text-xs sm:flex-row sm:items-center sm:justify-between">
-              <span className="font-medium text-foreground">
-                {selectedBranchLabel} • {formatMonthLabel(month + '-01')}
-              </span>
-              <span className="text-muted-foreground">Top {ranking.length} toko pelanggar</span>
-            </div>
-          )}
-
-          {loading ? (
-            <div className="flex h-32 items-center justify-center">
-              <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-            </div>
-          ) : ranking.length === 0 ? (
-            <EmptyState
-              title="No report data"
-              description={
-                normalizedSearch
-                  ? `Tidak ada toko pelanggar yang cocok dengan pencarian "${normalizedSearch}" untuk ${formatMonthLabel(month + '-01')}.`
-                  : `Belum ada data report untuk ${formatMonthLabel(month + '-01')}. Klik "Generate Report" untuk membuat report.`
-              }
-              icon="assessment"
-            />
-          ) : (
-            <Table>
-              <Thead>
-                <Tcell as="th">Rank</Tcell>
-                <Tcell as="th">Store</Tcell>
-                <Tcell as="th">Branch</Tcell>
-                <Tcell as="th">Violation Days</Tcell>
-                <Tcell as="th">Detail</Tcell>
-              </Thead>
-              <Tbody>
-                {ranking.map((item) => {
-                  const isExpanded = expandedRow === item.store_code;
-                  const dates = Array.isArray(item.violation_dates) ? item.violation_dates : [];
-                  const timestamps = Array.isArray(item.violation_timestamps)
-                    ? item.violation_timestamps
-                    : [];
-                  const detailItems = timestamps.length > 0 ? timestamps : dates;
-                  const detailLabel = timestamps.length > 0 ? 'waktu' : 'tanggal';
-                  return (
-                    <React.Fragment key={item.store_code}>
-                      <Trow className={item.rank <= 3 ? 'bg-destructive/5' : ''}>
-                        <Tcell>
-                          <span className="flex items-center gap-1.5">
-                            {item.rank <= 3 ? (
-                              <span
-                                className={`material-symbols-outlined text-lg ${medalClasses[item.rank - 1]}`}
-                              >
-                                emoji_events
-                              </span>
-                            ) : (
-                              <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-secondary-foreground">
-                                {item.rank}
-                              </span>
-                            )}
-                          </span>
-                        </Tcell>
-                        <Tcell>
-                          <div className="flex flex-col">
-                            <span className="font-mono text-xs text-foreground">
-                              {item.store_code}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {item.store_name || '—'}
-                            </span>
-                          </div>
-                        </Tcell>
-                        <Tcell>
-                          <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
-                            {item.branch_name || item.branch_id}
-                          </span>
-                        </Tcell>
-                        <Tcell>
-                          <span className="flex items-center gap-1.5">
-                            <span
-                              className={`text-sm font-bold ${
-                                item.violation_count >= 20
-                                  ? 'text-destructive'
-                                  : item.violation_count >= 10
-                                    ? 'text-status-warning'
-                                    : 'text-foreground'
-                              }`}
-                            >
-                              {item.violation_count}
-                            </span>
-                            <span className="text-xs text-muted-foreground">hari</span>
-                          </span>
-                        </Tcell>
-                        <Tcell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            icon={isExpanded ? 'expand_less' : 'expand_more'}
-                            onClick={() => setExpandedRow(isExpanded ? null : item.store_code)}
-                          >
-                            {detailItems.length} {detailLabel}
-                          </Button>
-                        </Tcell>
-                      </Trow>
-                      {isExpanded && detailItems.length > 0 && (
-                        <Trow>
-                          <Tcell />
-                          <Tcell colSpan={4}>
-                            <div className="flex flex-wrap gap-1.5 py-1">
-                              {detailItems.map((timestampStr) => (
+        <Card className="p-0 overflow-hidden">
+          <CardContent className="p-0">
+            {!loading && ranking.length > 0 && (
+              <div className="flex flex-col gap-1 border-b border-border bg-muted/20 px-4 py-3 text-xs sm:flex-row sm:items-center sm:justify-between">
+                <span className="font-medium text-foreground">
+                  {selectedBranchLabel} • {formatMonthLabel(month + '-01')}
+                </span>
+                <span className="text-muted-foreground">Top {ranking.length} toko pelanggar</span>
+              </div>
+            )}
+            {loading ? (
+              <div className="flex h-32 items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              </div>
+            ) : ranking.length === 0 ? (
+              <EmptyState
+                title="No report data"
+                description={
+                  normalizedSearch
+                    ? `Tidak ada toko pelanggar yang cocok dengan pencarian "${normalizedSearch}" untuk ${formatMonthLabel(month + '-01')}.`
+                    : `Belum ada data report untuk ${formatMonthLabel(month + '-01')}. Klik "Generate Report" untuk membuat report.`
+                }
+                icon="assessment"
+              />
+            ) : (
+              <Table>
+                <TableHeader><TableRow>
+                    <TableHead>Rank</TableHead>
+                    <TableHead>Store</TableHead>
+                    <TableHead>Branch</TableHead>
+                    <TableHead>Violation Days</TableHead>
+                    <TableHead>Detail</TableHead>
+                  </TableRow></TableHeader>
+                <TableBody>
+                  {ranking.map((item) => {
+                    const isExpanded = expandedRow === item.store_code;
+                    const dates = Array.isArray(item.violation_dates) ? item.violation_dates : [];
+                    const timestamps = Array.isArray(item.violation_timestamps)
+                      ? item.violation_timestamps
+                      : [];
+                    const detailItems = timestamps.length > 0 ? timestamps : dates;
+                    const detailLabel = timestamps.length > 0 ? 'waktu' : 'tanggal';
+                    return (
+                      <React.Fragment key={item.store_code}>
+                        <TableRow className={item.rank <= 3 ? 'bg-destructive/5' : ''}>
+                          <TableCell>
+                            <span className="flex items-center gap-1.5">
+                              {item.rank <= 3 ? (
                                 <span
-                                  key={timestampStr}
-                                  className="inline-flex items-center rounded-full border border-border/60 bg-background px-2.5 py-1 text-xs text-foreground shadow-sm"
+                                  className={`material-symbols-outlined text-lg ${medalClasses[item.rank - 1]}`}
                                 >
-                                  {formatReportTimelineItem(timestampStr)}
+                                  emoji_events
                                 </span>
-                              ))}
+                              ) : (
+                                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-secondary-foreground">
+                                  {item.rank}
+                                </span>
+                              )}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-mono text-xs text-foreground">
+                                {item.store_code}
+                              </span>
+                              <span className="text-xs text-muted-foreground">
+                                {item.store_name || '—'}
+                              </span>
                             </div>
-                          </Tcell>
-                        </Trow>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </Tbody>
-            </Table>
-          )}
-
-          {!loading && ranking.length > 0 && (
-            <TableFooter>
-              <span className="text-muted-foreground">
-                Showing <span className="font-medium text-foreground">{ranking.length}</span> of{' '}
-                <span className="font-medium text-foreground">{totalStores}</span> toko pelanggar
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {ranking[0]?.generated_at
-                  ? `Generated: ${formatGeneratedAt(ranking[0].generated_at)}`
-                  : ''}
-              </span>
-            </TableFooter>
-          )}
+                          </TableCell>
+                          <TableCell>
+                            <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
+                              {item.branch_name || item.branch_id}
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <span className="flex items-center gap-1.5">
+                              <span
+                                className={`text-sm font-bold ${
+                                  item.violation_count >= 20
+                                    ? 'text-destructive'
+                                    : item.violation_count >= 10
+                                      ? 'text-status-warning'
+                                      : 'text-foreground'
+                                }`}
+                              >
+                                {item.violation_count}
+                              </span>
+                              <span className="text-xs text-muted-foreground">hari</span>
+                            </span>
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              icon={isExpanded ? 'expand_less' : 'expand_more'}
+                              onClick={() => setExpandedRow(isExpanded ? null : item.store_code)}
+                            >
+                              {detailItems.length} {detailLabel}
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                        {isExpanded && detailItems.length > 0 && (
+                          <TableRow>
+                            <TableCell />
+                            <TableCell colSpan={4}>
+                              <div className="flex flex-wrap gap-1.5 py-1">
+                                {detailItems.map((timestampStr) => (
+                                  <span
+                                    key={timestampStr}
+                                    className="inline-flex items-center rounded-full border border-border/60 bg-background px-2.5 py-1 text-xs text-foreground shadow-sm"
+                                  >
+                                    {formatReportTimelineItem(timestampStr)}
+                                  </span>
+                                ))}
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        )}
+                      </React.Fragment>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            )}
+            {!loading && ranking.length > 0 && (
+              <div
+                className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+                <span className="text-muted-foreground">
+                  Showing <span className="font-medium text-foreground">{ranking.length}</span> of{' '}
+                  <span className="font-medium text-foreground">{totalStores}</span> toko pelanggar
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {ranking[0]?.generated_at
+                    ? `Generated: ${formatGeneratedAt(ranking[0].generated_at)}`
+                    : ''}
+                </span>
+              </div>
+            )}
+          </CardContent>
         </Card>
       </div>
     </>

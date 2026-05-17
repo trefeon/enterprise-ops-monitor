@@ -15,7 +15,10 @@ const StatusBadge = ({ variant = 'neutral', size = 'md', className = '', childre
   };
 
   return (
-    <Badge variant={variants[variant] || variants.neutral} className={`${sizes[size] || sizes.md} ${className}`}>
+    <Badge
+      variant={variants[variant] || variants.neutral}
+      className={`${sizes[size] || sizes.md} ${className}`}
+    >
       {children}
     </Badge>
   );

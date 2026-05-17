@@ -4,15 +4,16 @@ import { Guard } from '../../components/auth/Guard';
 import { useToast } from '../../components/ui/ToastContext';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import EmptyState from '../../components/ui/EmptyState';
-import Button from '../../components/ui/Button';
+import { Button } from '@/components/ui/button';
 import IconButton from '../../components/ui/IconButton';
 import StatusBadge from '../../components/ui/StatusBadge';
 import ProgressBar from '../../components/ui/ProgressBar';
-import Card from '../../components/ui/Card';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
-import { Table, TableEmpty, Tbody, Tcell, Thead, Trow } from '../../components/ui/Table';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { formatDate, formatDateTime, formatTime } from '../../lib/date';
 import { getFeatureStory } from '../../data/stories';
+import { Loader2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 const formatBytes = (value) => {
   if (!Number.isFinite(value)) return '-';
@@ -114,7 +115,11 @@ const Backups = () => {
 
   const handleRefresh = useCallback(() => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     refreshAll();
@@ -126,7 +131,11 @@ const Backups = () => {
 
   const runManualBackup = async () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     setManualLoading(true);
@@ -148,7 +157,11 @@ const Backups = () => {
 
   const handleDelete = useCallback(async () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     if (!deleteTarget) return;
@@ -168,7 +181,11 @@ const Backups = () => {
 
   const handleRestore = useCallback(async () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     if (!restoreTarget) return;
@@ -189,7 +206,11 @@ const Backups = () => {
   const handleDownload = useCallback(
     async (row) => {
       if (isDemoUser) {
-        push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+        push({
+          variant: 'warning',
+          title: 'Demo Account',
+          message: 'This action is not available in the demo account.',
+        });
         return;
       }
       try {
@@ -272,7 +293,6 @@ const Backups = () => {
   return (
     <div className="page-container">
       <FeatureStoryBanner story={getFeatureStory('backups')} />
-
       <header className="flex flex-col gap-4">
         <div className="page-header">
           <div className="space-y-1">
@@ -283,253 +303,255 @@ const Backups = () => {
             <div className="page-meta">Latest backup {formatDateTime(summary?.latestBackupAt)}</div>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" icon="refresh" onClick={handleRefresh} disabled={isLoading}>
+            <Button variant="secondary" onClick={handleRefresh} disabled={isLoading}>
+              <span className="material-symbols-outlined mr-2">refresh</span>
               Refresh
             </Button>
             <Guard user={user} permission="BACKUPS_RUN">
-              <Button
-                variant="primary"
-                icon="play_arrow"
-                onClick={runManualBackup}
-                loading={manualLoading}
-              >
+              <Button onClick={runManualBackup}>
+                {manualLoading && <Loader2 className="animate-spin mr-2" />}
+                <span className="material-symbols-outlined mr-2">play_arrow</span>
                 Run Backup Now
               </Button>
             </Guard>
           </div>
         </div>
       </header>
-
       {error && !hasNoData && (
         <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </div>
       )}
-
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <Card className="flex flex-col justify-between gap-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-foreground">
-              <span className="material-symbols-outlined text-xl text-muted-foreground">
-                hard_drive
-              </span>
-              <h3 className="text-sm font-semibold">Storage Usage</h3>
-            </div>
-            <StatusBadge variant={storageStatus.variant}>{storageStatus.label}</StatusBadge>
-          </div>
-          <div className="space-y-3">
-            <div className="flex items-end justify-between">
-              <span className="text-2xl font-bold text-foreground">
-                {diskUsed != null ? formatBytes(diskUsed) : '-'}{' '}
-                <span className="text-sm font-normal text-muted-foreground">
-                  / {diskTotal != null ? formatBytes(diskTotal) : '-'}
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-foreground">
+                <span className="material-symbols-outlined text-xl text-muted-foreground">
+                  hard_drive
                 </span>
-              </span>
-              <span className="text-sm font-medium text-foreground">
-                {diskPercent != null ? `${diskPercent.toFixed(0)}%` : '-'}
-              </span>
+                <h3 className="text-sm font-semibold">Storage Usage</h3>
+              </div>
+              <StatusBadge variant={storageStatus.variant}>{storageStatus.label}</StatusBadge>
             </div>
-            <ProgressBar
-              value={diskPercent != null ? Math.min(diskPercent, 100) : 0}
-              trackClassName="bg-muted border border-border"
-              barClassName="bg-primary"
-            />
-            <p className="text-xs text-muted-foreground">
-              {diskFree != null
-                ? `${formatBytes(diskFree)} free space remaining`
-                : 'Disk usage data unavailable'}
-              {summary?.storagePath && (
-                <>
-                  {' '}
-                  on{' '}
-                  <code className="relative rounded bg-muted border border-border px-1 py-0.5 font-mono text-sm font-semibold text-foreground">
-                    {summary.storagePath}
-                  </code>
-                </>
-              )}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Total backups size {formatBytes(summary?.totalSizeBytes)}
-            </p>
-          </div>
+            <div className="space-y-3">
+              <div className="flex items-end justify-between">
+                <span className="text-2xl font-bold text-foreground">
+                  {diskUsed != null ? formatBytes(diskUsed) : '-'}{' '}
+                  <span className="text-sm font-normal text-muted-foreground">
+                    / {diskTotal != null ? formatBytes(diskTotal) : '-'}
+                  </span>
+                </span>
+                <span className="text-sm font-medium text-foreground">
+                  {diskPercent != null ? `${diskPercent.toFixed(0)}%` : '-'}
+                </span>
+              </div>
+              <ProgressBar
+                value={diskPercent != null ? Math.min(diskPercent, 100) : 0}
+                trackClassName="bg-muted border border-border"
+                barClassName="bg-primary"
+              />
+              <p className="text-xs text-muted-foreground">
+                {diskFree != null
+                  ? `${formatBytes(diskFree)} free space remaining`
+                  : 'Disk usage data unavailable'}
+                {summary?.storagePath && (
+                  <>
+                    {' '}
+                    on{' '}
+                    <code className="relative rounded bg-muted border border-border px-1 py-0.5 font-mono text-sm font-semibold text-foreground">
+                      {summary.storagePath}
+                    </code>
+                  </>
+                )}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Total backups size {formatBytes(summary?.totalSizeBytes)}
+              </p>
+            </div>
+          </CardContent>
         </Card>
 
         <Card className="flex flex-col justify-between gap-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2 text-foreground">
-              <span className="material-symbols-outlined text-xl text-muted-foreground">
-                schedule
-              </span>
-              <h3 className="text-sm font-semibold">Backup Schedule</h3>
-            </div>
-            <StatusBadge variant={scheduleStatusVariant}>{scheduleStatusLabel}</StatusBadge>
-          </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-1">
-              <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                Schedule
-              </span>
-              <span className="text-base font-medium text-foreground">
-                {scheduleTime
-                  ? `Daily ${scheduleTime} WIB`
-                  : scheduleCron
-                    ? 'Custom schedule'
-                    : '-'}
-              </span>
-              <span className="text-xs text-muted-foreground">TZ: {scheduleTz}</span>
-            </div>
-            <div className="flex flex-col gap-1 border-l border-border pl-4">
-              <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                Latest Backup
-              </span>
-              <span className="text-base font-medium text-foreground">
-                {formatDateTime(summary?.latestBackupAt)}
-              </span>
-              <span className="text-xs text-muted-foreground">
-                {summary?.latestFileName || '-'}
-              </span>
-              <span className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                <span className="material-symbols-outlined text-sm text-muted-foreground">
-                  {scheduleStatusIcon}
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-foreground">
+                <span className="material-symbols-outlined text-xl text-muted-foreground">
+                  schedule
                 </span>
-                {scheduleStatusText}
-              </span>
+                <h3 className="text-sm font-semibold">Backup Schedule</h3>
+              </div>
+              <StatusBadge variant={scheduleStatusVariant}>{scheduleStatusLabel}</StatusBadge>
             </div>
-          </div>
-          <div className="text-xs text-muted-foreground">
-            Total snapshots {backupCount != null ? backupCount : '-'}
-          </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                  Schedule
+                </span>
+                <span className="text-base font-medium text-foreground">
+                  {scheduleTime
+                    ? `Daily ${scheduleTime} WIB`
+                    : scheduleCron
+                      ? 'Custom schedule'
+                      : '-'}
+                </span>
+                <span className="text-xs text-muted-foreground">TZ: {scheduleTz}</span>
+              </div>
+              <div className="flex flex-col gap-1 border-l border-border pl-4">
+                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
+                  Latest Backup
+                </span>
+                <span className="text-base font-medium text-foreground">
+                  {formatDateTime(summary?.latestBackupAt)}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  {summary?.latestFileName || '-'}
+                </span>
+                <span className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                  <span className="material-symbols-outlined text-sm text-muted-foreground">
+                    {scheduleStatusIcon}
+                  </span>
+                  {scheduleStatusText}
+                </span>
+              </div>
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Total snapshots {backupCount != null ? backupCount : '-'}
+            </div>
+          </CardContent>
         </Card>
       </section>
-
       <section className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="section-title">Recent Snapshots</h2>
           <IconButton icon="refresh" label="Refresh" onClick={handleRefresh} disabled={isLoading} />
         </div>
-        <Card variant="table">
-          <Table className="table-fixed">
-            <Thead>
-              <Tcell as="th" className="w-2/5">
-                File Name
-              </Tcell>
-              <Tcell as="th" className="w-1/5 text-right">
-                Size
-              </Tcell>
-              <Tcell as="th" className="w-1/5 text-center">
-                Date Created
-              </Tcell>
-              <Tcell as="th" className="w-1/5 text-center">
-                Actions
-              </Tcell>
-            </Thead>
-            <Tbody>
-              {loadingFiles && files.length === 0 ? (
-                <TableEmpty colSpan={4}>Loading backups...</TableEmpty>
-              ) : filesWithMeta.length === 0 ? (
-                <TableEmpty colSpan={4}>No backup files available.</TableEmpty>
-              ) : (
-                filesWithMeta.map((file) => (
-                  <Trow key={file.fileName} className="group">
-                    <Tcell className="truncate">
-                      <div className="flex items-center gap-3 truncate">
-                        <div className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-md bg-muted text-foreground border border-border">
-                          <span className="material-symbols-outlined text-xl">{file.typeIcon}</span>
+        <Card className="p-0 overflow-hidden">
+          <CardContent className="p-0">
+            <Table className="table-fixed">
+              <TableHeader><TableRow>
+                  <TableHead className="w-2/5">
+                    File Name
+                  </TableHead>
+                  <TableHead className="w-1/5 text-right">
+                    Size
+                  </TableHead>
+                  <TableHead className="w-1/5 text-center">
+                    Date Created
+                  </TableHead>
+                  <TableHead className="w-1/5 text-center">
+                    Actions
+                  </TableHead>
+                </TableRow></TableHeader>
+              <TableBody>
+                {loadingFiles && files.length === 0 ? (
+                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">Loading backups...</TableCell></TableRow>
+                ) : filesWithMeta.length === 0 ? (
+                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">No backup files available.</TableCell></TableRow>
+                ) : (
+                  filesWithMeta.map((file) => (
+                    <TableRow key={file.fileName} className="group">
+                      <TableCell className="truncate">
+                        <div className="flex items-center gap-3 truncate">
+                          <div className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-md bg-muted text-foreground border border-border">
+                            <span className="material-symbols-outlined text-xl">
+                              {file.typeIcon}
+                            </span>
+                          </div>
+                          <div className="flex flex-col truncate">
+                            <span
+                              className="font-medium text-foreground truncate"
+                              title={file.fileName}
+                            >
+                              {file.fileName}
+                            </span>
+                            <span className="text-xs text-muted-foreground">{file.typeLabel}</span>
+                          </div>
                         </div>
-                        <div className="flex flex-col truncate">
-                          <span
-                            className="font-medium text-foreground truncate"
-                            title={file.fileName}
-                          >
-                            {file.fileName}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground font-mono text-right">
+                        {formatBytes(file.sizeBytes)}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-center">
+                        <div className="flex flex-col">
+                          <span>{formatDate(file.modifiedAt)}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {formatTime(file.modifiedAt)}
                           </span>
-                          <span className="text-xs text-muted-foreground">{file.typeLabel}</span>
                         </div>
-                      </div>
-                    </Tcell>
-                    <Tcell className="text-muted-foreground font-mono text-right">
-                      {formatBytes(file.sizeBytes)}
-                    </Tcell>
-                    <Tcell className="text-muted-foreground text-center">
-                      <div className="flex flex-col">
-                        <span>{formatDate(file.modifiedAt)}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {formatTime(file.modifiedAt)}
-                        </span>
-                      </div>
-                    </Tcell>
-                    <Tcell className="text-center">
-                      <div className="flex items-center justify-center gap-2">
-                        <Guard user={user} permission="BACKUPS_RESTORE">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={() => {
-                              setRestoreConfirm('');
-                              setRestoreTarget(file);
-                            }}
-                          >
-                            Restore
-                          </Button>
-                        </Guard>
-                        <IconButton
-                          icon="download"
-                          label="Download"
-                          onClick={() => handleDownload(file)}
-                        />
-                        <Guard user={user} permission="BACKUPS_DELETE">
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <Guard user={user} permission="BACKUPS_RESTORE">
+                            <Button
+                              size="sm"
+                              variant="secondary"
+                              onClick={() => {
+                                setRestoreConfirm('');
+                                setRestoreTarget(file);
+                              }}
+                            >
+                              Restore
+                            </Button>
+                          </Guard>
                           <IconButton
-                            icon="delete"
-                            label="Delete backup"
-                            intent="danger"
-                            onClick={() => {
-                              setDeleteConfirm('');
-                              setDeleteTarget(file);
-                            }}
+                            icon="download"
+                            label="Download"
+                            onClick={() => handleDownload(file)}
                           />
-                        </Guard>
-                      </div>
-                    </Tcell>
-                  </Trow>
-                ))
-              )}
-            </Tbody>
-          </Table>
-          <div className="flex items-center justify-between border-t border-border px-6 py-4">
-            <p className="text-sm text-muted-foreground">
-              Showing <span className="font-medium text-foreground">{rangeStart}</span> to{' '}
-              <span className="font-medium text-foreground">{rangeEnd}</span> of{' '}
-              <span className="font-medium text-foreground">{totalItems}</span> results
-            </p>
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={pagination.page <= 1}
-                onClick={() =>
-                  setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
-                }
-              >
-                Previous
-              </Button>
-              <Button
-                size="sm"
-                variant="secondary"
-                disabled={pagination.page * pagination.pageSize >= totalItems}
-                onClick={() =>
-                  setPagination((prev) => ({
-                    ...prev,
-                    page: prev.page * prev.pageSize < totalItems ? prev.page + 1 : prev.page,
-                  }))
-                }
-              >
-                Next
-              </Button>
+                          <Guard user={user} permission="BACKUPS_DELETE">
+                            <IconButton
+                              icon="delete"
+                              label="Delete backup"
+                              intent="danger"
+                              onClick={() => {
+                                setDeleteConfirm('');
+                                setDeleteTarget(file);
+                              }}
+                            />
+                          </Guard>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+            <div className="flex items-center justify-between border-t border-border px-6 py-4">
+              <p className="text-sm text-muted-foreground">
+                Showing <span className="font-medium text-foreground">{rangeStart}</span> to{' '}
+                <span className="font-medium text-foreground">{rangeEnd}</span> of{' '}
+                <span className="font-medium text-foreground">{totalItems}</span> results
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={pagination.page <= 1}
+                  onClick={() =>
+                    setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
+                  }
+                >
+                  Previous
+                </Button>
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  disabled={pagination.page * pagination.pageSize >= totalItems}
+                  onClick={() =>
+                    setPagination((prev) => ({
+                      ...prev,
+                      page: prev.page * prev.pageSize < totalItems ? prev.page + 1 : prev.page,
+                    }))
+                  }
+                >
+                  Next
+                </Button>
+              </div>
             </div>
-          </div>
+          </CardContent>
         </Card>
       </section>
-
       <ConfirmDialog
         open={Boolean(deleteTarget)}
         title="Delete backup file"
@@ -546,7 +568,6 @@ const Backups = () => {
         }}
         confirmLabel="Filename confirmation"
       />
-
       <ConfirmDialog
         open={Boolean(restoreTarget)}
         title="Restore database"

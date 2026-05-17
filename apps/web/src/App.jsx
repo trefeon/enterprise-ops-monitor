@@ -6,6 +6,7 @@ import ErrorBoundary from './components/ErrorBoundary';
 import { ToastProvider } from './components/ui/Toast';
 import PrivateRoute from './components/PrivateRoute';
 import { Permissions } from './lib/auth/permissions';
+import PageTransition from './components/PageTransition';
 
 const Login = lazy(() => import('./pages/Login'));
 const LiveSync = lazy(() => import('./pages/LiveSync'));
@@ -35,9 +36,9 @@ function App() {
               fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}
             >
               <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/live" element={<LiveSync />} />
-                <Route path="/live.html" element={<LiveSync />} />
+                <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+                <Route path="/live" element={<PageTransition><LiveSync /></PageTransition>} />
+                <Route path="/live.html" element={<PageTransition><LiveSync /></PageTransition>} />
 
                 <Route element={<PrivateRoute />}>
                   <Route element={<AppShell />}>

@@ -1,10 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PageShell from '../../components/ui/PageShell';
 import PageHeader from '../../components/ui/PageHeader';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Select from '../../components/ui/Select';
+import { Button } from '@/components/ui/button';
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DataTable from '../../components/ui/DataTable';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import Modal from '../../components/ui/Modal';
@@ -15,6 +14,8 @@ import { apiGet, apiPatch, apiPost, apiDelete } from '../../lib/api/client';
 import UserAccessModal from '../../components/UserAccessModal';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
+import { Loader2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function UsersAdmin() {
   const { user } = useAuth();
@@ -206,7 +207,7 @@ export default function UsersAdmin() {
               {canReset && (
                 <Button
                   size="sm"
-                  variant="danger"
+                  variant="destructive"
                   onClick={(e) => {
                     e.stopPropagation();
                     setResetUser(row);
@@ -220,7 +221,7 @@ export default function UsersAdmin() {
               {canDelete && (
                 <Button
                   size="sm"
-                  variant="danger"
+                  variant="destructive"
                   onClick={(e) => {
                     e.stopPropagation();
                     setDeleteUser(row);
@@ -357,9 +358,11 @@ export default function UsersAdmin() {
         <FeatureStoryBanner story={getFeatureStory('accounts')} />
         <PageHeader title="Users" subtitle="Account management" />
         <Card className="p-6">
-          <div className="text-sm text-muted-foreground">
-            You do not have access to manage users.
-          </div>
+          <CardContent>
+            <div className="text-sm text-muted-foreground">
+              You do not have access to manage users.
+            </div>
+          </CardContent>
         </Card>
       </PageShell>
     );
@@ -368,7 +371,6 @@ export default function UsersAdmin() {
   return (
     <PageShell>
       <FeatureStoryBanner story={getFeatureStory('accounts')} />
-
       <PageHeader
         title="Users"
         subtitle="Manage accounts, roles, and access permissions"
@@ -380,75 +382,83 @@ export default function UsersAdmin() {
           ) : null
         }
       />
-
       <Card className="p-4">
-        <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-          <div className="w-full md:max-w-sm">
-            <label className="text-xs text-muted-foreground">Search username</label>
-            <Input
-              value={q}
-              onChange={(e) => {
-                setQ(e.target.value);
-                setPage(1);
-              }}
-              placeholder="Search..."
-              icon="search"
-            />
+        <CardContent>
+          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+            <div className="w-full md:max-w-sm">
+              <label className="text-xs text-muted-foreground">Search username</label>
+              <div className="relative w-full"><span
+                  className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
+                  value={q}
+                  onChange={(e) => {
+                    setQ(e.target.value);
+                    setPage(1);
+                  }}
+                  placeholder="Search..."
+                  className="pl-10" /></div>
+            </div>
           </div>
-        </div>
+        </CardContent>
       </Card>
-
       {createOpen && (
         <Card className="p-4">
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <div>
-              <label className="text-xs text-muted-foreground">Username</label>
-              <Input
-                value={createForm.username}
-                onChange={(e) => setCreateForm((s) => ({ ...s, username: e.target.value }))}
-                placeholder="username"
-              />
-            </div>
-            <div>
-              <label className="text-xs text-muted-foreground">Password</label>
-              <Input
-                type="password"
-                value={createForm.password}
-                onChange={(e) => setCreateForm((s) => ({ ...s, password: e.target.value }))}
-                placeholder="temporary password"
-              />
-              <div className="mt-1 text-xs text-muted-foreground">
-                Min 8 chars with uppercase, lowercase, number, and special character.
+          <CardContent>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+              <div>
+                <label className="text-xs text-muted-foreground">Username</label>
+                <Input
+                  value={createForm.username}
+                  onChange={(e) => setCreateForm((s) => ({ ...s, username: e.target.value }))}
+                  placeholder="username"
+                />
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Password</label>
+                <Input
+                  type="password"
+                  value={createForm.password}
+                  onChange={(e) => setCreateForm((s) => ({ ...s, password: e.target.value }))}
+                  placeholder="temporary password"
+                />
+                <div className="mt-1 text-xs text-muted-foreground">
+                  Min 8 chars with uppercase, lowercase, number, and special character.
+                </div>
+              </div>
+              <div>
+                <label className="text-xs text-muted-foreground">Role</label>
+                <Select
+                  value={createForm.role}
+                  onValueChange={val => {
+                    const e = {
+                      target: {
+                        value: val
+                      }
+                    };
+
+                    return setCreateForm((s) => ({ ...s, role: e.target.value }));
+                  }}
+                  disabled={assignableRoles.length === 0}>
+                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>{assignableRoles.map((r) => (
+                      <SelectItem key={r.id} value={r.name}>
+                        {r.label}
+                      </SelectItem>
+                    ))}</SelectContent>
+                </Select>
               </div>
             </div>
-            <div>
-              <label className="text-xs text-muted-foreground">Role</label>
-              <Select
-                value={createForm.role}
-                onChange={(e) => setCreateForm((s) => ({ ...s, role: e.target.value }))}
-                disabled={assignableRoles.length === 0}
+            <div className="mt-4 flex justify-end">
+              <Button
+                onClick={handleCreate}
+                disabled={loading || !createForm.username.trim() || !createForm.password}
               >
-                {assignableRoles.map((r) => (
-                  <option key={r.id} value={r.name}>
-                    {r.label}
-                  </option>
-                ))}
-              </Select>
+                <Loader2 className="animate-spin mr-2" />
+                Create
+              </Button>
             </div>
-          </div>
-
-          <div className="mt-4 flex justify-end">
-            <Button
-              variant="primary"
-              onClick={handleCreate}
-              disabled={loading || !createForm.username.trim() || !createForm.password}
-            >
-              Create
-            </Button>
-          </div>
+          </CardContent>
         </Card>
       )}
-
       <DataTable
         columns={columns}
         data={users}
@@ -456,7 +466,6 @@ export default function UsersAdmin() {
         pagination={pagination}
         onPageChange={(next) => setPage(next)}
       />
-
       {/* RBAC v2: Edit Access Modal */}
       <UserAccessModal
         open={accessModalOpen}
@@ -473,7 +482,6 @@ export default function UsersAdmin() {
           load();
         }}
       />
-
       <ConfirmDialog
         open={resetOpen}
         title="Reset password"
@@ -537,7 +545,6 @@ export default function UsersAdmin() {
         }
         confirmDisabled={resetLoading}
       />
-
       <ConfirmDialog
         open={deleteOpen}
         title="Delete User"
@@ -555,44 +562,36 @@ export default function UsersAdmin() {
         onConfirm={handleDelete}
         confirmDisabled={deleteLoading}
       />
-
       <Modal
         open={changePassOpen}
         onClose={closeChangePasswordModal}
         title={`Change Password for ${changePassUser?.username || ''}`}
       >
         <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  New Password
-                </label>
-                <Input
-                  type="password"
-                  value={changePassForm}
-                  onChange={(e) => setChangePassForm(e.target.value)}
-                  placeholder="Enter new password (min 8 chars)"
-                  minLength={8}
-                />
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">New Password</label>
+            <Input
+              type="password"
+              value={changePassForm}
+              onChange={(e) => setChangePassForm(e.target.value)}
+              placeholder="Enter new password (min 8 chars)"
+              minLength={8}
+            />
+          </div>
 
-              <div className="flex gap-3 pt-2">
-                <Button
-                  variant="secondary"
-                  className="flex-1"
-                  onClick={closeChangePasswordModal}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  className="flex-1"
-                  disabled={changePassLoading || changePassForm.length < 8}
-                  onClick={handleChangePassword}
-                >
-                  {changePassLoading ? 'Changing...' : 'Change Password'}
-                </Button>
-              </div>
-            </div>
+          <div className="flex gap-3 pt-2">
+            <Button variant="secondary" className="flex-1" onClick={closeChangePasswordModal}>
+              Cancel
+            </Button>
+            <Button
+              className="flex-1"
+              disabled={changePassLoading || changePassForm.length < 8}
+              onClick={handleChangePassword}
+            >
+              {changePassLoading ? 'Changing...' : 'Change Password'}
+            </Button>
+          </div>
+        </div>
       </Modal>
     </PageShell>
   );

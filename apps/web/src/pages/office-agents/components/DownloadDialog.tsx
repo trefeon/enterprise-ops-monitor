@@ -1,21 +1,32 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { Copy, Terminal } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Copy, Terminal } from 'lucide-react';
 
 interface Props {
-  open: boolean
-  onClose: () => void
+  open: boolean;
+  onClose: () => void;
 }
 
-const INSTALL_COMMAND = "iex (irm https://agents.lmntea.fun/install)"
+const INSTALL_COMMAND = 'iex (irm https://agents.lmntea.fun/install)';
 
 export function DownloadDialog({ open, onClose }: Props) {
   const copyCommand = () => {
-    navigator.clipboard.writeText(INSTALL_COMMAND)
-  }
+    navigator.clipboard.writeText(INSTALL_COMMAND);
+  };
 
   return (
-    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose() }}>
+    <Dialog
+      open={open}
+      onOpenChange={(o) => {
+        if (!o) onClose();
+      }}
+    >
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Install Office Agent</DialogTitle>
@@ -56,5 +67,5 @@ export function DownloadDialog({ open, onClose }: Props) {
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

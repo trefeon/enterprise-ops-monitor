@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/ui/ToastContext';
-import Button from '../../components/ui/Button';
+import { Button } from '@/components/ui/button';
 import PageHeader from '../../components/ui/PageHeader';
 import PageShell from '../../components/ui/PageShell';
 import Toolbar from '../../components/ui/Toolbar';
-import Input from '../../components/ui/Input';
-import Select from '../../components/ui/Select';
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DataTable from '../../components/ui/DataTable';
 import EmptyState from '../../components/ui/EmptyState';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
@@ -120,7 +120,11 @@ const IdentityCheck = () => {
 
   const handleExport = () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     if (results.length === 0) {
@@ -162,56 +166,66 @@ const IdentityCheck = () => {
   return (
     <PageShell>
       <FeatureStoryBanner story={getFeatureStory('employee-directory')} />
-
       <PageHeader
         title="Employee Directory"
         subtitle="Search employees by NIK or name, and review their branch/store assignment."
         actions={
-          <Button variant="secondary" icon="download" onClick={handleExport}>
+          <Button variant="secondary" onClick={handleExport}>
+            <span className="material-symbols-outlined mr-2">download</span>
             Export CSV
           </Button>
         }
       />
-
       <Toolbar
         left={
           <>
-            <Input
-              icon="search"
-              wrapperClassName="flex-1"
-              placeholder="Search employees by NIK or name..."
-              name="q"
-              value={filters.q}
-              onChange={handleFilterChange}
-              onKeyDown={handleSearchKeyDown}
-            />
+            <div className="relative w-full flex-1"><span
+                className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
+                placeholder="Search employees by NIK or name..."
+                name="q"
+                value={filters.q}
+                onChange={handleFilterChange}
+                onKeyDown={handleSearchKeyDown}
+                className="pl-10" /></div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:w-96">
-              <Select name="branchId" value={filters.branchId} onChange={handleFilterChange}>
-                <option value="">All Branches</option>
-                {BRANCH_OPTIONS.map((opt) => (
-                  <option key={opt.id} value={opt.id}>
-                    {opt.label}
-                  </option>
-                ))}
+              <Select
+                value={filters.branchId}
+                onValueChange={val => handleFilterChange({
+                  target: {
+                    value: val
+                  }
+                })}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent><SelectItem value="">All Branches</SelectItem>{BRANCH_OPTIONS.map((opt) => (
+                    <SelectItem key={opt.id} value={opt.id}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}</SelectContent>
               </Select>
-              <Select name="role" value={filters.role} onChange={handleFilterChange}>
-                <option value="">All Roles</option>
-                {roles.map((role) => (
-                  <option key={role} value={role}>
-                    {role}
-                  </option>
-                ))}
+              <Select
+                value={filters.role}
+                onValueChange={val => handleFilterChange({
+                  target: {
+                    value: val
+                  }
+                })}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent><SelectItem value="">All Roles</SelectItem>{roles.map((role) => (
+                    <SelectItem key={role} value={role}>
+                      {role}
+                    </SelectItem>
+                  ))}</SelectContent>
               </Select>
             </div>
           </>
         }
         right={
-          <Button variant="secondary" icon="search" onClick={applyFilters}>
+          <Button variant="secondary" onClick={applyFilters}>
+            <span className="material-symbols-outlined mr-2">search</span>
             Apply
           </Button>
         }
       />
-
       {error && !loading && results.length === 0 ? (
         <EmptyState
           title="Failed to load employees"

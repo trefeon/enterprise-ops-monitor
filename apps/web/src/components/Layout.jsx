@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import Header from './Header';
 import PageLoader from './PageLoader';
 import { Sheet, SheetContent } from './ui/sheet';
+import PageTransition from './PageTransition';
 
 const Layout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -24,7 +25,9 @@ const Layout = () => {
         <Header onMobileMenuClick={() => setMobileOpen(!mobileOpen)} />
         <main className="flex-1 overflow-y-auto scroll-smooth">
           <Suspense fallback={<PageLoader />}>
-            <Outlet />
+            <PageTransition>
+              <Outlet />
+            </PageTransition>
           </Suspense>
         </main>
       </div>

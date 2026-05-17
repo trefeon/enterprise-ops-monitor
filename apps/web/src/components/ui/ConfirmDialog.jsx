@@ -1,6 +1,6 @@
 import React from 'react';
-import Button from './Button';
-import Input from './Input';
+import { Button } from './button';
+import { Input } from './input';
 import {
   Dialog,
   DialogContent,
@@ -30,7 +30,12 @@ export function ConfirmDialog({
   const canConfirm = !needsMatch || confirmValue === confirmExpected;
 
   return (
-    <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onClose();
+      }}
+    >
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
@@ -54,7 +59,7 @@ export function ConfirmDialog({
             Cancel
           </Button>
           <Button
-            variant={danger ? 'danger' : 'primary'}
+            variant={danger ? 'destructive' : 'default'}
             onClick={onConfirm}
             disabled={confirmDisabled || !canConfirm}
           >

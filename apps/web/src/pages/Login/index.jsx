@@ -1,4 +1,5 @@
 import React, { useState, useRef, useCallback } from 'react';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../components/ui/ToastContext';
@@ -6,7 +7,14 @@ import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
 
 const DEMO_ACCOUNTS = [
-  { username: 'demo', password: 'demo123', label: 'Demo (Read-Only)', role: 'demo', note: 'Portfolio', primary: true },
+  {
+    username: 'demo',
+    password: 'demo123',
+    label: 'Demo (Read-Only)',
+    role: 'demo',
+    note: 'Portfolio',
+    primary: true,
+  },
 ];
 
 const Login = () => {
@@ -350,7 +358,7 @@ const Login = () => {
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <span className="material-symbols-outlined animate-spin text-xl">refresh</span>
+                  <Loader2 className="animate-spin text-xl" />
                 ) : (
                   <span className="material-symbols-outlined text-xl">login</span>
                 )}

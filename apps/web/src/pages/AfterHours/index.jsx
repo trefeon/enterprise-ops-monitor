@@ -2,17 +2,18 @@ import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { apiGet, apiPost, apiPut } from '../../lib/api/client';
 import PageShell from '../../components/ui/PageShell';
 import PageHeader from '../../components/ui/PageHeader';
-import Card from '../../components/ui/Card';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Select from '../../components/ui/Select';
+import { Button } from '@/components/ui/button';
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import StatCard from '../../components/ui/StatCard';
 import EmptyState from '../../components/ui/EmptyState';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
-import { Table, Thead, Tbody, Trow, Tcell, TableFooter } from '../../components/ui/Table';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { useToast } from '../../components/ui/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { getFeatureStory } from '../../data/stories';
+import { Loader2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 const AfterHoursReport = lazy(() => import('../AfterHoursReport'));
 
@@ -314,16 +315,13 @@ function NotificationTargetRow({ label, helperText, value, onChange, placeholder
         <p className="text-sm font-medium text-foreground">{label}</p>
         <p className="text-xs text-muted-foreground">{helperText}</p>
       </div>
-
-      <Input
-        type="text"
-        icon={icon}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        wrapperClassName="w-full min-w-0"
-        className={`${NOTIFICATION_FIELD_CLASS} font-mono`}
-      />
+      <div className="relative w-full w-full min-w-0"><span
+          className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">{icon}</span><Input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          placeholder={placeholder}
+          className={`${NOTIFICATION_FIELD_CLASS} font-mono`} /></div>
     </div>
   );
 }
@@ -680,7 +678,11 @@ export default function AfterHours() {
 
   const handleSaveSettings = async () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     setSavingSettings(true);
@@ -771,7 +773,11 @@ export default function AfterHours() {
 
   const handleRunCheck = async () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     setChecking(true);
@@ -842,24 +848,18 @@ export default function AfterHours() {
   return (
     <PageShell>
       <FeatureStoryBanner story={getFeatureStory('after-hours')} />
-
       <PageHeader
         title="After-Hours PC Monitor"
         subtitle="Detect store computers still online after operational hours"
         actions={
           activeTab === 'monitor' ? (
-            <Button
-              icon={checking ? 'hourglass_top' : 'play_arrow'}
-              onClick={handleRunCheck}
-              variant="primary"
-              loading={checking}
-            >
+            <Button icon={checking ? 'hourglass_top' : 'play_arrow'} onClick={handleRunCheck}>
+              {checking && <Loader2 className="animate-spin mr-2" />}
               {checking ? 'Running...' : 'Run Check Now'}
             </Button>
           ) : null
         }
       />
-
       {/* Tab Bar */}
       <div className="flex items-center gap-1 border-b border-border">
         <button
@@ -885,381 +885,390 @@ export default function AfterHours() {
           Monthly Report
         </button>
       </div>
-
       {activeTab === 'report' ? (
         <Suspense
           fallback={
             <div className="flex justify-center items-center h-32">
-              <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
             </div>
           }
         >
           <AfterHoursReport />
         </Suspense>
       ) : (
-        <>
+        (<>
           <Card className="p-0 overflow-hidden">
-            <div className="flex flex-col gap-3 border-b border-border bg-muted/20 px-6 py-4 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">notifications_active</span>
-                <div>
-                  <h2 className="text-sm font-semibold text-foreground">
-                    Automation & Notification Settings
-                  </h2>
-                  <p className="text-xs text-muted-foreground">
-                    Configure Telegram and WhatsApp alerts for after-hours violations.
-                  </p>
+            <CardContent>
+              <div className="flex flex-col gap-3 border-b border-border bg-muted/20 px-6 py-4 md:flex-row md:items-center md:justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-primary">
+                    notifications_active
+                  </span>
+                  <div>
+                    <h2 className="text-sm font-semibold text-foreground">
+                      Automation & Notification Settings
+                    </h2>
+                    <p className="text-xs text-muted-foreground">
+                      Configure Telegram and WhatsApp alerts for after-hours violations.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                    Status
+                  </span>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={notifyEnabled}
+                    onClick={() =>
+                      updateSetting('notify_enabled', notifyEnabled ? 'false' : 'true')
+                    }
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
+                      notifyEnabled
+                        ? 'bg-status-success focus-visible:ring-status-success'
+                        : 'bg-secondary-foreground/20 focus-visible:ring-secondary-foreground/50'
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                        notifyEnabled ? 'translate-x-4' : 'translate-x-0.5'
+                      }`}
+                    />
+                  </button>
+                  <span
+                    className={`text-xs font-semibold ${
+                      notifyEnabled ? 'text-status-success' : 'text-muted-foreground'
+                    }`}
+                  >
+                    {notifyEnabled ? 'ENABLED' : 'DISABLED'}
+                  </span>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    icon={showSettings ? 'expand_less' : 'expand_more'}
+                    onClick={() => setShowSettings((prev) => !prev)}
+                  >
+                    {showSettings ? 'Hide' : 'Configure'}
+                  </Button>
                 </div>
               </div>
+              {showSettings && (
+                <>
+                  <div className="flex flex-col gap-3 border-b border-border bg-muted/10 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
+                    <p className="text-xs text-muted-foreground">
+                      Branch form adalah mode default. Advanced JSON dipakai kalau mau custom penuh
+                      atau bulk edit mapping.
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Button
+                        variant={notificationEditorMode === 'branch' ? 'primary' : 'ghost'}
+                        size="sm"
+                        onClick={() => handleNotificationModeChange('branch')}
+                      >
+                        <span className="material-symbols-outlined mr-2">dashboard_customize</span>
+                        Per Branch Form
+                      </Button>
+                      <Button
+                        variant={notificationEditorMode === 'advanced' ? 'primary' : 'ghost'}
+                        size="sm"
+                        onClick={() => handleNotificationModeChange('advanced')}
+                      >
+                        <span className="material-symbols-outlined mr-2">code</span>
+                        Advanced JSON
+                      </Button>
+                    </div>
+                  </div>
 
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Status
-                </span>
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={notifyEnabled}
-                  onClick={() => updateSetting('notify_enabled', notifyEnabled ? 'false' : 'true')}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
-                    notifyEnabled
-                      ? 'bg-status-success focus-visible:ring-status-success'
-                      : 'bg-secondary-foreground/20 focus-visible:ring-secondary-foreground/50'
-                  }`}
-                >
-                  <span
-                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      notifyEnabled ? 'translate-x-4' : 'translate-x-0.5'
-                    }`}
-                  />
-                </button>
-                <span
-                  className={`text-xs font-semibold ${
-                    notifyEnabled ? 'text-status-success' : 'text-muted-foreground'
-                  }`}
-                >
-                  {notifyEnabled ? 'ENABLED' : 'DISABLED'}
-                </span>
+                  <div className="grid grid-cols-1 gap-8 px-6 py-6 lg:grid-cols-2">
+                    <div className="space-y-4">
+                      <h4 className="mb-2 flex items-center gap-2 border-b border-border/30 pb-2 text-sm font-semibold text-foreground">
+                        <span className="material-symbols-outlined text-status-info">send</span>
+                        Telegram Configuration
+                      </h4>
+
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                          Bot Token
+                        </label>
+                        <div className="relative w-full"><span
+                            className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">key</span><Input
+                            type="password"
+                            value={settings.telegram_bot_token || ''}
+                            onChange={(e) => updateSetting('telegram_bot_token', e.target.value)}
+                            placeholder="demo-telegram-bot-token"
+                            className="pl-10" /></div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Isi token bot Telegram dari BotFather. Contoh dummy:{' '}
+                          <code className="text-foreground">demo-telegram-bot-token</code>
+                        </p>
+                      </div>
+
+                      <div>
+                        <NotificationTargetEditor
+                          iconName="groups"
+                          description="Map each branch to a Telegram chat or group. Branch data is only sent to the target keyed by that branch ID, with _all as fallback."
+                          mode={notificationEditorMode}
+                          branchOptions={NOTIFICATION_BRANCH_OPTIONS}
+                          targetMap={telegramTargetMap}
+                          targetDraft={telegramTargetsDraft}
+                          targetError={telegramTargetsError}
+                          onBranchTargetChange={(branchId, value) =>
+                            updateNotificationBranchTarget('telegram', branchId, value)
+                          }
+                          onDraftChange={(value) => updateNotificationDraft('telegram', value)}
+                          fallbackPlaceholder={TELEGRAM_CHAT_ID_SAMPLE_FALLBACK}
+                          branchPlaceholder={TELEGRAM_CHAT_ID_SAMPLE_VALUE}
+                          advancedPlaceholder='{"2":"-1002100000002","3":"-1002100000003","_all":"-1002100000999"}'
+                          sampleHint="Example: branch 2 to group A, branch 3 to group B. If a branch is blank, _all will be used."
+                        />
+                      </div>
+
+                      {normalizedScheduleTimes.map((timeValue, idx) => {
+                        const stageLabel =
+                          idx === normalizedScheduleTimes.length - 1 ? 'Tegas' : 'Awal';
+                        return (
+                          <div key={`telegram-template-stage-${idx}`}>
+                            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                              {`Template Telegram Tahap ${idx + 1} (${stageLabel} - ${timeValue})`}
+                            </label>
+                            <textarea
+                              value={
+                                telegramStageTemplates[idx] || DEFAULT_TELEGRAM_STAGE_TEMPLATES[idx]
+                              }
+                              onChange={(e) =>
+                                updateTemplateByStage('telegram', idx, e.target.value)
+                              }
+                              rows={4}
+                              className="w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            />
+                          </div>
+                        );
+                      })}
+
+                      <p className="mt-1.5 inline-block rounded bg-muted/50 px-2 py-1 text-xs text-muted-foreground">
+                        Variables: <code className="text-foreground">{'{branch}'}</code>,{' '}
+                        <code className="text-foreground">{'{date}'}</code>,{' '}
+                        <code className="text-foreground">{'{count}'}</code>,{' '}
+                        <code className="text-foreground">{'{stores}'}</code>,{' '}
+                        <code className="text-foreground">{'{stage}'}</code>,{' '}
+                        <code className="text-foreground">{'{totalStages}'}</code>
+                      </p>
+                    </div>
+
+                    <div className="space-y-4">
+                      <h4 className="mb-2 flex items-center gap-2 border-b border-border/30 pb-2 text-sm font-semibold text-foreground">
+                        <span className="material-symbols-outlined text-status-success">chat</span>
+                        WhatsApp Gateway (API)
+                      </h4>
+
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                          API URL
+                        </label>
+                        <div className="relative w-full"><span
+                            className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">link</span><Input
+                            type="text"
+                            value={settings.whatsapp_api_url || ''}
+                            onChange={(e) => updateSetting('whatsapp_api_url', e.target.value)}
+                            placeholder="https://notifications.example.com/"
+                            className="pl-10" /></div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Untuk Webhook Gateway cukup isi host. Sistem akan otomatis pakai endpoint
+                          API yang sesuai.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                          API Key
+                        </label>
+                        <div className="relative w-full"><span
+                            className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">lock</span><Input
+                            type="password"
+                            value={settings.whatsapp_api_key || ''}
+                            onChange={(e) => updateSetting('whatsapp_api_key', e.target.value)}
+                            placeholder={WHATSAPP_API_KEY_SAMPLE}
+                            className="pl-10" /></div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Isi token API key saja (tanpa digabung secret). Contoh dummy API key:{' '}
+                          <code className="text-foreground">{WHATSAPP_API_KEY_SAMPLE}</code>
+                        </p>
+                      </div>
+
+                      <div>
+                        <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                          Secret Key
+                        </label>
+                        <div className="relative w-full"><span
+                            className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">key</span><Input
+                            type="password"
+                            value={settings.whatsapp_api_secret || ''}
+                            onChange={(e) => updateSetting('whatsapp_api_secret', e.target.value)}
+                            placeholder={WHATSAPP_API_SECRET_SAMPLE}
+                            className="pl-10" /></div>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          Isi secret key terpisah. Sistem akan menggabungkan otomatis saat request
+                          ke Webhook Gateway.
+                        </p>
+                      </div>
+
+                      <div>
+                        <NotificationTargetEditor
+                          iconName="contact_phone"
+                          description="Map each branch to a WhatsApp target. The target can be a group ID or a personal number, and only the matching branch payload will be sent there."
+                          mode={notificationEditorMode}
+                          branchOptions={NOTIFICATION_BRANCH_OPTIONS}
+                          targetMap={whatsappTargetMap}
+                          targetDraft={whatsappTargetsDraft}
+                          targetError={whatsappTargetsError}
+                          onBranchTargetChange={(branchId, value) =>
+                            updateNotificationBranchTarget('whatsapp', branchId, value)
+                          }
+                          onDraftChange={(value) => updateNotificationDraft('whatsapp', value)}
+                          fallbackPlaceholder={WHATSAPP_TARGET_SAMPLE_FALLBACK}
+                          branchPlaceholder={WHATSAPP_TARGET_SAMPLE_GROUP_VALUE}
+                          advancedPlaceholder='{"2":"120000000000002","3":"120000000000003","_all":"120000000000099"}'
+                          sampleHint="Use a group ID for groups or a personal number for one-to-one delivery. Blank rows fall back to _all."
+                        />
+                      </div>
+
+                      {normalizedScheduleTimes.map((timeValue, idx) => {
+                        const stageLabel =
+                          idx === normalizedScheduleTimes.length - 1 ? 'Tegas' : 'Awal';
+                        return (
+                          <div key={`whatsapp-template-stage-${idx}`}>
+                            <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                              {`Template WhatsApp Tahap ${idx + 1} (${stageLabel} - ${timeValue})`}
+                            </label>
+                            <textarea
+                              value={
+                                whatsappStageTemplates[idx] || DEFAULT_WHATSAPP_STAGE_TEMPLATES[idx]
+                              }
+                              onChange={(e) =>
+                                updateTemplateByStage('whatsapp', idx, e.target.value)
+                              }
+                              rows={4}
+                              className="w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            />
+                          </div>
+                        );
+                      })}
+
+                      <p className="mt-1.5 inline-block rounded bg-muted/50 px-2 py-1 text-xs text-muted-foreground">
+                        Variables: <code className="text-foreground">{'{branch}'}</code>,{' '}
+                        <code className="text-foreground">{'{date}'}</code>,{' '}
+                        <code className="text-foreground">{'{count}'}</code>,{' '}
+                        <code className="text-foreground">{'{stores}'}</code>,{' '}
+                        <code className="text-foreground">{'{stage}'}</code>,{' '}
+                        <code className="text-foreground">{'{totalStages}'}</code>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-4 border-t border-border bg-muted/10 px-6 py-4 md:flex-row md:items-end md:justify-between">
+                    <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
+                      <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
+                        {normalizedScheduleTimes.map((timeValue, idx) => (
+                          <div key={`schedule-stage-${idx}`} className="w-full md:w-44">
+                            <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
+                              <span className="material-symbols-outlined text-sm">schedule</span>
+                              {`Jadwal ${idx + 1} (WIB)`}
+                            </label>
+                            <Input
+                              type="time"
+                              value={timeValue}
+                              onChange={(e) => updateScheduleTime(idx, e.target.value)}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Button variant="ghost" onClick={handleDiscardSettings}>
+                        Discard
+                      </Button>
+                      <Button
+                        icon={savingSettings ? undefined : 'save'}
+                        onClick={handleSaveSettings}
+                      >
+                        {savingSettings && <Loader2 className="animate-spin mr-2" />}
+                        {savingSettings ? 'Saving...' : 'Save Settings'}
+                      </Button>
+                    </div>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+          <Card className="py-3 overflow-hidden rounded-2xl">
+            <CardContent>
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
+                <div className="relative w-full w-full min-w-0 md:col-span-2 xl:col-span-2"><span
+                    className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
+                    type="text"
+                    value={search}
+                    onChange={(e) => {
+                      setSearch(e.target.value);
+                      setPage(1);
+                    }}
+                    placeholder="Search by store code or name..."
+                    className={TOOLBAR_FIELD_CLASS} /></div>
+
+                <Select
+                  value={branch}
+                  onValueChange={val => {
+                    const e = {
+                      target: {
+                        value: val
+                      }
+                    };
+
+                    {
+                      setBranch(e.target.value);
+                      setPage(1);
+                    }
+                  }}>
+                  <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                  <SelectContent>{BRANCH_OPTIONS.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.label}
+                      </SelectItem>
+                    ))}</SelectContent>
+                </Select>
+
+                <div className="relative w-full w-full min-w-0"><span
+                    className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">calendar_today</span><Input
+                    type="date"
+                    value={date}
+                    onChange={(e) => {
+                      setDate(e.target.value);
+                      setPage(1);
+                    }}
+                    onClick={(e) => {
+                      // @ts-ignore – showPicker exists on HTMLInputElement
+                      e.target.showPicker?.();
+                    }}
+                    className={`date-input-no-indicator ${TOOLBAR_FIELD_CLASS}`} /></div>
+
                 <Button
                   variant="ghost"
-                  size="sm"
-                  icon={showSettings ? 'expand_less' : 'expand_more'}
-                  onClick={() => setShowSettings((prev) => !prev)}
+                  size="md"
+                  className={`${TOOLBAR_BUTTON_CLASS} md:col-span-2 xl:col-span-1`}
+                  onClick={() => {
+                    setSearch('');
+                    setBranch('');
+                    setPage(1);
+                  }}
                 >
-                  {showSettings ? 'Hide' : 'Configure'}
+                  <span className="material-symbols-outlined mr-2">filter_list</span>
+                  Reset
                 </Button>
               </div>
-            </div>
-
-            {showSettings && (
-              <>
-                <div className="flex flex-col gap-3 border-b border-border bg-muted/10 px-6 py-4 lg:flex-row lg:items-center lg:justify-between">
-                  <p className="text-xs text-muted-foreground">
-                    Branch form adalah mode default. Advanced JSON dipakai kalau mau custom penuh
-                    atau bulk edit mapping.
-                  </p>
-                  <div className="flex flex-wrap items-center gap-2">
-                    <Button
-                      variant={notificationEditorMode === 'branch' ? 'primary' : 'ghost'}
-                      size="sm"
-                      icon="dashboard_customize"
-                      onClick={() => handleNotificationModeChange('branch')}
-                    >
-                      Per Branch Form
-                    </Button>
-                    <Button
-                      variant={notificationEditorMode === 'advanced' ? 'primary' : 'ghost'}
-                      size="sm"
-                      icon="code"
-                      onClick={() => handleNotificationModeChange('advanced')}
-                    >
-                      Advanced JSON
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 gap-8 px-6 py-6 lg:grid-cols-2">
-                  <div className="space-y-4">
-                    <h4 className="mb-2 flex items-center gap-2 border-b border-border/30 pb-2 text-sm font-semibold text-foreground">
-                      <span className="material-symbols-outlined text-status-info">send</span>
-                      Telegram Configuration
-                    </h4>
-
-                    <div>
-                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                        Bot Token
-                      </label>
-                      <Input
-                        type="password"
-                        icon="key"
-                        value={settings.telegram_bot_token || ''}
-                        onChange={(e) => updateSetting('telegram_bot_token', e.target.value)}
-                        placeholder="demo-telegram-bot-token"
-                      />
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Isi token bot Telegram dari BotFather. Contoh dummy:{' '}
-                        <code className="text-foreground">demo-telegram-bot-token</code>
-                      </p>
-                    </div>
-
-                    <div>
-                      <NotificationTargetEditor
-                        iconName="groups"
-                        description="Map each branch to a Telegram chat or group. Branch data is only sent to the target keyed by that branch ID, with _all as fallback."
-                        mode={notificationEditorMode}
-                        branchOptions={NOTIFICATION_BRANCH_OPTIONS}
-                        targetMap={telegramTargetMap}
-                        targetDraft={telegramTargetsDraft}
-                        targetError={telegramTargetsError}
-                        onBranchTargetChange={(branchId, value) =>
-                          updateNotificationBranchTarget('telegram', branchId, value)
-                        }
-                        onDraftChange={(value) => updateNotificationDraft('telegram', value)}
-                        fallbackPlaceholder={TELEGRAM_CHAT_ID_SAMPLE_FALLBACK}
-                        branchPlaceholder={TELEGRAM_CHAT_ID_SAMPLE_VALUE}
-                        advancedPlaceholder='{"2":"-1002100000002","3":"-1002100000003","_all":"-1002100000999"}'
-                        sampleHint="Example: branch 2 to group A, branch 3 to group B. If a branch is blank, _all will be used."
-                      />
-                    </div>
-
-                    {normalizedScheduleTimes.map((timeValue, idx) => {
-                      const stageLabel =
-                        idx === normalizedScheduleTimes.length - 1 ? 'Tegas' : 'Awal';
-                      return (
-                        <div key={`telegram-template-stage-${idx}`}>
-                          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                            {`Template Telegram Tahap ${idx + 1} (${stageLabel} - ${timeValue})`}
-                          </label>
-                          <textarea
-                            value={
-                              telegramStageTemplates[idx] || DEFAULT_TELEGRAM_STAGE_TEMPLATES[idx]
-                            }
-                            onChange={(e) => updateTemplateByStage('telegram', idx, e.target.value)}
-                            rows={4}
-                            className="w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          />
-                        </div>
-                      );
-                    })}
-
-                    <p className="mt-1.5 inline-block rounded bg-muted/50 px-2 py-1 text-xs text-muted-foreground">
-                      Variables: <code className="text-foreground">{'{branch}'}</code>,{' '}
-                      <code className="text-foreground">{'{date}'}</code>,{' '}
-                      <code className="text-foreground">{'{count}'}</code>,{' '}
-                      <code className="text-foreground">{'{stores}'}</code>,{' '}
-                      <code className="text-foreground">{'{stage}'}</code>,{' '}
-                      <code className="text-foreground">{'{totalStages}'}</code>
-                    </p>
-                  </div>
-
-                  <div className="space-y-4">
-                    <h4 className="mb-2 flex items-center gap-2 border-b border-border/30 pb-2 text-sm font-semibold text-foreground">
-                      <span className="material-symbols-outlined text-status-success">chat</span>
-                      WhatsApp Gateway (API)
-                    </h4>
-
-                    <div>
-                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                        API URL
-                      </label>
-                      <Input
-                        type="text"
-                        icon="link"
-                        value={settings.whatsapp_api_url || ''}
-                        onChange={(e) => updateSetting('whatsapp_api_url', e.target.value)}
-                        placeholder="https://notifications.example.com/"
-                      />
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Untuk Webhook Gateway cukup isi host. Sistem akan otomatis pakai
-                        endpoint API yang sesuai.
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                        API Key
-                      </label>
-                      <Input
-                        type="password"
-                        icon="lock"
-                        value={settings.whatsapp_api_key || ''}
-                        onChange={(e) => updateSetting('whatsapp_api_key', e.target.value)}
-                        placeholder={WHATSAPP_API_KEY_SAMPLE}
-                      />
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Isi token API key saja (tanpa digabung secret). Contoh dummy API key:{' '}
-                        <code className="text-foreground">{WHATSAPP_API_KEY_SAMPLE}</code>
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                        Secret Key
-                      </label>
-                      <Input
-                        type="password"
-                        icon="key"
-                        value={settings.whatsapp_api_secret || ''}
-                        onChange={(e) => updateSetting('whatsapp_api_secret', e.target.value)}
-                        placeholder={WHATSAPP_API_SECRET_SAMPLE}
-                      />
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Isi secret key terpisah. Sistem akan menggabungkan otomatis saat request ke
-                        Webhook Gateway.
-                      </p>
-                    </div>
-
-                    <div>
-                      <NotificationTargetEditor
-                        iconName="contact_phone"
-                        description="Map each branch to a WhatsApp target. The target can be a group ID or a personal number, and only the matching branch payload will be sent there."
-                        mode={notificationEditorMode}
-                        branchOptions={NOTIFICATION_BRANCH_OPTIONS}
-                        targetMap={whatsappTargetMap}
-                        targetDraft={whatsappTargetsDraft}
-                        targetError={whatsappTargetsError}
-                        onBranchTargetChange={(branchId, value) =>
-                          updateNotificationBranchTarget('whatsapp', branchId, value)
-                        }
-                        onDraftChange={(value) => updateNotificationDraft('whatsapp', value)}
-                        fallbackPlaceholder={WHATSAPP_TARGET_SAMPLE_FALLBACK}
-                        branchPlaceholder={WHATSAPP_TARGET_SAMPLE_GROUP_VALUE}
-                        advancedPlaceholder='{"2":"120000000000002","3":"120000000000003","_all":"120000000000099"}'
-                        sampleHint="Use a group ID for groups or a personal number for one-to-one delivery. Blank rows fall back to _all."
-                      />
-                    </div>
-
-                    {normalizedScheduleTimes.map((timeValue, idx) => {
-                      const stageLabel =
-                        idx === normalizedScheduleTimes.length - 1 ? 'Tegas' : 'Awal';
-                      return (
-                        <div key={`whatsapp-template-stage-${idx}`}>
-                          <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                            {`Template WhatsApp Tahap ${idx + 1} (${stageLabel} - ${timeValue})`}
-                          </label>
-                          <textarea
-                            value={
-                              whatsappStageTemplates[idx] || DEFAULT_WHATSAPP_STAGE_TEMPLATES[idx]
-                            }
-                            onChange={(e) => updateTemplateByStage('whatsapp', idx, e.target.value)}
-                            rows={4}
-                            className="w-full resize-none rounded-md border border-input bg-transparent px-3 py-2 font-mono text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                          />
-                        </div>
-                      );
-                    })}
-
-                    <p className="mt-1.5 inline-block rounded bg-muted/50 px-2 py-1 text-xs text-muted-foreground">
-                      Variables: <code className="text-foreground">{'{branch}'}</code>,{' '}
-                      <code className="text-foreground">{'{date}'}</code>,{' '}
-                      <code className="text-foreground">{'{count}'}</code>,{' '}
-                      <code className="text-foreground">{'{stores}'}</code>,{' '}
-                      <code className="text-foreground">{'{stage}'}</code>,{' '}
-                      <code className="text-foreground">{'{totalStages}'}</code>
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex flex-col gap-4 border-t border-border bg-muted/10 px-6 py-4 md:flex-row md:items-end md:justify-between">
-                  <div className="flex flex-col gap-2 md:flex-row md:items-center md:gap-4">
-                    <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-4">
-                      {normalizedScheduleTimes.map((timeValue, idx) => (
-                        <div key={`schedule-stage-${idx}`} className="w-full md:w-44">
-                          <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                            <span className="material-symbols-outlined text-sm">schedule</span>
-                            {`Jadwal ${idx + 1} (WIB)`}
-                          </label>
-                          <Input
-                            type="time"
-                            value={timeValue}
-                            onChange={(e) => updateScheduleTime(idx, e.target.value)}
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" onClick={handleDiscardSettings}>
-                      Discard
-                    </Button>
-                    <Button
-                      icon={savingSettings ? undefined : 'save'}
-                      onClick={handleSaveSettings}
-                      variant="primary"
-                      loading={savingSettings}
-                    >
-                      {savingSettings ? 'Saving...' : 'Save Settings'}
-                    </Button>
-                  </div>
-                </div>
-              </>
-            )}
+            </CardContent>
           </Card>
-
-          <Card variant="compact" className="overflow-hidden rounded-2xl">
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-5">
-              <Input
-                type="text"
-                icon="search"
-                value={search}
-                onChange={(e) => {
-                  setSearch(e.target.value);
-                  setPage(1);
-                }}
-                placeholder="Search by store code or name..."
-                wrapperClassName="w-full min-w-0 md:col-span-2 xl:col-span-2"
-                className={TOOLBAR_FIELD_CLASS}
-              />
-
-              <Select
-                value={branch}
-                onChange={(e) => {
-                  setBranch(e.target.value);
-                  setPage(1);
-                }}
-                wrapperClassName="w-full min-w-0"
-                className={TOOLBAR_FIELD_CLASS}
-              >
-                {BRANCH_OPTIONS.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.label}
-                  </option>
-                ))}
-              </Select>
-
-              <Input
-                type="date"
-                icon="calendar_today"
-                value={date}
-                onChange={(e) => {
-                  setDate(e.target.value);
-                  setPage(1);
-                }}
-                onClick={(e) => {
-                  // @ts-ignore – showPicker exists on HTMLInputElement
-                  e.target.showPicker?.();
-                }}
-                wrapperClassName="w-full min-w-0"
-                className={`date-input-no-indicator ${TOOLBAR_FIELD_CLASS}`}
-              />
-
-              <Button
-                variant="ghost"
-                size="md"
-                icon="filter_list"
-                className={`${TOOLBAR_BUTTON_CLASS} md:col-span-2 xl:col-span-1`}
-                onClick={() => {
-                  setSearch('');
-                  setBranch('');
-                  setPage(1);
-                }}
-              >
-                Reset
-              </Button>
-            </div>
-          </Card>
-
           {availableDates.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground">Recent Checks:</span>
@@ -1281,169 +1290,171 @@ export default function AfterHours() {
               ))}
             </div>
           )}
-
           {branchSummaries.length > 0 && (
-            <Card variant="compact">
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                <h3 className="text-sm font-semibold text-foreground">Violations by Branch</h3>
-                <span className="text-xs text-muted-foreground">
-                  {branchCount} branch(es) affected on {formatDate(date)}
-                </span>
-              </div>
-              <div className="mt-3 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setBranch('');
-                    setPage(1);
-                  }}
-                  className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                    !branch
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                  }`}
-                >
-                  All Branches ({totalViolations})
-                </button>
-                {branchSummaries.map((b) => {
-                  const branchId = String(b.branch_id);
-                  return (
-                    <button
-                      key={b.branch_id}
-                      type="button"
-                      onClick={() => {
-                        setBranch(branch === branchId ? '' : branchId);
-                        setPage(1);
-                      }}
-                      className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
-                        branch === branchId
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                      }`}
-                    >
-                      {b.branch_name || `Branch ${b.branch_id}`} ({b.violation_count})
-                    </button>
-                  );
-                })}
-              </div>
+            <Card className="py-3">
+              <CardContent>
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <h3 className="text-sm font-semibold text-foreground">Violations by Branch</h3>
+                  <span className="text-xs text-muted-foreground">
+                    {branchCount} branch(es) affected on {formatDate(date)}
+                  </span>
+                </div>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setBranch('');
+                      setPage(1);
+                    }}
+                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                      !branch
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                    }`}
+                  >
+                    All Branches ({totalViolations})
+                  </button>
+                  {branchSummaries.map((b) => {
+                    const branchId = String(b.branch_id);
+                    return (
+                      <button
+                        key={b.branch_id}
+                        type="button"
+                        onClick={() => {
+                          setBranch(branch === branchId ? '' : branchId);
+                          setPage(1);
+                        }}
+                        className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                          branch === branchId
+                            ? 'bg-primary text-primary-foreground'
+                            : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                        }`}
+                      >
+                        {b.branch_name || `Branch ${b.branch_id}`} ({b.violation_count})
+                      </button>
+                    );
+                  })}
+                </div>
+              </CardContent>
             </Card>
           )}
-
           {/* Data Table */}
-          <Card variant="table">
-            {!loading && violations.length > 0 && (
-              <div className="flex flex-col gap-1 border-b border-border bg-muted/20 px-4 py-3 text-xs sm:flex-row sm:items-center sm:justify-between">
-                <span className="font-medium text-foreground">
-                  {selectedBranchLabel} • {formatDate(date)}
-                </span>
-                <span className="text-muted-foreground">
-                  {totalItems} violation(s) {branch ? 'in selected branch' : 'across all branches'}
-                </span>
-              </div>
-            )}
-
-            {loading ? (
-              <div className="flex justify-center items-center h-32">
-                <span className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
-              </div>
-            ) : violations.length === 0 ? (
-              <EmptyState
-                title="No violations found"
-                description={`No after-hours violations detected for ${formatDate(date)}.`}
-                icon="check_circle"
-              />
-            ) : (
-              <>
-                <Table>
-                  <Thead>
-                    <Tcell as="th">Status</Tcell>
-                    <Tcell as="th">PC Identification</Tcell>
-                    <Tcell as="th">Branch</Tcell>
-                    <Tcell as="th">Last Active (WIB)</Tcell>
-                    <Tcell as="th">Detected At</Tcell>
-                  </Thead>
-                  <Tbody>
-                    {violations.map((v) => {
-                      const statusLabel = v.notified ? 'NOTIFIED' : 'PENDING';
-                      const statusTextClass = v.notified
-                        ? 'text-status-success'
-                        : 'text-status-warning';
-                      const statusDotClass = v.notified
-                        ? 'bg-status-success'
-                        : 'bg-status-warning animate-pulse';
-                      return (
-                        <Trow key={v.id}>
-                          <Tcell>
-                            <span
-                              className={`inline-flex items-center gap-1.5 text-xs font-semibold ${statusTextClass}`}
+          <Card className="p-0 overflow-hidden">
+            <CardContent className="p-0">
+              {!loading && violations.length > 0 && (
+                <div className="flex flex-col gap-1 border-b border-border bg-muted/20 px-4 py-3 text-xs sm:flex-row sm:items-center sm:justify-between">
+                  <span className="font-medium text-foreground">
+                    {selectedBranchLabel} • {formatDate(date)}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {totalItems} violation(s){' '}
+                    {branch ? 'in selected branch' : 'across all branches'}
+                  </span>
+                </div>
+              )}
+              {loading ? (
+                <div className="flex justify-center items-center h-32">
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                </div>
+              ) : violations.length === 0 ? (
+                <EmptyState
+                  title="No violations found"
+                  description={`No after-hours violations detected for ${formatDate(date)}.`}
+                  icon="check_circle"
+                />
+              ) : (
+                <>
+                  <Table>
+                    <TableHeader><TableRow>
+                        <TableHead>Status</TableHead>
+                        <TableHead>PC Identification</TableHead>
+                        <TableHead>Branch</TableHead>
+                        <TableHead>Last Active (WIB)</TableHead>
+                        <TableHead>Detected At</TableHead>
+                      </TableRow></TableHeader>
+                    <TableBody>
+                      {violations.map((v) => {
+                        const statusLabel = v.notified ? 'NOTIFIED' : 'PENDING';
+                        const statusTextClass = v.notified
+                          ? 'text-status-success'
+                          : 'text-status-warning';
+                        const statusDotClass = v.notified
+                          ? 'bg-status-success'
+                          : 'bg-status-warning animate-pulse';
+                        return (
+                          <TableRow key={v.id}>
+                            <TableCell>
+                              <span
+                                className={`inline-flex items-center gap-1.5 text-xs font-semibold ${statusTextClass}`}
+                              >
+                                <span className={`h-2 w-2 rounded-full ${statusDotClass}`} />
+                                {statusLabel}
+                              </span>
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex flex-col">
+                                <span className="font-mono text-xs text-foreground">
+                                  {v.store_code}
+                                </span>
+                                <span className="text-xs text-muted-foreground">
+                                  {v.store_name || '—'}
+                                </span>
+                              </div>
+                            </TableCell>
+                            <TableCell>
+                              <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
+                                {v.branch_name || v.branch_id}
+                              </span>
+                            </TableCell>
+                            <TableCell
+                              className={`font-mono text-xs ${
+                                v.last_sync_at ? 'text-status-warning' : 'text-muted-foreground'
+                              }`}
                             >
-                              <span className={`h-2 w-2 rounded-full ${statusDotClass}`} />
-                              {statusLabel}
-                            </span>
-                          </Tcell>
-                          <Tcell>
-                            <div className="flex flex-col">
-                              <span className="font-mono text-xs text-foreground">
-                                {v.store_code}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {v.store_name || '—'}
-                              </span>
-                            </div>
-                          </Tcell>
-                          <Tcell>
-                            <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
-                              {v.branch_name || v.branch_id}
-                            </span>
-                          </Tcell>
-                          <Tcell
-                            className={`font-mono text-xs ${
-                              v.last_sync_at ? 'text-status-warning' : 'text-muted-foreground'
-                            }`}
-                          >
-                            {formatWibTime(v.last_sync_at)}
-                          </Tcell>
-                          <Tcell className="text-xs text-muted-foreground">
-                            {formatWibTime(v.detected_at)}
-                          </Tcell>
-                        </Trow>
-                      );
-                    })}
-                  </Tbody>
-                </Table>
+                              {formatWibTime(v.last_sync_at)}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {formatWibTime(v.detected_at)}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
 
-                {/* Pagination */}
-                {pagination && totalPages > 1 && (
-                  <TableFooter>
-                    <span className="text-muted-foreground">
-                      Showing <span className="font-medium text-foreground">{rangeStart}</span> to{' '}
-                      <span className="font-medium text-foreground">{rangeEnd}</span> of{' '}
-                      <span className="font-medium text-foreground">{totalItems}</span> results
-                    </span>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled={page <= 1}
-                        onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      >
-                        Previous
-                      </Button>
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        disabled={page >= totalPages}
-                        onClick={() => setPage((p) => p + 1)}
-                      >
-                        Next
-                      </Button>
+                  {/* Pagination */}
+                  {pagination && totalPages > 1 && (
+                    <div
+                      className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+                      <span className="text-muted-foreground">
+                        Showing <span className="font-medium text-foreground">{rangeStart}</span> to{' '}
+                        <span className="font-medium text-foreground">{rangeEnd}</span> of{' '}
+                        <span className="font-medium text-foreground">{totalItems}</span> results
+                      </span>
+                      <div className="flex gap-2">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={page <= 1}
+                          onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        >
+                          Previous
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={page >= totalPages}
+                          onClick={() => setPage((p) => p + 1)}
+                        >
+                          Next
+                        </Button>
+                      </div>
                     </div>
-                  </TableFooter>
-                )}
-              </>
-            )}
+                  )}
+                </>
+              )}
+            </CardContent>
           </Card>
-
           <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
             <StatCard
               title="PCs Still Online"
@@ -1477,7 +1488,7 @@ export default function AfterHours() {
               className="border-status-info/30 bg-status-info/5"
             />
           </div>
-        </> /* end monitor tab */
+        </>) /* end monitor tab */
       )}
     </PageShell>
   );

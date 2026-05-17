@@ -3,8 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import PageHeader from '../../components/ui/PageHeader';
 import PageShell from '../../components/ui/PageShell';
 import { SectionCard } from '../../components/ui/SectionCard';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
+import { Button } from '@/components/ui/button';
+import { Input } from "@/components/ui/input";
 import Modal from '../../components/ui/Modal';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/ui/ToastContext';
@@ -12,6 +12,7 @@ import { hasPermission, Permissions } from '../../lib/auth/permissions';
 import { apiPatch } from '../../lib/api/client';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
+import { Loader2 } from 'lucide-react';
 
 function getInitials(username, role) {
   const source = (username || role || '').trim();
@@ -141,11 +142,9 @@ const Profile = () => {
               </Button>
             )}
             {canManageAccounts && (
-              <Button variant="primary" onClick={() => navigate('/admin/users')}>
-                Account Management
-              </Button>
+              <Button onClick={() => navigate('/admin/users')}>Account Management</Button>
             )}
-            <Button variant="danger" onClick={() => navigate('/logout')}>
+            <Button variant="destructive" onClick={() => navigate('/logout')}>
               Logout
             </Button>
           </div>
@@ -154,74 +153,71 @@ const Profile = () => {
 
       <Modal open={showPasswordModal} onClose={closePasswordModal} title="Change Password">
         <form onSubmit={handlePasswordChange} className="space-y-4">
-              {error && (
-                <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm flex items-center gap-2">
-                  <span className="material-symbols-outlined text-lg">error</span>
-                  {error}
-                </div>
-              )}
+          {error && (
+            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm flex items-center gap-2">
+              <span className="material-symbols-outlined text-lg">error</span>
+              {error}
+            </div>
+          )}
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  Current Password
-                </label>
-                <Input
-                  type="password"
-                  value={passwordForm.currentPassword}
-                  onChange={(e) =>
-                    setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
-                  }
-                  placeholder="Enter current password"
-                  required
-                />
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              Current Password
+            </label>
+            <Input
+              type="password"
+              value={passwordForm.currentPassword}
+              onChange={(e) =>
+                setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
+              }
+              placeholder="Enter current password"
+              required
+            />
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  New Password
-                </label>
-                <Input
-                  type="password"
-                  value={passwordForm.newPassword}
-                  onChange={(e) =>
-                    setPasswordForm({ ...passwordForm, newPassword: e.target.value })
-                  }
-                  placeholder="Enter new password (min 8 chars)"
-                  required
-                  minLength={8}
-                />
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">New Password</label>
+            <Input
+              type="password"
+              value={passwordForm.newPassword}
+              onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+              placeholder="Enter new password (min 8 chars)"
+              required
+              minLength={8}
+            />
+          </div>
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-1.5">
-                  Confirm New Password
-                </label>
-                <Input
-                  type="password"
-                  value={passwordForm.confirmPassword}
-                  onChange={(e) =>
-                    setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
-                  }
-                  placeholder="Confirm new password"
-                  required
-                  minLength={8}
-                />
-              </div>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-1.5">
+              Confirm New Password
+            </label>
+            <Input
+              type="password"
+              value={passwordForm.confirmPassword}
+              onChange={(e) =>
+                setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
+              }
+              placeholder="Confirm new password"
+              required
+              minLength={8}
+            />
+          </div>
 
-              <div className="flex gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="flex-1"
-                  onClick={closePasswordModal}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" variant="primary" className="flex-1" disabled={loading}>
-                  {loading ? 'Changing...' : 'Change Password'}
-                </Button>
-              </div>
-            </form>
+          <div className="flex gap-3 pt-2">
+            <Button
+              type="button"
+              variant="secondary"
+              className="flex-1"
+              onClick={closePasswordModal}
+            >
+              Cancel
+            </Button>
+            <Button type="submit" className="flex-1" disabled={loading}>
+              <Loader2 className="animate-spin mr-2" />
+              {loading ? 'Changing...' : 'Change Password'}
+            </Button>
+          </div>
+        </form>
       </Modal>
     </PageShell>
   );

@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/ui/ToastContext';
-import Button from '../../components/ui/Button';
+import { Button } from '@/components/ui/button';
 import PageHeader from '../../components/ui/PageHeader';
 import PageShell from '../../components/ui/PageShell';
 import Toolbar from '../../components/ui/Toolbar';
-import Input from '../../components/ui/Input';
-import Select from '../../components/ui/Select';
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import DataTable from '../../components/ui/DataTable';
 import EmptyState from '../../components/ui/EmptyState';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
@@ -129,7 +129,11 @@ const StoreManagement = () => {
 
   const handleExport = async () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     try {
@@ -193,56 +197,66 @@ const StoreManagement = () => {
   return (
     <PageShell>
       <FeatureStoryBanner story={getFeatureStory('store-directory')} />
-
       <PageHeader
         title="Store Directory"
         subtitle="Monitor operational status and manage store configurations."
         actions={
-          <Button variant="secondary" icon="download" onClick={handleExport}>
+          <Button variant="secondary" onClick={handleExport}>
+            <span className="material-symbols-outlined mr-2">download</span>
             Export Excel
           </Button>
         }
       />
-
       <Toolbar
         left={
           <>
-            <Input
-              icon="search"
-              wrapperClassName="flex-1"
-              placeholder="Search stores by code or name..."
-              name="q"
-              value={filters.q}
-              onChange={handleFilterChange}
-              onKeyDown={handleSearch}
-            />
+            <div className="relative w-full flex-1"><span
+                className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
+                placeholder="Search stores by code or name..."
+                name="q"
+                value={filters.q}
+                onChange={handleFilterChange}
+                onKeyDown={handleSearch}
+                className="pl-10" /></div>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:w-96">
-              <Select name="areaId" value={filters.areaId} onChange={handleFilterChange}>
-                <option value="">All Branches</option>
-                {AREA_OPTIONS.map((branch) => (
-                  <option key={branch.id} value={branch.id}>
-                    {branch.label}
-                  </option>
-                ))}
+              <Select
+                value={filters.areaId}
+                onValueChange={val => handleFilterChange({
+                  target: {
+                    value: val
+                  }
+                })}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent><SelectItem value="">All Branches</SelectItem>{AREA_OPTIONS.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.id}>
+                      {branch.label}
+                    </SelectItem>
+                  ))}</SelectContent>
               </Select>
-              <Select name="region" value={filters.region} onChange={handleFilterChange}>
-                <option value="">All Regional Heads</option>
-                {regionalHeads.map((rh) => (
-                  <option key={rh} value={rh}>
-                    {rh}
-                  </option>
-                ))}
+              <Select
+                value={filters.region}
+                onValueChange={val => handleFilterChange({
+                  target: {
+                    value: val
+                  }
+                })}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent><SelectItem value="">All Regional Heads</SelectItem>{regionalHeads.map((rh) => (
+                    <SelectItem key={rh} value={rh}>
+                      {rh}
+                    </SelectItem>
+                  ))}</SelectContent>
               </Select>
             </div>
           </>
         }
         right={
-          <Button variant="secondary" icon="search" onClick={applyFilters}>
+          <Button variant="secondary" onClick={applyFilters}>
+            <span className="material-symbols-outlined mr-2">search</span>
             Apply
           </Button>
         }
       />
-
       {error && !loading && data.length === 0 ? (
         <EmptyState
           title="Failed to load stores"

@@ -1,5 +1,5 @@
 import React from 'react';
-import Card from './Card';
+import { Card, CardContent } from "@/components/ui/card";
 
 const StatCard = ({
   title,
@@ -44,34 +44,45 @@ const StatCard = ({
   const accent = accentProp || styles.value;
 
   return (
-    <Card className={`group relative flex h-full flex-col overflow-hidden ${className}`.trim()} onClick={onClick}>
-      <div className={`absolute inset-x-0 top-0 h-1 ${styles.rail}`} />
+    <Card
+      onClick={onClick}
+      className={`group relative flex h-full flex-col overflow-hidden ${className}`.trim()}
+    ><CardContent>
+        <CardContent>
+          <div className={`absolute inset-x-0 top-0 h-1 ${styles.rail}`} />
+          <div className="relative flex flex-1 flex-col">
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="pt-1 text-sm font-medium leading-tight text-muted-foreground">
+                {title}
+              </h3>
+              <div className={`shrink-0 ${!icon ? 'opacity-0' : ''}`}>
+                {icon ? (
+                  <span
+                    className={`material-symbols-outlined flex h-11 w-11 items-center justify-center rounded-2xl border text-[26px] shadow-sm transition-transform duration-200 group-hover:-translate-y-0.5 ${styles.icon} ${accentProp || ''}`.trim()}
+                  >
+                    {icon}
+                  </span>
+                ) : (
+                  <span className="block h-11 w-11" />
+                )}
+              </div>
+            </div>
 
-      <div className="relative flex flex-1 flex-col">
-        <div className="flex items-start justify-between gap-3">
-          <h3 className="pt-1 text-sm font-medium leading-tight text-muted-foreground">{title}</h3>
-          <div className={`shrink-0 ${!icon ? 'opacity-0' : ''}`}>
-            {icon ? (
-              <span
-                className={`material-symbols-outlined flex h-11 w-11 items-center justify-center rounded-2xl border text-[26px] shadow-sm transition-transform duration-200 group-hover:-translate-y-0.5 ${styles.icon} ${accentProp || ''}`.trim()}
+            <div className="mt-3">
+              <div
+                className={`text-2xl font-semibold leading-tight tracking-tight sm:text-[1.8rem] ${accent}`}
               >
-                {icon}
-              </span>
-            ) : (
-              <span className="block h-11 w-11" />
-            )}
+                {value}
+              </div>
+            </div>
+
+            <div className="mt-auto pt-2">
+              {footer && <div className="mb-2">{footer}</div>}
+              {subtext && <p className="text-xs leading-relaxed text-muted-foreground">{subtext}</p>}
+            </div>
           </div>
-        </div>
-
-        <div className="mt-3">
-          <div className={`text-2xl font-semibold leading-tight tracking-tight sm:text-[1.8rem] ${accent}`}>{value}</div>
-        </div>
-
-        <div className="mt-auto pt-2">
-          {footer && <div className="mb-2">{footer}</div>}
-          {subtext && <p className="text-xs leading-relaxed text-muted-foreground">{subtext}</p>}
-        </div>
-      </div>
+        </CardContent>
+      </CardContent>
     </Card>
   );
 };

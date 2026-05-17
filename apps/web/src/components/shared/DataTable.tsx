@@ -1,4 +1,4 @@
-import type { ReactNode } from "react"
+import type { ReactNode } from 'react';
 import {
   Table,
   TableBody,
@@ -6,32 +6,32 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { Button } from "@/components/ui/button"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+} from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface Column<T> {
-  header: string
-  accessor?: keyof T
-  render?: (row: T) => ReactNode
-  className?: string
+  header: string;
+  accessor?: keyof T;
+  render?: (row: T) => ReactNode;
+  className?: string;
 }
 
 interface Pagination {
-  page: number
-  pageSize: number
-  total: number
+  page: number;
+  pageSize: number;
+  total: number;
 }
 
 interface DataTableProps<T> {
-  columns: Column<T>[]
-  data: T[]
-  loading?: boolean
-  pagination?: Pagination
-  onPageChange?: (page: number) => void
-  onRowClick?: (row: T) => void
-  emptyState?: ReactNode
-  keyExtractor: (row: T) => string | number
+  columns: Column<T>[];
+  data: T[];
+  loading?: boolean;
+  pagination?: Pagination;
+  onPageChange?: (page: number) => void;
+  onRowClick?: (row: T) => void;
+  emptyState?: ReactNode;
+  keyExtractor: (row: T) => string | number;
 }
 
 export function DataTable<T>({
@@ -51,18 +51,18 @@ export function DataTable<T>({
         <div className="h-8 bg-muted rounded" />
         <div className="h-8 bg-muted rounded" />
       </div>
-    )
+    );
   }
 
-  const totalPages = pagination ? Math.ceil(pagination.total / pagination.pageSize) : 0
+  const totalPages = pagination ? Math.ceil(pagination.total / pagination.pageSize) : 0;
   const rangeStart = pagination
     ? pagination.total === 0
       ? 0
       : (pagination.page - 1) * pagination.pageSize + 1
-    : 0
+    : 0;
   const rangeEnd = pagination
     ? Math.min(pagination.page * pagination.pageSize, pagination.total)
-    : 0
+    : 0;
 
   return (
     <div className="overflow-x-auto">
@@ -70,15 +70,20 @@ export function DataTable<T>({
         <TableHeader>
           <TableRow>
             {columns.map((col, idx) => (
-              <TableHead key={idx} className={col.className}>{col.header}</TableHead>
+              <TableHead key={idx} className={col.className}>
+                {col.header}
+              </TableHead>
             ))}
           </TableRow>
         </TableHeader>
         <TableBody>
           {data.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={columns.length} className="h-32 text-center text-muted-foreground">
-                {emptyState ?? "No records found."}
+              <TableCell
+                colSpan={columns.length}
+                className="h-32 text-center text-muted-foreground"
+              >
+                {emptyState ?? 'No records found.'}
               </TableCell>
             </TableRow>
           ) : (
@@ -86,11 +91,15 @@ export function DataTable<T>({
               <TableRow
                 key={keyExtractor(row)}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
-                className={onRowClick ? "cursor-pointer" : ""}
+                className={onRowClick ? 'cursor-pointer' : ''}
               >
                 {columns.map((col, idx) => (
                   <TableCell key={idx} className={col.className}>
-                    {col.render ? col.render(row) : col.accessor ? String(row[col.accessor] ?? "") : null}
+                    {col.render
+                      ? col.render(row)
+                      : col.accessor
+                        ? String(row[col.accessor] ?? '')
+                        : null}
                   </TableCell>
                 ))}
               </TableRow>
@@ -125,5 +134,5 @@ export function DataTable<T>({
         </div>
       )}
     </div>
-  )
+  );
 }

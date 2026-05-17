@@ -4,18 +4,19 @@ import { Guard } from '../../components/auth/Guard';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import EmptyState from '../../components/ui/EmptyState';
 import { useToast } from '../../components/ui/ToastContext';
-import Button from '../../components/ui/Button';
-import Input from '../../components/ui/Input';
-import Select from '../../components/ui/Select';
+import { Button } from '@/components/ui/button';
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProgressBar from '../../components/ui/ProgressBar';
 import PageShell from '../../components/ui/PageShell';
 import PageHeader from '../../components/ui/PageHeader';
-import Card from '../../components/ui/Card';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
-import { Table, Thead, Trow, Tcell, TableEmpty, TableFooter } from '../../components/ui/Table';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { formatDateTime, formatTime } from '../../lib/date';
 import StatusBadge from '../../components/ui/StatusBadge';
 import { getFeatureStory } from '../../data/stories';
+import { Loader2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 const LEVEL_OPTIONS = ['ALL', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'];
 
@@ -172,7 +173,11 @@ const SystemHealth = () => {
 
   const refreshAll = useCallback(async () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     setError(null);
@@ -190,7 +195,11 @@ const SystemHealth = () => {
 
   const handleHealthCheck = async () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     setHealthLoading(true);
@@ -265,7 +274,11 @@ const SystemHealth = () => {
 
   const handleExportLogs = async () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     try {
@@ -344,7 +357,7 @@ const SystemHealth = () => {
   }
 
   return (
-    <div className="animate-in">
+    <div>
       <PageShell>
         <FeatureStoryBanner story={getFeatureStory('system')} />
 
@@ -355,25 +368,18 @@ const SystemHealth = () => {
             meta={`Updated ${formatDateTime(overview?.generatedAt)}`}
             actions={
               <>
-                <Button
-                  variant="secondary"
-                  icon="refresh"
-                  onClick={refreshAll}
-                  disabled={loadingOverview || loadingServices || loadingLogs}
-                >
+                <Button variant="secondary" onClick={refreshAll} disabled={loadingOverview || loadingServices || loadingLogs} ><Loader2 className="animate-spin mr-2" /><span className="material-symbols-outlined mr-2">refresh</span>
                   Refresh
                 </Button>
                 <Guard user={user} permission="SYSTEM_HEALTHCHECK">
-                  <Button
-                    variant="secondary"
-                    icon="monitoring"
-                    onClick={handleHealthCheck}
-                    loading={healthLoading}
-                  >
+                  <Button variant="secondary" onClick={handleHealthCheck}>
+                    {healthLoading && <Loader2 className="animate-spin mr-2" />}
+                    <span className="material-symbols-outlined mr-2">monitoring</span>
                     {healthLoading ? 'Checking...' : 'Run Health Check'}
                   </Button>
                 </Guard>
-                <Button variant="primary" icon="download" onClick={handleExportLogs}>
+                <Button onClick={handleExportLogs}>
+                  <span className="material-symbols-outlined mr-2">download</span>
                   Export Logs
                 </Button>
               </>
@@ -383,106 +389,116 @@ const SystemHealth = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-section">
           <Card className="flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <p className="text-muted-foreground text-sm font-medium mb-1">Operating System</p>
-                <h3 className="text-foreground text-xl font-bold">{overview?.platform || '-'}</h3>
+            <CardContent>
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-muted-foreground text-sm font-medium mb-1">Operating System</p>
+                  <h3 className="text-foreground text-xl font-bold">{overview?.platform || '-'}</h3>
+                </div>
+                <span className="material-symbols-outlined text-foreground text-4xl">computer</span>
               </div>
-              <span className="material-symbols-outlined text-foreground text-4xl">computer</span>
-            </div>
-            <div className="text-xs text-muted-foreground">Host {overview?.hostname || '-'}</div>
+              <div className="text-xs text-muted-foreground">Host {overview?.hostname || '-'}</div>
+            </CardContent>
           </Card>
 
           <Card className="flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-4">
-              <div>
-                <p className="text-muted-foreground text-sm font-medium mb-1">System Uptime</p>
-                <h3 className="text-foreground text-xl font-bold">
-                  {formatUptime(overview?.uptimeSeconds)}
-                </h3>
+            <CardContent>
+              <div className="flex justify-between items-start mb-4">
+                <div>
+                  <p className="text-muted-foreground text-sm font-medium mb-1">System Uptime</p>
+                  <h3 className="text-foreground text-xl font-bold">
+                    {formatUptime(overview?.uptimeSeconds)}
+                  </h3>
+                </div>
+                <span className="material-symbols-outlined text-foreground text-4xl">timer</span>
               </div>
-              <span className="material-symbols-outlined text-foreground text-4xl">timer</span>
-            </div>
-            <div className="text-xs text-muted-foreground">
-              Updated {formatTime(overview?.generatedAt)}
-            </div>
+              <div className="text-xs text-muted-foreground">
+                Updated {formatTime(overview?.generatedAt)}
+              </div>
+            </CardContent>
           </Card>
 
           <Card className="flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <p className="text-muted-foreground text-sm font-medium mb-1">CPU Usage</p>
-                <h3 className="text-foreground text-xl font-bold">
-                  {overview?.cpuUsage != null ? `${overview.cpuUsage.toFixed(1)}%` : '-'}
-                </h3>
+            <CardContent>
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <p className="text-muted-foreground text-sm font-medium mb-1">CPU Usage</p>
+                  <h3 className="text-foreground text-xl font-bold">
+                    {overview?.cpuUsage != null ? `${overview.cpuUsage.toFixed(1)}%` : '-'}
+                  </h3>
+                </div>
+                <span className="material-symbols-outlined text-foreground text-4xl">memory</span>
               </div>
-              <span className="material-symbols-outlined text-foreground text-4xl">memory</span>
-            </div>
-            <ProgressBar
-              value={overview?.cpuUsage || 0}
-              className="mb-2"
-              trackClassName="bg-secondary border border-border h-1.5"
-              barClassName="bg-foreground h-1.5"
-            />
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">
-                Load avg (1m): {load1 != null ? load1.toFixed(2) : '-'}
-              </span>
-              <span className="text-foreground font-medium">
-                {overview?.cpuCount ? `${overview.cpuCount} Cores` : ''}
-              </span>
-            </div>
+              <ProgressBar
+                value={overview?.cpuUsage || 0}
+                className="mb-2"
+                trackClassName="bg-secondary border border-border h-1.5"
+                barClassName="bg-foreground h-1.5"
+              />
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">
+                  Load avg (1m): {load1 != null ? load1.toFixed(2) : '-'}
+                </span>
+                <span className="text-foreground font-medium">
+                  {overview?.cpuCount ? `${overview.cpuCount} Cores` : ''}
+                </span>
+              </div>
+            </CardContent>
           </Card>
 
           <Card className="flex flex-col justify-between">
-            <div className="flex justify-between items-start mb-2">
-              <div>
-                <p className="text-muted-foreground text-sm font-medium mb-1">Memory Usage</p>
-                <h3 className="text-foreground text-xl font-bold">
-                  {memoryUsedPercent != null ? `${memoryUsedPercent.toFixed(1)}%` : '-'}
-                </h3>
+            <CardContent>
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <p className="text-muted-foreground text-sm font-medium mb-1">Memory Usage</p>
+                  <h3 className="text-foreground text-xl font-bold">
+                    {memoryUsedPercent != null ? `${memoryUsedPercent.toFixed(1)}%` : '-'}
+                  </h3>
+                </div>
+                <span className="material-symbols-outlined text-foreground text-4xl">storage</span>
               </div>
-              <span className="material-symbols-outlined text-foreground text-4xl">storage</span>
-            </div>
-            <ProgressBar
-              value={memoryUsedPercent != null ? Math.min(memoryUsedPercent, 100) : 0}
-              className="mb-2"
-              trackClassName="bg-secondary border border-border h-1.5"
-              barClassName="bg-foreground h-1.5"
-            />
-            <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">
-                {memoryUsed != null && memoryTotal != null
-                  ? `${formatBytes(memoryUsed)} / ${formatBytes(memoryTotal)}`
-                  : '-'}
-              </span>
-              <span className="text-foreground font-medium">{memoryStatus}</span>
-            </div>
+              <ProgressBar
+                value={memoryUsedPercent != null ? Math.min(memoryUsedPercent, 100) : 0}
+                className="mb-2"
+                trackClassName="bg-secondary border border-border h-1.5"
+                barClassName="bg-foreground h-1.5"
+              />
+              <div className="flex justify-between text-xs">
+                <span className="text-muted-foreground">
+                  {memoryUsed != null && memoryTotal != null
+                    ? `${formatBytes(memoryUsed)} / ${formatBytes(memoryTotal)}`
+                    : '-'}
+                </span>
+                <span className="text-foreground font-medium">{memoryStatus}</span>
+              </div>
+            </CardContent>
           </Card>
         </div>
 
         {disk && (
           <Card>
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-              <div>
-                <p className="text-sm text-muted-foreground">Disk Usage</p>
-                <p className="text-lg font-semibold text-foreground">
-                  {diskUsedPercent != null ? `${diskUsedPercent.toFixed(1)}%` : '-'}
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {disk?.freeBytes != null && disk?.totalBytes != null
-                    ? `${formatBytes(disk.freeBytes)} free of ${formatBytes(disk.totalBytes)}`
-                    : '-'}
-                </p>
+            <CardContent>
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div>
+                  <p className="text-sm text-muted-foreground">Disk Usage</p>
+                  <p className="text-lg font-semibold text-foreground">
+                    {diskUsedPercent != null ? `${diskUsedPercent.toFixed(1)}%` : '-'}
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {disk?.freeBytes != null && disk?.totalBytes != null
+                      ? `${formatBytes(disk.freeBytes)} free of ${formatBytes(disk.totalBytes)}`
+                      : '-'}
+                  </p>
+                </div>
+                <div className="w-full md:max-w-md">
+                  <ProgressBar
+                    value={diskUsedPercent != null ? Math.min(diskUsedPercent, 100) : 0}
+                    trackClassName="bg-secondary border border-border"
+                    barClassName="bg-foreground"
+                  />
+                </div>
               </div>
-              <div className="w-full md:max-w-md">
-                <ProgressBar
-                  value={diskUsedPercent != null ? Math.min(diskUsedPercent, 100) : 0}
-                  trackClassName="bg-secondary border border-border"
-                  barClassName="bg-foreground"
-                />
-              </div>
-            </div>
+            </CardContent>
           </Card>
         )}
 
@@ -503,39 +519,39 @@ const SystemHealth = () => {
                 const timestampLabel = hasLastSeenAt ? 'Last seen' : 'Checked';
                 const timestampValue = service.lastSeenAt || service.lastCheckedAt;
                 return (
-                  <Card
-                    key={service.name}
-                    variant="compact"
-                    className="flex items-center justify-between group"
-                  >
-                    <div className="flex items-center gap-4">
-                      <span className="material-symbols-outlined text-3xl text-foreground">
-                        {getServiceIcon(service.name)}
-                      </span>
-                      <div className="flex flex-col">
-                        <span className="text-foreground font-medium text-sm">{service.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {timestampLabel} {formatTime(timestampValue)}
+                  <Card key={service.name} className="py-3 flex items-center justify-between group">
+                    <CardContent>
+                      <div className="flex items-center gap-4">
+                        <span className="material-symbols-outlined text-3xl text-foreground">
+                          {getServiceIcon(service.name)}
                         </span>
+                        <div className="flex flex-col">
+                          <span className="text-foreground font-medium text-sm">
+                            {service.name}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {timestampLabel} {formatTime(timestampValue)}
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <StatusBadge variant={status.variant}>{status.label}</StatusBadge>
-                      <div className={`h-2 w-2 rounded-full ${status.dot}`} />
-                      <Guard user={user} permission="SYSTEM_RESTART">
-                        <button
-                          type="button"
-                          className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => {
-                            setRestartTarget(service);
-                            setRestartConfirm('');
-                          }}
-                          aria-label={`Restart ${service.name}`}
-                        >
-                          <span className="material-symbols-outlined text-lg">restart_alt</span>
-                        </button>
-                      </Guard>
-                    </div>
+                      <div className="flex items-center gap-2">
+                        <StatusBadge variant={status.variant}>{status.label}</StatusBadge>
+                        <div className={`h-2 w-2 rounded-full ${status.dot}`} />
+                        <Guard user={user} permission="SYSTEM_RESTART">
+                          <button
+                            type="button"
+                            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => {
+                              setRestartTarget(service);
+                              setRestartConfirm('');
+                            }}
+                            aria-label={`Restart ${service.name}`}
+                          >
+                            <span className="material-symbols-outlined text-lg">restart_alt</span>
+                          </button>
+                        </Guard>
+                      </div>
+                    </CardContent>
                   </Card>
                 );
               })
@@ -548,108 +564,120 @@ const SystemHealth = () => {
             <h3 className="section-title">System Logs</h3>
             <div className="flex flex-wrap gap-3">
               <div className="relative group">
-                <Input
-                  icon="search"
-                  placeholder="Filter logs..."
-                  type="text"
-                  value={logQuery}
-                  onChange={(event) => setLogQuery(event.target.value)}
-                  className="w-52 md:w-72"
-                />
+                <div className="relative w-full"><span
+                    className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
+                    placeholder="Filter logs..."
+                    type="text"
+                    value={logQuery}
+                    onChange={(event) => setLogQuery(event.target.value)}
+                    className="pl-10 w-52 md:w-72" /></div>
               </div>
               <Select
                 value={logLevel}
-                onChange={(event) => setLogLevel(event.target.value)}
-                className="w-auto cursor-pointer"
-              >
-                {LEVEL_OPTIONS.map((level) => (
-                  <option key={level} value={level}>
-                    {level}
-                  </option>
-                ))}
+                onValueChange={val => {
+                  const event = {
+                    target: {
+                      value: val
+                    }
+                  };
+
+                  return setLogLevel(event.target.value);
+                }}>
+                <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                <SelectContent>{LEVEL_OPTIONS.map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {level}
+                    </SelectItem>
+                  ))}</SelectContent>
               </Select>
             </div>
           </div>
 
-          <Card variant="table" className="flex flex-col">
-            <Table>
-              <Thead>
-                <Tcell as="th" className="w-48 font-mono">
-                  Timestamp
-                </Tcell>
-                <Tcell as="th" className="w-28 text-center">
-                  Level
-                </Tcell>
-                <Tcell as="th" className="w-40 text-center">
-                  Source
-                </Tcell>
-                <Tcell as="th">Message</Tcell>
-                <Tcell as="th" className="w-16 text-center"></Tcell>
-              </Thead>
-              <tbody>
-                {loadingLogs && logs.length === 0 ? (
-                  <TableEmpty colSpan={5}>Loading logs...</TableEmpty>
-                ) : filteredLogs.length === 0 ? (
-                  <TableEmpty colSpan={5}>No logs match the current filters.</TableEmpty>
-                ) : (
-                  filteredLogs.map((log) => (
-                    <Trow key={log.id} className="group">
-                      <Tcell className="text-muted-foreground font-mono text-xs">
-                        {formatDateTime(log.createdAt)}
-                      </Tcell>
-                      <Tcell className="text-center">
-                        <StatusBadge variant={LEVEL_STYLES[log.level] || 'neutral'}>
-                          {log.level}
-                        </StatusBadge>
-                      </Tcell>
-                      <Tcell className="text-foreground text-center">{log.component || '-'}</Tcell>
-                      <Tcell className="text-foreground font-mono text-xs">{log.message}</Tcell>
-                      <Tcell className="text-center">
-                        <button
-                          type="button"
-                          className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={() => handleCopyLog(log)}
-                        >
-                          <span className="material-symbols-outlined text-base">content_copy</span>
-                        </button>
-                      </Tcell>
-                    </Trow>
-                  ))
-                )}
-              </tbody>
-            </Table>
-            <TableFooter>
-              <span className="text-xs text-muted-foreground">
-                Showing {rangeStart} to {rangeEnd} of {totalLogs} logs
-              </span>
-              <div className="flex gap-2">
-                <button
-                  className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-50 border border-transparent hover:border-border transition-all"
-                  onClick={() =>
-                    setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
-                  }
-                  disabled={pagination.page <= 1}
-                >
-                  <span className="material-symbols-outlined text-lg">chevron_left</span>
-                </button>
-                <button
-                  className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-50 border border-transparent hover:border-border transition-all"
-                  onClick={() =>
-                    setPagination((prev) => ({
-                      ...prev,
-                      page: prev.page * prev.pageSize < totalLogs ? prev.page + 1 : prev.page,
-                    }))
-                  }
-                  disabled={pagination.page * pagination.pageSize >= totalLogs}
-                >
-                  <span className="material-symbols-outlined text-lg">chevron_right</span>
-                </button>
+          <Card className="p-0 overflow-hidden flex flex-col">
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader><TableRow>
+                    <TableHead className="w-48 font-mono">
+                      Timestamp
+                    </TableHead>
+                    <TableHead className="w-28 text-center">
+                      Level
+                    </TableHead>
+                    <TableHead className="w-40 text-center">
+                      Source
+                    </TableHead>
+                    <TableHead>Message</TableHead>
+                    <TableHead className="w-16 text-center"></TableHead>
+                  </TableRow></TableHeader>
+                <tbody>
+                  {loadingLogs && logs.length === 0 ? (
+                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Loading logs...</TableCell></TableRow>
+                  ) : filteredLogs.length === 0 ? (
+                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No logs match the current filters.</TableCell></TableRow>
+                  ) : (
+                    filteredLogs.map((log) => (
+                      <TableRow key={log.id} className="group">
+                        <TableCell className="text-muted-foreground font-mono text-xs">
+                          {formatDateTime(log.createdAt)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          <StatusBadge variant={LEVEL_STYLES[log.level] || 'neutral'}>
+                            {log.level}
+                          </StatusBadge>
+                        </TableCell>
+                        <TableCell className="text-foreground text-center">
+                          {log.component || '-'}
+                        </TableCell>
+                        <TableCell className="text-foreground font-mono text-xs">{log.message}</TableCell>
+                        <TableCell className="text-center">
+                          <button
+                            type="button"
+                            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleCopyLog(log)}
+                          >
+                            <span className="material-symbols-outlined text-base">
+                              content_copy
+                            </span>
+                          </button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </tbody>
+              </Table>
+              <div
+                className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+                <span className="text-xs text-muted-foreground">
+                  Showing {rangeStart} to {rangeEnd} of {totalLogs} logs
+                </span>
+                <div className="flex gap-2">
+                  <button
+                    className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-50 border border-transparent hover:border-border transition-all"
+                    onClick={() =>
+                      setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
+                    }
+                    disabled={pagination.page <= 1}
+                  >
+                    <span className="material-symbols-outlined text-lg">chevron_left</span>
+                  </button>
+                  <button
+                    className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-50 border border-transparent hover:border-border transition-all"
+                    onClick={() =>
+                      setPagination((prev) => ({
+                        ...prev,
+                        page: prev.page * prev.pageSize < totalLogs ? prev.page + 1 : prev.page,
+                      }))
+                    }
+                    disabled={pagination.page * pagination.pageSize >= totalLogs}
+                  >
+                    <span className="material-symbols-outlined text-lg">chevron_right</span>
+                  </button>
+                </div>
               </div>
-            </TableFooter>
+            </CardContent>
           </Card>
         </div>
       </PageShell>
-
       <ConfirmDialog
         open={Boolean(restartTarget)}
         title={restartTarget ? `Restart ${restartTarget.name}` : 'Restart Service'}

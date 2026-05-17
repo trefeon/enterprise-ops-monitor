@@ -6,21 +6,22 @@ import EmptyState from '../../components/ui/EmptyState';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/ToastContext';
 import Toolbar from '../../components/ui/Toolbar';
-import Input from '../../components/ui/Input';
-import Select from '../../components/ui/Select';
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import ProgressBar from '../../components/ui/ProgressBar';
-import Button from '../../components/ui/Button';
+import { Button } from '@/components/ui/button';
 import IconButton from '../../components/ui/IconButton';
 import PageShell from '../../components/ui/PageShell';
 import PageHeader from '../../components/ui/PageHeader';
-import Card from '../../components/ui/Card';
 import StatCard from '../../components/ui/StatCard';
 import Modal from '../../components/ui/Modal';
 import StatusBadge from '../../components/ui/StatusBadge';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
-import { Table, Thead, Trow, Tcell, TableEmpty, TableFooter } from '../../components/ui/Table';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { formatDateTime, formatTime, getWibToday } from '../../lib/date';
 import { getFeatureStory } from '../../data/stories';
+import { Loader2 } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 
 const AUTO_REFRESH_INTERVAL = 30000;
 
@@ -259,7 +260,11 @@ const EODMonitor = () => {
 
   const handleRefresh = useCallback(() => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     fetchData();
@@ -328,7 +333,11 @@ const EODMonitor = () => {
 
   const handleExport = useCallback(async () => {
     if (isDemoUser) {
-      push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available in the demo account.' });
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
       return;
     }
     setExporting(true);
@@ -479,7 +488,6 @@ const EODMonitor = () => {
   return (
     <PageShell>
       <FeatureStoryBanner story={getFeatureStory('eod-monitor')} />
-
       <PageHeader
         title="EOD Monitor"
         subtitle="Real-time EOD status by store."
@@ -499,22 +507,19 @@ const EODMonitor = () => {
             >
               {autoRefresh ? `Auto-refresh: On (${autoRefreshSeconds}s)` : 'Auto-refresh: Off'}
             </Button>
-            <Button
-              variant="secondary"
-              icon="refresh"
-              onClick={handleRefresh}
-            >
+            <Button variant="secondary" onClick={handleRefresh}>
               Refresh
             </Button>
+            <span className="material-symbols-outlined mr-2">refresh</span>
             <Guard user={user} permission="EOD_SYNC" fallback={null}>
-              <Button variant="primary" icon="sync" onClick={() => setSyncOpen(true)}>
+              <Button onClick={() => setSyncOpen(true)}>
+                <span className="material-symbols-outlined mr-2">sync</span>
                 Sync All
               </Button>
             </Guard>
           </>
         }
       />
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-section">
         <StatCard
           title="Total Stores"
@@ -577,7 +582,6 @@ const EODMonitor = () => {
           }}
         />
       </div>
-
       {/* Branch Health Cards */}
       {!statsLoading && branches.length > 0 && (
         <div className="flex flex-col gap-4">
@@ -606,36 +610,33 @@ const EODMonitor = () => {
                   className="block w-full text-left border-0 bg-transparent p-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
                   onClick={() => openBranchModal(branch)}
                 >
-                  <Card
-                    variant="compact"
-                    className="flex flex-col gap-3 transition-shadow hover:shadow-md hover:ring-1 hover:ring-ring cursor-pointer min-h-32 justify-between"
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="font-semibold text-foreground">{branch.areaName}</div>
-                      <div
-                        className={`px-2 py-1 rounded text-xs font-medium ${
-                          hasFailed
-                            ? 'bg-status-error/10 text-status-error border border-status-error/20'
-                            : 'bg-muted text-muted-foreground border border-border'
-                        }`}
-                      >
-                        {failed > 0 ? `${failed} failed` : '0 failed'}
+                  <Card className="py-3 flex flex-col gap-3 transition-shadow hover:shadow-md hover:ring-1 hover:ring-ring cursor-pointer min-h-32 justify-between">
+                    <CardContent>
+                      <div className="flex items-center justify-between">
+                        <div className="font-semibold text-foreground">{branch.areaName}</div>
+                        <div
+                          className={`px-2 py-1 rounded text-xs font-medium ${
+                            hasFailed
+                              ? 'bg-status-error/10 text-status-error border border-status-error/20'
+                              : 'bg-muted text-muted-foreground border border-border'
+                          }`}
+                        >
+                          {failed > 0 ? `${failed} failed` : '0 failed'}
+                        </div>
                       </div>
-                    </div>
-
-                    <ProgressBar
-                      value={completionPercent}
-                      trackClassName="bg-secondary border border-border h-2"
-                      barClassName={`h-2 ${barClassName}`}
-                    />
-
-                    <div className="text-sm text-muted-foreground">
-                      <span>{done} done</span>
-                      {' • '}
-                      <span>{pending} pending</span>
-                      {' • '}
-                      <span>{failed} failed</span>
-                    </div>
+                      <ProgressBar
+                        value={completionPercent}
+                        trackClassName="bg-secondary border border-border h-2"
+                        barClassName={`h-2 ${barClassName}`}
+                      />
+                      <div className="text-sm text-muted-foreground">
+                        <span>{done} done</span>
+                        {' • '}
+                        <span>{pending} pending</span>
+                        {' • '}
+                        <span>{failed} failed</span>
+                      </div>
+                    </CardContent>
                   </Card>
                 </button>
               );
@@ -643,63 +644,51 @@ const EODMonitor = () => {
           </div>
         </div>
       )}
-
       <Toolbar
         left={
           <>
-            <Input
-              icon="search"
-              wrapperClassName="w-full md:max-w-sm"
-              placeholder="Search Store Code or Name"
-              type="text"
-              name="q"
-              value={filters.q}
-              onChange={handleFilterChange}
-            />
+            <div className="relative w-full w-full md:max-w-sm"><span
+                className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
+                placeholder="Search Store Code or Name"
+                type="text"
+                name="q"
+                value={filters.q}
+                onChange={handleFilterChange}
+                className="pl-10" /></div>
             <Select
-              name="areaId"
               value={filters.areaId}
-              onChange={handleFilterChange}
-              fullWidth={false}
-              wrapperClassName="w-fit shrink-0"
-              className="w-auto"
-            >
-              <option value="">Branch: All</option>
-              <option value="2">NORTH HUB</option>
-              <option value="3">EAST HUB</option>
-              <option value="4">CENTRAL HUB</option>
-              <option value="5">COASTAL HUB</option>
-              <option value="6">HIGHLAND HUB</option>
-              <option value="7">WEST HUB</option>
-              <option value="8">RIVER HUB</option>
-              <option value="9">SOUTH HUB</option>
+              onValueChange={val => handleFilterChange({
+                target: {
+                  value: val
+                }
+              })}>
+              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent><SelectItem value="">Branch: All</SelectItem><SelectItem value="2">NORTH HUB</SelectItem><SelectItem value="3">EAST HUB</SelectItem><SelectItem value="4">CENTRAL HUB</SelectItem><SelectItem value="5">COASTAL HUB</SelectItem><SelectItem value="6">HIGHLAND HUB</SelectItem><SelectItem value="7">WEST HUB</SelectItem><SelectItem value="8">RIVER HUB</SelectItem><SelectItem value="9">SOUTH HUB</SelectItem></SelectContent>
             </Select>
             <Select
-              name="status"
               value={filters.status}
-              onChange={handleFilterChange}
-              fullWidth={false}
-              wrapperClassName="w-fit shrink-0"
-              className="w-auto"
-            >
-              <option value="">Status: All</option>
-              <option value="done">Done</option>
-              <option value="pending">Pending</option>
-              <option value="failed">Failed</option>
+              onValueChange={val => handleFilterChange({
+                target: {
+                  value: val
+                }
+              })}>
+              <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+              <SelectContent><SelectItem value="">Status: All</SelectItem><SelectItem value="done">Done</SelectItem><SelectItem value="pending">Pending</SelectItem><SelectItem value="failed">Failed</SelectItem></SelectContent>
             </Select>
             <div className="relative w-fit shrink-0">
-              <Input
-                type="text"
-                value={displayDate}
-                size={10}
-                readOnly
-                onClick={openDatePicker}
-                rightIcon="calendar_month"
-                rightIconAriaLabel="Choose date"
-                onRightIconClick={openDatePicker}
-                fullWidth={false}
-                className="w-auto tabular-nums cursor-pointer"
-              />
+              <div className="relative"><button
+                  type="button"
+                  className="absolute right-0 inset-y-0 inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-muted-foreground hover:text-foreground hover:bg-accent"
+                  onClick={openDatePicker}>
+                  <span className="material-symbols-outlined text-xl leading-none">calendar_month</span>
+                </button><Input
+                  type="text"
+                  value={displayDate}
+                  size={10}
+                  readOnly
+                  onClick={openDatePicker}
+                  rightIconAriaLabel="Choose date"
+                  className="pr-12 w-auto tabular-nums cursor-pointer" /></div>
               <input
                 ref={hiddenDateInputRef}
                 type="date"
@@ -718,168 +707,169 @@ const EODMonitor = () => {
             <Button
               variant="secondary"
               size="sm"
-              icon="download"
-              loading={exporting}
               onClick={handleExport}
               title={`Export Excel for ${displayDate}`}
             >
+              {exporting && <Loader2 className="animate-spin mr-2" />}
+              <span className="material-symbols-outlined mr-2">download</span>
               {exportButtonLabel}
             </Button>
-            <Button variant="ghost" size="sm" icon="restart_alt" onClick={handleResetFilters}>
+            <Button variant="ghost" size="sm" onClick={handleResetFilters}>
               Reset
             </Button>
+            <span className="material-symbols-outlined mr-2">restart_alt</span>
           </div>
         }
       />
-
-      <Card variant="table" className="flex min-h-80 flex-col">
-        {error ? (
-          <div className="p-card">
-            <EmptyState
-              title="Failed to load EOD data"
-              description={error}
-              icon="error"
-              action={{ label: 'Retry', icon: 'refresh', onClick: fetchData }}
-            />
-          </div>
-        ) : (
-          <>
-            <Table wrapperClassName="flex-1 overflow-auto">
-              <Thead>
-                <Tcell as="th" className="w-28 text-right">
-                  Store Code
-                </Tcell>
-                <Tcell as="th" className="min-w-48">
-                  Store Name
-                </Tcell>
-                <Tcell as="th" className="w-32">
-                  Branch
-                </Tcell>
-                <Tcell as="th" className="w-24 text-center">
-                  Status
-                </Tcell>
-                <Tcell as="th" className="w-36 text-center">
-                  Last EOD
-                </Tcell>
-                <Tcell as="th" className="w-20 text-center">
-                  Source
-                </Tcell>
-                <Tcell as="th" className="w-56">
-                  Error Message
-                </Tcell>
-              </Thead>
-              <tbody>
-                {loading &&
-                  Array.from({ length: 6 }).map((_, idx) => (
-                    <Trow key={`skeleton-${idx}`} className="animate-pulse">
-                      <Tcell>
-                        <div className="h-4 w-20 rounded bg-muted"></div>
-                      </Tcell>
-                      <Tcell>
-                        <div className="h-4 w-40 rounded bg-muted"></div>
-                      </Tcell>
-                      <Tcell>
-                        <div className="h-4 w-24 rounded bg-muted"></div>
-                      </Tcell>
-                      <Tcell>
-                        <div className="h-4 w-20 rounded bg-muted"></div>
-                      </Tcell>
-                      <Tcell>
-                        <div className="h-4 w-24 rounded bg-muted"></div>
-                      </Tcell>
-                      <Tcell>
-                        <div className="h-4 w-24 rounded bg-muted"></div>
-                      </Tcell>
-                      <Tcell>
-                        <div className="h-4 w-48 rounded bg-muted"></div>
-                      </Tcell>
-                    </Trow>
-                  ))}
-                {!loading && data.length === 0 && (
-                  <TableEmpty colSpan={7} className="text-center">
-                    No EOD results found. Adjust filters or try again.
-                  </TableEmpty>
-                )}
-                {!loading &&
-                  data.length > 0 &&
-                  data.map((row) => {
-                    const statusConfig = getStatusConfig(row.status);
-                    return (
-                      <Trow key={row.storeId} onClick={() => openDetail(row)} className="group">
-                        <Tcell className="whitespace-nowrap font-mono font-medium text-foreground text-right">
-                          {row.storeCode}
-                        </Tcell>
-                        <Tcell className="whitespace-nowrap font-medium text-foreground">
-                          {row.storeName}
-                        </Tcell>
-                        <Tcell className="whitespace-nowrap text-muted-foreground">
-                          {row.areaName || row.areaId || '-'}
-                        </Tcell>
-                        <Tcell className="whitespace-nowrap text-center">
-                          <StatusBadge variant={statusConfig.variant}>
-                            {statusConfig.label}
-                          </StatusBadge>
-                        </Tcell>
-                        <Tcell className="whitespace-nowrap font-mono text-muted-foreground text-center">
-                          {formatTime(row.lastEodAt)}
-                        </Tcell>
-                        <Tcell className="whitespace-nowrap text-muted-foreground text-center">
-                          {formatSourceLabel(row.source)}
-                        </Tcell>
-                        <Tcell
-                          className={`max-w-xs truncate ${
-                            row.errorMessage
-                              ? 'text-status-error font-medium'
-                              : 'text-muted-foreground'
-                          }`}
-                          title={row.errorMessage || '-'}
-                        >
-                          {row.errorMessage || '-'}
-                        </Tcell>
-                      </Trow>
-                    );
-                  })}
-              </tbody>
-            </Table>
-            <TableFooter>
-              <div className="text-muted-foreground">
-                Showing <span className="font-medium text-foreground">{rangeStart}</span> to{' '}
-                <span className="font-medium text-foreground">{rangeEnd}</span> of{' '}
-                <span className="font-medium text-foreground">{total}</span> results
-              </div>
-              <div className="flex items-center gap-2">
-                <Select
-                  value={pagination.pageSize}
-                  onChange={handlePageSizeChange}
-                  className="w-auto"
-                >
-                  <option value={10}>10 rows</option>
-                  <option value={20}>20 rows</option>
-                  <option value={50}>50 rows</option>
-                  <option value={100}>100 rows</option>
-                </Select>
-                <div className="flex gap-1">
-                  <IconButton
-                    icon="chevron_left"
-                    label="Previous page"
-                    disabled={pagination.page <= 1}
-                    onClick={() =>
-                      setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
-                    }
-                  />
-                  <IconButton
-                    icon="chevron_right"
-                    label="Next page"
-                    disabled={pagination.page * pagination.pageSize >= pagination.total}
-                    onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
-                  />
+      <Card className="p-0 overflow-hidden flex min-h-80 flex-col">
+        <CardContent className="p-0">
+          {error ? (
+            <div className="p-card">
+              <EmptyState
+                title="Failed to load EOD data"
+                description={error}
+                icon="error"
+                action={{ label: 'Retry', icon: 'refresh', onClick: fetchData }}
+              />
+            </div>
+          ) : (
+            <>
+              <Table wrapperClassName="flex-1 overflow-auto">
+                <TableHeader><TableRow>
+                    <TableHead className="w-28 text-right">
+                      Store Code
+                    </TableHead>
+                    <TableHead className="min-w-48">
+                      Store Name
+                    </TableHead>
+                    <TableHead className="w-32">
+                      Branch
+                    </TableHead>
+                    <TableHead className="w-24 text-center">
+                      Status
+                    </TableHead>
+                    <TableHead className="w-36 text-center">
+                      Last EOD
+                    </TableHead>
+                    <TableHead className="w-20 text-center">
+                      Source
+                    </TableHead>
+                    <TableHead className="w-56">
+                      Error Message
+                    </TableHead>
+                  </TableRow></TableHeader>
+                <tbody>
+                  {loading &&
+                    Array.from({ length: 6 }).map((_, idx) => (
+                      <TableRow key={`skeleton-${idx}`} className="animate-pulse">
+                        <TableCell>
+                          <div className="h-4 w-20 rounded bg-muted"></div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-40 rounded bg-muted"></div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-24 rounded bg-muted"></div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-20 rounded bg-muted"></div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-24 rounded bg-muted"></div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-24 rounded bg-muted"></div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="h-4 w-48 rounded bg-muted"></div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  {!loading && data.length === 0 && (
+                    <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">No EOD results found. Adjust filters or try again.
+                                            </TableCell></TableRow>
+                  )}
+                  {!loading &&
+                    data.length > 0 &&
+                    data.map((row) => {
+                      const statusConfig = getStatusConfig(row.status);
+                      return (
+                        <TableRow key={row.storeId} onClick={() => openDetail(row)} className="group">
+                          <TableCell className="whitespace-nowrap font-mono font-medium text-foreground text-right">
+                            {row.storeCode}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap font-medium text-foreground">
+                            {row.storeName}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap text-muted-foreground">
+                            {row.areaName || row.areaId || '-'}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap text-center">
+                            <StatusBadge variant={statusConfig.variant}>
+                              {statusConfig.label}
+                            </StatusBadge>
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap font-mono text-muted-foreground text-center">
+                            {formatTime(row.lastEodAt)}
+                          </TableCell>
+                          <TableCell className="whitespace-nowrap text-muted-foreground text-center">
+                            {formatSourceLabel(row.source)}
+                          </TableCell>
+                          <TableCell
+                            className={`max-w-xs truncate ${
+                              row.errorMessage
+                                ? 'text-status-error font-medium'
+                                : 'text-muted-foreground'
+                            }`}
+                            title={row.errorMessage || '-'}
+                          >
+                            {row.errorMessage || '-'}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                </tbody>
+              </Table>
+              <div
+                className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+                <div className="text-muted-foreground">
+                  Showing <span className="font-medium text-foreground">{rangeStart}</span> to{' '}
+                  <span className="font-medium text-foreground">{rangeEnd}</span> of{' '}
+                  <span className="font-medium text-foreground">{total}</span> results
+                </div>
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={pagination.pageSize}
+                    onValueChange={val => handlePageSizeChange({
+                      target: {
+                        value: val
+                      }
+                    })}>
+                    <SelectTrigger><SelectValue placeholder="Select" /></SelectTrigger>
+                    <SelectContent><SelectItem value={10}>10 rows</SelectItem><SelectItem value={20}>20 rows</SelectItem><SelectItem value={50}>50 rows</SelectItem><SelectItem value={100}>100 rows</SelectItem></SelectContent>
+                  </Select>
+                  <div className="flex gap-1">
+                    <IconButton
+                      icon="chevron_left"
+                      label="Previous page"
+                      disabled={pagination.page <= 1}
+                      onClick={() =>
+                        setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
+                      }
+                    />
+                    <IconButton
+                      icon="chevron_right"
+                      label="Next page"
+                      disabled={pagination.page * pagination.pageSize >= pagination.total}
+                      onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
+                    />
+                  </div>
                 </div>
               </div>
-            </TableFooter>
-          </>
-        )}
+            </>
+          )}
+        </CardContent>
       </Card>
-
       {detail && (
         <Modal
           open={!!detail}
@@ -941,7 +931,6 @@ const EODMonitor = () => {
           )}
         </Modal>
       )}
-
       <ConfirmDialog
         open={syncOpen}
         title="Sync all stores"
@@ -950,7 +939,6 @@ const EODMonitor = () => {
         onConfirm={handleSync}
         onClose={() => setSyncOpen(false)}
       />
-
       <ConfirmDialog
         open={Boolean(retryTarget)}
         title="Retry EOD"
@@ -959,7 +947,6 @@ const EODMonitor = () => {
         onConfirm={handleRetry}
         onClose={() => setRetryTarget(null)}
       />
-
       <Modal
         open={Boolean(branchModal)}
         onClose={closeBranchModal}
@@ -980,43 +967,43 @@ const EODMonitor = () => {
             </p>
             <div className="modal-scroll-65 overflow-y-auto">
               <Table>
-                <Thead>
-                  <Tcell as="th" className="w-28 text-right">
-                    Store Code
-                  </Tcell>
-                  <Tcell as="th">Store Name</Tcell>
-                  <Tcell as="th" className="w-24 text-center">
-                    Status
-                  </Tcell>
-                  <Tcell as="th" className="w-36">
-                    Last EOD
-                  </Tcell>
-                  <Tcell as="th">Error Message</Tcell>
-                </Thead>
+                <TableHeader><TableRow>
+                    <TableHead className="w-28 text-right">
+                      Store Code
+                    </TableHead>
+                    <TableHead>Store Name</TableHead>
+                    <TableHead className="w-24 text-center">
+                      Status
+                    </TableHead>
+                    <TableHead className="w-36">
+                      Last EOD
+                    </TableHead>
+                    <TableHead>Error Message</TableHead>
+                  </TableRow></TableHeader>
                 <tbody>
-                  {branchStoresLoading && <TableEmpty colSpan={5}>Loading stores...</TableEmpty>}
+                  {branchStoresLoading && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">Loading stores...</TableCell></TableRow>}
                   {!branchStoresLoading && branchStores.length === 0 && (
-                    <TableEmpty colSpan={5}>No stores found for this branch.</TableEmpty>
+                    <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No stores found for this branch.</TableCell></TableRow>
                   )}
                   {!branchStoresLoading &&
                     branchStores.map((store) => {
                       const statusConfig = getStatusConfig(store.status);
                       return (
-                        <Trow
+                        <TableRow
                           key={store.storeCode}
                           className={store.status === 'failed' ? 'bg-status-error/10' : ''}
                         >
-                          <Tcell className="font-mono text-sm text-right">{store.storeCode}</Tcell>
-                          <Tcell className="text-foreground">{store.storeName || '-'}</Tcell>
-                          <Tcell className="text-center">
+                          <TableCell className="font-mono text-sm text-right">{store.storeCode}</TableCell>
+                          <TableCell className="text-foreground">{store.storeName || '-'}</TableCell>
+                          <TableCell className="text-center">
                             <StatusBadge variant={statusConfig.variant}>
                               {statusConfig.label}
                             </StatusBadge>
-                          </Tcell>
-                          <Tcell className="text-muted-foreground text-sm">
+                          </TableCell>
+                          <TableCell className="text-muted-foreground text-sm">
                             {formatTime(store.lastEodAt)}
-                          </Tcell>
-                          <Tcell
+                          </TableCell>
+                          <TableCell
                             className={
                               store.errorMessage
                                 ? 'text-status-error text-sm'
@@ -1024,8 +1011,8 @@ const EODMonitor = () => {
                             }
                           >
                             {store.errorMessage || '-'}
-                          </Tcell>
-                        </Trow>
+                          </TableCell>
+                        </TableRow>
                       );
                     })}
                 </tbody>

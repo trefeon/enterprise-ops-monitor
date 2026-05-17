@@ -2,6 +2,7 @@ import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../lib/auth/permissions';
+import { Loader2 } from 'lucide-react';
 
 /**
  * PrivateRoute component for protecting routes
@@ -17,7 +18,7 @@ export default function PrivateRoute({ requiredPerm, children }) {
     return (
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="flex items-center gap-4 text-muted-foreground">
-          <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          <Loader2 className="h-4 w-4 animate-spin" />
           <span className="text-sm">Loading…</span>
         </div>
       </div>

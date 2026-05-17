@@ -11,7 +11,12 @@ const Modal = ({
   showClose = true,
 }) => {
   return (
-    <Dialog open={open} onOpenChange={(nextOpen) => { if (!nextOpen) onClose(); }}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        if (!nextOpen) onClose();
+      }}
+    >
       <DialogContent showCloseButton={showClose} className={`${maxWidth} ${className}`.trim()}>
         {title && (
           <DialogHeader>
