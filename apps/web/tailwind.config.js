@@ -54,6 +54,31 @@ export default {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+        '4xl': '2rem',
+        '5xl': '2.5rem',
+      },
+      fontSize: {
+        '3xs': ['10px', { lineHeight: '1.4' }],
+        '4xs': ['9px', { lineHeight: '1.2' }],
+        '5xs': ['8px', { lineHeight: '1' }],
+      },
+      letterSpacing: {
+        'widest-lg': '0.2em',
+        'widest-xl': '0.25em',
+        'widest-2xl': '0.3em',
+      },
+      maxWidth: {
+        'cell-sm': '180px',
+        'cell-md': '200px',
+      },
+      lineHeight: {
+        'tightest': '1.05',
+      },
+      scale: {
+        '98': '0.98',
+      },
+      backgroundImage: {
+        'radial-login': 'radial-gradient(circle at 20% 20%, var(--primary) 0%, transparent 40%)',
       },
       spacing: {
         'page-x': 'var(--page-px)',

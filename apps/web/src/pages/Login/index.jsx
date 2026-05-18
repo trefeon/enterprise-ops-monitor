@@ -19,7 +19,6 @@ import {
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '../../components/ui/ToastContext';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 const DEMO_ACCOUNTS = [
@@ -176,18 +175,18 @@ const Login = () => {
       {/* Left Section: Branding */}
       <section className="hidden md:flex w-1/2 flex-col justify-between p-16 relative overflow-hidden bg-muted/5 border-r border-border/40">
         <div className="absolute inset-0 opacity-10 pointer-events-none">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_20%_20%,_var(--primary)_0%,_transparent_40%)]" />
+          <div className="absolute top-0 left-0 w-full h-full bg-radial-login" />
         </div>
 
         <div className="z-10 flex items-center gap-4 text-foreground font-black tracking-tighter">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-xl shadow-primary/20">
             <LineChart className="size-7" />
           </div>
-          <span className="text-lg uppercase tracking-[0.2em]">Operations Hub</span>
+          <span className="text-lg uppercase tracking-widest-lg">Operations Hub</span>
         </div>
 
         <div className="z-10 max-w-lg">
-          <h1 className="text-5xl lg:text-7xl font-black text-foreground leading-[1.05] tracking-tight mb-8">
+          <h1 className="text-5xl lg:text-7xl font-black text-foreground leading-tightest tracking-tight mb-8">
             Enterprise <br /> Monitor
           </h1>
           <p className="text-muted-foreground text-xl mb-12 leading-relaxed font-medium">
@@ -195,18 +194,18 @@ const Login = () => {
             health.
           </p>
           <div className="flex flex-wrap gap-4">
-            <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-status-success/10 border border-status-success/20 text-[10px] font-black uppercase tracking-widest text-status-success">
+            <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-status-success/10 border border-status-success/20 text-3xs font-black uppercase tracking-widest text-status-success">
               <span className="w-2 h-2 rounded-full bg-status-success animate-pulse" />
               Operational
             </div>
-            <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-muted/30 border border-border/40 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+            <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-muted/30 border border-border/40 text-3xs font-black uppercase tracking-widest text-muted-foreground">
               <ShieldCheck className="size-4" />
               Secure Hub
             </div>
           </div>
         </div>
 
-        <div className="z-10 text-[10px] font-black uppercase tracking-widest text-muted-foreground/40">
+        <div className="z-10 text-3xs font-black uppercase tracking-widest text-muted-foreground/40">
           © 2026 Enterprise Operations Monitor
         </div>
       </section>
@@ -214,7 +213,7 @@ const Login = () => {
       {/* Right Section: Form */}
       <main className="flex-1 flex flex-col justify-center items-center p-6 md:p-12 relative">
         <div className="w-full max-w-md">
-          <div className="rounded-[2.5rem] border border-border/60 bg-card p-8 sm:p-12 shadow-2xl">
+          <div className="rounded-5xl border border-border/60 bg-card p-8 sm:p-12 shadow-2xl">
             <div className="text-center mb-10">
               <h2 className="text-3xl font-black tracking-tight text-foreground mb-3">
                 Welcome Back
@@ -302,7 +301,7 @@ const Login = () => {
               </div>
 
               <Button
-                className="w-full h-14 rounded-2xl font-black uppercase tracking-[0.1em] shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-[0.98]"
+                className="w-full h-14 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-98"
                 type="submit"
                 disabled={isLoading}
               >
@@ -316,7 +315,7 @@ const Login = () => {
             </form>
 
             <div className="mt-10 pt-8 border-t border-border/40">
-              <p className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] text-center mb-6">
+              <p className="text-3xs font-black text-muted-foreground/40 uppercase tracking-widest-lg text-center mb-6">
                 Portfolio Showcase
               </p>
               {DEMO_ACCOUNTS.map((acc) => (
@@ -324,7 +323,7 @@ const Login = () => {
                   key={acc.username}
                   disabled={isAnimating || isLoading}
                   onClick={() => typeCredentials(acc.username, acc.password)}
-                  className="w-full group flex items-center justify-between p-4 rounded-2xl bg-muted/20 border border-border/40 hover:border-primary/40 hover:bg-background transition-all active:scale-[0.98]"
+                  className="w-full group flex items-center justify-between p-4 rounded-2xl bg-muted/20 border border-border/40 hover:border-primary/40 hover:bg-background transition-all active:scale-98"
                 >
                   <div className="flex items-center gap-3 text-left">
                     <div className="size-10 flex items-center justify-center rounded-xl bg-background border border-border/60 group-hover:text-primary transition-colors">
@@ -332,12 +331,12 @@ const Login = () => {
                     </div>
                     <div>
                       <div className="text-sm font-bold">{acc.label}</div>
-                      <div className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
+                      <div className="text-3xs text-muted-foreground uppercase font-black tracking-widest">
                         Login: {acc.username}
                       </div>
                     </div>
                   </div>
-                  <div className="text-[10px] font-black uppercase tracking-widest text-primary/40 group-hover:text-primary transition-colors">
+                  <div className="text-3xs font-black uppercase tracking-widest text-primary/40 group-hover:text-primary transition-colors">
                     QUICK START
                   </div>
                 </button>
@@ -345,7 +344,7 @@ const Login = () => {
             </div>
 
             <div className="mt-10 text-center">
-              <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/30">
+              <span className="text-3xs font-black uppercase tracking-widest text-muted-foreground/30">
                 v2.4.0 • PRODUCTION READY
               </span>
             </div>
@@ -373,7 +372,7 @@ const Login = () => {
       </main>
 
       <div className="md:hidden p-8 border-t border-border bg-card text-center">
-        <p className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+        <p className="text-3xs font-black uppercase tracking-widest-lg text-muted-foreground/60">
           Enterprise Operations Platform
         </p>
       </div>

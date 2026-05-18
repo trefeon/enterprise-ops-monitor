@@ -59,82 +59,82 @@ const getCurrentWibDate = () => {
 };
 
 // ─── KPI Card ────────────────────────────────────────────────────────────────
-const KpiCard = ({ icon: Icon, title, value, subtitle, color, pulse = false }) => (
-  <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-card p-5 transition-all duration-300 hover:border-primary/40 hover:bg-muted/10 group">
-    {pulse && <div className="absolute inset-0 animate-pulse-slow bg-destructive/5 rounded-2xl" />}
-    <div className="relative flex items-start gap-4">
-      <div
-        className={cn(
-          'flex items-center justify-center w-14 h-14 rounded-xl shadow-lg',
-          color === 'success'
-            ? 'bg-status-success/15 text-status-success shadow-status-success/5'
-            : color === 'warning'
-              ? 'bg-status-warning/15 text-status-warning shadow-status-warning/5'
-              : color === 'error'
-                ? 'bg-status-error/15 text-status-error shadow-status-error/5'
-                : 'bg-primary/10 text-primary shadow-primary/5'
-        )}
-      >
-        <Icon className="size-7" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
-          {title}
-        </div>
+const KpiCard = ({ icon: Icon, title, value, subtitle, color, pulse = false }) => {
+  const _ = Icon;
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-card p-5 transition-all duration-300 hover:border-primary/40 hover:bg-muted/10 group">
+      {pulse && <div className="absolute inset-0 animate-pulse-slow bg-destructive/5 rounded-2xl" />}
+      <div className="relative flex items-start gap-4">
         <div
           className={cn(
-            'text-4xl font-black tabular-nums tracking-tighter mt-0.5',
+            'flex items-center justify-center w-14 h-14 rounded-xl shadow-lg',
             color === 'success'
-              ? 'text-status-success'
+              ? 'bg-status-success/15 text-status-success shadow-status-success/5'
               : color === 'warning'
-                ? 'text-status-warning'
+                ? 'bg-status-warning/15 text-status-warning shadow-status-warning/5'
                 : color === 'error'
-                  ? 'text-status-error'
-                  : 'text-foreground'
+                  ? 'bg-status-error/15 text-status-error shadow-status-error/5'
+                  : 'bg-primary/10 text-primary shadow-primary/5'
           )}
         >
-          {value ?? '-'}
+          <Icon className="size-7" />
         </div>
-        <div className="text-[10px] font-bold text-muted-foreground/40 mt-1 truncate uppercase">
-          {subtitle}
+        <div className="flex-1 min-w-0">
+          <div className="text-3xs font-black uppercase tracking-widest-lg text-muted-foreground/60">
+            {title}
+          </div>
+          <div
+            className={cn(
+              'text-4xl font-black tabular-nums tracking-tighter mt-0.5',
+              color === 'success'
+                ? 'text-status-success'
+                : color === 'warning'
+                  ? 'text-status-warning'
+                  : color === 'error'
+                    ? 'text-status-error'
+                    : 'text-foreground'
+            )}
+          >
+            {value ?? '-'}
+          </div>
+          <div className="text-3xs font-bold text-muted-foreground/40 mt-1 truncate uppercase">
+            {subtitle}
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
+};
 
 // ─── Branch Card ─────────────────────────────────────────────────────────────
 const BranchCard = ({ name, synced, stale, problem, total }) => {
   const healthPct = total > 0 ? (synced / total) * 100 : 0;
   const variant =
     total === 0 ? 'neutral' : healthPct < 80 ? 'error' : healthPct < 90 ? 'warning' : 'success';
-
+  const badgeColor =
+    variant === 'success'
+      ? 'border-status-success/30 bg-status-success/15 text-status-success'
+      : variant === 'warning'
+        ? 'border-status-warning/30 bg-status-warning/15 text-status-warning'
+        : variant === 'error'
+          ? 'border-status-error/30 bg-status-error/15 text-status-error'
+          : 'border-border/40 bg-muted text-muted-foreground';
+  const badgeLabel =
+    variant === 'success'
+      ? 'Healthy'
+      : variant === 'warning'
+        ? 'Degraded'
+        : variant === 'error'
+          ? 'Critical'
+          : 'Offline';
   const barColor =
-    variant === 'error'
-      ? 'bg-status-error'
+    variant === 'success'
+      ? 'bg-status-success'
       : variant === 'warning'
         ? 'bg-status-warning'
-        : variant === 'success'
-          ? 'bg-status-success'
-          : 'bg-muted-foreground/30';
-
-  const badgeColor =
-    variant === 'error'
-      ? 'bg-status-error/20 text-status-error border-status-error/30'
-      : variant === 'warning'
-        ? 'bg-status-warning/20 text-status-warning border-status-warning/30'
-        : variant === 'success'
-          ? 'bg-status-success/20 text-status-success border-status-success/30'
-          : 'bg-muted/50 text-muted-foreground border-border/40';
-
-  const badgeLabel =
-    problem > 0
-      ? `${problem} late`
-      : stale > 0
-        ? `${stale} warning`
-        : total > 0
-          ? 'On-time'
-          : 'No data';
+        : variant === 'error'
+          ? 'bg-status-error'
+          : 'bg-muted';
 
   return (
     <div className="rounded-2xl border border-border/40 bg-card p-4 transition-all duration-300 hover:border-primary/30 hover:bg-muted/5 group">
@@ -147,7 +147,7 @@ const BranchCard = ({ name, synced, stale, problem, total }) => {
         </span>
         <span
           className={cn(
-            'text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border leading-none shrink-0',
+            'text-4xs font-black uppercase tracking-widest px-2 py-0.5 rounded-full border leading-none shrink-0',
             badgeColor
           )}
         >
@@ -157,10 +157,11 @@ const BranchCard = ({ name, synced, stale, problem, total }) => {
       <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mb-3">
         <div
           className={cn('h-full rounded-full transition-all duration-1000', barColor)}
+          // eslint-disable-next-line no-restricted-syntax
           style={{ width: `${Math.min(100, healthPct)}%` }}
         />
       </div>
-      <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-tighter text-muted-foreground/50">
+      <div className="flex items-center justify-between text-4xs font-black uppercase tracking-tighter text-muted-foreground/50">
         <span>{synced} OK</span>
         <span className="text-muted-foreground/20">•</span>
         <span>{stale} WARN</span>
@@ -182,16 +183,16 @@ const LateStoreRow = ({ store, idx }) => {
         isCritical ? 'bg-status-error/5' : ''
       )}
     >
-      <td className="py-2.5 px-3 text-muted-foreground/40 text-[10px] font-black w-8 text-right tabular-nums">
+      <td className="py-2.5 px-3 text-muted-foreground/40 text-3xs font-black w-8 text-right tabular-nums">
         {idx + 1}
       </td>
       <td className="py-2.5 px-3 font-mono text-xs font-bold text-muted-foreground w-24 text-right">
         {store.storeCode}
       </td>
-      <td className="py-2.5 px-3 text-sm font-bold text-foreground truncate max-w-[200px]">
+      <td className="py-2.5 px-3 text-sm font-bold text-foreground truncate max-w-cell-md">
         {store.storeName || '-'}
       </td>
-      <td className="py-2.5 px-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+      <td className="py-2.5 px-3 text-3xs font-black uppercase tracking-widest text-muted-foreground/60">
         {store.branchName}
       </td>
       <td className="py-2.5 px-3 text-right">
@@ -204,7 +205,7 @@ const LateStoreRow = ({ store, idx }) => {
           {formatDuration(ageSec)}
         </span>
       </td>
-      <td className="py-2.5 px-3 text-[10px] font-bold text-muted-foreground/40 text-right tabular-nums">
+      <td className="py-2.5 px-3 text-3xs font-bold text-muted-foreground/40 text-right tabular-nums">
         {store.lastSyncAt ? formatTime(store.lastSyncAt) : 'Never'}
       </td>
     </tr>
@@ -221,16 +222,16 @@ const EodRankRow = ({ store, idx }) => {
         isBad ? 'bg-status-error/5' : ''
       )}
     >
-      <td className="py-2 px-3 text-muted-foreground/40 text-[10px] font-black w-8 text-right tabular-nums">
+      <td className="py-2 px-3 text-muted-foreground/40 text-3xs font-black w-8 text-right tabular-nums">
         {idx + 1}
       </td>
       <td className="py-2 px-3 font-mono text-xs font-bold text-muted-foreground w-24 text-right">
         {store.storeCode}
       </td>
-      <td className="py-2 px-3 text-sm font-bold text-foreground truncate max-w-[180px]">
+      <td className="py-2 px-3 text-sm font-bold text-foreground truncate max-w-cell-sm">
         {store.storeName || '-'}
       </td>
-      <td className="py-2 px-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+      <td className="py-2 px-3 text-3xs font-black uppercase tracking-widest text-muted-foreground/60">
         {store.branchName}
       </td>
       <td className="py-2 px-3 text-center">
@@ -372,18 +373,18 @@ const LiveSync = () => {
           <div>
             <h1 className="text-xl font-black uppercase tracking-tight text-foreground">
               Operational <span className="text-muted-foreground/40 font-medium">Radar</span>
-              <span className="ml-3 inline-block align-middle animate-pulse rounded-full border border-status-success/30 bg-status-success/20 px-3 py-0.5 text-[10px] font-black uppercase tracking-[0.2em] text-status-success">
+              <span className="ml-3 inline-block align-middle animate-pulse rounded-full border border-status-success/30 bg-status-success/20 px-3 py-0.5 text-3xs font-black uppercase tracking-widest-lg text-status-success">
                 LIVE
               </span>
             </h1>
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+            <p className="text-3xs font-bold uppercase tracking-widest text-muted-foreground/60">
               {getCurrentWibDate()}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-8">
           {error && (
-            <span className="flex items-center gap-2 px-3 py-1 rounded-lg bg-status-error/10 border border-status-error/20 text-[10px] font-black uppercase tracking-widest text-status-error">
+            <span className="flex items-center gap-2 px-3 py-1 rounded-lg bg-status-error/10 border border-status-error/20 text-3xs font-black uppercase tracking-widest text-status-error">
               <AlertCircle className="size-3.5" />
               {error}
             </span>
@@ -392,13 +393,13 @@ const LiveSync = () => {
             <div className="font-mono text-3xl font-black tabular-nums tracking-tighter text-foreground">
               {clock}
             </div>
-            <div className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 pr-1">
+            <div className="text-4xs font-black uppercase tracking-widest-2xl text-muted-foreground/40 pr-1">
               WIB LOCAL TIME
             </div>
           </div>
           <div className="flex flex-col items-center gap-1 border-l border-border/40 pl-8">
             <div className="text-xl font-black tabular-nums text-primary/60">{countdown}s</div>
-            <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40">
+            <div className="text-5xs font-black uppercase tracking-widest text-muted-foreground/40">
               NEXT REFRESH
             </div>
           </div>
@@ -453,7 +454,7 @@ const LiveSync = () => {
       {/* ── Branch Network Health ──────────────────────────────── */}
       <section className="px-6">
         <div className="flex items-center gap-3 mb-4">
-          <h2 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.25em]">
+          <h2 className="text-3xs font-black text-muted-foreground uppercase tracking-widest-xl">
             Regional Network Status
           </h2>
           <div className="h-px flex-1 bg-border/20" />
@@ -477,7 +478,7 @@ const LiveSync = () => {
         {/* Left: Late Sync Stores */}
         <div className="flex flex-col min-h-0">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="flex items-center text-[10px] font-black text-muted-foreground uppercase tracking-[0.25em]">
+            <h2 className="flex items-center text-3xs font-black text-muted-foreground uppercase tracking-widest-xl">
               <RefreshCw className="mr-2 size-3 text-status-error" />
               Live Latency Monitor
               {lateStores.length > 0 && (
@@ -486,13 +487,13 @@ const LiveSync = () => {
                 </span>
               )}
             </h2>
-            <div className="text-[9px] font-bold text-muted-foreground/30 uppercase tracking-widest">
+            <div className="text-4xs font-bold text-muted-foreground/30 uppercase tracking-widest">
               Last Polled: {lastFetchAt ? formatTime(lastFetchAt.toISOString()) : '-'}
             </div>
           </div>
           <div
             ref={scrollRef}
-            className="flex-1 overflow-y-auto rounded-[2rem] border border-border/40 bg-card shadow-inner scrollbar-none"
+            className="flex-1 overflow-y-auto rounded-4xl border border-border/40 bg-card shadow-inner scrollbar-none"
           >
             {lateStores.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 gap-4">
@@ -504,7 +505,7 @@ const LiveSync = () => {
             ) : (
               <table className="w-full text-left">
                 <thead className="sticky top-0 bg-muted/80 backdrop-blur-md z-20">
-                  <tr className="border-b border-border/40 text-[9px] font-black uppercase text-muted-foreground/50 tracking-[0.2em]">
+                  <tr className="border-b border-border/40 text-4xs font-black uppercase text-muted-foreground/50 tracking-widest-lg">
                     <th className="py-4 px-4 w-8">#</th>
                     <th className="py-4 px-4 w-24 text-right">Code</th>
                     <th className="py-4 px-4">Endpoint Name</th>
@@ -526,7 +527,7 @@ const LiveSync = () => {
         {/* Right: EOD Failure Ranking */}
         <div className="flex flex-col min-h-0">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="flex items-center text-[10px] font-black text-muted-foreground uppercase tracking-[0.25em]">
+            <h2 className="flex items-center text-3xs font-black text-muted-foreground uppercase tracking-widest-xl">
               <TrendingDown className="mr-2 size-3 text-status-warning" />
               Integrity Performance Ranking
               {eodRanking.length > 0 && (
@@ -535,7 +536,7 @@ const LiveSync = () => {
                 </span>
               )}
             </h2>
-            <div className="text-[9px] font-bold text-muted-foreground/30 uppercase tracking-widest">
+            <div className="text-4xs font-bold text-muted-foreground/30 uppercase tracking-widest">
               Range:{' '}
               {eodSummary.dateRange?.from && eodSummary.dateRange?.to
                 ? `${eodSummary.dateRange.from} – ${eodSummary.dateRange.to}`
@@ -544,7 +545,7 @@ const LiveSync = () => {
           </div>
           <div
             ref={eodScrollRef}
-            className="flex-1 overflow-y-auto rounded-[2rem] border border-border/40 bg-card shadow-inner scrollbar-none"
+            className="flex-1 overflow-y-auto rounded-4xl border border-border/40 bg-card shadow-inner scrollbar-none"
           >
             {eodRanking.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 gap-4">
@@ -556,7 +557,7 @@ const LiveSync = () => {
             ) : (
               <table className="w-full text-left">
                 <thead className="sticky top-0 bg-muted/80 backdrop-blur-md z-20">
-                  <tr className="border-b border-border/40 text-[9px] font-black uppercase text-muted-foreground/50 tracking-[0.2em]">
+                  <tr className="border-b border-border/40 text-4xs font-black uppercase text-muted-foreground/50 tracking-widest-lg">
                     <th className="py-4 px-4 w-8">#</th>
                     <th className="py-4 px-4 w-24 text-right">Code</th>
                     <th className="py-4 px-4">Endpoint Name</th>

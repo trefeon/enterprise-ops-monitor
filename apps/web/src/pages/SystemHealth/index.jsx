@@ -212,7 +212,7 @@ const SystemHealth = () => {
     }
     setError(null);
     await Promise.all([fetchOverview(), fetchServices(), fetchLogs()]);
-  }, [fetchLogs, fetchOverview, fetchServices]);
+  }, [fetchLogs, fetchOverview, fetchServices, isDemoUser, push]);
 
   useEffect(() => {
     fetchOverview();

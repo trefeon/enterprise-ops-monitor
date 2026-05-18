@@ -676,7 +676,7 @@ const AgentUpdater = () => {
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center gap-1">
                             {isLegacyWorker ? (
-                              <span className="px-1.5 py-0.5 rounded bg-status-warning/10 text-status-warning text-[9px] font-black uppercase tracking-widest">
+                              <span className="px-1.5 py-0.5 rounded bg-status-warning/10 text-status-warning text-4xs font-black uppercase tracking-widest">
                                 legacy
                               </span>
                             ) : (
@@ -690,10 +690,9 @@ const AgentUpdater = () => {
                           <div className="flex items-center justify-center gap-1.5">
                             {getStatusBadge(status)}
                             {node.last_error && (
-                              <AlertCircle
-                                className="size-3.5 text-status-error cursor-help"
-                                title={node.last_error}
-                              />
+                              <span title={node.last_error}>
+                                <AlertCircle className="size-3.5 text-status-error cursor-help" />
+                              </span>
                             )}
                           </div>
                         </TableCell>
@@ -733,11 +732,11 @@ const AgentUpdater = () => {
         <form onSubmit={handleDeploy} className="space-y-6 pt-4">
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-4">
+              <label className="text-3xs font-black uppercase tracking-widest-lg text-muted-foreground/60 ml-4">
                 Publisher Binary (.exe)
               </label>
               <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-[2rem] cursor-pointer bg-muted/20 hover:bg-muted/40 border-border/60 hover:border-primary/40 transition-all group/upload">
+                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-4xl cursor-pointer bg-muted/20 hover:bg-muted/40 border-border/60 hover:border-primary/40 transition-all group/upload">
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <div className="size-12 flex items-center justify-center rounded-2xl bg-muted border border-border/60 mb-4 group-hover/upload:bg-primary/10 group-hover/upload:text-primary transition-colors">
                       <FileUp className="size-6" />
@@ -759,7 +758,7 @@ const AgentUpdater = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-4">
+              <label className="text-3xs font-black uppercase tracking-widest-lg text-muted-foreground/60 ml-4">
                 Release Version
               </label>
               <Input
@@ -771,7 +770,7 @@ const AgentUpdater = () => {
               />
               <div className="flex items-center gap-3 px-4 pt-1">
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">
+                  <span className="text-4xs font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">
                     Current
                   </span>
                   <span className="text-xs font-bold text-foreground">
@@ -780,7 +779,7 @@ const AgentUpdater = () => {
                 </div>
                 <div className="w-px h-6 bg-border/40" />
                 <div className="flex flex-col">
-                  <span className="text-[9px] font-black text-primary uppercase tracking-widest leading-none mb-1">
+                  <span className="text-4xs font-black text-primary uppercase tracking-widest leading-none mb-1">
                     Suggested
                   </span>
                   <span className="text-xs font-bold text-primary">{suggestedVersion}</span>

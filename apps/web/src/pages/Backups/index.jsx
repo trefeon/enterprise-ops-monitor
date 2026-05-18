@@ -73,6 +73,10 @@ const getBackupType = (value) => {
   return { label: 'Automated', icon: FileText };
 };
 
+/**
+ * @param {number} percent
+ * @returns {{ label: string, variant: 'success' | 'warning' | 'destructive' | 'default' | 'secondary' | 'outline' }}
+ */
 const getStorageStatus = (percent) => {
   if (!Number.isFinite(percent)) return { label: 'Unknown', variant: 'outline' };
   if (percent >= 90) return { label: 'Critical', variant: 'destructive' };
@@ -196,7 +200,7 @@ const Backups = () => {
     } catch (err) {
       push({ variant: 'error', title: 'Delete failed', message: err.message });
     }
-  }, [api, deleteConfirm, deleteTarget, push, refreshAll]);
+  }, [api, deleteConfirm, deleteTarget, isDemoUser, push, refreshAll]);
 
   const handleRestore = useCallback(async () => {
     if (isDemoUser) {
@@ -220,7 +224,7 @@ const Backups = () => {
     } catch (err) {
       push({ variant: 'error', title: 'Restore failed', message: err.message });
     }
-  }, [api, push, restoreConfirm, restoreTarget]);
+  }, [api, isDemoUser, push, restoreConfirm, restoreTarget]);
 
   const handleDownload = useCallback(
     async (row) => {
@@ -254,7 +258,7 @@ const Backups = () => {
         push({ variant: 'error', title: 'Download failed', message: err.message });
       }
     },
-    [api, push]
+    [api, isDemoUser, push]
   );
 
   const disk = summary?.disk;
@@ -405,14 +409,14 @@ const Backups = () => {
                     : 'Disk usage data unavailable'}
                 </p>
                 {summary?.storagePath && (
-                  <p className="text-[10px] text-muted-foreground uppercase font-medium">
+                  <p className="text-3xs text-muted-foreground uppercase font-medium">
                     Path:{' '}
                     <code className="text-foreground lowercase font-mono">
                       {summary.storagePath}
                     </code>
                   </p>
                 )}
-                <p className="text-[10px] font-bold text-primary uppercase tracking-widest pt-1">
+                <p className="text-3xs font-bold text-primary uppercase tracking-widest pt-1">
                   Snapshot volume: {formatBytes(summary?.totalSizeBytes)}
                 </p>
               </div>
@@ -431,24 +435,24 @@ const Backups = () => {
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-1.5">
-                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">
+                <span className="text-3xs text-muted-foreground uppercase tracking-widest font-black">
                   Next Window
                 </span>
                 <span className="text-base font-bold text-foreground">
                   {scheduleTime ? `Daily ${scheduleTime} WIB` : scheduleCron ? 'Custom' : '-'}
                 </span>
-                <span className="text-[10px] text-muted-foreground font-medium">
+                <span className="text-3xs text-muted-foreground font-medium">
                   TZ: {scheduleTz}
                 </span>
               </div>
               <div className="flex flex-col gap-1.5 border-l border-border/40 pl-4">
-                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">
+                <span className="text-3xs text-muted-foreground uppercase tracking-widest font-black">
                   Latest Point
                 </span>
                 <span className="text-base font-bold text-foreground">
                   {formatDateTime(summary?.latestBackupAt)}
                 </span>
-                <span className="text-[10px] text-muted-foreground truncate font-medium">
+                <span className="text-3xs text-muted-foreground truncate font-medium">
                   {summary?.latestFileName || '-'}
                 </span>
               </div>
@@ -458,7 +462,7 @@ const Backups = () => {
                 {scheduleStatusIcon}
                 {scheduleStatusText}
               </div>
-              <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
+              <span className="text-3xs font-bold text-primary uppercase tracking-widest">
                 Total Snapshots: {backupCount ?? '-'}
               </span>
             </div>
@@ -521,7 +525,7 @@ const Backups = () => {
                             >
                               {file.fileName}
                             </span>
-                            <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
+                            <span className="text-3xs text-muted-foreground uppercase font-black tracking-widest">
                               {file.typeLabel}
                             </span>
                           </div>
@@ -535,7 +539,7 @@ const Backups = () => {
                           <span className="font-bold text-foreground/90">
                             {formatDate(file.modifiedAt)}
                           </span>
-                          <span className="text-[10px] uppercase font-medium">
+                          <span className="text-3xs uppercase font-medium">
                             {formatTime(file.modifiedAt)}
                           </span>
                         </div>

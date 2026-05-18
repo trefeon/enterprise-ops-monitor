@@ -1260,11 +1260,11 @@ export default function AfterHours() {
               </>
             )}
           </Card>
-          <Card className="py-2 overflow-hidden rounded-[2rem] bg-muted/5 border-border/40 shadow-sm">
+          <Card className="py-2 overflow-hidden rounded-4xl bg-muted/5 border-border/40 shadow-sm">
             <CardContent className="py-2 px-4">
               <div className="flex flex-col xl:flex-row items-center gap-3">
                 <div className="relative flex-1 w-full">
-                  <span className="absolute left-10 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-[0.2em] text-primary/40 pointer-events-none hidden md:block">
+                  <span className="absolute left-10 top-1/2 -translate-y-1/2 text-3xs font-black uppercase tracking-widest-lg text-primary/40 pointer-events-none hidden md:block">
                     SEARCH FOR
                   </span>
                   <SearchBar
@@ -1288,7 +1288,7 @@ export default function AfterHours() {
                       }}
                     >
                       <SelectTrigger className="w-full md:w-60 h-11 rounded-full border-border/60 bg-background/50 hover:bg-background transition-colors px-4 flex items-center justify-start gap-2">
-                        <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                        <span className="shrink-0 text-3xs font-black uppercase tracking-widest-lg text-muted-foreground/60">
                           BRANCH:
                         </span>
                         <SelectValue placeholder="All Branches">
@@ -1310,7 +1310,7 @@ export default function AfterHours() {
                   </div>
 
                   <div className="relative w-full sm:w-auto">
-                    <span className="absolute left-10 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 pointer-events-none hidden md:block z-10">
+                    <span className="absolute left-10 top-1/2 -translate-y-1/2 text-3xs font-black uppercase tracking-widest-lg text-muted-foreground/40 pointer-events-none hidden md:block z-10">
                       FOR
                     </span>
                     <DatePicker
