@@ -100,6 +100,11 @@ router.get(
 );
 
 // POST /api/sync/refresh - Force cache refresh
-router.post("/refresh", requirePermission("SYNC_VIEW"), requireNotDemo(), asyncHandler(refreshSync));
+router.post(
+  "/refresh",
+  requirePermission("SYNC_VIEW"),
+  requireNotDemo(),
+  asyncHandler(refreshSync)
+);
 
 module.exports = router;

@@ -58,14 +58,8 @@ test("resolveViolationWindow starts counting only from 23:15 WIB", () => {
 });
 
 test("resolveMonthlyReportDate shifts midnight final checks to the previous day", () => {
-  assert.equal(
-    resolveMonthlyReportDate("2026-04-01T00:00:15+07:00", "2026-04-01"),
-    "2026-03-31"
-  );
-  assert.equal(
-    resolveMonthlyReportDate("2026-03-31T23:45:00+07:00", "2026-03-31"),
-    "2026-03-31"
-  );
+  assert.equal(resolveMonthlyReportDate("2026-04-01T00:00:15+07:00", "2026-04-01"), "2026-03-31");
+  assert.equal(resolveMonthlyReportDate("2026-03-31T23:45:00+07:00", "2026-03-31"), "2026-03-31");
 });
 
 test("generateMonthlyReport rejects when warning schedule config is absent", async () => {
@@ -83,7 +77,10 @@ test("generateMonthlyReport rejects when warning schedule config is absent", asy
     /warning_schedule_times/
   );
 
-  assert.equal(queryLog.some((entry) => entry.sql.includes("FROM afterhours_pc_log")), false);
+  assert.equal(
+    queryLog.some((entry) => entry.sql.includes("FROM afterhours_pc_log")),
+    false
+  );
 });
 
 test("generateMonthlyReport defaults window start from the relaxed warning schedule", async () => {
@@ -93,14 +90,16 @@ test("generateMonthlyReport defaults window start from the relaxed warning sched
       queryLog.push({ sql, bind: options.bind || [] });
 
       if (sql.includes("FROM afterhours_config")) {
-        return [[
-          {
-            key: "warning_schedule_times",
-            value: '["23:10","23:25","23:40","23:55"]',
-          },
-          { key: "first_warning_time", value: "23:10" },
-          { key: "final_warning_time", value: "23:55" },
-        ]];
+        return [
+          [
+            {
+              key: "warning_schedule_times",
+              value: '["23:10","23:25","23:40","23:55"]',
+            },
+            { key: "first_warning_time", value: "23:10" },
+            { key: "final_warning_time", value: "23:55" },
+          ],
+        ];
       }
 
       if (sql.includes("FROM afterhours_pc_log")) {
@@ -152,10 +151,18 @@ test("generateMonthlyReport defaults window start from the relaxed warning sched
   assert.equal(result.totalStores, 3);
   assert.equal(result.totalViolationDays, 3);
 
-  const insertCalls = queryLog.filter((entry) => entry.sql.includes("INSERT INTO afterhours_monthly_report"));
+  const insertCalls = queryLog.filter((entry) =>
+    entry.sql.includes("INSERT INTO afterhours_monthly_report")
+  );
   assert.equal(insertCalls.length, 3);
-  assert.equal(insertCalls.every((entry) => entry.bind[1] === "23:10"), true);
-  assert.equal(insertCalls.every((entry) => entry.bind[2] === "01:00"), true);
+  assert.equal(
+    insertCalls.every((entry) => entry.bind[1] === "23:10"),
+    true
+  );
+  assert.equal(
+    insertCalls.every((entry) => entry.bind[2] === "01:00"),
+    true
+  );
 });
 
 test("generateMonthlyReport honors an explicit windowStart override", async () => {
@@ -220,25 +227,29 @@ test("generateMonthlyReport preserves blank branch ids instead of nullifying the
       queryLog.push({ sql, bind: options.bind || [] });
 
       if (sql.includes("FROM afterhours_config")) {
-        return [[
-          {
-            key: "warning_schedule_times",
-            value: '["23:15","23:30","23:45","00:00"]',
-          },
-        ]];
+        return [
+          [
+            {
+              key: "warning_schedule_times",
+              value: '["23:15","23:30","23:45","00:00"]',
+            },
+          ],
+        ];
       }
 
       if (sql.includes("FROM afterhours_pc_log")) {
-        return [[
-          {
-            store_code: "3041999",
-            store_name: "BAD BRANCH",
-            branch_id: "",
-            branch_name: "",
-            check_date: "2026-03-31",
-            detected_at: "2026-03-31T23:45:20+07:00",
-          },
-        ]];
+        return [
+          [
+            {
+              store_code: "3041999",
+              store_name: "BAD BRANCH",
+              branch_id: "",
+              branch_name: "",
+              check_date: "2026-03-31",
+              detected_at: "2026-03-31T23:45:20+07:00",
+            },
+          ],
+        ];
       }
 
       return [[], null];

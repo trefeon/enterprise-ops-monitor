@@ -190,7 +190,10 @@ async function ensureNormalizedSchema(db) {
       ON data_employees (store_code, nik);
     `);
   } catch (err) {
-    console.warn("[ensureDb] Non-fatal DB ensure step failed (internal data schema):", err?.message || err);
+    console.warn(
+      "[ensureDb] Non-fatal DB ensure step failed (internal data schema):",
+      err?.message || err
+    );
   }
 }
 

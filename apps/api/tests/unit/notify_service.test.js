@@ -36,16 +36,12 @@ test("sendWhatsApp normalizes Webhook Gateway URLs before retrying v2 then falli
   };
 
   try {
-    const result = await sendWhatsApp(
-      "120000000000001",
-      "TEST MESSAGE",
-      {
-        whatsappProvider: "Webhook Gateway",
-        whatsappApiUrl: "https://notifications.example.com/",
-        whatsappApiKey: "token.secret",
-        whatsappIsGroup: "auto",
-      }
-    );
+    const result = await sendWhatsApp("120000000000001", "TEST MESSAGE", {
+      whatsappProvider: "Webhook Gateway",
+      whatsappApiUrl: "https://notifications.example.com/",
+      whatsappApiKey: "token.secret",
+      whatsappIsGroup: "auto",
+    });
 
     assert.equal(result.ok, true);
     assert.equal(calls.length, 3);
@@ -80,15 +76,11 @@ test("sendWhatsApp retries generic provider on retryable failure", async () => {
   };
 
   try {
-    const result = await sendWhatsApp(
-      "000000000000",
-      "TEST MESSAGE",
-      {
-        whatsappProvider: "generic",
-        whatsappApiUrl: "https://example.com/send",
-        whatsappApiKey: "api-key",
-      }
-    );
+    const result = await sendWhatsApp("000000000000", "TEST MESSAGE", {
+      whatsappProvider: "generic",
+      whatsappApiUrl: "https://example.com/send",
+      whatsappApiKey: "api-key",
+    });
 
     assert.equal(result.ok, true);
     assert.equal(calls.length, 2);

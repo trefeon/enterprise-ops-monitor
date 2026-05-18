@@ -322,4 +322,19 @@
   .portfolio-tech-note {
     @apply flex items-start gap-3 p-3 rounded-lg bg-primary/5 border border-primary/10;
   }
+
+  /* AfterHours Page Utilities */
+  .afterhours-glow-success {
+    box-shadow: 0 0 15px rgba(34, 197, 94, 0.15);
+  }
+  .afterhours-glow-primary {
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+  }
+  .afterhours-switch-glow {
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+  }
+  .afterhours-button-glow {
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.05);
+  }
 }
+

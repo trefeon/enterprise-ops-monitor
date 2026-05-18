@@ -546,7 +546,7 @@ const AgentUpdater = () => {
         />
         <div className="flex items-center gap-2 w-full md:w-auto">
           <Select
-            value={filters.areaId}
+            value={filters.areaId ? String(filters.areaId) : ''}
             onValueChange={(val) =>
               handleFilterChange({
                 target: {
@@ -559,7 +559,7 @@ const AgentUpdater = () => {
             <SelectTrigger className="w-full md:w-40 h-11">
               <SelectValue placeholder="All Branches">
                 {filters.areaId
-                  ? AREA_OPTIONS.find((a) => a.id === String(filters.areaId))?.label
+                  ? `Branch: ${AREA_OPTIONS.find((a) => String(a.id) === String(filters.areaId))?.label || filters.areaId}`
                   : undefined}
               </SelectValue>
             </SelectTrigger>

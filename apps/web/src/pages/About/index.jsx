@@ -128,17 +128,20 @@ export default function About() {
             title="Total Features"
             value={featureStories.length}
             icon={<Layers className="size-5" />}
+            className="h-auto"
           />
           <StatCard
             title="Tech Stack Focus"
             value="Fullstack JS"
             icon={<Code2 className="size-5" />}
+            className="h-auto"
           />
           <StatCard
             title="Dev Readiness"
             value="Production"
             icon={<CheckCircle2 className="size-5" />}
             accent="text-status-success"
+            className="h-auto"
           />
         </div>
       </div>

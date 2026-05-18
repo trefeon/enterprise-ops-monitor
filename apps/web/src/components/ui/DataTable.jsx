@@ -1,14 +1,7 @@
 import React from 'react';
 import { Skeleton } from './skeleton';
 import { Button } from './button';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from './table';
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from './table';
 import { Card, CardContent } from '@/components/ui/card';
 
 const DataTable = ({

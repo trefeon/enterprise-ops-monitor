@@ -4,7 +4,7 @@ import PageHeader from '../../components/ui/PageHeader';
 import PageShell from '../../components/ui/PageShell';
 import { SectionCard } from '../../components/ui/SectionCard';
 import { Button } from '@/components/ui/button';
-import { Input } from "@/components/ui/input";
+import { Input } from '@/components/ui/input';
 import Modal from '../../components/ui/Modal';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/ui/ToastContext';

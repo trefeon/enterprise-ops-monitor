@@ -893,7 +893,11 @@ const StoreSync = () => {
                     const isProblem = Boolean(record.isProblem);
                     const isStale = !isProblem && Boolean(record.isStale);
                     const statusLabel = isProblem ? 'Late' : isStale ? 'Warning' : 'On-time';
-                    const statusVariant = isProblem ? 'destructive' : isStale ? 'warning' : 'success';
+                    const statusVariant = isProblem
+                      ? 'destructive'
+                      : isStale
+                        ? 'warning'
+                        : 'success';
                     const statusIcon = isProblem
                       ? 'sync_problem'
                       : isStale

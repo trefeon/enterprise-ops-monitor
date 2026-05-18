@@ -74,7 +74,8 @@ async function resolveMonthlyReportWindow(sequelize, options = {}) {
   if (explicitWindowStart) {
     return {
       afterhoursWindowStart: explicitWindowStart,
-      afterhoursWindowEndExclusive: explicitWindowEndExclusive || fallback.afterhoursWindowEndExclusive,
+      afterhoursWindowEndExclusive:
+        explicitWindowEndExclusive || fallback.afterhoursWindowEndExclusive,
     };
   }
 
@@ -240,7 +241,8 @@ async function generateMonthlyReport(sequelize, options = {}) {
     const reportDate = resolveMonthlyReportDate(row.detected_at, row.check_date);
     if (!reportDate || reportDate < startDate || reportDate > endDate) continue;
     const detectedAtWib =
-      toWibIso(row.detected_at) || (row.detected_at ? new Date(row.detected_at).toISOString() : null);
+      toWibIso(row.detected_at) ||
+      (row.detected_at ? new Date(row.detected_at).toISOString() : null);
 
     const storeCode = row.store_code;
     if (!groupedRows.has(storeCode)) {

@@ -441,9 +441,7 @@ const Backups = () => {
                 <span className="text-base font-bold text-foreground">
                   {scheduleTime ? `Daily ${scheduleTime} WIB` : scheduleCron ? 'Custom' : '-'}
                 </span>
-                <span className="text-3xs text-muted-foreground font-medium">
-                  TZ: {scheduleTz}
-                </span>
+                <span className="text-3xs text-muted-foreground font-medium">TZ: {scheduleTz}</span>
               </div>
               <div className="flex flex-col gap-1.5 border-l border-border/40 pl-4">
                 <span className="text-3xs text-muted-foreground uppercase tracking-widest font-black">

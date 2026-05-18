@@ -16,11 +16,7 @@ const {
   upsertEmployees,
 } = require("../services/dataPersist");
 
-const backupDir = path.resolve(
-  __dirname,
-  "../../../",
-  process.env.BACKUP_DIR || "backups"
-);
+const backupDir = path.resolve(__dirname, "../../../", process.env.BACKUP_DIR || "backups");
 const SYNC_BUCKET_MINUTES = 10;
 
 const AREAS = ["Zone Alpha", "Zone Beta", "Zone Gamma", "Zone Delta", "Zone Epsilon"];
@@ -103,7 +99,9 @@ function titleCase(value) {
 }
 
 function offsetDate({ days = 0, hours = 0, minutes = 0 } = {}) {
-  return new Date(Date.now() - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000);
+  return new Date(
+    Date.now() - days * 24 * 60 * 60 * 1000 - hours * 60 * 60 * 1000 - minutes * 60 * 1000
+  );
 }
 
 function floorToBucket(date, bucketMinutes = SYNC_BUCKET_MINUTES) {
@@ -272,7 +270,11 @@ function buildStoreBlueprint(branch, ordinal) {
           ? "stale"
           : "synced";
   const syncAgeMinutes =
-    syncStatus === "synced" ? randInt(5, 30) : syncStatus === "stale" ? randInt(45, 180) : randInt(180, 420);
+    syncStatus === "synced"
+      ? randInt(5, 30)
+      : syncStatus === "stale"
+        ? randInt(45, 180)
+        : randInt(180, 420);
   const syncLastSeen = offsetDate({ minutes: syncAgeMinutes });
 
   const store = {
@@ -303,9 +305,11 @@ function buildStoreBlueprint(branch, ordinal) {
   store.hostName = `agent-${storeCode}.demo.local`;
   store.version = `2.4.${randInt(0, 9)}`;
   store.workerVersion = `1.8.${randInt(0, 9)}`;
-  store.updateRequested = store.agentStatus === "need_update" || store.agentStatus === "downloading";
+  store.updateRequested =
+    store.agentStatus === "need_update" || store.agentStatus === "downloading";
   store.scriptUpdateRequested = store.agentStatus === "updating" || chance(0.1);
-  store.lastError = store.agentStatus === "error" ? "Heartbeat failed during the latest poll" : null;
+  store.lastError =
+    store.agentStatus === "error" ? "Heartbeat failed during the latest poll" : null;
 
   return store;
 }
@@ -549,7 +553,7 @@ function buildSyncStateRows(stores) {
               : "synced";
       const bucketLastSync = offsetDate({ minutes: bucketAge + randInt(0, 8) });
 
-            summaryRows.push({
+      summaryRows.push({
         store_code: store.storeCode,
         store_name: store.storeName,
         branch_id: String(store.branchId),
@@ -569,7 +573,9 @@ function buildSyncStateRows(stores) {
 }
 
 function buildSummary(stores, currentRows, syncRows) {
-  const done = currentRows.filter((row) => row.statusSales === "Ok" && row.uploadPercent >= 100).length;
+  const done = currentRows.filter(
+    (row) => row.statusSales === "Ok" && row.uploadPercent >= 100
+  ).length;
   const failed = currentRows.filter((row) => row.statusSales === "Failed").length;
   const pending = Math.max(0, stores.length - done - failed);
   const synced = syncRows.logRows.filter((row) => !row.is_stale && !row.is_problem).length;
@@ -590,15 +596,69 @@ function buildSummary(stores, currentRows, syncRows) {
 
 async function truncateTables(transaction) {
   await Promise.all([
-    db.Store?.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true, transaction }),
-    db.Employee?.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true, transaction }),
-    db.EODLog?.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true, transaction }),
-    db.BackupLog?.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true, transaction }),
-    db.SystemLog?.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true, transaction }),
-    db.AgentMonitoring?.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true, transaction }),
-    db.SyncAlertState?.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true, transaction }),
-    db.SyncLog?.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true, transaction }),
-    db.SyncSummary?.destroy({ where: {}, truncate: true, cascade: true, restartIdentity: true, transaction }),
+    db.Store?.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      restartIdentity: true,
+      transaction,
+    }),
+    db.Employee?.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      restartIdentity: true,
+      transaction,
+    }),
+    db.EODLog?.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      restartIdentity: true,
+      transaction,
+    }),
+    db.BackupLog?.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      restartIdentity: true,
+      transaction,
+    }),
+    db.SystemLog?.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      restartIdentity: true,
+      transaction,
+    }),
+    db.AgentMonitoring?.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      restartIdentity: true,
+      transaction,
+    }),
+    db.SyncAlertState?.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      restartIdentity: true,
+      transaction,
+    }),
+    db.SyncLog?.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      restartIdentity: true,
+      transaction,
+    }),
+    db.SyncSummary?.destroy({
+      where: {},
+      truncate: true,
+      cascade: true,
+      restartIdentity: true,
+      transaction,
+    }),
   ]);
 
   await db.sequelize.query(
@@ -820,8 +880,13 @@ async function seedDemoData() {
       eodLogs.push({
         store_code: String(row.storeCode),
         date: dateKey,
-        status: row.statusSales === "Ok" ? "DONE" : row.statusSales === "Process" ? "PENDING" : "FAILED",
-        message: pick(EOD_MESSAGES[row.statusSales === "Ok" ? "done" : row.statusSales === "Process" ? "pending" : "failed"]),
+        status:
+          row.statusSales === "Ok" ? "DONE" : row.statusSales === "Process" ? "PENDING" : "FAILED",
+        message: pick(
+          EOD_MESSAGES[
+            row.statusSales === "Ok" ? "done" : row.statusSales === "Process" ? "pending" : "failed"
+          ]
+        ),
         source: row.statusSales === "Ok" ? "API" : row.statusSales === "Process" ? "BOT" : "MANUAL",
         synced_at: row.sourceSyncedAt,
       });

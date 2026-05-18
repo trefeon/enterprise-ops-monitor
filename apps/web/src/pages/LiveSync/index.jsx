@@ -63,7 +63,9 @@ const KpiCard = ({ icon: Icon, title, value, subtitle, color, pulse = false }) =
   const _ = Icon;
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-card p-5 transition-all duration-300 hover:border-primary/40 hover:bg-muted/10 group">
-      {pulse && <div className="absolute inset-0 animate-pulse-slow bg-destructive/5 rounded-2xl" />}
+      {pulse && (
+        <div className="absolute inset-0 animate-pulse-slow bg-destructive/5 rounded-2xl" />
+      )}
       <div className="relative flex items-start gap-4">
         <div
           className={cn(
@@ -447,7 +449,13 @@ const LiveSync = () => {
           title="Longest Delay"
           value={oldest?.ageSec != null ? formatDuration(oldest.ageSec) : '-'}
           subtitle={oldest?.storeName || 'Stable'}
-          color={oldest?.ageSec != null && oldest.ageSec > 3600 ? 'error' : oldest?.ageSec != null ? 'warning' : 'default'}
+          color={
+            oldest?.ageSec != null && oldest.ageSec > 3600
+              ? 'error'
+              : oldest?.ageSec != null
+                ? 'warning'
+                : 'default'
+          }
         />
       </section>
 

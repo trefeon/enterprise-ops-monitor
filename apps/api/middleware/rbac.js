@@ -259,7 +259,11 @@ function requireNotDemo() {
       return fail(res, 401, "UNAUTHORIZED", "Not authenticated");
     }
     const user = req.authz.user || req.user;
-    if (user?.isDemo || String(user?.role || '') === 'demo' || (req.authz.roleNames || []).includes('demo')) {
+    if (
+      user?.isDemo ||
+      String(user?.role || "") === "demo" ||
+      (req.authz.roleNames || []).includes("demo")
+    ) {
       return fail(res, 403, "DEMO_RESTRICTED", "This action is not available for demo accounts");
     }
     return next();

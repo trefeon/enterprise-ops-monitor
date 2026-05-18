@@ -307,7 +307,9 @@ function buildMonthlyReportWhatsAppMessage({ reportMonth, totalStores, totalViol
       const storeName = String(row.store_name || "-").trim() || "-";
       const branchName = String(row.branch_name || row.branch_id || "-").trim() || "-";
       const violationCount = Number(row.violation_count || 0);
-      lines.push(`${rank}. ${row.store_code} - ${storeName} (${branchName}) | ${violationCount} hari`);
+      lines.push(
+        `${rank}. ${row.store_code} - ${storeName} (${branchName}) | ${violationCount} hari`
+      );
     });
   }
 
@@ -320,10 +322,19 @@ async function runAfterhoursMonthlyReportSendJob(options = {}) {
   afterhoursReportSendInFlight = true;
   try {
     const runtimeConfig = await loadAfterhoursRuntimeConfig(db.sequelize);
-    const targets = parseMonthlyReportWhatsappTargets(runtimeConfig.monthly_report_whatsapp_targets);
+    const targets = parseMonthlyReportWhatsappTargets(
+      runtimeConfig.monthly_report_whatsapp_targets
+    );
 
-    if (String(runtimeConfig.notify_enabled || "").trim().toLowerCase() === "false" || targets.length === 0) {
-      console.log("[dataScheduler] Monthly report WhatsApp send skipped (missing target or disabled)");
+    if (
+      String(runtimeConfig.notify_enabled || "")
+        .trim()
+        .toLowerCase() === "false" ||
+      targets.length === 0
+    ) {
+      console.log(
+        "[dataScheduler] Monthly report WhatsApp send skipped (missing target or disabled)"
+      );
       return;
     }
 

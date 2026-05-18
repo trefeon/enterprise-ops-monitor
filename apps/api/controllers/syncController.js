@@ -853,7 +853,10 @@ async function fetchBaselineStores() {
       return stores;
     }
   } catch (err) {
-    console.warn("[syncController] Baseline store fetch failed (data_stores):", err?.message || err);
+    console.warn(
+      "[syncController] Baseline store fetch failed (data_stores):",
+      err?.message || err
+    );
   }
 
   try {

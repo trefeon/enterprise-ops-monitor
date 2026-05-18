@@ -258,16 +258,7 @@ export default function UsersAdmin() {
         },
       },
     ],
-    [
-      canReset,
-      canChangePassword,
-      canEditRoles,
-      canEditScope,
-      canEditPerms,
-      canDelete,
-      user,
-      push,
-    ]
+    [canReset, canChangePassword, canEditRoles, canEditScope, canEditPerms, canDelete, user, push]
   );
 
   const handleCreate = async () => {

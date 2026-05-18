@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Guard } from '../../components/auth/Guard';
-import { EmptyState } from '@/components/shared/EmptyState'
+import { EmptyState } from '@/components/shared/EmptyState';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/ToastContext';
 import Toolbar from '../../components/ui/Toolbar';
@@ -19,9 +19,9 @@ import { Button } from '@/components/ui/button';
 import IconButton from '../../components/ui/IconButton';
 import PageShell from '../../components/ui/PageShell';
 import PageHeader from '../../components/ui/PageHeader';
-import { StatCard } from '@/components/shared/StatCard'
+import { StatCard } from '@/components/shared/StatCard';
 import Modal from '../../components/ui/Modal';
-import { StatusBadge } from '@/components/shared/StatusBadge'
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { AlertTriangle } from 'lucide-react';
 import { SearchBar } from '../../components/shared/SearchBar';
@@ -63,6 +63,17 @@ const getStatusConfig = (status) => {
   const key = status ? status.toString().toLowerCase() : 'pending';
   return STATUS_STYLES[key] || DEFAULT_STATUS;
 };
+
+const BRANCH_OPTIONS = [
+  { id: '2', label: 'NORTH HUB' },
+  { id: '3', label: 'EAST HUB' },
+  { id: '4', label: 'CENTRAL HUB' },
+  { id: '5', label: 'COASTAL HUB' },
+  { id: '6', label: 'HIGHLAND HUB' },
+  { id: '7', label: 'WEST HUB' },
+  { id: '8', label: 'RIVER HUB' },
+  { id: '9', label: 'SOUTH HUB' },
+];
 
 const formatSourceLabel = (source) => {
   if (!source) return '-';
@@ -706,17 +717,22 @@ const EODMonitor = () => {
               className="w-full md:max-w-sm"
             />
             <Select
-              value={filters.areaId}
+              value={filters.areaId ? String(filters.areaId) : ''}
               onValueChange={(val) =>
                 handleFilterChange({
                   target: {
+                    name: 'areaId',
                     value: val,
                   },
                 })
               }
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Branch: All" />
+              <SelectTrigger className="w-full md:w-44">
+                <SelectValue placeholder="Branch: All">
+                  {filters.areaId
+                    ? `Branch: ${BRANCH_OPTIONS.find((b) => String(b.id) === String(filters.areaId))?.label || filters.areaId}`
+                    : undefined}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">Branch: All</SelectItem>
@@ -735,13 +751,18 @@ const EODMonitor = () => {
               onValueChange={(val) =>
                 handleFilterChange({
                   target: {
+                    name: 'status',
                     value: val,
                   },
                 })
               }
             >
-              <SelectTrigger>
-                <SelectValue placeholder="Status: All" />
+              <SelectTrigger className="w-full md:w-40">
+                <SelectValue placeholder="Status: All">
+                  {filters.status
+                    ? STATUS_STYLES[filters.status]?.label || filters.status.toUpperCase()
+                    : undefined}
+                </SelectValue>
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="">Status: All</SelectItem>

@@ -294,9 +294,7 @@ function toPositiveInt(value, fallback) {
 }
 
 function normalizeRetryableWhatsAppMessage(data, error) {
-  return String(
-    data?.message || data?.error || data?.description || error?.message || error || ""
-  )
+  return String(data?.message || data?.error || data?.description || error?.message || error || "")
     .trim()
     .toLowerCase();
 }

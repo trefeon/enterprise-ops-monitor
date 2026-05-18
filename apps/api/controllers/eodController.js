@@ -254,7 +254,9 @@ function formatLabel(value, fallback = "All") {
 }
 
 function formatStatusLabel(value) {
-  const raw = String(value ?? "").trim().toLowerCase();
+  const raw = String(value ?? "")
+    .trim()
+    .toLowerCase();
   if (!raw) return "All";
   if (raw === "done") return "Done";
   if (raw === "pending") return "Pending";
@@ -420,7 +422,15 @@ function buildEodWorkbook({
   branchSheet.getRow(3).height = 24;
 
   const branchHeader = branchSheet.getRow(4);
-  branchHeader.values = ["Rank", "Branch", "Total Stores", "Done", "Pending", "Failed", "Completion Rate"];
+  branchHeader.values = [
+    "Rank",
+    "Branch",
+    "Total Stores",
+    "Done",
+    "Pending",
+    "Failed",
+    "Completion Rate",
+  ];
   branchHeader.height = 22;
   branchHeader.eachCell((cell) => styleTableHeader(cell));
   branchSheet.autoFilter = "A4:G4";
@@ -539,7 +549,13 @@ function buildEodWorkbook({
       dataRow.height = row.errorMessage ? 32 : 22;
 
       dataRow.eachCell((cell, colNumber) => {
-        const center = colNumber === 1 || colNumber === 2 || colNumber === 5 || colNumber === 6 || colNumber === 7 || colNumber === 8;
+        const center =
+          colNumber === 1 ||
+          colNumber === 2 ||
+          colNumber === 5 ||
+          colNumber === 6 ||
+          colNumber === 7 ||
+          colNumber === 8;
         const wrap = colNumber === 3 || colNumber === 4 || colNumber === 9;
         styleTableCell(cell, { center, wrap, alt: isAlt });
       });
@@ -550,7 +566,9 @@ function buildEodWorkbook({
 }
 
 function buildEodExportBase64(buffer) {
-  return Buffer.isBuffer(buffer) ? buffer.toString("base64") : Buffer.from(buffer).toString("base64");
+  return Buffer.isBuffer(buffer)
+    ? buffer.toString("base64")
+    : Buffer.from(buffer).toString("base64");
 }
 
 function buildEodExportFileName(reportDate) {

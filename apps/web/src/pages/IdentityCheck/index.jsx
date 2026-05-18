@@ -13,8 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DataTable } from '@/components/shared/DataTable'
-import { EmptyState } from '@/components/shared/EmptyState'
+import { DataTable } from '@/components/shared/DataTable';
+import { EmptyState } from '@/components/shared/EmptyState';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { getFeatureStory } from '../../data/stories';
@@ -197,7 +197,7 @@ const IdentityCheck = () => {
             />
             <div className="flex w-full items-center gap-2 md:w-auto">
               <Select
-                value={filters.branchId}
+                value={filters.branchId ? String(filters.branchId) : ''}
                 onValueChange={(val) =>
                   handleFilterChange({
                     target: {
@@ -210,7 +210,7 @@ const IdentityCheck = () => {
                 <SelectTrigger className="w-full md:w-40">
                   <SelectValue placeholder="All Branches">
                     {filters.branchId
-                      ? BRANCH_OPTIONS.find((b) => b.id === String(filters.branchId))?.label
+                      ? `Branch: ${BRANCH_OPTIONS.find((b) => String(b.id) === String(filters.branchId))?.label || filters.branchId}`
                       : undefined}
                   </SelectValue>
                 </SelectTrigger>

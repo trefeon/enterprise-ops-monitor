@@ -461,7 +461,7 @@ export default function AfterHoursReport() {
 
   const totalStores = summary?.totalStores || 0;
   const totalViolationDays = summary?.totalViolationDays || 0;
-  const selectedBranchLabel = BRANCH_OPTIONS.find((b) => b.id === branch)?.label || 'All Branches';
+  const selectedBranchLabel = BRANCH_OPTIONS.find((b) => String(b.id) === String(branch))?.label || 'All Branches';
   const selectedLimitLabel = LIMIT_OPTIONS.find((opt) => opt.value === limit)?.label || 'Top 20';
   const selectedWindowLabel = formatWindowLabel(windowStart);
   const normalizedSearch = search.trim();
@@ -708,7 +708,7 @@ export default function AfterHoursReport() {
                     <div className="space-y-2">
                       <p className={TOOLBAR_LABEL_CLASS}>Branch</p>
                       <Select
-                        value={branch}
+                        value={branch ? String(branch) : ''}
                         onValueChange={(val) => {
                           const e = {
                             target: {
@@ -720,7 +720,11 @@ export default function AfterHoursReport() {
                         }}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Branch: All" />
+                          <SelectValue placeholder="Branch: All">
+                            {branch
+                              ? `Branch: ${BRANCH_OPTIONS.find((b) => String(b.id) === String(branch))?.label || branch}`
+                              : undefined}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {BRANCH_OPTIONS.map((b) => (

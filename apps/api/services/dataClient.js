@@ -19,14 +19,18 @@ const BRANCH_BY_CODE = new Map(BRANCHES.map((branch) => [String(branch.code), br
 function inferBranchFromStoreCode(storeCode) {
   if (!storeCode) return null;
 
-  const match = String(storeCode).trim().match(/^(\d{3})/);
+  const match = String(storeCode)
+    .trim()
+    .match(/^(\d{3})/);
   if (!match) return null;
 
   return BRANCH_BY_CODE.get(match[1]) || null;
 }
 
 const DATA_EOD_API_URL =
-  process.env.DATA_EOD_API_URL || process.env.EOD_API_URL || "https://internal-data-api.example.com/notif_eod";
+  process.env.DATA_EOD_API_URL ||
+  process.env.EOD_API_URL ||
+  "https://internal-data-api.example.com/notif_eod";
 const DATA_EMPLOYEE_API_URL =
   process.env.DATA_EMPLOYEE_API_URL ||
   process.env.NIK_API_URL ||
@@ -294,7 +298,8 @@ function parseDate(value) {
 function normalizeEodRow(raw) {
   const storeCode = raw?.kodetoko ?? raw?.kodeToko ?? raw?.storeCode;
   const inferredBranch = inferBranchFromStoreCode(storeCode);
-  const branchId = inferredBranch?.id || String(raw?.idcabang ?? raw?.idCabang ?? raw?.branchId ?? "");
+  const branchId =
+    inferredBranch?.id || String(raw?.idcabang ?? raw?.idCabang ?? raw?.branchId ?? "");
   const branchName = normalizeBranchName(
     inferredBranch?.name || raw?.namaCabang || raw?.branchName || getBranchNameById(branchId)
   );
@@ -333,7 +338,8 @@ function normalizeEodRow(raw) {
 function normalizeEmployeeRow(raw) {
   const storeCode = raw?.kodeToko ?? raw?.kodetoko ?? raw?.storeCode;
   const inferredBranch = inferBranchFromStoreCode(storeCode);
-  const branchId = inferredBranch?.id || String(raw?.idCabang ?? raw?.idcabang ?? raw?.branchId ?? "");
+  const branchId =
+    inferredBranch?.id || String(raw?.idCabang ?? raw?.idcabang ?? raw?.branchId ?? "");
   const branchName = normalizeBranchName(
     inferredBranch?.name || raw?.namaCabang || raw?.branchName || getBranchNameById(branchId)
   );
@@ -478,7 +484,10 @@ function invalidateEmployeeCache() {
 const DATA_SYNC_AUD_API_URL =
   process.env.DATA_SYNC_AUD_API_URL || "https://internal-data-api.example.com/sync_aud";
 const SYNC_CACHE_TTL_MS = Number.parseInt(process.env.DATA_SYNC_CACHE_TTL_MS || "30000", 10);
-const STALE_THRESHOLD_MS = Number.parseInt(process.env.DATA_SYNC_STALE_THRESHOLD_MS || "600000", 10); // 10 minutes
+const STALE_THRESHOLD_MS = Number.parseInt(
+  process.env.DATA_SYNC_STALE_THRESHOLD_MS || "600000",
+  10
+); // 10 minutes
 
 function normalizeStoreSyncRow(raw, branchId, branchName) {
   const storeCode = raw?.kodetoko != null ? String(raw.kodetoko).trim() : null;

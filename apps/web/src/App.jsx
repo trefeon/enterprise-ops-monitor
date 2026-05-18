@@ -36,9 +36,30 @@ function App() {
               fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}
             >
               <Routes>
-                <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
-                <Route path="/live" element={<PageTransition><LiveSync /></PageTransition>} />
-                <Route path="/live.html" element={<PageTransition><LiveSync /></PageTransition>} />
+                <Route
+                  path="/login"
+                  element={
+                    <PageTransition>
+                      <Login />
+                    </PageTransition>
+                  }
+                />
+                <Route
+                  path="/live"
+                  element={
+                    <PageTransition>
+                      <LiveSync />
+                    </PageTransition>
+                  }
+                />
+                <Route
+                  path="/live.html"
+                  element={
+                    <PageTransition>
+                      <LiveSync />
+                    </PageTransition>
+                  }
+                />
 
                 <Route element={<PrivateRoute />}>
                   <Route element={<AppShell />}>
