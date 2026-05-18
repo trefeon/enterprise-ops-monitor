@@ -11,8 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import StatCard from '../../components/shared/StatCard';
-import EmptyState from '../../components/shared/EmptyState';
+import { StatCard } from '@/components/shared/StatCard';
+import { EmptyState } from '@/components/shared/EmptyState';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { DatePicker } from '../../components/shared/DatePicker';
 import { SearchBar } from '../../components/shared/SearchBar';
