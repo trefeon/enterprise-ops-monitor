@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DataTable } from '@/components/shared/DataTable'
+import { DataTable } from '@/components/shared/DataTable';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import Modal from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/ToastContext';
@@ -19,6 +19,7 @@ import { hasPermission, Permissions } from '../../lib/auth/permissions';
 import { apiGet, apiPatch, apiPost, apiDelete } from '../../lib/api/client';
 import UserAccessModal from '../../components/UserAccessModal';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
+import { SearchBar } from '@/components/shared/SearchBar';
 import { getFeatureStory } from '../../data/stories';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
@@ -405,24 +406,16 @@ export default function UsersAdmin() {
       />
       <Card className="p-4">
         <CardContent>
-          <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-            <div className="w-full md:max-w-sm">
-              <label className="text-xs text-muted-foreground">Search username</label>
-              <div className="relative w-full">
-                <span className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">
-                  search
-                </span>
-                <Input
-                  value={q}
-                  onChange={(e) => {
-                    setQ(e.target.value);
-                    setPage(1);
-                  }}
-                  placeholder="Search..."
-                  className="pl-10"
-                />
-              </div>
-            </div>
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <SearchBar
+              value={q}
+              onValueChange={(val) => {
+                setQ(val);
+                setPage(1);
+              }}
+              placeholder="Search username..."
+              className="w-full md:max-w-sm"
+            />
           </div>
         </CardContent>
       </Card>
