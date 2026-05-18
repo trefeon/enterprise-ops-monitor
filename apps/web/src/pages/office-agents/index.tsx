@@ -31,13 +31,54 @@ import { MachineTable } from './components/MachineTable';
 import type { AgentMachine } from './types';
 
 const STATUS_OPTIONS = [
-  { value: 'all', label: '(ALL STATUS)' },
+  { value: 'all', label: 'All Statuses' },
   { value: 'online', label: 'Online' },
   { value: 'offline', label: 'Offline' },
   { value: 'healthy', label: 'Healthy' },
   { value: 'warning', label: 'Warning' },
   { value: 'critical', label: 'Critical' },
 ] as const;
+
+const getStatusLabelAndIcon = (status: string) => {
+  switch (status) {
+    case 'online':
+      return {
+        label: 'Online',
+        icon: <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />,
+        color: 'text-emerald-500 dark:text-emerald-400'
+      };
+    case 'offline':
+      return {
+        label: 'Offline',
+        icon: <span className="h-2 w-2 rounded-full bg-zinc-500 dark:bg-zinc-600" />,
+        color: 'text-zinc-500 dark:text-zinc-400'
+      };
+    case 'healthy':
+      return {
+        label: 'Healthy',
+        icon: <CheckCircle className="size-4 text-emerald-500" />,
+        color: 'text-emerald-500 dark:text-emerald-400'
+      };
+    case 'warning':
+      return {
+        label: 'Warning',
+        icon: <AlertTriangle className="size-4 text-amber-500" />,
+        color: 'text-amber-500 dark:text-amber-400'
+      };
+    case 'critical':
+      return {
+        label: 'Critical',
+        icon: <XCircle className="size-4 text-red-500" />,
+        color: 'text-red-500 dark:text-red-400'
+      };
+    default:
+      return {
+        label: 'All Statuses',
+        icon: <Monitor className="size-4 text-sky-500 dark:text-sky-400" />,
+        color: 'text-foreground'
+      };
+  }
+};
 
 export default function OfficeAgentsPage() {
   const {
@@ -112,15 +153,32 @@ export default function OfficeAgentsPage() {
             value={statusFilter}
             onValueChange={(value) => setStatusFilter(value as typeof statusFilter)}
           >
-            <SelectTrigger className="w-full min-h-[44px] md:w-56">
-              <SelectValue />
+            <SelectTrigger className="w-full min-h-[44px] md:w-60 bg-zinc-900/40 border-border/80 transition-all hover:bg-zinc-900/60 hover:border-border">
+              <span className="flex items-center gap-2">
+                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mr-1">Status:</span>
+                {(() => {
+                  const details = getStatusLabelAndIcon(statusFilter);
+                  return (
+                    <span className="flex items-center gap-2">
+                      {details.icon}
+                      <span className={`text-sm font-medium ${details.color}`}>{details.label}</span>
+                    </span>
+                  );
+                })()}
+              </span>
             </SelectTrigger>
             <SelectContent>
-              {STATUS_OPTIONS.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  {option.label}
-                </SelectItem>
-              ))}
+              {STATUS_OPTIONS.map((option) => {
+                const details = getStatusLabelAndIcon(option.value);
+                return (
+                  <SelectItem key={option.value} value={option.value}>
+                    <span className="flex items-center gap-2.5">
+                      {details.icon}
+                      <span>{details.label}</span>
+                    </span>
+                  </SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
           {stats.critical > 0 && (

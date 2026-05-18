@@ -188,7 +188,8 @@ const EMPTY_WARNING_SCHEDULE_TIMES = ['', '', '', ''];
 const TOOLBAR_FIELD_CLASS = '!h-10 !rounded-xl !bg-background shadow-sm';
 const TOOLBAR_BUTTON_CLASS =
   'w-full justify-center !rounded-xl border border-border/70 bg-background text-foreground shadow-sm hover:bg-muted sm:w-auto';
-const NOTIFICATION_FIELD_CLASS = '!h-10 !rounded-xl !bg-background/40 hover:!bg-background/70 focus:!bg-background border border-border/80 focus:border-primary/50 transition-all shadow-sm';
+const NOTIFICATION_FIELD_CLASS =
+  '!h-10 !rounded-xl !bg-background/40 hover:!bg-background/70 focus:!bg-background border border-border/80 focus:border-primary/50 transition-all shadow-sm';
 const NOTIFICATION_TEXTAREA_CLASS =
   'min-h-56 w-full rounded-2xl border border-border/80 bg-background/40 hover:bg-background/70 focus:bg-background px-4 py-3 font-mono text-sm text-foreground shadow-sm placeholder:text-muted-foreground/60 transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40';
 
@@ -956,7 +957,9 @@ export default function AfterHours() {
                       : 'bg-primary/10 text-primary border-primary/20 afterhours-glow-primary'
                   }`}
                 >
-                  <NotificationsActive className={`size-5 ${notifyEnabled ? 'animate-pulse' : ''}`} />
+                  <NotificationsActive
+                    className={`size-5 ${notifyEnabled ? 'animate-pulse' : ''}`}
+                  />
                 </div>
                 <div>
                   <h2 className="text-sm font-semibold tracking-wide text-foreground flex items-center gap-2">
@@ -983,7 +986,9 @@ export default function AfterHours() {
                     type="button"
                     role="switch"
                     aria-checked={notifyEnabled}
-                    onClick={() => updateSetting('notify_enabled', notifyEnabled ? 'false' : 'true')}
+                    onClick={() =>
+                      updateSetting('notify_enabled', notifyEnabled ? 'false' : 'true')
+                    }
                     className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer items-center rounded-full transition-all duration-300 ease-in-out focus:outline-none ${
                       notifyEnabled
                         ? 'bg-status-success afterhours-switch-glow'
@@ -1004,7 +1009,7 @@ export default function AfterHours() {
                     {notifyEnabled ? 'Enabled' : 'Disabled'}
                   </span>
                 </div>
-                
+
                 <Button
                   variant="outline"
                   size="sm"
@@ -1290,14 +1295,14 @@ export default function AfterHours() {
                   </div>
 
                   <div className="flex items-center gap-3 shrink-0 mt-4 md:mt-0">
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       onClick={handleDiscardSettings}
                       className="rounded-xl px-5 h-10 text-xs font-semibold border border-border/40 hover:bg-muted/50 transition-all text-muted-foreground hover:text-foreground"
                     >
                       Discard
                     </Button>
-                    <Button 
+                    <Button
                       onClick={handleSaveSettings}
                       className="rounded-xl px-5 h-10 text-xs font-semibold bg-primary hover:bg-primary/95 text-primary-foreground shadow-lg hover:shadow-primary/10 transition-all duration-300"
                     >
@@ -1344,7 +1349,8 @@ export default function AfterHours() {
                         <SelectValue placeholder="All Branches">
                           <span className="font-bold text-foreground">
                             {branch
-                              ? (BRANCH_OPTIONS.find((b) => String(b.id) === String(branch))?.label || branch)
+                              ? BRANCH_OPTIONS.find((b) => String(b.id) === String(branch))
+                                  ?.label || branch
                               : 'ALL'}
                           </span>
                         </SelectValue>

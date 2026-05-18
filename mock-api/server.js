@@ -1039,6 +1039,19 @@ app.get("/api/system/health", (req, res) => {
 });
 
 // ─── After Hours ──────────────────────────────────────────────────────────────
+const MOCK_AFTERHOURS_DATES = [];
+for (let i = 0; i < 30; i++) {
+  MOCK_AFTERHOURS_DATES.push(toWibDate(daysAgo(i)));
+}
+
+const MOCK_AFTERHOURS_SETTINGS = {
+  warning_stage_times: "20:00,21:00,22:00",
+  whatsapp_notify_enabled: "true",
+  telegram_notify_enabled: "true",
+  check_window_start: "20:00",
+  check_window_end: "06:00"
+};
+
 app.get("/api/afterhours", (req, res) => {
   const count = randomInt(1, 5);
   const logs = [];
@@ -1066,23 +1079,133 @@ app.get("/api/afterhours", (req, res) => {
   return ok(res, logs, { timezone: "Asia/Jakarta" });
 });
 
-// ─── Auth (mock with demo accounts) ─────────────────────────────────────────────
+app.get("/api/afterhours/dates", (req, res) => {
+  const limit = parseInt(req.query.limit || "12", 10);
+  const dates = MOCK_AFTERHOURS_DATES.slice(0, limit).map((d) => ({
+    check_date: d,
+    violation_count: randomInt(1, 5)
+  }));
+  return ok(res, { dates });
+});
+
+app.get("/api/afterhours/summary", (req, res) => {
+  const date = req.query.date || toWibDate();
+  const branchStats = BRANCHES.map(b => ({
+    branch_id: b.id,
+    branch_name: b.name,
+    violation_count: randomInt(0, 3)
+  }));
+  return ok(res, {
+    date,
+    summary: branchStats,
+    totalViolations: branchStats.reduce((sum, b) => sum + b.violation_count, 0)
+  });
+});
+
+app.get("/api/afterhours/settings", (req, res) => {
+  return ok(res, { settings: MOCK_AFTERHOURS_SETTINGS });
+});
+
+app.put("/api/afterhours/settings", (req, res) => {
+  const { settings } = req.body || {};
+  if (settings && typeof settings === "object") {
+    Object.assign(MOCK_AFTERHOURS_SETTINGS, settings);
+  }
+  return ok(res, { saved: Object.keys(settings || {}) });
+});
+
+app.post("/api/afterhours/check", (req, res) => {
+  const runAllStages = req.body?.runAllStages || false;
+  const totalViolations = randomInt(2, 6);
+  return ok(res, {
+    runMode: runAllStages ? "all_stages" : "single_stage",
+    totalViolations,
+    branchCount: randomInt(2, 4),
+    stageResults: [
+      { warningStage: 1, totalStages: 3, totalViolations, telegramSuccess: 1, whatsappSuccess: 1 }
+    ]
+  });
+});
+
+app.get("/api/afterhours/report/months", (req, res) => {
+  const months = [
+    { report_month: "2026-05", store_count: STORES.length, total_violation_days: randomInt(15, 45), generated_at: new Date().toISOString() },
+    { report_month: "2026-04", store_count: STORES.length, total_violation_days: randomInt(30, 80), generated_at: daysAgo(30).toISOString() }
+  ];
+  return ok(res, { months });
+});
+
+app.get("/api/afterhours/report", (req, res) => {
+  const month = req.query.month || "2026-05";
+  const branch = req.query.branch;
+  const search = req.query.search;
+  
+  let stores = STORES;
+  if (branch) {
+    stores = stores.filter(s => s.branchId === String(branch));
+  }
+  if (search) {
+    const needle = search.toLowerCase();
+    stores = stores.filter(s => s.storeCode.toLowerCase().includes(needle) || s.storeName.toLowerCase().includes(needle));
+  }
+  
+  const ranking = stores.map((s, index) => ({
+    rank: index + 1,
+    store_code: s.storeCode,
+    store_name: s.storeName,
+    branch_id: s.branchId,
+    branch_name: s.branchName,
+    violation_count: randomInt(0, 10),
+    last_activity_time: "22:15 WIB"
+  })).sort((a, b) => b.violation_count - a.violation_count);
+
+  return ok(res, {
+    reportMonth: month,
+    ranking: ranking.slice(0, 20),
+    summary: {
+      totalStores: stores.length,
+      totalViolationDays: ranking.reduce((sum, s) => sum + s.violation_count, 0),
+      reportWindowStart: "20:00 WIB",
+      reportWindowEndExclusive: "06:00 WIB",
+      generatedAt: new Date().toISOString()
+    },
+    filters: {
+      month,
+      branch,
+      search: search || null,
+      limit: 20
+    }
+  });
+});
+
+app.post("/api/afterhours/report/generate", (req, res) => {
+  return ok(res, {
+    success: true,
+    month: req.body?.month || "2026-05",
+    generatedAt: new Date().toISOString()
+  });
+});
+
+app.get("/api/afterhours/report/export", (req, res) => {
+  const month = req.query.month || "2026-05";
+  return ok(res, {
+    fileName: `afterhours_report_${month}.xlsx`,
+    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    contentBase64: Buffer.from("Excel mock base64 content").toString("base64")
+  });
+});
+
+// ─── Users & Roles mock database ───────────────────────────────────────────────
 const MOCK_ACCOUNTS = {
   demo: {
     id: 1, username: "demo", password: "demo-password", role: "demo",
     name: "Demo (Read-Only)",
     effectivePerms: [
-      // Full VIEW permissions — can see ALL pages
       "DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "STORES_VIEW", "EMPLOYEES_VIEW",
       "BACKUPS_VIEW", "SYSTEM_VIEW", "ACCOUNTS_VIEW",
       "NIK_LOOKUP", "USERS_VIEW", "ROLES_VIEW",
       "AFTERHOURS_VIEW", "AGENT_UPDATE",
       "SYSTEM_HEALTHCHECK",
-      // Intentionally NO write permissions:
-      // EOD_SYNC, EOD_RETRY, STORES_EDIT, BACKUPS_RUN, BACKUPS_DELETE,
-      // BACKUPS_RESTORE, SYSTEM_RESTART, USERS_CREATE, USERS_EDIT, USERS_DELETE,
-      // USERS_RESET_PASSWORD, USERS_CHANGE_PASSWORD, USERS_ROLE_EDIT,
-      // USERS_PERMISSION_EDIT, USERS_SCOPE_EDIT, ROLES_EDIT
     ],
     isDemo: true,
   },
@@ -1090,7 +1213,6 @@ const MOCK_ACCOUNTS = {
     id: 2, username: "superadmin", password: "superadmin-password", role: "super_admin",
     name: "Super Admin",
     effectivePerms: [
-      // ALL permissions (full access)
       "DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "STORES_VIEW", "EMPLOYEES_VIEW",
       "BACKUPS_VIEW", "SYSTEM_VIEW", "ACCOUNTS_VIEW",
       "EOD_SYNC", "EOD_RETRY", "STORES_EDIT", "NIK_LOOKUP",
@@ -1104,30 +1226,47 @@ const MOCK_ACCOUNTS = {
   },
 };
 
+const MOCK_ROLES = [
+  { id: 1, name: "viewer", label: "Viewer", description: "Read-only access to all dashboards", permissions: ["DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "STORES_VIEW", "EMPLOYEES_VIEW", "AFTERHOURS_VIEW"] },
+  { id: 2, name: "ops", label: "Operations Manager", description: "Manage EOD submissions and retries", permissions: ["DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "STORES_VIEW", "EOD_SYNC", "EOD_RETRY", "AFTERHOURS_VIEW"] },
+  { id: 3, name: "admin", label: "Administrator", description: "Manage users and system updates", permissions: ["DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "STORES_VIEW", "EMPLOYEES_VIEW", "BACKUPS_VIEW", "SYSTEM_VIEW", "EOD_SYNC", "EOD_RETRY", "STORES_EDIT", "NIK_LOOKUP", "BACKUPS_RUN", "SYSTEM_HEALTHCHECK", "USERS_VIEW", "USERS_CREATE", "USERS_EDIT", "ROLES_VIEW", "AFTERHOURS_VIEW", "AGENT_UPDATE"] },
+  { id: 4, name: "super_admin", label: "Super Administrator", description: "Unrestricted root-level access", permissions: MOCK_ACCOUNTS.superadmin.effectivePerms }
+];
+
+const MOCK_USERS = [
+  { id: 1, username: "demo", name: "Demo (Read-Only)", role: "demo", roleNames: ["demo"], effectivePerms: MOCK_ACCOUNTS.demo.effectivePerms, scopeBranches: [], isAllBranches: true, isDemo: true, roles: [1] },
+  { id: 2, username: "superadmin", name: "Super Admin", role: "super_admin", roleNames: ["super_admin"], effectivePerms: MOCK_ACCOUNTS.superadmin.effectivePerms, scopeBranches: [], isAllBranches: true, roles: [4] },
+  { id: 3, username: "opsmanager", name: "Ops Manager", role: "ops", roleNames: ["ops"], effectivePerms: ["DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "STORES_VIEW", "EOD_SYNC", "EOD_RETRY", "AFTERHOURS_VIEW"], scopeBranches: ["2", "3"], isAllBranches: false, roles: [2] }
+];
+
+const sessions = new Map();
+
 app.post("/api/auth/login", (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) {
     return fail(res, 401, "AUTH_FAILED", "Username and password are required");
   }
 
-  const account = Object.values(MOCK_ACCOUNTS).find(
-    (a) => a.username === username && a.password === password
+  let account = MOCK_USERS.find(
+    (u) => u.username === username && password === `${username}-password`
   );
+
+  if (!account && username === "demo" && password === "demo-password") {
+    account = MOCK_USERS.find(u => u.username === "demo");
+  } else if (!account && username === "superadmin" && password === "superadmin-password") {
+    account = MOCK_USERS.find(u => u.username === "superadmin");
+  }
 
   if (!account) {
     return fail(res, 401, "INVALID_CREDENTIALS", "Invalid username or password");
   }
 
-  const { password: pw, ...userData } = account;
+  const token = "mock-jwt-token-" + faker.string.alphanumeric(32);
+  sessions.set(token, account);
 
   return ok(res, {
-    token: "mock-jwt-token-" + faker.string.alphanumeric(32),
-    user: {
-      ...userData,
-      roleNames: [userData.role],
-      scopeBranches: [],
-      isAllBranches: true,
-    },
+    token,
+    user: account,
   });
 });
 
@@ -1136,14 +1275,173 @@ app.get("/api/auth/me", (req, res) => {
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return fail(res, 401, "UNAUTHORIZED", "Not authenticated");
   }
+  const token = authHeader.split(" ")[1];
+  const account = sessions.get(token) || MOCK_USERS.find(u => u.username === "superadmin");
   return ok(res, {
-    user: {
-      id: 1, username: "admin", role: "admin",
-      roleNames: ["admin"], effectivePerms: [],
-      scopeBranches: [], isAllBranches: true,
-    },
+    user: account,
   });
 });
+
+// ─── User Administration Endpoints ─────────────────────────────────────────────
+app.get("/api/users", (req, res) => {
+  const { q } = req.query;
+  let filtered = [...MOCK_USERS];
+  if (q) {
+    const needle = q.toLowerCase();
+    filtered = filtered.filter(u => u.username.toLowerCase().includes(needle) || u.name.toLowerCase().includes(needle));
+  }
+  const result = paginate(filtered, req.query);
+  return ok(res, result.data, result.meta);
+});
+
+app.get("/api/users/:id", (req, res) => {
+  const user = MOCK_USERS.find(u => u.id === parseInt(req.params.id, 10));
+  if (!user) return fail(res, 404, "NOT_FOUND", "User not found");
+  return ok(res, user);
+});
+
+app.post("/api/users", (req, res) => {
+  const { username, password, role } = req.body || {};
+  if (!username || !password) return fail(res, 400, "BAD_REQUEST", "Username and password required");
+  if (MOCK_USERS.some(u => u.username === username)) {
+    return fail(res, 409, "CONFLICT", "Username already exists");
+  }
+  const matchedRoleObj = MOCK_ROLES.find(r => r.name === role) || MOCK_ROLES[0];
+  const newUser = {
+    id: MOCK_USERS.length + 1,
+    username,
+    name: username.charAt(0).toUpperCase() + username.slice(1),
+    role: matchedRoleObj.name,
+    roleNames: [matchedRoleObj.name],
+    effectivePerms: [...matchedRoleObj.permissions],
+    scopeBranches: [],
+    isAllBranches: true,
+    roles: [matchedRoleObj.id]
+  };
+  MOCK_USERS.push(newUser);
+  return ok(res, newUser);
+});
+
+app.patch("/api/users/:id", (req, res) => {
+  const user = MOCK_USERS.find(u => u.id === parseInt(req.params.id, 10));
+  if (!user) return fail(res, 404, "NOT_FOUND", "User not found");
+  const { role } = req.body || {};
+  if (role) {
+    const roleObj = MOCK_ROLES.find(r => r.name === role);
+    if (roleObj) {
+      user.role = roleObj.name;
+      user.roleNames = [roleObj.name];
+      user.roles = [roleObj.id];
+      user.effectivePerms = [...roleObj.permissions];
+    }
+  }
+  return ok(res, user);
+});
+
+app.patch("/api/users/:id/roles", (req, res) => {
+  const user = MOCK_USERS.find(u => u.id === parseInt(req.params.id, 10));
+  if (!user) return fail(res, 404, "NOT_FOUND", "User not found");
+  const { role_ids } = req.body || {};
+  if (role_ids) {
+    user.roles = role_ids.map(Number);
+    const activeRoles = MOCK_ROLES.filter(r => user.roles.includes(r.id));
+    user.roleNames = activeRoles.map(r => r.name);
+    user.role = user.roleNames[0] || "viewer";
+    const perms = new Set();
+    for (const r of activeRoles) {
+      r.permissions.forEach(p => perms.add(p));
+    }
+    user.effectivePerms = Array.from(perms);
+  }
+  return ok(res, user);
+});
+
+app.patch("/api/users/:id/permissions", (req, res) => {
+  const user = MOCK_USERS.find(u => u.id === parseInt(req.params.id, 10));
+  if (!user) return fail(res, 404, "NOT_FOUND", "User not found");
+  const { allow, deny } = req.body || {};
+  const basePerms = new Set();
+  const activeRoles = MOCK_ROLES.filter(r => user.roles.includes(r.id));
+  for (const r of activeRoles) {
+    r.permissions.forEach(p => basePerms.add(p));
+  }
+  if (allow) allow.forEach(p => basePerms.add(p));
+  if (deny) deny.forEach(p => basePerms.delete(p));
+  user.effectivePerms = Array.from(basePerms);
+  return ok(res, user);
+});
+
+app.patch("/api/users/:id/branch-scope", (req, res) => {
+  const user = MOCK_USERS.find(u => u.id === parseInt(req.params.id, 10));
+  if (!user) return fail(res, 404, "NOT_FOUND", "User not found");
+  const { branch_ids } = req.body || {};
+  if (branch_ids) {
+    user.scopeBranches = branch_ids.map(String);
+    user.isAllBranches = user.scopeBranches.length === 0;
+  }
+  return ok(res, user);
+});
+
+app.post("/api/users/:id/reset-password", (req, res) => {
+  const user = MOCK_USERS.find(u => u.id === parseInt(req.params.id, 10));
+  if (!user) return fail(res, 404, "NOT_FOUND", "User not found");
+  return ok(res, { success: true, message: "Password reset successfully" });
+});
+
+app.delete("/api/users/:id", (req, res) => {
+  const idx = MOCK_USERS.findIndex(u => u.id === parseInt(req.params.id, 10));
+  if (idx === -1) return fail(res, 404, "NOT_FOUND", "User not found");
+  MOCK_USERS.splice(idx, 1);
+  return ok(res, { deleted: true });
+});
+
+// ─── Role Management Endpoints ─────────────────────────────────────────────────
+app.get("/api/roles", (req, res) => {
+  return ok(res, MOCK_ROLES);
+});
+
+app.get("/api/roles/:id", (req, res) => {
+  const role = MOCK_ROLES.find(r => r.id === parseInt(req.params.id, 10));
+  if (!role) return fail(res, 404, "NOT_FOUND", "Role not found");
+  return ok(res, role);
+});
+
+app.post("/api/roles", (req, res) => {
+  const { name, label, description, permissions } = req.body || {};
+  if (!name || !label) return fail(res, 400, "BAD_REQUEST", "Name and label are required");
+  const newRole = {
+    id: MOCK_ROLES.length + 1,
+    name,
+    label,
+    description: description || "",
+    permissions: permissions || []
+  };
+  MOCK_ROLES.push(newRole);
+  return ok(res, newRole);
+});
+
+app.put("/api/roles/:id", (req, res) => {
+  const role = MOCK_ROLES.find(r => r.id === parseInt(req.params.id, 10));
+  if (!role) return fail(res, 404, "NOT_FOUND", "Role not found");
+  const { label, description, permissions } = req.body || {};
+  if (label) role.label = label;
+  if (description !== undefined) role.description = description;
+  if (permissions) role.permissions = permissions;
+  return ok(res, role);
+});
+
+app.delete("/api/roles/:id", (req, res) => {
+  const idx = MOCK_ROLES.findIndex(r => r.id === parseInt(req.params.id, 10));
+  if (idx === -1) return fail(res, 404, "NOT_FOUND", "Role not found");
+  MOCK_ROLES.splice(idx, 1);
+  return ok(res, { deleted: true });
+});
+
+// ─── System Branches Endpoint ──────────────────────────────────────────────────
+app.get("/api/system/branches", (req, res) => {
+  return ok(res, BRANCHES);
+});
+
 
 // ─── Root ──────────────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {

@@ -1,4 +1,11 @@
-require("dotenv").config();
+const path = require("node:path");
+const fs = require("node:fs");
+const localEnvPath = path.resolve(__dirname, ".env");
+if (!fs.existsSync(localEnvPath)) {
+  require("dotenv").config({ path: path.resolve(__dirname, "../../.env") });
+} else {
+  require("dotenv").config();
+}
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
@@ -84,7 +91,6 @@ app.use("/api/sync", syncRoutes);
 app.use(express.json({ limit: "1mb", strict: false }));
 
 // Static Files for Agent Updates
-const path = require("path");
 app.use("/agent_updates", express.static(path.join(__dirname, "../../agent_updates")));
 
 // Routes

@@ -461,7 +461,8 @@ export default function AfterHoursReport() {
 
   const totalStores = summary?.totalStores || 0;
   const totalViolationDays = summary?.totalViolationDays || 0;
-  const selectedBranchLabel = BRANCH_OPTIONS.find((b) => String(b.id) === String(branch))?.label || 'All Branches';
+  const selectedBranchLabel =
+    BRANCH_OPTIONS.find((b) => String(b.id) === String(branch))?.label || 'All Branches';
   const selectedLimitLabel = LIMIT_OPTIONS.find((opt) => opt.value === limit)?.label || 'Top 20';
   const selectedWindowLabel = formatWindowLabel(windowStart);
   const normalizedSearch = search.trim();

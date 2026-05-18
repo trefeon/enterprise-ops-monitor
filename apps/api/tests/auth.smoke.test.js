@@ -4,7 +4,14 @@ const request = require("supertest");
 const bcrypt = require("bcryptjs");
 
 process.env.NODE_ENV = "test";
-require("dotenv").config();
+const path = require("node:path");
+const fs = require("node:fs");
+const localEnvPath = path.resolve(__dirname, "../.env");
+if (!fs.existsSync(localEnvPath)) {
+  require("dotenv").config({ path: path.resolve(__dirname, "../../../.env") });
+} else {
+  require("dotenv").config();
+}
 
 process.env.JWT_SECRET = process.env.JWT_SECRET || "test_secret_min_16_chars";
 // Ensure tests are hermetic even if the developer's .env defines admin credentials.
