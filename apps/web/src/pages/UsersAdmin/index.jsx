@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import DataTable from '../../components/ui/DataTable';
+import { DataTable } from '@/components/shared/DataTable'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import Modal from '../../components/ui/Modal';
 import { useToast } from '../../components/ui/ToastContext';

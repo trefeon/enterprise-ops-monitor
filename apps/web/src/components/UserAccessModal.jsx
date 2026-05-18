@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from './ui/ToastContext';
 import { apiGet, apiPatch } from '../lib/api/client';
 import { PermissionGroups } from '../lib/auth/permissions';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 /**
@@ -225,11 +225,11 @@ export default function UserAccessModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
       <Card className="w-full max-w-2xl max-h-screen overflow-hidden m-4 flex flex-col">
-        <CardContent>
+        <CardContent className="p-0">
           <div className="p-4 border-b border-border flex items-center justify-between">
             <h2 className="text-lg font-semibold">Edit Access: {user?.username}</h2>
-            <button onClick={onClose} className="p-1 hover:bg-secondary rounded">
-              <span className="material-symbols-outlined">close</span>
+            <button onClick={onClose} className="p-1 hover:bg-secondary rounded transition-colors">
+              <X className="size-5" />
             </button>
           </div>
           {/* Tabs */}
@@ -284,7 +284,7 @@ export default function UserAccessModal({
                     </div>
                     <div className="flex justify-end pt-2">
                       <Button onClick={handleSaveRoles} disabled={loading}>
-                        <Loader2 className="animate-spin mr-2" />
+                        {loading && <Loader2 className="animate-spin mr-2 size-4" />}
                         Save Roles
                       </Button>
                     </div>
@@ -315,7 +315,7 @@ export default function UserAccessModal({
                           <label
                             key={branch.id}
                             className={`flex items-center gap-2 p-2 rounded border cursor-pointer transition-colors ${
-                              selectedBranches.includes(branch.id)
+                              selectedBranches.includes(String(branch.id))
                                 ? 'border-primary bg-primary/10'
                                 : 'border-border hover:bg-secondary/50'
                             }`}
@@ -333,7 +333,7 @@ export default function UserAccessModal({
                     )}
                     <div className="flex justify-end pt-2">
                       <Button onClick={handleSaveBranchScope} disabled={loading}>
-                        <Loader2 className="animate-spin mr-2" />
+                        {loading && <Loader2 className="animate-spin mr-2 size-4" />}
                         Save Branch Scope
                       </Button>
                     </div>
@@ -346,35 +346,34 @@ export default function UserAccessModal({
                     <p className="text-sm text-muted-foreground">
                       Override specific permissions. Click to cycle: Inherited → Allow → Deny
                     </p>
-                    <div className="space-y-4 max-h-80 overflow-y-auto">
+                    <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
                       {Object.entries(PermissionGroups).map(([group, perms]) => (
                         <div key={group}>
-                          <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">
+                          <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2">
                             {group}
                           </div>
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-1.5">
                             {perms.map((perm) => {
                               const state = overrides[perm];
-                              let bgClass = 'bg-secondary text-secondary-foreground';
+                              let bgClass =
+                                'bg-secondary text-secondary-foreground border-border/40';
                               let icon = null;
                               if (state === 'allow') {
-                                bgClass = 'bg-green-500/20 text-green-600 border-green-500/50';
-                                icon = 'check';
+                                bgClass =
+                                  'bg-status-success/15 text-status-success border-status-success/30';
+                                icon = <Check className="size-3" />;
                               } else if (state === 'deny') {
-                                bgClass = 'bg-red-500/20 text-red-600 border-red-500/50';
-                                icon = 'close';
+                                bgClass =
+                                  'bg-status-error/15 text-status-error border-status-error/30';
+                                icon = <X className="size-3" />;
                               }
                               return (
                                 <button
                                   key={perm}
                                   onClick={() => cycleOverride(perm)}
-                                  className={`flex items-center gap-1 px-2 py-1 rounded text-xs border transition-colors ${bgClass}`}
+                                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-all active:scale-95 ${bgClass}`}
                                 >
-                                  {icon && (
-                                    <span className="material-symbols-outlined text-sm">
-                                      {icon}
-                                    </span>
-                                  )}
+                                  {icon}
                                   {perm}
                                 </button>
                               );
@@ -383,9 +382,9 @@ export default function UserAccessModal({
                         </div>
                       ))}
                     </div>
-                    <div className="flex justify-end pt-2">
+                    <div className="flex justify-end pt-4">
                       <Button onClick={handleSaveOverrides} disabled={loading}>
-                        <Loader2 className="animate-spin mr-2" />
+                        {loading && <Loader2 className="animate-spin mr-2 size-4" />}
                         Save Overrides
                       </Button>
                     </div>

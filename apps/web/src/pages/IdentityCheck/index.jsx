@@ -13,8 +13,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import DataTable from '../../components/ui/DataTable';
-import EmptyState from '../../components/ui/EmptyState';
+import { DataTable } from '@/components/shared/DataTable'
+import { EmptyState } from '@/components/shared/EmptyState'
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { getFeatureStory } from '../../data/stories';

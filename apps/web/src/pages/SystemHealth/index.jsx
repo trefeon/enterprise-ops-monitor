@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Guard } from '../../components/auth/Guard';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import EmptyState from '../../components/ui/EmptyState';
+import { EmptyState } from '@/components/shared/EmptyState'
 import { useToast } from '../../components/ui/ToastContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,7 +26,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { formatDateTime, formatTime } from '../../lib/date';
-import StatusBadge from '../../components/ui/StatusBadge';
+import { StatusBadge } from '@/components/shared/StatusBadge'
 import { getFeatureStory } from '../../data/stories';
 import {
   Loader2,

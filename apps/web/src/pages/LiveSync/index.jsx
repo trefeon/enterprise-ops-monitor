@@ -1,6 +1,17 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
+import {
+  Radio,
+  AlertCircle,
+  Store,
+  CheckCircle2,
+  AlertTriangle,
+  RefreshCw,
+  Clock,
+  TrendingDown,
+} from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 const REFRESH_INTERVAL = 10_000; // 10 seconds
@@ -17,7 +28,7 @@ const formatDuration = (seconds) => {
 const formatTime = (isoStr) => {
   if (!isoStr) return '-';
   try {
-    return new Date(isoStr).toLocaleTimeString('id-ID', {
+    return new Date(isoStr).toLocaleTimeString('en-US', {
       hour: '2-digit',
       minute: '2-digit',
       second: '2-digit',
@@ -29,7 +40,7 @@ const formatTime = (isoStr) => {
 };
 
 const getCurrentWibTime = () => {
-  return new Date().toLocaleTimeString('id-ID', {
+  return new Date().toLocaleTimeString('en-US', {
     hour: '2-digit',
     minute: '2-digit',
     second: '2-digit',
@@ -38,7 +49,7 @@ const getCurrentWibTime = () => {
 };
 
 const getCurrentWibDate = () => {
-  return new Date().toLocaleDateString('id-ID', {
+  return new Date().toLocaleDateString('en-US', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
@@ -48,39 +59,45 @@ const getCurrentWibDate = () => {
 };
 
 // ─── KPI Card ────────────────────────────────────────────────────────────────
-const KpiCard = ({ icon, title, value, subtitle, color, pulse = false }) => (
-  <div className="live-card group relative overflow-hidden">
-    {pulse && <div className="absolute inset-0 animate-pulse-slow bg-red-500/5 rounded-2xl" />}
+const KpiCard = ({ icon: Icon, title, value, subtitle, color, pulse = false }) => (
+  <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-card p-5 transition-all duration-300 hover:border-primary/40 hover:bg-muted/10 group">
+    {pulse && <div className="absolute inset-0 animate-pulse-slow bg-destructive/5 rounded-2xl" />}
     <div className="relative flex items-start gap-4">
       <div
-        className={`flex items-center justify-center w-14 h-14 rounded-xl ${
+        className={cn(
+          'flex items-center justify-center w-14 h-14 rounded-xl shadow-lg',
           color === 'success'
-            ? 'bg-emerald-500/15 text-emerald-400'
+            ? 'bg-status-success/15 text-status-success shadow-status-success/5'
             : color === 'warning'
-              ? 'bg-amber-500/15 text-amber-400'
+              ? 'bg-status-warning/15 text-status-warning shadow-status-warning/5'
               : color === 'error'
-                ? 'bg-red-500/15 text-red-400'
-                : 'bg-blue-500/15 text-blue-400'
-        }`}
+                ? 'bg-status-error/15 text-status-error shadow-status-error/5'
+                : 'bg-primary/10 text-primary shadow-primary/5'
+        )}
       >
-        <span className="material-symbols-outlined text-3xl">{icon}</span>
+        <Icon className="size-7" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-neutral-400 uppercase tracking-wider">{title}</div>
+        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+          {title}
+        </div>
         <div
-          className={`text-4xl font-bold tabular-nums mt-0.5 ${
+          className={cn(
+            'text-4xl font-black tabular-nums tracking-tighter mt-0.5',
             color === 'success'
-              ? 'text-emerald-400'
+              ? 'text-status-success'
               : color === 'warning'
-                ? 'text-amber-400'
+                ? 'text-status-warning'
                 : color === 'error'
-                  ? 'text-red-400'
-                  : 'text-white'
-          }`}
+                  ? 'text-status-error'
+                  : 'text-foreground'
+          )}
         >
           {value ?? '-'}
         </div>
-        <div className="text-xs text-neutral-500 mt-1 truncate">{subtitle}</div>
+        <div className="text-[10px] font-bold text-muted-foreground/40 mt-1 truncate uppercase">
+          {subtitle}
+        </div>
       </div>
     </div>
   </div>
@@ -91,15 +108,26 @@ const BranchCard = ({ name, synced, stale, problem, total }) => {
   const healthPct = total > 0 ? (synced / total) * 100 : 0;
   const variant =
     total === 0 ? 'neutral' : healthPct < 80 ? 'error' : healthPct < 90 ? 'warning' : 'success';
+
   const barColor =
     variant === 'error'
-      ? 'bg-red-500'
+      ? 'bg-status-error'
       : variant === 'warning'
-        ? 'bg-amber-500'
+        ? 'bg-status-warning'
         : variant === 'success'
-          ? 'bg-emerald-500'
-          : 'bg-neutral-600';
-  const badge =
+          ? 'bg-status-success'
+          : 'bg-muted-foreground/30';
+
+  const badgeColor =
+    variant === 'error'
+      ? 'bg-status-error/20 text-status-error border-status-error/30'
+      : variant === 'warning'
+        ? 'bg-status-warning/20 text-status-warning border-status-warning/30'
+        : variant === 'success'
+          ? 'bg-status-success/20 text-status-success border-status-success/30'
+          : 'bg-muted/50 text-muted-foreground border-border/40';
+
+  const badgeLabel =
     problem > 0
       ? `${problem} late`
       : stale > 0
@@ -107,33 +135,37 @@ const BranchCard = ({ name, synced, stale, problem, total }) => {
         : total > 0
           ? 'On-time'
           : 'No data';
-  const badgeColor =
-    variant === 'error'
-      ? 'bg-red-500/20 text-red-400 border-red-500/30'
-      : variant === 'warning'
-        ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-        : variant === 'success'
-          ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-          : 'bg-neutral-700/50 text-neutral-400 border-neutral-600';
 
   return (
-    <div className="live-card-sm">
-      <div className="flex items-center justify-between mb-3">
-        <span className="font-semibold text-white text-sm">{name}</span>
-        <span className={`live-text-2xs font-medium px-2 py-0.5 rounded-full border ${badgeColor}`}>
-          {badge}
+    <div className="rounded-2xl border border-border/40 bg-card p-4 transition-all duration-300 hover:border-primary/30 hover:bg-muted/5 group">
+      <div className="flex items-center justify-between mb-4">
+        <span
+          className="font-bold text-foreground text-xs uppercase tracking-tight truncate pr-2"
+          title={name}
+        >
+          {name}
+        </span>
+        <span
+          className={cn(
+            'text-[9px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full border leading-none shrink-0',
+            badgeColor
+          )}
+        >
+          {badgeLabel}
         </span>
       </div>
-      <div className="w-full h-2 rounded-full bg-neutral-800 overflow-hidden mb-2">
+      <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mb-3">
         <div
-          className={`h-full rounded-full live-bar-fill ${barColor}`}
-          ref={(el) => {
-            if (el) el.style.width = `${Math.min(100, healthPct)}%`;
-          }}
+          className={cn('h-full rounded-full transition-all duration-1000', barColor)}
+          style={{ width: `${Math.min(100, healthPct)}%` }}
         />
       </div>
-      <div className="live-text-2xs text-neutral-500">
-        {synced} on-time • {stale} warning • {problem} late
+      <div className="flex items-center justify-between text-[9px] font-black uppercase tracking-tighter text-muted-foreground/50">
+        <span>{synced} OK</span>
+        <span className="text-muted-foreground/20">•</span>
+        <span>{stale} WARN</span>
+        <span className="text-muted-foreground/20">•</span>
+        <span>{problem} ERR</span>
       </div>
     </div>
   );
@@ -144,25 +176,35 @@ const LateStoreRow = ({ store, idx }) => {
   const ageSec = store.lastSyncAgoSec;
   const isCritical = ageSec != null && ageSec > 3600;
   return (
-    <tr className={`border-b border-neutral-800/60 ${isCritical ? 'bg-red-500/5' : ''}`}>
-      <td className="py-2.5 px-3 text-neutral-500 text-xs font-mono w-8 text-right">{idx + 1}</td>
-      <td className="py-2.5 px-3 font-mono text-sm text-neutral-300 w-24 text-right">
+    <tr
+      className={cn(
+        'border-b border-border/40 transition-colors hover:bg-muted/30',
+        isCritical ? 'bg-status-error/5' : ''
+      )}
+    >
+      <td className="py-2.5 px-3 text-muted-foreground/40 text-[10px] font-black w-8 text-right tabular-nums">
+        {idx + 1}
+      </td>
+      <td className="py-2.5 px-3 font-mono text-xs font-bold text-muted-foreground w-24 text-right">
         {store.storeCode}
       </td>
-      <td className="py-2.5 px-3 text-sm text-white truncate live-truncate-name">
+      <td className="py-2.5 px-3 text-sm font-bold text-foreground truncate max-w-[200px]">
         {store.storeName || '-'}
       </td>
-      <td className="py-2.5 px-3 text-xs text-neutral-400">{store.branchName}</td>
+      <td className="py-2.5 px-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+        {store.branchName}
+      </td>
       <td className="py-2.5 px-3 text-right">
         <span
-          className={`text-sm font-bold tabular-nums ${
-            isCritical ? 'text-red-400' : 'text-amber-400'
-          }`}
+          className={cn(
+            'text-sm font-black tabular-nums tracking-tighter',
+            isCritical ? 'text-status-error' : 'text-status-warning'
+          )}
         >
           {formatDuration(ageSec)}
         </span>
       </td>
-      <td className="py-2.5 px-3 text-xs text-neutral-500 text-right">
+      <td className="py-2.5 px-3 text-[10px] font-bold text-muted-foreground/40 text-right tabular-nums">
         {store.lastSyncAt ? formatTime(store.lastSyncAt) : 'Never'}
       </td>
     </tr>
@@ -173,23 +215,37 @@ const LateStoreRow = ({ store, idx }) => {
 const EodRankRow = ({ store, idx }) => {
   const isBad = store.failRate > 30;
   return (
-    <tr className={`border-b border-neutral-800/60 ${isBad ? 'bg-red-500/5' : ''}`}>
-      <td className="py-2 px-3 text-neutral-500 text-xs font-mono w-8 text-right">{idx + 1}</td>
-      <td className="py-2 px-3 font-mono text-sm text-neutral-300 w-24 text-right">
+    <tr
+      className={cn(
+        'border-b border-border/40 transition-colors hover:bg-muted/30',
+        isBad ? 'bg-status-error/5' : ''
+      )}
+    >
+      <td className="py-2 px-3 text-muted-foreground/40 text-[10px] font-black w-8 text-right tabular-nums">
+        {idx + 1}
+      </td>
+      <td className="py-2 px-3 font-mono text-xs font-bold text-muted-foreground w-24 text-right">
         {store.storeCode}
       </td>
-      <td className="py-2 px-3 text-sm text-white truncate live-truncate-name-sm">
+      <td className="py-2 px-3 text-sm font-bold text-foreground truncate max-w-[180px]">
         {store.storeName || '-'}
       </td>
-      <td className="py-2 px-3 text-xs text-neutral-400">{store.branchName}</td>
+      <td className="py-2 px-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground/60">
+        {store.branchName}
+      </td>
       <td className="py-2 px-3 text-center">
-        <span className="text-red-400 font-bold text-sm tabular-nums">{store.failedDays}</span>
-        <span className="text-neutral-600 mx-0.5">/</span>
-        <span className="text-emerald-400/70 text-xs tabular-nums">{store.okDays}</span>
+        <span className="text-status-error font-black text-xs tabular-nums">
+          {store.failedDays}
+        </span>
+        <span className="text-muted-foreground/20 mx-1">/</span>
+        <span className="text-status-success font-bold text-xs tabular-nums">{store.okDays}</span>
       </td>
       <td className="py-2 px-3 text-right">
         <span
-          className={`text-sm font-bold tabular-nums ${isBad ? 'text-red-400' : 'text-amber-400'}`}
+          className={cn(
+            'text-sm font-black tabular-nums tracking-tighter',
+            isBad ? 'text-status-error' : 'text-status-warning'
+          )}
         >
           {store.failRate}%
         </span>
@@ -244,7 +300,7 @@ const LiveSync = () => {
   useEffect(() => {
     nextRefreshRef.current = Date.now() + REFRESH_INTERVAL;
 
-    // Inline initial fetch (avoid calling setState wrapper in effect body)
+    // Inline initial fetch
     let cancelled = false;
     (async () => {
       try {
@@ -295,33 +351,6 @@ const LiveSync = () => {
     return () => clearInterval(interval);
   }, [fetchData]);
 
-  // Auto-scroll disabled
-  // useEffect(() => {
-  //   const el = scrollRef.current;
-  //   if (!el) return;
-  //   let dir = 1;
-  //   const scrollInterval = setInterval(() => {
-  //     if (!el) return;
-  //     if (el.scrollTop + el.clientHeight >= el.scrollHeight - 2) dir = -1;
-  //     if (el.scrollTop <= 0) dir = 1;
-  //     el.scrollTop += dir * 1;
-  //   }, 80);
-  //   return () => clearInterval(scrollInterval);
-  // }, [data?.lateStores]);
-
-  // useEffect(() => {
-  //   const el = eodScrollRef.current;
-  //   if (!el) return;
-  //   let dir = 1;
-  //   const scrollInterval = setInterval(() => {
-  //     if (!el) return;
-  //     if (el.scrollTop + el.clientHeight >= el.scrollHeight - 2) dir = -1;
-  //     if (el.scrollTop <= 0) dir = 1;
-  //     el.scrollTop += dir * 1;
-  //   }, 100);
-  //   return () => clearInterval(scrollInterval);
-  // }, [eodData?.ranking]);
-
   const kpi = data?.kpi;
   const branches = data?.branches || [];
   const lateStores = data?.lateStores || [];
@@ -333,35 +362,45 @@ const LiveSync = () => {
   const eodSummary = eodData?.summary || {};
 
   return (
-    <div className="live-root dark">
+    <div className="fixed inset-0 flex flex-col gap-4 overflow-hidden bg-background text-foreground dark">
       {/* ── Header Bar ─────────────────────────────────────────── */}
-      <header className="live-header">
-        <div className="flex items-center gap-4">
-          <span className="material-symbols-outlined text-2xl text-emerald-400">cell_tower</span>
+      <header className="flex shrink-0 items-center justify-between border-b border-border/40 bg-card px-6 py-4 backdrop-blur-xl">
+        <div className="flex items-center gap-5">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-2xl shadow-primary/20">
+            <Radio className="size-7" />
+          </div>
           <div>
-            <h1 className="text-lg font-bold text-white tracking-tight">
-              Store Sync Monitor
-              <span className="ml-2 text-xs font-medium px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 align-middle animate-pulse-slow">
+            <h1 className="text-xl font-black uppercase tracking-tight text-foreground">
+              Operational <span className="text-muted-foreground/40 font-medium">Radar</span>
+              <span className="ml-3 inline-block align-middle animate-pulse rounded-full border border-status-success/30 bg-status-success/20 px-3 py-0.5 text-[10px] font-black uppercase tracking-[0.2em] text-status-success">
                 LIVE
               </span>
             </h1>
-            <p className="text-xs text-neutral-500">{getCurrentWibDate()}</p>
+            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+              {getCurrentWibDate()}
+            </p>
           </div>
         </div>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-8">
           {error && (
-            <span className="text-xs text-red-400 flex items-center gap-1">
-              <span className="material-symbols-outlined text-sm">error</span>
+            <span className="flex items-center gap-2 px-3 py-1 rounded-lg bg-status-error/10 border border-status-error/20 text-[10px] font-black uppercase tracking-widest text-status-error">
+              <AlertCircle className="size-3.5" />
               {error}
             </span>
           )}
           <div className="text-right">
-            <div className="text-2xl font-bold text-white tabular-nums font-mono">{clock}</div>
-            <div className="live-text-3xs text-neutral-500 uppercase tracking-widest">WIB</div>
+            <div className="font-mono text-3xl font-black tabular-nums tracking-tighter text-foreground">
+              {clock}
+            </div>
+            <div className="text-[9px] font-black uppercase tracking-[0.3em] text-muted-foreground/40 pr-1">
+              WIB LOCAL TIME
+            </div>
           </div>
-          <div className="flex flex-col items-center">
-            <div className="text-lg font-bold text-neutral-400 tabular-nums">{countdown}s</div>
-            <div className="live-text-3xs text-neutral-600 uppercase">refresh</div>
+          <div className="flex flex-col items-center gap-1 border-l border-border/40 pl-8">
+            <div className="text-xl font-black tabular-nums text-primary/60">{countdown}s</div>
+            <div className="text-[8px] font-black uppercase tracking-widest text-muted-foreground/40">
+              NEXT REFRESH
+            </div>
           </div>
         </div>
       </header>
@@ -373,50 +412,53 @@ const LiveSync = () => {
       {/* ── KPI Cards ──────────────────────────────────────────── */}
       <section className="grid grid-cols-2 lg:grid-cols-5 gap-4 px-6">
         <KpiCard
-          icon="store"
-          title="Total"
+          icon={Store}
+          title="Active Stores"
           value={kpi?.total}
-          subtitle="Active stores"
+          subtitle="Monitored Endpoints"
           color="default"
         />
         <KpiCard
-          icon="check_circle"
-          title="On-time"
+          icon={CheckCircle2}
+          title="On-time Sync"
           value={kpi?.synced}
-          subtitle={`Sync 0–${syncedMaxLabel}`}
+          subtitle={`Window: 0–${syncedMaxLabel}`}
           color="success"
         />
         <KpiCard
-          icon="warning"
+          icon={AlertTriangle}
           title="Warning"
           value={kpi?.stale}
-          subtitle={`Sync ${syncedMaxLabel}–${staleMaxLabel}`}
+          subtitle={`Window: ${syncedMaxLabel}–${staleMaxLabel}`}
           color="warning"
           pulse={kpi?.stale > 0}
         />
         <KpiCard
-          icon="sync_problem"
-          title="Late"
+          icon={RefreshCw}
+          title="Critical Delay"
           value={kpi?.problem}
-          subtitle={`Sync ${staleMaxLabel}+ or no data`}
+          subtitle={`Threshold: ${staleMaxLabel}+`}
           color="error"
           pulse={kpi?.problem > 0}
         />
         <KpiCard
-          icon="schedule"
-          title="Oldest"
+          icon={Clock}
+          title="Longest Delay"
           value={oldest?.ageSec != null ? formatDuration(oldest.ageSec) : '-'}
-          subtitle={oldest?.storeName || '-'}
+          subtitle={oldest?.storeName || 'Stable'}
           color={oldest?.ageSec > 3600 ? 'error' : 'warning'}
         />
       </section>
 
       {/* ── Branch Network Health ──────────────────────────────── */}
       <section className="px-6">
-        <h2 className="text-sm font-semibold text-neutral-400 uppercase tracking-wider mb-3">
-          Branch Network Health
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <div className="flex items-center gap-3 mb-4">
+          <h2 className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.25em]">
+            Regional Network Status
+          </h2>
+          <div className="h-px flex-1 bg-border/20" />
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
           {branches.map((b) => (
             <BranchCard
               key={b.id}
@@ -431,47 +473,47 @@ const LiveSync = () => {
       </section>
 
       {/* ── Bottom Split: Late Stores + EOD Ranking ─────────────── */}
-      <section className="px-6 flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <section className="px-6 flex-1 min-h-0 grid grid-cols-1 lg:grid-cols-2 gap-6 pb-6">
         {/* Left: Late Sync Stores */}
         <div className="flex flex-col min-h-0">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-neutral-400 uppercase tracking-wider">
-              <span className="material-symbols-outlined text-sm align-text-bottom mr-1 text-red-400">
-                sync_problem
-              </span>
-              Late Sync
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="flex items-center text-[10px] font-black text-muted-foreground uppercase tracking-[0.25em]">
+              <RefreshCw className="mr-2 size-3 text-status-error" />
+              Live Latency Monitor
               {lateStores.length > 0 && (
-                <span className="ml-2 text-xs font-normal text-red-400">({lateStores.length})</span>
+                <span className="ml-3 px-2 py-0.5 rounded bg-status-error/10 text-status-error font-black border border-status-error/20">
+                  ({lateStores.length})
+                </span>
               )}
             </h2>
-            <div className="live-text-3xs text-neutral-600">
-              {lastFetchAt ? formatTime(lastFetchAt.toISOString()) : '-'}
+            <div className="text-[9px] font-bold text-muted-foreground/30 uppercase tracking-widest">
+              Last Polled: {lastFetchAt ? formatTime(lastFetchAt.toISOString()) : '-'}
             </div>
           </div>
           <div
             ref={scrollRef}
-            className="flex-1 overflow-y-auto rounded-xl border border-neutral-800/60 bg-neutral-900/60"
+            className="flex-1 overflow-y-auto rounded-[2rem] border border-border/40 bg-card shadow-inner scrollbar-none"
           >
             {lateStores.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-neutral-600 text-sm">
-                <span className="material-symbols-outlined text-3xl mr-3 text-emerald-500/40">
-                  check_circle
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 gap-4">
+                <CheckCircle2 className="size-12 text-status-success/20" />
+                <span className="text-xs font-black uppercase tracking-widest">
+                  All regions perfectly synced
                 </span>
-                All stores syncing on time
               </div>
             ) : (
               <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-neutral-700/60 live-text-2xs uppercase text-neutral-500 tracking-wider">
-                    <th className="py-2 px-3 w-8">#</th>
-                    <th className="py-2 px-3 w-24 text-right">Code</th>
-                    <th className="py-2 px-3">Name</th>
-                    <th className="py-2 px-3">Branch</th>
-                    <th className="py-2 px-3 text-right">Delay</th>
-                    <th className="py-2 px-3 text-right">Last Sync</th>
+                <thead className="sticky top-0 bg-muted/80 backdrop-blur-md z-20">
+                  <tr className="border-b border-border/40 text-[9px] font-black uppercase text-muted-foreground/50 tracking-[0.2em]">
+                    <th className="py-4 px-4 w-8">#</th>
+                    <th className="py-4 px-4 w-24 text-right">Code</th>
+                    <th className="py-4 px-4">Endpoint Name</th>
+                    <th className="py-4 px-4">Branch</th>
+                    <th className="py-4 px-4 text-right">Latency</th>
+                    <th className="py-4 px-4 text-right">Last Sync</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-border/20">
                   {lateStores.map((store, idx) => (
                     <LateStoreRow key={store.storeCode} store={store} idx={idx} />
                   ))}
@@ -483,19 +525,18 @@ const LiveSync = () => {
 
         {/* Right: EOD Failure Ranking */}
         <div className="flex flex-col min-h-0">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-semibold text-neutral-400 uppercase tracking-wider">
-              <span className="material-symbols-outlined text-sm align-text-bottom mr-1 text-amber-400">
-                trending_down
-              </span>
-              EOD Failure Ranking
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="flex items-center text-[10px] font-black text-muted-foreground uppercase tracking-[0.25em]">
+              <TrendingDown className="mr-2 size-3 text-status-warning" />
+              Integrity Performance Ranking
               {eodRanking.length > 0 && (
-                <span className="ml-2 text-xs font-normal text-amber-400">
-                  ({eodSummary.totalStoresWithFailures || eodRanking.length} stores)
+                <span className="ml-3 px-2 py-0.5 rounded bg-status-warning/10 text-status-warning font-black border border-status-warning/20">
+                  ({eodSummary.totalStoresWithFailures || eodRanking.length})
                 </span>
               )}
             </h2>
-            <div className="live-text-3xs text-neutral-600">
+            <div className="text-[9px] font-bold text-muted-foreground/30 uppercase tracking-widest">
+              Range:{' '}
               {eodSummary.dateRange?.from && eodSummary.dateRange?.to
                 ? `${eodSummary.dateRange.from} – ${eodSummary.dateRange.to}`
                 : '-'}
@@ -503,28 +544,28 @@ const LiveSync = () => {
           </div>
           <div
             ref={eodScrollRef}
-            className="flex-1 overflow-y-auto rounded-xl border border-neutral-800/60 bg-neutral-900/60"
+            className="flex-1 overflow-y-auto rounded-[2rem] border border-border/40 bg-card shadow-inner scrollbar-none"
           >
             {eodRanking.length === 0 ? (
-              <div className="flex items-center justify-center h-full text-neutral-600 text-sm">
-                <span className="material-symbols-outlined text-3xl mr-3 text-emerald-500/40">
-                  check_circle
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 gap-4">
+                <CheckCircle2 className="size-12 text-status-success/20" />
+                <span className="text-xs font-black uppercase tracking-widest">
+                  Zero EOD integrity violations
                 </span>
-                No EOD failures recorded
               </div>
             ) : (
               <table className="w-full text-left">
-                <thead>
-                  <tr className="border-b border-neutral-700/60 live-text-2xs uppercase text-neutral-500 tracking-wider">
-                    <th className="py-2 px-3 w-8">#</th>
-                    <th className="py-2 px-3 w-24 text-right">Code</th>
-                    <th className="py-2 px-3">Name</th>
-                    <th className="py-2 px-3">Branch</th>
-                    <th className="py-2 px-3 text-center">Fail / OK</th>
-                    <th className="py-2 px-3 text-right">Fail %</th>
+                <thead className="sticky top-0 bg-muted/80 backdrop-blur-md z-20">
+                  <tr className="border-b border-border/40 text-[9px] font-black uppercase text-muted-foreground/50 tracking-[0.2em]">
+                    <th className="py-4 px-4 w-8">#</th>
+                    <th className="py-4 px-4 w-24 text-right">Code</th>
+                    <th className="py-4 px-4">Endpoint Name</th>
+                    <th className="py-4 px-4">Branch</th>
+                    <th className="py-4 px-4 text-center">Failure / Success</th>
+                    <th className="py-4 px-4 text-right">Fail Rate</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-border/20">
                   {eodRanking.map((store, idx) => (
                     <EodRankRow key={store.storeCode} store={store} idx={idx} />
                   ))}
@@ -534,61 +575,6 @@ const LiveSync = () => {
           </div>
         </div>
       </section>
-
-      {/* ── Inline Styles ──────────────────────────────────────── */}
-      <style>{`
-        .live-root {
-          position: fixed;
-          inset: 0;
-          background: #0a0a0a;
-          color: #fafafa;
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-          overflow: hidden;
-          font-family: Inter, system-ui, -apple-system, sans-serif;
-        }
-        .live-header {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 16px 24px;
-          border-bottom: 1px solid rgba(255,255,255,0.06);
-          background: rgba(10,10,10,0.95);
-          backdrop-filter: blur(12px);
-          flex-shrink: 0;
-        }
-        .live-card {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.06);
-          border-radius: 16px;
-          padding: 20px;
-          transition: all 0.3s ease;
-        }
-        .live-card:hover {
-          background: rgba(255,255,255,0.05);
-          border-color: rgba(255,255,255,0.1);
-        }
-        .live-card-sm {
-          background: rgba(255,255,255,0.03);
-          border: 1px solid rgba(255,255,255,0.06);
-          border-radius: 12px;
-          padding: 14px;
-          transition: all 0.3s ease;
-        }
-        .live-card-sm:hover {
-          background: rgba(255,255,255,0.05);
-        }
-        /* Thin scrollbar for manual scroll */
-        .live-root ::-webkit-scrollbar { width: 6px; height: 6px; }
-        .live-root ::-webkit-scrollbar-track { background: transparent; }
-        .live-root ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
-        .live-root ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
-        .live-root { scrollbar-width: thin; scrollbar-color: rgba(255,255,255,0.15) transparent; }
-        /* Material Symbols */
-        @import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=swap');
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-      `}</style>
     </div>
   );
 };

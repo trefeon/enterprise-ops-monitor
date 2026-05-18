@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Guard } from '../../components/auth/Guard';
-import EmptyState from '../../components/ui/EmptyState';
+import { EmptyState } from '@/components/shared/EmptyState'
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
 import { useToast } from '../../components/ui/ToastContext';
 import Toolbar from '../../components/ui/Toolbar';
@@ -19,9 +19,9 @@ import { Button } from '@/components/ui/button';
 import IconButton from '../../components/ui/IconButton';
 import PageShell from '../../components/ui/PageShell';
 import PageHeader from '../../components/ui/PageHeader';
-import StatCard from '../../components/ui/StatCard';
+import { StatCard } from '@/components/shared/StatCard'
 import Modal from '../../components/ui/Modal';
-import StatusBadge from '../../components/ui/StatusBadge';
+import { StatusBadge } from '@/components/shared/StatusBadge'
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { SearchBar } from '../../components/shared/SearchBar';
 import { DatePicker } from '../../components/shared/DatePicker';

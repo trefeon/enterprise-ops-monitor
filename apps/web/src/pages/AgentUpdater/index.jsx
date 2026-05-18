@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import StatusBadge from '../../components/ui/StatusBadge';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import {
   Table,
   TableHeader,
@@ -21,7 +21,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { formatDateTime } from '../../lib/date';
-import EmptyState from '../../components/ui/EmptyState';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import PageShell from '../../components/ui/PageShell';
 import { StatCard } from '@/components/shared/StatCard';
@@ -38,8 +38,12 @@ import {
   Zap,
   History,
   Search,
+  AlertCircle,
+  Trash2,
+  FileUp,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 function base64ToBlob(base64, contentType) {
   const binary = atob(String(base64 || ''));
@@ -86,17 +90,29 @@ function getStatusBadge(status) {
     case 'outdated':
       return <StatusBadge variant="warning">Need Update</StatusBadge>;
     case 'checking':
-      return <StatusBadge variant="info">Checking</StatusBadge>;
+      return (
+        <StatusBadge variant="default" className="bg-primary/20 text-primary">
+          Checking
+        </StatusBadge>
+      );
     case 'downloading':
-      return <StatusBadge variant="info">Downloading</StatusBadge>;
+      return (
+        <StatusBadge variant="default" className="bg-status-info/20 text-status-info">
+          Downloading
+        </StatusBadge>
+      );
     case 'updating':
-      return <StatusBadge variant="info">Updating</StatusBadge>;
+      return (
+        <StatusBadge variant="default" className="bg-status-info/20 text-status-info">
+          Updating
+        </StatusBadge>
+      );
     case 'error':
-      return <StatusBadge variant="danger">Error</StatusBadge>;
+      return <StatusBadge variant="destructive">Error</StatusBadge>;
     case 'uninstalled':
-      return <StatusBadge variant="neutral">Not Installed</StatusBadge>;
+      return <StatusBadge variant="secondary">Not Installed</StatusBadge>;
     default:
-      return <StatusBadge variant="neutral">Unknown</StatusBadge>;
+      return <StatusBadge variant="outline">Unknown</StatusBadge>;
   }
 }
 
@@ -127,14 +143,6 @@ const AgentUpdater = () => {
   const [isDeploying, setIsDeploying] = useState(false);
 
   const handleRefresh = () => {
-    if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
-      return;
-    }
     fetchData();
   };
 
@@ -379,12 +387,19 @@ const AgentUpdater = () => {
 
   if (error && !loading && monitoring.length === 0) {
     return (
-      <EmptyState
-        title="Error Loading Agent Data"
-        description={error}
-        icon="error"
-        action={{ label: 'Retry', icon: 'refresh', onClick: handleRefresh }}
-      />
+      <PageShell>
+        <EmptyState
+          title="Error Loading Agent Data"
+          description={error}
+          icon={<AlertCircle className="size-8" />}
+          action={
+            <Button variant="outline" onClick={handleRefresh}>
+              <RefreshCw className="mr-2 size-4" />
+              Retry
+            </Button>
+          }
+        />
+      </PageShell>
     );
   }
 
@@ -421,20 +436,16 @@ const AgentUpdater = () => {
         actions={
           <>
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={handleRefresh}
               disabled={loading}
               className="w-full sm:w-auto"
             >
-              {loading ? (
-                <Loader2 className="animate-spin mr-2 size-4" />
-              ) : (
-                <RefreshCw className="mr-2 size-4" />
-              )}
+              <RefreshCw className={cn('mr-2 size-4', loading && 'animate-spin')} />
               Refresh
             </Button>
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={handleExportExcel}
               disabled={exporting || loading}
               className="w-full sm:w-auto"
@@ -446,7 +457,7 @@ const AgentUpdater = () => {
               )}
               Export Excel
             </Button>
-            <Button variant="secondary" onClick={handleDownloadSetup} className="w-full sm:w-auto">
+            <Button variant="outline" onClick={handleDownloadSetup} className="w-full sm:w-auto">
               <Download className="mr-2 size-4" />
               Setup Script
             </Button>
@@ -462,7 +473,7 @@ const AgentUpdater = () => {
           title="Current Deployed Version"
           value={metricsLoading ? '...' : currentVersion || 'None'}
           icon={<CheckCircle2 className="size-5" />}
-          accent={currentVersion ? 'text-status-success' : 'text-muted-foreground'}
+          status={currentVersion ? 'success' : 'default'}
         />
 
         <StatCard
@@ -489,6 +500,7 @@ const AgentUpdater = () => {
           title="Publisher Sync"
           value={metricsLoading ? '--' : publisherSyncedPercent}
           icon={<Zap className="size-5" />}
+          status={publisherOutdatedCount === 0 ? 'success' : 'warning'}
           subtext={
             <div className="flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Sync Progress</span>
@@ -518,10 +530,11 @@ const AgentUpdater = () => {
           title="Legacy Worker Scripts"
           value={metricsLoading ? '--' : nonModernWorkers}
           icon={<History className="size-5" />}
+          status={nonModernWorkers > 0 ? 'warning' : 'default'}
           subtext="Setup script required for non-modern workers"
-          accent={nonModernWorkers > 0 ? 'text-status-warning' : 'text-muted-foreground'}
         />
       </section>
+
       <section className="grid grid-cols-1 gap-2 md:flex md:flex-wrap md:items-center md:gap-3 py-4">
         <SearchBar
           placeholder="Search by store code or name..."
@@ -543,8 +556,12 @@ const AgentUpdater = () => {
               })
             }
           >
-            <SelectTrigger className="w-full md:w-40">
-              <SelectValue placeholder="All Branches" />
+            <SelectTrigger className="w-full md:w-40 h-11">
+              <SelectValue placeholder="All Branches">
+                {filters.areaId
+                  ? AREA_OPTIONS.find((a) => a.id === String(filters.areaId))?.label
+                  : undefined}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="">All Branches</SelectItem>
@@ -566,7 +583,7 @@ const AgentUpdater = () => {
               })
             }
           >
-            <SelectTrigger className="w-full md:w-48">
+            <SelectTrigger className="w-full md:w-48 h-11">
               <SelectValue placeholder="All Regional Heads" />
             </SelectTrigger>
             <SelectContent>
@@ -579,14 +596,15 @@ const AgentUpdater = () => {
             </SelectContent>
           </Select>
         </div>
-        <Button variant="secondary" onClick={applyFilters} className="w-full md:w-auto">
+        <Button variant="secondary" onClick={applyFilters} className="w-full md:w-auto h-11">
           <Search className="mr-2 size-4" />
           Apply
         </Button>
       </section>
+
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="section-title">Deployment Monitoring</h2>
+          <h2 className="text-lg font-bold tracking-tight uppercase">Deployment Monitoring</h2>
           {publisherOutdatedCount > 0 && (
             <StatusBadge variant="warning">
               {publisherOutdatedCount} Node(s) Need Update
@@ -594,11 +612,11 @@ const AgentUpdater = () => {
           )}
         </div>
 
-        <Card className="p-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden border-border/60 shadow-sm">
           <CardContent className="p-0">
             <Table>
               <TableHeader>
-                <TableRow>
+                <TableRow className="bg-muted/30">
                   <TableHead>Store Code</TableHead>
                   <TableHead>Store Name</TableHead>
                   <TableHead>Branch</TableHead>
@@ -611,13 +629,16 @@ const AgentUpdater = () => {
               <TableBody>
                 {loading && monitoring.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                      Loading nodes...
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="size-4 animate-spin" />
+                        Loading nodes...
+                      </div>
                     </TableCell>
                   </TableRow>
                 ) : monitoring.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
                       No nodes registered yet.
                     </TableCell>
                   </TableRow>
@@ -633,58 +654,63 @@ const AgentUpdater = () => {
                     return (
                       <TableRow
                         key={node.store_id}
-                        className={isLegacyWorker ? 'bg-warning/5' : ''}
+                        className={cn(
+                          'group hover:bg-muted/30 transition-colors',
+                          isLegacyWorker ? 'bg-status-warning/5' : ''
+                        )}
                       >
-                        <TableCell className="text-xs font-semibold tabular-nums">
+                        <TableCell className="text-xs font-bold tabular-nums">
                           {node.store_id || 'Unknown'}
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
+                        <TableCell className="text-foreground/90 font-medium">
                           {node.store_name || node.hostname || '-'}
                         </TableCell>
-                        <TableCell className="text-muted-foreground">
+                        <TableCell className="live-text-3xs uppercase font-black text-muted-foreground tracking-widest">
                           {node.branch_name || '-'}
                         </TableCell>
                         <TableCell className="text-center">
-                          <code className="bg-muted px-1.5 py-0.5 rounded text-sm">
+                          <code className="bg-muted px-1.5 py-0.5 rounded-md border border-border/40 text-xs font-mono">
                             {node.version || '-'}
                           </code>
                         </TableCell>
                         <TableCell className="text-center">
                           <div className="flex items-center justify-center gap-1">
                             {isLegacyWorker ? (
-                              <span className="text-warning text-xs font-semibold">legacy</span>
+                              <span className="px-1.5 py-0.5 rounded bg-status-warning/10 text-status-warning text-[9px] font-black uppercase tracking-widest">
+                                legacy
+                              </span>
                             ) : (
-                              <code className="bg-muted px-1.5 py-0.5 rounded text-sm">
+                              <code className="bg-muted px-1.5 py-0.5 rounded-md border border-border/40 text-xs font-mono">
                                 v{node.worker_version}
                               </code>
                             )}
                           </div>
                         </TableCell>
                         <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-1">
+                          <div className="flex items-center justify-center gap-1.5">
                             {getStatusBadge(status)}
                             {node.last_error && (
-                              <span
-                                className="material-symbols-outlined text-danger text-sm cursor-help"
+                              <AlertCircle
+                                className="size-3.5 text-status-error cursor-help"
                                 title={node.last_error}
-                              >
-                                error
-                              </span>
+                              />
                             )}
                           </div>
                         </TableCell>
-                        <TableCell className="text-right text-muted-foreground tabular-nums">
-                          <div className="flex items-center justify-end gap-2">
-                            {node.last_check_at ? formatDateTime(node.last_check_at) : '-'}
+                        <TableCell className="text-right text-muted-foreground tabular-nums text-xs">
+                          <div className="flex items-center justify-end gap-3">
+                            <span className="font-medium">
+                              {node.last_check_at ? formatDateTime(node.last_check_at) : '-'}
+                            </span>
                             {node.last_check_at && (
                               <Button
                                 variant="ghost"
                                 size="sm"
                                 onClick={() => handleDeleteAgent(node.store_id)}
-                                className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                className="size-8 text-muted-foreground hover:text-status-error hover:bg-status-error/10 opacity-0 group-hover:opacity-100 transition-all"
                                 title="Delete Agent Record"
                               >
-                                <span className="material-symbols-outlined text-sm">delete</span>
+                                <Trash2 className="size-4" />
                               </Button>
                             )}
                           </div>
@@ -698,6 +724,7 @@ const AgentUpdater = () => {
           </CardContent>
         </Card>
       </section>
+
       <Modal
         open={deployModalOpen}
         onClose={() => !isDeploying && setDeployModalOpen(false)}
@@ -706,19 +733,24 @@ const AgentUpdater = () => {
         <form onSubmit={handleDeploy} className="space-y-6 pt-4">
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Publisher Binary (.exe)</label>
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-4">
+                Publisher Binary (.exe)
+              </label>
               <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed rounded-lg cursor-pointer bg-muted/50 hover:bg-muted border-border hover:border-primary transition-colors">
+                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-[2rem] cursor-pointer bg-muted/20 hover:bg-muted/40 border-border/60 hover:border-primary/40 transition-all group/upload">
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <span className="material-symbols-outlined text-3xl text-muted-foreground mb-2">
-                      upload_file
-                    </span>
-                    <p className="text-sm text-muted-foreground">
+                    <div className="size-12 flex items-center justify-center rounded-2xl bg-muted border border-border/60 mb-4 group-hover/upload:bg-primary/10 group-hover/upload:text-primary transition-colors">
+                      <FileUp className="size-6" />
+                    </div>
+                    <p className="text-sm font-bold text-foreground">
                       {file ? (
-                        <span className="text-primary font-semibold">{file.name}</span>
+                        <span className="text-primary">{file.name}</span>
                       ) : (
-                        'Click to select DemoAgentPublisher.exe'
+                        'Select DemoAgentPublisher.exe'
                       )}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-2 font-medium">
+                      Click or drag and drop to upload
                     </p>
                   </div>
                   <input type="file" className="hidden" accept=".exe" onChange={handleFileChange} />
@@ -727,32 +759,56 @@ const AgentUpdater = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Release Version</label>
+              <label className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 ml-4">
+                Release Version
+              </label>
               <Input
                 placeholder="e.g. 1.0.15a"
                 value={version}
                 onChange={(e) => setVersion(e.target.value)}
                 required
+                className="h-14 rounded-2xl pl-5 font-bold"
               />
-              <p className="text-xs text-muted-foreground">
-                Current: <span className="font-semibold">{currentVersion || 'None'}</span>
-                {' · '}
-                Suggested: <span className="font-semibold">{suggestedVersion}</span>
-              </p>
+              <div className="flex items-center gap-3 px-4 pt-1">
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">
+                    Current
+                  </span>
+                  <span className="text-xs font-bold text-foreground">
+                    {currentVersion || 'None'}
+                  </span>
+                </div>
+                <div className="w-px h-6 bg-border/40" />
+                <div className="flex flex-col">
+                  <span className="text-[9px] font-black text-primary uppercase tracking-widest leading-none mb-1">
+                    Suggested
+                  </span>
+                  <span className="text-xs font-bold text-primary">{suggestedVersion}</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-3 pt-4">
             <Button
               variant="secondary"
               onClick={() => setDeployModalOpen(false)}
               disabled={isDeploying}
+              className="h-12 rounded-xl font-bold"
             >
               Cancel
             </Button>
-            <Button type="submit">
-              {isDeploying && <Loader2 className="animate-spin mr-2" />}
-              Confirm Deployment
+            <Button
+              type="submit"
+              className="h-12 rounded-xl font-black uppercase tracking-widest px-8 shadow-lg shadow-primary/20"
+              disabled={isDeploying}
+            >
+              {isDeploying ? (
+                <Loader2 className="animate-spin mr-2 size-4" />
+              ) : (
+                <UploadCloud className="mr-2 size-4" />
+              )}
+              Deploy Version
             </Button>
           </div>
         </form>

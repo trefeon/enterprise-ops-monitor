@@ -15,8 +15,8 @@ export function DatePicker({
   ...props
 }: DatePickerProps) {
   return (
-    <div className={cn('relative w-full', className)}>
-      <div className="pointer-events-none absolute left-3 inset-y-0 flex items-center text-muted-foreground">
+    <div className="relative w-full">
+      <div className="pointer-events-none absolute left-3 inset-y-0 flex items-center text-muted-foreground z-10">
         <Calendar className="size-5" />
       </div>
       <Input
@@ -32,7 +32,7 @@ export function DatePicker({
             e.currentTarget.showPicker();
           }
         }}
-        className={cn('date-input-no-indicator pl-10 tabular-nums', className)}
+        className={cn('date-input-no-indicator pl-11 tabular-nums', className)}
         {...props}
       />
     </div>

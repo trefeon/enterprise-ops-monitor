@@ -1,17 +1,44 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { apiGet, apiPost, apiPut } from '../../lib/api/client';
 import { Button } from '@/components/ui/button';
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import StatCard from '../../components/ui/StatCard';
-import EmptyState from '../../components/ui/EmptyState';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { StatCard } from '@/components/shared/StatCard'
+import { EmptyState } from '@/components/shared/EmptyState'
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
 import { useToast } from '../../components/ui/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
+import { SearchBar } from '@/components/shared/SearchBar';
 import { getFeatureStory } from '../../data/stories';
-import { Loader2 } from 'lucide-react';
+import {
+  Loader2,
+  Clock,
+  Search,
+  Save,
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  RotateCw,
+  RefreshCw,
+  Download,
+  Trophy,
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 
 const BRANCH_OPTIONS = [
   { id: '', label: 'All Branches' },
@@ -79,7 +106,7 @@ function formatMonthLabel(reportMonth) {
   if (!reportMonth) return '—';
   try {
     const d = new Date(reportMonth + 'T00:00:00+07:00');
-    return d.toLocaleDateString('id-ID', {
+    return d.toLocaleDateString('en-US', {
       timeZone: 'Asia/Jakarta',
       year: 'numeric',
       month: 'long',
@@ -107,7 +134,7 @@ function formatWibDateTime(value) {
   if (Number.isNaN(date.getTime())) return raw;
 
   try {
-    const parts = new Intl.DateTimeFormat('id-ID', {
+    const parts = new Intl.DateTimeFormat('en-US', {
       timeZone: 'Asia/Jakarta',
       day: '2-digit',
       month: 'short',
@@ -137,7 +164,7 @@ function formatWibDateOnly(value) {
   if (Number.isNaN(date.getTime())) return raw;
 
   try {
-    const parts = new Intl.DateTimeFormat('id-ID', {
+    const parts = new Intl.DateTimeFormat('en-US', {
       timeZone: 'Asia/Jakarta',
       day: '2-digit',
       month: 'short',
@@ -475,13 +502,13 @@ export default function AfterHoursReport() {
 
                 <div className="space-y-2">
                   <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                    Report bulanan yang rapi, bisa dicari, dan siap dibagikan
+                    Clean, searchable monthly reports ready for sharing
                   </h2>
                   <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                    Pilih bulan, filter branch atau nama toko, generate Excel untuk Excel/WPS, lalu
-                    kirim otomatis ke WhatsApp setiap tanggal 1 pukul 09:00 WIB. Report ini
-                    mengikuti final check sesuai konfigurasi after-hours produksi, termasuk log jam
-                    00:00 yang dihitung ke hari report sebelumnya.
+                    Select a month, filter by branch or store name, generate Excel for Excel/WPS,
+                    and automatically send it to WhatsApp on the 1st of every month at 09:00 WIB.
+                    This report follows the production after-hours check configuration, including
+                    00:00 logs which are correctly attributed to the previous business day.
                   </p>
                 </div>
 
@@ -503,12 +530,12 @@ export default function AfterHoursReport() {
 
               <div className="rounded-2xl border border-border/60 bg-background/90 p-4 shadow-sm">
                 <div className="flex items-start justify-between gap-3">
-                  <div>
+                  <div className="space-y-2">
                     <h3 className="text-sm font-semibold text-foreground">
                       WhatsApp Broadcast Target
                     </h3>
                     <p className="mt-1 text-xs text-muted-foreground">
-                      Isi chat atau group ID tujuan untuk auto-send monthly report.
+                      Enter chat or group IDs for automatic monthly report delivery.
                     </p>
                   </div>
 
@@ -524,18 +551,23 @@ export default function AfterHoursReport() {
                 </div>
 
                 <div className="mt-4 space-y-3">
-                  <div className="relative w-full"><span
-                      className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">send</span><Input
+                  <div className="relative w-full">
+                    <div className="pointer-events-none absolute left-3 inset-y-0 flex items-center text-muted-foreground">
+                      <Save className="size-4" />
+                    </div>
+                    <Input
                       type="text"
                       value={monthlyReportWhatsappTargets}
                       onChange={(e) => setMonthlyReportWhatsappTargets(e.target.value)}
                       placeholder={MONTHLY_REPORT_WHATSAPP_TARGETS_SAMPLE}
                       disabled={loadingMonthlyReportSettings}
-                      className="pl-10 !h-11 !rounded-xl !bg-background shadow-sm" /></div>
+                      className="!pl-11 !h-11 !rounded-xl !bg-background shadow-sm"
+                    />
+                  </div>
 
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <p className="text-xs text-muted-foreground">
-                      Pisahkan lebih dari satu target dengan koma. Contoh:{' '}
+                      Separate multiple targets with commas. Example:{' '}
                       <code className="text-foreground">
                         {MONTHLY_REPORT_WHATSAPP_TARGETS_SAMPLE}
                       </code>
@@ -559,18 +591,17 @@ export default function AfterHoursReport() {
                   <div className={`${TOOLBAR_PANEL_CLASS} xl:col-span-5`}>
                     <div className="space-y-2">
                       <p className={TOOLBAR_LABEL_CLASS}>Search Store</p>
-                      <div className="relative w-full w-full"><span
-                          className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">search</span><Input
-                          type="text"
-                          value={search}
-                          onChange={(e) => {
-                            setSearch(e.target.value);
-                            setExpandedRow(null);
-                          }}
-                          placeholder="Search violating store code or name..."
-                          className={TOOLBAR_FIELD_CLASS} /></div>
+                      <SearchBar
+                        value={search}
+                        onValueChange={(val) => {
+                          setSearch(val);
+                          setExpandedRow(null);
+                        }}
+                        placeholder="Search violating store code or name..."
+                        className={TOOLBAR_FIELD_CLASS}
+                      />
                       <p className="text-xs leading-5 text-muted-foreground">
-                        Cari berdasarkan store code atau nama toko yang melanggar.
+                        Search by store code or store name that violated the window.
                       </p>
                     </div>
                   </div>
@@ -598,21 +629,26 @@ export default function AfterHoursReport() {
 
                         <Select
                           value={month}
-                          onValueChange={val => {
+                          onValueChange={(val) => {
                             const e = {
                               target: {
-                                value: val
-                              }
+                                value: val,
+                              },
                             };
 
                             return setMonth(e.target.value);
-                          }}>
-                          <SelectTrigger><SelectValue placeholder="Select Month" /></SelectTrigger>
-                          <SelectContent>{monthOptions.map((value) => (
+                          }}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select Month" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {monthOptions.map((value) => (
                               <SelectItem key={value} value={value}>
                                 {formatMonthLabel(`${value}-01`)}
                               </SelectItem>
-                            ))}</SelectContent>
+                            ))}
+                          </SelectContent>
                         </Select>
 
                         <Button
@@ -641,8 +677,11 @@ export default function AfterHoursReport() {
 
                       <div className="space-y-2">
                         <p className={TOOLBAR_LABEL_CLASS}>Violation Window</p>
-                        <div className="relative w-full w-full"><span
-                            className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">schedule</span><Input
+                        <div className="relative w-full">
+                          <div className="pointer-events-none absolute left-3 inset-y-0 flex items-center text-muted-foreground">
+                            <Clock className="size-4" />
+                          </div>
+                          <Input
                             type="time"
                             value={windowStart}
                             onChange={(e) => {
@@ -651,10 +690,12 @@ export default function AfterHoursReport() {
                               setExpandedRow(null);
                             }}
                             step="300"
-                            className={TOOLBAR_FIELD_CLASS} /></div>
+                            className={cn(TOOLBAR_FIELD_CLASS, '!pl-11')}
+                          />
+                        </div>
                         <p className="text-xs leading-5 text-muted-foreground">
-                          Default report mulai mencatat violation dari 23:15 WIB. Ubah nilai ini
-                          hanya untuk custom report sebelum Generate / Download.
+                          Default reports start recording violations from 23:15 WIB. Change this
+                          value only for custom reports before Generate / Download.
                         </p>
                       </div>
                     </div>
@@ -667,21 +708,26 @@ export default function AfterHoursReport() {
                       <p className={TOOLBAR_LABEL_CLASS}>Branch</p>
                       <Select
                         value={branch}
-                        onValueChange={val => {
+                        onValueChange={(val) => {
                           const e = {
                             target: {
-                              value: val
-                            }
+                              value: val,
+                            },
                           };
 
                           return setBranch(e.target.value);
-                        }}>
-                        <SelectTrigger><SelectValue placeholder="Branch: All" /></SelectTrigger>
-                        <SelectContent>{BRANCH_OPTIONS.map((b) => (
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Branch: All" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {BRANCH_OPTIONS.map((b) => (
                             <SelectItem key={b.id} value={b.id}>
                               {b.label}
                             </SelectItem>
-                          ))}</SelectContent>
+                          ))}
+                        </SelectContent>
                       </Select>
                     </div>
 
@@ -689,21 +735,26 @@ export default function AfterHoursReport() {
                       <p className={TOOLBAR_LABEL_CLASS}>Ranking Limit</p>
                       <Select
                         value={limit}
-                        onValueChange={val => {
+                        onValueChange={(val) => {
                           const e = {
                             target: {
-                              value: val
-                            }
+                              value: val,
+                            },
                           };
 
                           return setLimit(e.target.value);
-                        }}>
-                        <SelectTrigger><SelectValue placeholder="Limit: Top 20" /></SelectTrigger>
-                        <SelectContent>{LIMIT_OPTIONS.map((opt) => (
+                        }}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Limit: Top 20" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {LIMIT_OPTIONS.map((opt) => (
                             <SelectItem key={opt.value} value={opt.value}>
                               {opt.label}
                             </SelectItem>
-                          ))}</SelectContent>
+                          ))}
+                        </SelectContent>
                       </Select>
                     </div>
                   </div>
@@ -733,7 +784,7 @@ export default function AfterHoursReport() {
                         setExpandedRow(null);
                       }}
                     >
-                      <span className="material-symbols-outlined mr-2">filter_list</span>
+                      <RefreshCw className="mr-2 size-4" />
                       Reset
                     </Button>
 
@@ -741,24 +792,30 @@ export default function AfterHoursReport() {
                       <Button
                         variant="secondary"
                         size="md"
-                        icon={downloading ? 'hourglass_top' : 'download'}
                         className={`${TOOLBAR_BUTTON_CLASS} sm:w-40`}
                         onClick={handleDownloadReport}
-                        loading={downloading}
                         disabled={loading || generating || downloading}
                       >
-                        <Loader2 className="animate-spin mr-2" />
+                        {downloading ? (
+                          <Loader2 className="animate-spin mr-2 size-4" />
+                        ) : (
+                          <Download className="mr-2 size-4" />
+                        )}
                         {downloading ? 'Downloading...' : 'Download Excel'}
                       </Button>
                     )}
 
                     <Button
-                      icon={generating ? 'hourglass_top' : 'summarize'}
                       onClick={handleGenerate}
                       size="md"
                       className={`${TOOLBAR_PRIMARY_BUTTON_CLASS} sm:w-44`}
+                      disabled={loading || generating || downloading}
                     >
-                      {generating && <Loader2 className="animate-spin mr-2" />}
+                      {generating ? (
+                        <Loader2 className="animate-spin mr-2 size-4" />
+                      ) : (
+                        <FileText className="mr-2 size-4" />
+                      )}
                       {generating ? 'Generating...' : 'Generate Report'}
                     </Button>
                   </div>
@@ -794,7 +851,7 @@ export default function AfterHoursReport() {
         {/* Stats Cards */}
         <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
           <StatCard
-            title="Toko Pelanggar"
+            title="Violating Stores"
             value={totalStores}
             icon="store"
             status={totalStores > 0 ? 'error' : 'success'}
@@ -806,11 +863,11 @@ export default function AfterHoursReport() {
             }
           />
           <StatCard
-            title="Total Hari Pelanggaran"
+            title="Total Violation Days"
             value={totalViolationDays}
-            icon="event_busy"
+            icon={<Calendar className="size-5" />}
             status={totalViolationDays > 0 ? 'warning' : 'success'}
-            subtext="Akumulasi semua toko"
+            subtext="Accumulated across all stores"
             className={
               totalViolationDays > 0
                 ? 'border-status-warning/30 bg-status-warning/5'
@@ -844,7 +901,7 @@ export default function AfterHoursReport() {
                 <span className="font-medium text-foreground">
                   {selectedBranchLabel} • {formatMonthLabel(month + '-01')}
                 </span>
-                <span className="text-muted-foreground">Top {ranking.length} toko pelanggar</span>
+                <span className="text-muted-foreground">Top {ranking.length} violating stores</span>
               </div>
             )}
             {loading ? (
@@ -856,20 +913,22 @@ export default function AfterHoursReport() {
                 title="No report data"
                 description={
                   normalizedSearch
-                    ? `Tidak ada toko pelanggar yang cocok dengan pencarian "${normalizedSearch}" untuk ${formatMonthLabel(month + '-01')}.`
-                    : `Belum ada data report untuk ${formatMonthLabel(month + '-01')}. Klik "Generate Report" untuk membuat report.`
+                    ? `No violating stores match the search "${normalizedSearch}" for ${formatMonthLabel(month + '-01')}.`
+                    : `No report data available for ${formatMonthLabel(month + '-01')}. Click "Generate Report" to create one.`
                 }
-                icon="assessment"
+                icon={<Save className="size-8" />}
               />
             ) : (
               <Table>
-                <TableHeader><TableRow>
+                <TableHeader>
+                  <TableRow>
                     <TableHead>Rank</TableHead>
                     <TableHead>Store</TableHead>
                     <TableHead>Branch</TableHead>
                     <TableHead>Violation Days</TableHead>
                     <TableHead>Detail</TableHead>
-                  </TableRow></TableHeader>
+                  </TableRow>
+                </TableHeader>
                 <TableBody>
                   {ranking.map((item) => {
                     const isExpanded = expandedRow === item.store_code;
@@ -878,18 +937,14 @@ export default function AfterHoursReport() {
                       ? item.violation_timestamps
                       : [];
                     const detailItems = timestamps.length > 0 ? timestamps : dates;
-                    const detailLabel = timestamps.length > 0 ? 'waktu' : 'tanggal';
+                    const detailLabel = timestamps.length > 0 ? 'times' : 'dates';
                     return (
                       <React.Fragment key={item.store_code}>
                         <TableRow className={item.rank <= 3 ? 'bg-destructive/5' : ''}>
                           <TableCell>
                             <span className="flex items-center gap-1.5">
                               {item.rank <= 3 ? (
-                                <span
-                                  className={`material-symbols-outlined text-lg ${medalClasses[item.rank - 1]}`}
-                                >
-                                  emoji_events
-                                </span>
+                                <Trophy className={cn('size-4', medalClasses[item.rank - 1])} />
                               ) : (
                                 <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-secondary-foreground">
                                   {item.rank}
@@ -925,7 +980,7 @@ export default function AfterHoursReport() {
                               >
                                 {item.violation_count}
                               </span>
-                              <span className="text-xs text-muted-foreground">hari</span>
+                              <span className="text-xs text-muted-foreground">day(s)</span>
                             </span>
                           </TableCell>
                           <TableCell>
@@ -963,11 +1018,11 @@ export default function AfterHoursReport() {
               </Table>
             )}
             {!loading && ranking.length > 0 && (
-              <div
-                className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+              <div className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
                 <span className="text-muted-foreground">
                   Showing <span className="font-medium text-foreground">{ranking.length}</span> of{' '}
-                  <span className="font-medium text-foreground">{totalStores}</span> toko pelanggar
+                  <span className="font-medium text-foreground">{totalStores}</span> violating
+                  store(s)
                 </span>
                 <span className="text-xs text-muted-foreground">
                   {ranking[0]?.generated_at

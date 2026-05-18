@@ -1,5 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { ToastContext } from './ToastContext';
+import { X, CheckCircle2, AlertTriangle, AlertCircle, Info } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const variantStyles = {
   success: 'bg-status-success/15 text-status-success border-status-success/30',
@@ -7,6 +9,13 @@ const variantStyles = {
   error: 'bg-status-error/15 text-status-error border-status-error/30',
   info: 'bg-status-info/15 text-status-info border-status-info/30',
   neutral: 'bg-muted text-foreground border-border',
+};
+
+const iconMap = {
+  success: <CheckCircle2 className="size-4 shrink-0" />,
+  warning: <AlertTriangle className="size-4 shrink-0" />,
+  error: <AlertCircle className="size-4 shrink-0" />,
+  info: <Info className="size-4 shrink-0" />,
 };
 
 export const ToastProvider = ({ children }) => {
@@ -37,19 +46,27 @@ export const ToastProvider = ({ children }) => {
         {toasts.map((toast) => (
           <div
             key={toast.id}
-            className={`rounded-lg border px-4 py-2 text-sm shadow-lg ${variantStyles[toast.variant] || variantStyles.neutral}`}
+            className={cn(
+              'rounded-xl border px-4 py-3 text-sm shadow-xl animate-in slide-in-from-right-full duration-300',
+              variantStyles[toast.variant] || variantStyles.neutral
+            )}
           >
             <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
-                {toast.title && <div className="font-semibold">{toast.title}</div>}
-                {toast.message && <div className="text-muted-foreground">{toast.message}</div>}
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5">{iconMap[toast.variant]}</div>
+                <div className="space-y-1">
+                  {toast.title && <div className="font-bold tracking-tight">{toast.title}</div>}
+                  {toast.message && (
+                    <div className="text-xs opacity-90 leading-relaxed">{toast.message}</div>
+                  )}
+                </div>
               </div>
               <button
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground p-1 hover:bg-black/5 rounded transition-colors"
                 onClick={() => dismiss(toast.id)}
                 aria-label="Dismiss"
               >
-                <span className="material-symbols-outlined text-[18px]">close</span>
+                <X className="size-4" />
               </button>
             </div>
           </div>

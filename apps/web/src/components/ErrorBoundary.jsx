@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { AlertTriangle } from 'lucide-react';
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -43,7 +44,7 @@ export default class ErrorBoundary extends React.Component {
         <Card className="max-w-2xl w-full">
           <CardContent>
             <div className="flex items-center gap-3 mb-2">
-              <span className="material-symbols-outlined text-status-error">error</span>
+              <AlertTriangle className="size-5 text-status-error" />
               <h1 className="text-lg font-semibold">UI crashed</h1>
             </div>
             <p className="text-sm text-muted-foreground mb-4">

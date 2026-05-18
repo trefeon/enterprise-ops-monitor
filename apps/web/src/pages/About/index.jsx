@@ -73,7 +73,7 @@ export default function About() {
           </p>
           <div className="flex flex-wrap gap-4">
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
-              <CheckCircle2 className="size-4 text-status-success" /> Verified for HR Review
+              <CheckCircle2 className="size-4 text-status-success" /> Showcasing My Portfolio
             </div>
             <div className="flex items-center gap-2 text-sm font-medium text-foreground">
               <CheckCircle2 className="size-4 text-status-success" /> Live Interactive Demo

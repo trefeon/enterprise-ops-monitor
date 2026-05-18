@@ -11,8 +11,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import StatCard from '../../components/ui/StatCard';
-import EmptyState from '../../components/ui/EmptyState';
+import StatCard from '../../components/shared/StatCard';
+import EmptyState from '../../components/shared/EmptyState';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { DatePicker } from '../../components/shared/DatePicker';
 import { SearchBar } from '../../components/shared/SearchBar';
@@ -27,7 +27,31 @@ import {
 import { useToast } from '../../components/ui/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { getFeatureStory } from '../../data/stories';
-import { Loader2, RefreshCw, Clock } from 'lucide-react';
+import {
+  Loader2,
+  RefreshCw,
+  Clock,
+  CheckCircle2,
+  Monitor,
+  Store,
+  Globe,
+  Moon,
+  FileText,
+  BellRing as NotificationsActive,
+  LayoutDashboard,
+  Code,
+  Send,
+  MessageSquare,
+  Key,
+  Users,
+  Link,
+  Lock,
+  Phone,
+  ChevronDown,
+  ChevronUp,
+  Play,
+  Hourglass,
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const AfterHoursReport = lazy(() => import('../AfterHoursReport'));
@@ -48,87 +72,87 @@ const NOTIFICATION_BRANCH_OPTIONS = BRANCH_OPTIONS.filter((branch) => branch.id)
 
 const DEFAULT_TELEGRAM_STAGE_TEMPLATES = [
   [
-    '<b>PERINGATAN AFTER-HOURS TAHAP 1</b>',
+    '<b>AFTER-HOURS WARNING STAGE 1</b>',
     'Branch: {branch}',
-    'Tanggal: {date}',
+    'Date: {date}',
     '',
-    'Terdeteksi <b>{count}</b> toko masih online setelah jam operasional:',
+    'Detected <b>{count}</b> store(s) still online after operational hours:',
     '{stores}',
     '',
-    'Mohon segera ditindaklanjuti dan lakukan shutdown perangkat yang masih aktif.',
+    'Please take immediate action and shutdown any active devices.',
   ].join('\n'),
   [
-    '<b>PERINGATAN AFTER-HOURS TAHAP 2</b>',
+    '<b>AFTER-HOURS WARNING STAGE 2</b>',
     'Branch: {branch}',
-    'Tanggal: {date}',
+    'Date: {date}',
     '',
-    'Masih ada <b>{count}</b> toko online:',
+    'Still <b>{count}</b> store(s) online:',
     '{stores}',
     '',
-    'Mohon percepat tindak lanjut. Pastikan perangkat segera dimatikan (shutdown).',
+    'Please expedite action. Ensure devices are shut down immediately.',
   ].join('\n'),
   [
-    '<b>PERINGATAN AFTER-HOURS TAHAP 3</b>',
+    '<b>AFTER-HOURS WARNING STAGE 3</b>',
     'Branch: {branch}',
-    'Tanggal: {date}',
+    'Date: {date}',
     '',
-    'Masih terdeteksi <b>{count}</b> toko online:',
+    'Still detected <b>{count}</b> store(s) online:',
     '{stores}',
     '',
-    'Escalation: segera lakukan shutdown sekarang untuk mencegah pelanggaran operasional.',
+    'Escalation: Shutdown now to prevent operational violations.',
   ].join('\n'),
   [
-    '<b>PERINGATAN TERAKHIR AFTER-HOURS (TAHAP 4)</b>',
+    '<b>FINAL AFTER-HOURS WARNING (STAGE 4)</b>',
     'Branch: {branch}',
-    'Tanggal: {date}',
+    'Date: {date}',
     '',
-    'Masih terdeteksi <b>{count}</b> toko online:',
+    'Still detected <b>{count}</b> store(s) online:',
     '{stores}',
     '',
-    'TINDAKAN WAJIB SAAT INI: lakukan shutdown sekarang dan pastikan tidak ada perangkat tetap aktif.',
+    'MANDATORY ACTION REQUIRED: Shutdown immediately and ensure no devices remain active.',
   ].join('\n'),
 ];
 
 const DEFAULT_WHATSAPP_STAGE_TEMPLATES = [
   [
-    'PERINGATAN AFTER-HOURS TAHAP 1',
+    'AFTER-HOURS WARNING STAGE 1',
     'Branch: {branch}',
-    'Tanggal: {date}',
+    'Date: {date}',
     '',
-    'Terdeteksi {count} toko masih online setelah jam operasional:',
+    'Detected {count} store(s) still online after operational hours:',
     '{stores}',
     '',
-    'Mohon segera ditindaklanjuti dan lakukan shutdown perangkat yang masih aktif.',
+    'Please take immediate action and shutdown any active devices.',
   ].join('\n'),
   [
-    'PERINGATAN AFTER-HOURS TAHAP 2',
+    'AFTER-HOURS WARNING STAGE 2',
     'Branch: {branch}',
-    'Tanggal: {date}',
+    'Date: {date}',
     '',
-    'Masih ada {count} toko online:',
+    'Still {count} store(s) online:',
     '{stores}',
     '',
-    'Mohon percepat tindak lanjut. Pastikan perangkat segera dimatikan (shutdown).',
+    'Please expedite action. Ensure devices are shut down immediately.',
   ].join('\n'),
   [
-    'PERINGATAN AFTER-HOURS TAHAP 3',
+    'AFTER-HOURS WARNING STAGE 3',
     'Branch: {branch}',
-    'Tanggal: {date}',
+    'Date: {date}',
     '',
-    'Masih terdeteksi {count} toko online:',
+    'Still detected {count} store(s) online:',
     '{stores}',
     '',
-    'Escalation: segera lakukan shutdown sekarang untuk mencegah pelanggaran operasional.',
+    'Escalation: Shutdown now to prevent operational violations.',
   ].join('\n'),
   [
-    'PERINGATAN TERAKHIR AFTER-HOURS (TAHAP 4)',
+    'FINAL AFTER-HOURS WARNING (STAGE 4)',
     'Branch: {branch}',
-    'Tanggal: {date}',
+    'Date: {date}',
     '',
-    'Masih terdeteksi {count} toko online:',
+    'Still detected {count} store(s) online:',
     '{stores}',
     '',
-    'TINDAKAN WAJIB SAAT INI: lakukan shutdown sekarang dan pastikan tidak ada perangkat tetap aktif.',
+    'MANDATORY ACTION REQUIRED: Shutdown immediately and ensure no devices remain active.',
   ].join('\n'),
 ];
 
@@ -217,7 +241,7 @@ function validateWarningScheduleTimes(times) {
   if (invalidIndex !== -1) {
     return {
       ok: false,
-      message: 'Isi 4 jadwal WIB manual yang valid sebelum menyimpan.',
+      message: 'Provide 4 valid manual WIB schedule times before saving.',
     };
   }
 
@@ -225,7 +249,7 @@ function validateWarningScheduleTimes(times) {
   if (uniqueCount !== normalized.length) {
     return {
       ok: false,
-      message: 'Jadwal harus unik dan tidak boleh duplikat.',
+      message: 'Schedules must be unique and cannot be duplicated.',
     };
   }
 
@@ -323,7 +347,7 @@ function getBranchNotificationValue(targetMap, branchId) {
   return String(targetMap?.[branchId] || '').trim();
 }
 
-function NotificationTargetRow({ label, helperText, value, onChange, placeholder, icon }) {
+function NotificationTargetRow({ label, helperText, value, onChange, placeholder, icon: Icon }) {
   return (
     <div className="grid gap-3 rounded-2xl border border-border/60 bg-muted/20 p-3 lg:grid-cols-2 lg:items-center">
       <div className="space-y-1">
@@ -331,15 +355,15 @@ function NotificationTargetRow({ label, helperText, value, onChange, placeholder
         <p className="text-xs text-muted-foreground">{helperText}</p>
       </div>
       <div className="relative w-full min-w-0">
-        <span className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">
-          {icon}
-        </span>
+        <div className="absolute left-3 inset-y-0 flex items-center text-muted-foreground pointer-events-none">
+          {typeof Icon === 'function' ? <Icon className="size-5" /> : Icon}
+        </div>
         <Input
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className={`${NOTIFICATION_FIELD_CLASS} font-mono`}
+          className={`${NOTIFICATION_FIELD_CLASS} font-mono pl-10`}
         />
       </div>
     </div>
@@ -347,7 +371,7 @@ function NotificationTargetRow({ label, helperText, value, onChange, placeholder
 }
 
 function NotificationTargetEditor({
-  iconName,
+  icon: Icon,
   description,
   mode,
   branchOptions,
@@ -383,7 +407,7 @@ function NotificationTargetEditor({
             value={getBranchNotificationValue(targetMap, '_all')}
             onChange={(value) => onBranchTargetChange('_all', value)}
             placeholder={fallbackPlaceholder}
-            icon="public"
+            icon={<Globe className="size-5" />}
           />
 
           {branchOptions.map((branchItem) => {
@@ -396,7 +420,7 @@ function NotificationTargetEditor({
                 value={getBranchNotificationValue(targetMap, branchId)}
                 onChange={(value) => onBranchTargetChange(branchId, value)}
                 placeholder={branchPlaceholder}
-                icon={iconName}
+                icon={Icon}
               />
             );
           })}
@@ -441,7 +465,7 @@ function NotificationTargetEditor({
 function formatWibTime(isoStr) {
   if (!isoStr) return '—';
   try {
-    return new Date(isoStr).toLocaleTimeString('id-ID', {
+    return new Date(isoStr).toLocaleTimeString('en-US', {
       timeZone: 'Asia/Jakarta',
       hour: '2-digit',
       minute: '2-digit',
@@ -456,7 +480,7 @@ function formatDate(dateStr) {
   if (!dateStr) return '—';
   try {
     const d = new Date(dateStr + 'T00:00:00+07:00');
-    return d.toLocaleDateString('id-ID', {
+    return d.toLocaleDateString('en-US', {
       timeZone: 'Asia/Jakarta',
       weekday: 'short',
       year: 'numeric',
@@ -873,8 +897,12 @@ export default function AfterHours() {
         subtitle="Detect store computers still online after operational hours"
         actions={
           activeTab === 'monitor' ? (
-            <Button icon={checking ? 'hourglass_top' : 'play_arrow'} onClick={handleRunCheck}>
-              {checking && <Loader2 className="animate-spin mr-2" />}
+            <Button onClick={handleRunCheck}>
+              {checking ? (
+                <Hourglass className="animate-spin mr-2 size-4" />
+              ) : (
+                <Play className="mr-2 size-4" />
+              )}
               {checking ? 'Running...' : 'Run Check Now'}
             </Button>
           ) : null
@@ -890,7 +918,7 @@ export default function AfterHours() {
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          <span className="material-symbols-outlined text-base">nightlight</span>
+          <Moon className="size-4" />
           Daily Monitor
         </button>
         <button
@@ -901,7 +929,7 @@ export default function AfterHours() {
               : 'border-transparent text-muted-foreground hover:text-foreground'
           }`}
         >
-          <span className="material-symbols-outlined text-base">assessment</span>
+          <FileText className="size-4" />
           Monthly Report
         </button>
       </div>
@@ -920,7 +948,7 @@ export default function AfterHours() {
           <Card className="overflow-hidden">
             <div className="flex flex-col gap-3 border-b border-border bg-muted/20 px-6 py-4 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-3">
-                <span className="material-symbols-outlined text-primary">notifications_active</span>
+                <NotificationsActive className="size-5 text-primary" />
                 <div>
                   <h2 className="text-sm font-semibold text-foreground">
                     Automation & Notification Settings
@@ -959,12 +987,12 @@ export default function AfterHours() {
                 >
                   {notifyEnabled ? 'ENABLED' : 'DISABLED'}
                 </span>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  icon={showSettings ? 'expand_less' : 'expand_more'}
-                  onClick={() => setShowSettings((prev) => !prev)}
-                >
+                <Button variant="ghost" size="sm" onClick={() => setShowSettings((prev) => !prev)}>
+                  {showSettings ? (
+                    <ChevronUp className="mr-2 size-4" />
+                  ) : (
+                    <ChevronDown className="mr-2 size-4" />
+                  )}
                   {showSettings ? 'Hide' : 'Configure'}
                 </Button>
               </div>
@@ -982,7 +1010,7 @@ export default function AfterHours() {
                       size="sm"
                       onClick={() => handleNotificationModeChange('branch')}
                     >
-                      <span className="material-symbols-outlined mr-2">dashboard_customize</span>
+                      <LayoutDashboard className="mr-2 size-4" />
                       Per Branch Form
                     </Button>
                     <Button
@@ -990,7 +1018,7 @@ export default function AfterHours() {
                       size="sm"
                       onClick={() => handleNotificationModeChange('advanced')}
                     >
-                      <span className="material-symbols-outlined mr-2">code</span>
+                      <Code className="mr-2 size-4" />
                       Advanced JSON
                     </Button>
                   </div>
@@ -999,7 +1027,7 @@ export default function AfterHours() {
                 <div className="grid grid-cols-1 gap-8 px-6 py-6 lg:grid-cols-2">
                   <div className="space-y-4">
                     <h4 className="mb-2 flex items-center gap-2 border-b border-border/30 pb-2 text-sm font-semibold text-foreground">
-                      <span className="material-symbols-outlined text-status-info">send</span>
+                      <Send className="size-4 text-status-info" />
                       Telegram Configuration
                     </h4>
 
@@ -1008,9 +1036,7 @@ export default function AfterHours() {
                         Bot Token
                       </label>
                       <div className="relative w-full">
-                        <span className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">
-                          key
-                        </span>
+                        <Key className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
                         <Input
                           type="password"
                           value={settings.telegram_bot_token || ''}
@@ -1027,7 +1053,7 @@ export default function AfterHours() {
 
                     <div>
                       <NotificationTargetEditor
-                        iconName="groups"
+                        icon={Users}
                         description="Map each branch to a Telegram chat or group. Branch data is only sent to the target keyed by that branch ID, with _all as fallback."
                         mode={notificationEditorMode}
                         branchOptions={NOTIFICATION_BRANCH_OPTIONS}
@@ -1047,11 +1073,11 @@ export default function AfterHours() {
 
                     {normalizedScheduleTimes.map((timeValue, idx) => {
                       const stageLabel =
-                        idx === normalizedScheduleTimes.length - 1 ? 'Tegas' : 'Awal';
+                        idx === normalizedScheduleTimes.length - 1 ? 'Strict' : 'Early';
                       return (
                         <div key={`telegram-template-stage-${idx}`}>
                           <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                            {`Template Telegram Tahap ${idx + 1} (${stageLabel} - ${timeValue})`}
+                            {`Telegram Stage ${idx + 1} Template (${stageLabel} - ${timeValue})`}
                           </label>
                           <textarea
                             value={
@@ -1077,7 +1103,7 @@ export default function AfterHours() {
 
                   <div className="space-y-4">
                     <h4 className="mb-2 flex items-center gap-2 border-b border-border/30 pb-2 text-sm font-semibold text-foreground">
-                      <span className="material-symbols-outlined text-status-success">chat</span>
+                      <MessageSquare className="size-4 text-status-success" />
                       WhatsApp Gateway (API)
                     </h4>
 
@@ -1086,9 +1112,7 @@ export default function AfterHours() {
                         API URL
                       </label>
                       <div className="relative w-full">
-                        <span className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">
-                          link
-                        </span>
+                        <Link className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
                         <Input
                           type="text"
                           value={settings.whatsapp_api_url || ''}
@@ -1108,9 +1132,7 @@ export default function AfterHours() {
                         API Key
                       </label>
                       <div className="relative w-full">
-                        <span className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">
-                          lock
-                        </span>
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
                         <Input
                           type="password"
                           value={settings.whatsapp_api_key || ''}
@@ -1130,9 +1152,7 @@ export default function AfterHours() {
                         Secret Key
                       </label>
                       <div className="relative w-full">
-                        <span className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">
-                          key
-                        </span>
+                        <Key className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
                         <Input
                           type="password"
                           value={settings.whatsapp_api_secret || ''}
@@ -1149,7 +1169,7 @@ export default function AfterHours() {
 
                     <div>
                       <NotificationTargetEditor
-                        iconName="contact_phone"
+                        icon={Phone}
                         description="Map each branch to a WhatsApp target. The target can be a group ID or a personal number, and only the matching branch payload will be sent there."
                         mode={notificationEditorMode}
                         branchOptions={NOTIFICATION_BRANCH_OPTIONS}
@@ -1169,11 +1189,11 @@ export default function AfterHours() {
 
                     {normalizedScheduleTimes.map((timeValue, idx) => {
                       const stageLabel =
-                        idx === normalizedScheduleTimes.length - 1 ? 'Tegas' : 'Awal';
+                        idx === normalizedScheduleTimes.length - 1 ? 'Strict' : 'Early';
                       return (
                         <div key={`whatsapp-template-stage-${idx}`}>
                           <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
-                            {`Template WhatsApp Tahap ${idx + 1} (${stageLabel} - ${timeValue})`}
+                            {`WhatsApp Stage ${idx + 1} Template (${stageLabel} - ${timeValue})`}
                           </label>
                           <textarea
                             value={
@@ -1204,14 +1224,20 @@ export default function AfterHours() {
                       {normalizedScheduleTimes.map((timeValue, idx) => (
                         <div key={`schedule-stage-${idx}`} className="w-full md:w-44">
                           <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-muted-foreground">
-                            <span className="material-symbols-outlined text-sm">schedule</span>
-                            {`Jadwal ${idx + 1} (WIB)`}
+                            <Clock className="size-3.5" />
+                            {`Schedule ${idx + 1} (WIB)`}
                           </label>
-                          <Input
-                            type="time"
-                            value={timeValue}
-                            onChange={(e) => updateScheduleTime(idx, e.target.value)}
-                          />
+                          <div className="relative">
+                            <div className="pointer-events-none absolute left-3 inset-y-0 flex items-center text-muted-foreground/50">
+                              <Clock className="size-4" />
+                            </div>
+                            <Input
+                              type="time"
+                              value={timeValue}
+                              onChange={(e) => updateScheduleTime(idx, e.target.value)}
+                              className="!pl-11"
+                            />
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -1221,8 +1247,12 @@ export default function AfterHours() {
                     <Button variant="ghost" onClick={handleDiscardSettings}>
                       Discard
                     </Button>
-                    <Button icon={savingSettings ? undefined : 'save'} onClick={handleSaveSettings}>
-                      {savingSettings && <Loader2 className="animate-spin mr-2" />}
+                    <Button onClick={handleSaveSettings}>
+                      {savingSettings ? (
+                        <Loader2 className="animate-spin mr-2 size-4" />
+                      ) : (
+                        <FileText className="mr-2 size-4" />
+                      )}
                       {savingSettings ? 'Saving...' : 'Save Settings'}
                     </Button>
                   </div>
@@ -1257,15 +1287,15 @@ export default function AfterHours() {
                         setPage(1);
                       }}
                     >
-                      <SelectTrigger className="w-full md:w-56 h-11 rounded-full border-border/60 bg-background/50 hover:bg-background transition-colors px-5">
-                        <SelectValue placeholder="Branch: All">
-                          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mr-2">
-                            BRANCH:
-                          </span>
+                      <SelectTrigger className="w-full md:w-60 h-11 rounded-full border-border/60 bg-background/50 hover:bg-background transition-colors px-4 flex items-center justify-start gap-2">
+                        <span className="shrink-0 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60">
+                          BRANCH:
+                        </span>
+                        <SelectValue placeholder="All Branches">
                           <span className="font-bold text-foreground">
                             {branch
                               ? BRANCH_OPTIONS.find((b) => b.id === String(branch))?.label
-                              : 'ALL BRANCHES'}
+                              : 'ALL'}
                           </span>
                         </SelectValue>
                       </SelectTrigger>
@@ -1281,7 +1311,7 @@ export default function AfterHours() {
 
                   <div className="relative w-full sm:w-auto">
                     <span className="absolute left-10 top-1/2 -translate-y-1/2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/40 pointer-events-none hidden md:block z-10">
-                      DATE:
+                      FOR
                     </span>
                     <DatePicker
                       value={date}
@@ -1289,7 +1319,7 @@ export default function AfterHours() {
                         setDate(val);
                         setPage(1);
                       }}
-                      className="rounded-full h-11 border-border/60 bg-background/50 hover:bg-background transition-colors w-full md:w-56 md:pl-20"
+                      className="rounded-full h-11 border-border/60 bg-background/50 hover:bg-background transition-colors w-full md:w-52 md:pl-20"
                     />
                   </div>
 
@@ -1401,7 +1431,7 @@ export default function AfterHours() {
                 <EmptyState
                   title="No violations found"
                   description={`No after-hours violations detected for ${formatDate(date)}.`}
-                  icon="check_circle"
+                  icon={<CheckCircle2 className="size-8 text-status-success/40" />}
                 />
               ) : (
                 <>
@@ -1503,7 +1533,7 @@ export default function AfterHours() {
             <StatCard
               title="PCs Still Online"
               value={totalViolations}
-              icon="monitor"
+              icon={<Monitor className="size-5" />}
               status={totalViolations > 0 ? 'error' : 'success'}
               subtext={formatDate(date)}
               className={
@@ -1515,7 +1545,7 @@ export default function AfterHours() {
             <StatCard
               title="Branches Affected"
               value={branchCount}
-              icon="storefront"
+              icon={<Store className="size-5" />}
               status={branchCount > 0 ? 'warning' : 'success'}
               subtext={branch ? `Filtered: ${selectedBranchLabel}` : 'All monitored branches'}
               className={
@@ -1527,7 +1557,7 @@ export default function AfterHours() {
             <StatCard
               title="Latest Last Sync"
               value={latestSyncTime}
-              icon="schedule"
+              icon={<Clock className="size-5" />}
               status="info"
               className="border-status-info/30 bg-status-info/5"
             />

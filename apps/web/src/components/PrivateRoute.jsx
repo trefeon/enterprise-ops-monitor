@@ -2,7 +2,7 @@ import React from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../lib/auth/permissions';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Lock, ArrowLeft } from 'lucide-react';
 
 /**
  * PrivateRoute component for protecting routes
@@ -44,7 +44,7 @@ export default function PrivateRoute({ requiredPerm, children }) {
       <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="text-center p-8 max-w-md">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-destructive/10 flex items-center justify-center">
-            <span className="material-symbols-outlined text-3xl text-destructive">lock</span>
+            <Lock className="size-8 text-destructive" />
           </div>
           <h1 className="text-xl font-semibold mb-2">Access Denied</h1>
           <p className="text-muted-foreground mb-4">
@@ -54,7 +54,7 @@ export default function PrivateRoute({ requiredPerm, children }) {
             onClick={() => window.history.back()}
             className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 text-secondary-foreground transition-colors"
           >
-            <span className="material-symbols-outlined text-lg">arrow_back</span>
+            <ArrowLeft className="size-4" />
             Go Back
           </button>
         </div>

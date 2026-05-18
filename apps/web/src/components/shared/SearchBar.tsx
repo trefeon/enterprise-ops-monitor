@@ -21,15 +21,15 @@ export function SearchBar({
   };
 
   return (
-    <div className={cn('relative w-full', className)}>
-      <div className="pointer-events-none absolute left-3 inset-y-0 flex items-center text-muted-foreground">
+    <div className="relative w-full">
+      <div className="pointer-events-none absolute left-3 inset-y-0 flex items-center text-muted-foreground z-10">
         <Search className="size-5" />
       </div>
       <Input
         value={value}
         onChange={handleChange}
         placeholder={placeholder}
-        className={cn('pl-10', className)}
+        className={cn('pl-11', className)}
         {...props}
       />
     </div>

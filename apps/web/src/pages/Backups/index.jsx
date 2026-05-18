@@ -3,17 +3,39 @@ import { useAuth } from '../../context/AuthContext';
 import { Guard } from '../../components/auth/Guard';
 import { useToast } from '../../components/ui/ToastContext';
 import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import EmptyState from '../../components/ui/EmptyState';
+import { EmptyState } from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
 import IconButton from '../../components/ui/IconButton';
-import StatusBadge from '../../components/ui/StatusBadge';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import ProgressBar from '../../components/ui/ProgressBar';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import {
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+} from '@/components/ui/table';
 import { formatDate, formatDateTime, formatTime } from '../../lib/date';
 import { getFeatureStory } from '../../data/stories';
-import { Loader2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import {
+  Loader2,
+  Database,
+  FileText,
+  HardDrive,
+  Clock,
+  Play,
+  RefreshCw,
+  Download,
+  Trash2,
+  AlertCircle,
+  CheckCircle2,
+  PauseCircle,
+  HelpCircle,
+} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import PageShell from '../../components/ui/PageShell';
 
 const formatBytes = (value) => {
   if (!Number.isFinite(value)) return '-';
@@ -29,7 +51,6 @@ const formatBytes = (value) => {
 };
 
 const cronToDailyTime = (cron) => {
-  // Expected format: "<minute> <hour> * * *".
   const match = String(cron || '')
     .trim()
     .match(/^(\d{1,2})\s+(\d{1,2})\s+\*\s+\*\s+\*$/);
@@ -46,17 +67,14 @@ const cronToDailyTime = (cron) => {
 const getBackupType = (value) => {
   const key = String(value || '').toLowerCase();
   if (key === 'manual') {
-    return { label: 'Manual Backup', icon: 'database' };
+    return { label: 'Manual Backup', icon: Database };
   }
-  if (key === 'scheduled') {
-    return { label: 'Automated', icon: 'description' };
-  }
-  return { label: 'Unknown', icon: 'description' };
+  return { label: 'Automated', icon: FileText };
 };
 
 const getStorageStatus = (percent) => {
-  if (!Number.isFinite(percent)) return { label: 'Unknown', variant: 'neutral' };
-  if (percent >= 90) return { label: 'Critical', variant: 'error' };
+  if (!Number.isFinite(percent)) return { label: 'Unknown', variant: 'outline' };
+  if (percent >= 90) return { label: 'Critical', variant: 'destructive' };
   if (percent >= 75) return { label: 'High', variant: 'warning' };
   return { label: 'Healthy', variant: 'success' };
 };
@@ -249,7 +267,13 @@ const Backups = () => {
   const scheduleStatusLabel =
     scheduleEnabled == null ? 'Unknown' : scheduleEnabled ? 'Active' : 'Paused';
   const scheduleStatusIcon =
-    scheduleEnabled == null ? 'help' : scheduleEnabled ? 'check_circle' : 'pause_circle';
+    scheduleEnabled == null ? (
+      <HelpCircle className="size-4" />
+    ) : scheduleEnabled ? (
+      <CheckCircle2 className="size-4" />
+    ) : (
+      <PauseCircle className="size-4" />
+    );
   const scheduleStatusText =
     scheduleEnabled == null
       ? 'Schedule status unavailable'
@@ -257,7 +281,7 @@ const Backups = () => {
         ? 'Scheduler ready'
         : 'Scheduler paused';
   const scheduleStatusVariant =
-    scheduleEnabled == null ? 'neutral' : scheduleEnabled ? 'success' : 'warning';
+    scheduleEnabled == null ? 'outline' : scheduleEnabled ? 'success' : 'warning';
 
   const scheduleCron = summary?.schedule?.cron;
   const scheduleTime = cronToDailyTime(scheduleCron);
@@ -281,206 +305,236 @@ const Backups = () => {
 
   if (error && !isLoading && hasNoData) {
     return (
-      <EmptyState
-        title="Failed to load backups"
-        description={error}
-        icon="error"
-        action={{ label: 'Retry', icon: 'refresh', onClick: handleRefresh }}
-      />
+      <PageShell>
+        <EmptyState
+          title="Failed to load backups"
+          description={error}
+          icon={<AlertCircle className="size-8" />}
+          action={
+            <Button variant="outline" onClick={handleRefresh}>
+              <RefreshCw className="mr-2 size-4" />
+              Retry
+            </Button>
+          }
+        />
+      </PageShell>
     );
   }
 
   return (
-    <div className="page-container">
+    <PageShell>
       <FeatureStoryBanner story={getFeatureStory('backups')} />
       <header className="flex flex-col gap-4">
-        <div className="page-header">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
           <div className="space-y-1">
-            <h1 className="page-title">Backups Management</h1>
-            <p className="page-subtitle">
+            <h1 className="text-2xl font-bold tracking-tight">Backups Management</h1>
+            <p className="text-muted-foreground">
               Manage database snapshots, schedule automated tasks, and restore points.
             </p>
-            <div className="page-meta">Latest backup {formatDateTime(summary?.latestBackupAt)}</div>
+            <div className="text-xs text-muted-foreground mt-1">
+              Latest backup {formatDateTime(summary?.latestBackupAt)}
+            </div>
           </div>
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
             <Button
-              variant="secondary"
+              variant="outline"
               onClick={handleRefresh}
               disabled={isLoading}
               className="w-full sm:w-auto"
             >
-              <span className="material-symbols-outlined mr-2">refresh</span>
+              <RefreshCw className={cn('mr-2 size-4', isLoading && 'animate-spin')} />
               Refresh
             </Button>
             <Guard user={user} permission="BACKUPS_RUN">
-              <Button onClick={runManualBackup} className="w-full sm:w-auto">
-                {manualLoading && <Loader2 className="animate-spin mr-2" />}
-                <span className="material-symbols-outlined mr-2">play_arrow</span>
+              <Button
+                onClick={runManualBackup}
+                disabled={manualLoading}
+                className="w-full sm:w-auto"
+              >
+                {manualLoading ? (
+                  <Loader2 className="animate-spin mr-2 size-4" />
+                ) : (
+                  <Play className="mr-2 size-4" />
+                )}
                 Run Backup Now
               </Button>
             </Guard>
           </div>
         </div>
       </header>
+
       {error && !hasNoData && (
-        <div className="rounded-lg border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+          <AlertCircle className="size-4" />
           {error}
         </div>
       )}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        <Card className="flex flex-col justify-between gap-4">
-          <CardContent>
-            <div className="flex items-center justify-between">
+
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="flex flex-col justify-between border-border/60">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-foreground">
-                <span className="material-symbols-outlined text-xl text-muted-foreground">
-                  hard_drive
-                </span>
-                <h3 className="text-sm font-semibold">Storage Usage</h3>
+                <HardDrive className="size-5 text-muted-foreground" />
+                <h3 className="text-sm font-bold uppercase tracking-wider">Storage Usage</h3>
               </div>
               <StatusBadge variant={storageStatus.variant}>{storageStatus.label}</StatusBadge>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-end justify-between">
-                <span className="text-2xl font-bold text-foreground">
+                <span className="text-3xl font-black tabular-nums text-foreground">
                   {diskUsed != null ? formatBytes(diskUsed) : '-'}{' '}
                   <span className="text-sm font-normal text-muted-foreground">
                     / {diskTotal != null ? formatBytes(diskTotal) : '-'}
                   </span>
                 </span>
-                <span className="text-sm font-medium text-foreground">
+                <span className="text-sm font-bold text-foreground">
                   {diskPercent != null ? `${diskPercent.toFixed(0)}%` : '-'}
                 </span>
               </div>
               <ProgressBar
                 value={diskPercent != null ? Math.min(diskPercent, 100) : 0}
-                trackClassName="bg-muted border border-border"
+                trackClassName="bg-muted border border-border/20 h-2"
                 barClassName="bg-primary"
               />
-              <p className="text-xs text-muted-foreground">
-                {diskFree != null
-                  ? `${formatBytes(diskFree)} free space remaining`
-                  : 'Disk usage data unavailable'}
+              <div className="space-y-1">
+                <p className="text-xs text-muted-foreground">
+                  {diskFree != null
+                    ? `${formatBytes(diskFree)} free space remaining`
+                    : 'Disk usage data unavailable'}
+                </p>
                 {summary?.storagePath && (
-                  <>
-                    {' '}
-                    on{' '}
-                    <code className="relative rounded bg-muted border border-border px-1 py-0.5 font-mono text-sm font-semibold text-foreground">
+                  <p className="text-[10px] text-muted-foreground uppercase font-medium">
+                    Path:{' '}
+                    <code className="text-foreground lowercase font-mono">
                       {summary.storagePath}
                     </code>
-                  </>
+                  </p>
                 )}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Total backups size {formatBytes(summary?.totalSizeBytes)}
-              </p>
+                <p className="text-[10px] font-bold text-primary uppercase tracking-widest pt-1">
+                  Snapshot volume: {formatBytes(summary?.totalSizeBytes)}
+                </p>
+              </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="flex flex-col justify-between gap-4">
-          <CardContent>
-            <div className="flex items-center justify-between">
+        <Card className="flex flex-col justify-between border-border/60">
+          <CardContent className="pt-6">
+            <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 text-foreground">
-                <span className="material-symbols-outlined text-xl text-muted-foreground">
-                  schedule
-                </span>
-                <h3 className="text-sm font-semibold">Backup Schedule</h3>
+                <Clock className="size-5 text-muted-foreground" />
+                <h3 className="text-sm font-bold uppercase tracking-wider">Backup Schedule</h3>
               </div>
               <StatusBadge variant={scheduleStatusVariant}>{scheduleStatusLabel}</StatusBadge>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                  Schedule
+              <div className="flex flex-col gap-1.5">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">
+                  Next Window
                 </span>
-                <span className="text-base font-medium text-foreground">
-                  {scheduleTime
-                    ? `Daily ${scheduleTime} WIB`
-                    : scheduleCron
-                      ? 'Custom schedule'
-                      : '-'}
+                <span className="text-base font-bold text-foreground">
+                  {scheduleTime ? `Daily ${scheduleTime} WIB` : scheduleCron ? 'Custom' : '-'}
                 </span>
-                <span className="text-xs text-muted-foreground">TZ: {scheduleTz}</span>
+                <span className="text-[10px] text-muted-foreground font-medium">
+                  TZ: {scheduleTz}
+                </span>
               </div>
-              <div className="flex flex-col gap-1 border-l border-border pl-4">
-                <span className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">
-                  Latest Backup
+              <div className="flex flex-col gap-1.5 border-l border-border/40 pl-4">
+                <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">
+                  Latest Point
                 </span>
-                <span className="text-base font-medium text-foreground">
+                <span className="text-base font-bold text-foreground">
                   {formatDateTime(summary?.latestBackupAt)}
                 </span>
-                <span className="text-xs text-muted-foreground">
+                <span className="text-[10px] text-muted-foreground truncate font-medium">
                   {summary?.latestFileName || '-'}
-                </span>
-                <span className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                  <span className="material-symbols-outlined text-sm text-muted-foreground">
-                    {scheduleStatusIcon}
-                  </span>
-                  {scheduleStatusText}
                 </span>
               </div>
             </div>
-            <div className="text-xs text-muted-foreground">
-              Total snapshots {backupCount != null ? backupCount : '-'}
+            <div className="mt-4 pt-4 border-t border-border/20 flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                {scheduleStatusIcon}
+                {scheduleStatusText}
+              </div>
+              <span className="text-[10px] font-bold text-primary uppercase tracking-widest">
+                Total Snapshots: {backupCount ?? '-'}
+              </span>
             </div>
           </CardContent>
         </Card>
       </section>
+
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="section-title">Recent Snapshots</h2>
-          <IconButton icon="refresh" label="Refresh" onClick={handleRefresh} disabled={isLoading} />
+          <h2 className="text-lg font-bold tracking-tight uppercase">Recent Snapshots</h2>
+          <IconButton
+            icon={<RefreshCw />}
+            label="Refresh"
+            onClick={handleRefresh}
+            disabled={isLoading}
+          />
         </div>
-        <Card className="p-0 overflow-hidden">
+        <Card className="p-0 overflow-hidden border-border/60">
           <CardContent className="p-0">
             <Table className="table-fixed">
-              <TableHeader><TableRow>
-                  <TableHead className="w-2/5">
-                    File Name
-                  </TableHead>
-                  <TableHead className="w-1/5 text-right">
-                    Size
-                  </TableHead>
-                  <TableHead className="w-1/5 text-center">
-                    Date Created
-                  </TableHead>
-                  <TableHead className="w-1/5 text-center">
-                    Actions
-                  </TableHead>
-                </TableRow></TableHeader>
+              <TableHeader>
+                <TableRow className="bg-muted/30">
+                  <TableHead className="w-2/5">File Name</TableHead>
+                  <TableHead className="w-1/5 text-right">Size</TableHead>
+                  <TableHead className="w-1/5 text-center">Date Created</TableHead>
+                  <TableHead className="w-1/5 text-center">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
               <TableBody>
                 {loadingFiles && files.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">Loading backups...</TableCell></TableRow>
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground py-12">
+                      <div className="flex items-center justify-center gap-2">
+                        <Loader2 className="size-4 animate-spin" />
+                        Loading backups...
+                      </div>
+                    </TableCell>
+                  </TableRow>
                 ) : filesWithMeta.length === 0 ? (
-                  <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">No backup files available.</TableCell></TableRow>
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground py-12">
+                      No backup files available.
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   filesWithMeta.map((file) => (
-                    <TableRow key={file.fileName} className="group">
+                    <TableRow
+                      key={file.fileName}
+                      className="group hover:bg-muted/30 transition-colors"
+                    >
                       <TableCell className="truncate">
                         <div className="flex items-center gap-3 truncate">
-                          <div className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-md bg-muted text-foreground border border-border">
-                            <span className="material-symbols-outlined text-xl">
-                              {file.typeIcon}
-                            </span>
+                          <div className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-xl bg-muted/50 text-foreground border border-border/60 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+                            {file.typeIcon && <file.typeIcon className="size-5" />}
                           </div>
                           <div className="flex flex-col truncate">
                             <span
-                              className="font-medium text-foreground truncate"
+                              className="font-bold text-foreground truncate text-sm"
                               title={file.fileName}
                             >
                               {file.fileName}
                             </span>
-                            <span className="text-xs text-muted-foreground">{file.typeLabel}</span>
+                            <span className="text-[10px] text-muted-foreground uppercase font-black tracking-widest">
+                              {file.typeLabel}
+                            </span>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right text-muted-foreground tabular-nums">
+                      <TableCell className="text-right text-muted-foreground tabular-nums font-medium">
                         {formatBytes(file.sizeBytes)}
                       </TableCell>
                       <TableCell className="text-muted-foreground text-center">
-                        <div className="flex flex-col">
-                          <span>{formatDate(file.modifiedAt)}</span>
-                          <span className="text-xs text-muted-foreground">
+                        <div className="flex flex-col gap-0.5">
+                          <span className="font-bold text-foreground/90">
+                            {formatDate(file.modifiedAt)}
+                          </span>
+                          <span className="text-[10px] uppercase font-medium">
                             {formatTime(file.modifiedAt)}
                           </span>
                         </div>
@@ -491,6 +545,7 @@ const Backups = () => {
                             <Button
                               size="sm"
                               variant="secondary"
+                              className="h-8 rounded-lg"
                               onClick={() => {
                                 setRestoreConfirm('');
                                 setRestoreTarget(file);
@@ -500,19 +555,21 @@ const Backups = () => {
                             </Button>
                           </Guard>
                           <IconButton
-                            icon="download"
+                            icon={<Download />}
                             label="Download"
                             onClick={() => handleDownload(file)}
+                            className="size-8"
                           />
                           <Guard user={user} permission="BACKUPS_DELETE">
                             <IconButton
-                              icon="delete"
+                              icon={<Trash2 />}
                               label="Delete backup"
                               intent="danger"
                               onClick={() => {
                                 setDeleteConfirm('');
                                 setDeleteTarget(file);
                               }}
+                              className="size-8"
                             />
                           </Guard>
                         </div>
@@ -522,11 +579,11 @@ const Backups = () => {
                 )}
               </TableBody>
             </Table>
-            <div className="flex flex-col gap-3 border-t border-border px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-sm text-muted-foreground">
-                Showing <span className="font-medium text-foreground">{rangeStart}</span> to{' '}
-                <span className="font-medium text-foreground">{rangeEnd}</span> of{' '}
-                <span className="font-medium text-foreground">{totalItems}</span> results
+            <div className="flex flex-col gap-3 border-t border-border/40 bg-muted/10 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-xs text-muted-foreground">
+                Showing <span className="font-bold text-foreground">{rangeStart}</span> to{' '}
+                <span className="font-bold text-foreground">{rangeEnd}</span> of{' '}
+                <span className="font-bold text-foreground">{totalItems}</span> results
               </p>
               <div className="flex w-full gap-2 sm:w-auto">
                 <Button
@@ -536,7 +593,7 @@ const Backups = () => {
                   onClick={() =>
                     setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
                   }
-                  className="flex-1 sm:flex-none"
+                  className="flex-1 sm:flex-none h-8"
                 >
                   Previous
                 </Button>
@@ -550,7 +607,7 @@ const Backups = () => {
                       page: prev.page * prev.pageSize < totalItems ? prev.page + 1 : prev.page,
                     }))
                   }
-                  className="flex-1 sm:flex-none"
+                  className="flex-1 sm:flex-none h-8"
                 >
                   Next
                 </Button>
@@ -559,6 +616,7 @@ const Backups = () => {
           </CardContent>
         </Card>
       </section>
+
       <ConfirmDialog
         open={Boolean(deleteTarget)}
         title="Delete backup file"
@@ -583,7 +641,7 @@ const Backups = () => {
         danger
         confirmExpected="RESTORE"
         confirmValue={restoreConfirm}
-        onConfirmValueChange={setRestoreConfirm}
+        onConfirmValueChange={restoreConfirm === 'RESTORE' ? () => {} : setRestoreConfirm}
         onConfirm={handleRestore}
         onClose={() => {
           setRestoreTarget(null);
@@ -591,7 +649,7 @@ const Backups = () => {
         }}
         confirmLabel="Type RESTORE"
       />
-    </div>
+    </PageShell>
   );
 };
 

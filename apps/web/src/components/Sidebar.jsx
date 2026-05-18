@@ -17,7 +17,6 @@ import {
   Lock,
   Moon,
   Info,
-  Menu,
   X,
   LineChart,
   ChevronLeft,

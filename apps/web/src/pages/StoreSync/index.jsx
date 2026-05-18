@@ -21,9 +21,9 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table';
-import StatusBadge from '../../components/ui/StatusBadge';
+import { StatusBadge } from '@/components/shared/StatusBadge'
 import ProgressBar from '../../components/ui/ProgressBar';
-import EmptyState from '../../components/ui/EmptyState';
+import { EmptyState } from '@/components/shared/EmptyState'
 import Modal from '../../components/ui/Modal';
 import { formatDate, formatDateTime, formatTime, getWibParts, getWibToday } from '../../lib/date';
 import { getFeatureStory } from '../../data/stories';
