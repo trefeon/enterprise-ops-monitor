@@ -431,8 +431,12 @@ const StoreSync = () => {
         <EmptyState
           title="Failed to load sync data"
           description={fatalError}
-          icon="error"
-          action={{ label: 'Retry', icon: 'refresh', onClick: handleRefresh }}
+          icon={<AlertTriangle className="size-8" />}
+          action={
+            <Button onClick={handleRefresh}>
+              <RefreshCw className="mr-2 size-4" /> Retry
+            </Button>
+          }
         />
       </PageShell>
     );
@@ -566,13 +570,13 @@ const StoreSync = () => {
               const healthPercent = hasData ? (syncedCount / branch.total) * 100 : 0;
               const statusVariant = hasData
                 ? healthPercent < 80
-                  ? 'error'
+                  ? 'destructive'
                   : healthPercent < 90
                     ? 'warning'
                     : 'success'
                 : hasSourceError
-                  ? 'error'
-                  : 'neutral';
+                  ? 'destructive'
+                  : 'secondary';
               const badgeLabel = hasData
                 ? problemCount > 0
                   ? `${problemCount} late`
@@ -606,7 +610,7 @@ const StoreSync = () => {
                       trackClassName="bg-secondary border border-border h-2"
                       barClassName={`h-2 ${
                         hasData
-                          ? statusVariant === 'error'
+                          ? statusVariant === 'destructive'
                             ? 'bg-status-error'
                             : statusVariant === 'warning'
                               ? 'bg-status-warning'
@@ -764,7 +768,7 @@ const StoreSync = () => {
                         <StatusBadge
                           variant={
                             store.isProblem || store.status === 'problem'
-                              ? 'error'
+                              ? 'destructive'
                               : store.isStale || store.status === 'stale'
                                 ? 'warning'
                                 : 'success'
@@ -889,7 +893,7 @@ const StoreSync = () => {
                     const isProblem = Boolean(record.isProblem);
                     const isStale = !isProblem && Boolean(record.isStale);
                     const statusLabel = isProblem ? 'Late' : isStale ? 'Warning' : 'On-time';
-                    const statusVariant = isProblem ? 'error' : isStale ? 'warning' : 'success';
+                    const statusVariant = isProblem ? 'destructive' : isStale ? 'warning' : 'success';
                     const statusIcon = isProblem
                       ? 'sync_problem'
                       : isStale

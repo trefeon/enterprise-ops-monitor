@@ -23,6 +23,7 @@ import { StatCard } from '@/components/shared/StatCard'
 import Modal from '../../components/ui/Modal';
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
+import { AlertTriangle } from 'lucide-react';
 import { SearchBar } from '../../components/shared/SearchBar';
 import { DatePicker } from '../../components/shared/DatePicker';
 import {
@@ -52,7 +53,7 @@ const STATUS_STYLES = {
   },
   failed: {
     label: 'Failed',
-    variant: 'error',
+    variant: 'destructive',
   },
 };
 
@@ -783,8 +784,12 @@ const EODMonitor = () => {
               <EmptyState
                 title="Failed to load EOD data"
                 description={error}
-                icon="error"
-                action={{ label: 'Retry', icon: 'refresh', onClick: fetchData }}
+                icon={<AlertTriangle className="size-8" />}
+                action={
+                  <Button onClick={fetchData}>
+                    <RefreshCw className="mr-2 size-4" /> Retry
+                  </Button>
+                }
               />
             </div>
           ) : (

@@ -125,7 +125,7 @@ const Login = () => {
   };
 
   return (
-    <div className="bg-background text-foreground min-h-screen flex flex-col md:flex-row overflow-hidden">
+    <div className="dark bg-background text-foreground min-h-screen flex flex-col md:flex-row overflow-hidden">
       {/* Need Help Modal */}
       {helpOpen && (
         <div

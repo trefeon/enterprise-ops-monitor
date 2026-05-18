@@ -18,6 +18,7 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { getFeatureStory } from '../../data/stories';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 const BRANCH_OPTIONS = [
   { id: '2', label: 'NORTH HUB' },
@@ -259,8 +260,12 @@ const IdentityCheck = () => {
         <EmptyState
           title="Failed to load employees"
           description={error}
-          icon="error"
-          action={{ label: 'Retry', icon: 'refresh', onClick: fetchEmployees }}
+          icon={<AlertTriangle className="size-8" />}
+          action={
+            <Button onClick={fetchEmployees}>
+              <RefreshCw className="mr-2 size-4" /> Retry
+            </Button>
+          }
         />
       ) : (
         <DataTable
@@ -304,6 +309,7 @@ const IdentityCheck = () => {
           pagination={pagination}
           onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
           emptyState="No employees found."
+          keyExtractor={(row) => row.nik}
         />
       )}
     </PageShell>

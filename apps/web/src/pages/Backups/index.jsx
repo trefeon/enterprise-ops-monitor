@@ -18,6 +18,7 @@ import {
   TableCell,
 } from '@/components/ui/table';
 import { formatDate, formatDateTime, formatTime } from '../../lib/date';
+import { cn } from '@/lib/utils';
 import { getFeatureStory } from '../../data/stories';
 import {
   Loader2,

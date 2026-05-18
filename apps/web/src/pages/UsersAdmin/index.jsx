@@ -489,6 +489,7 @@ export default function UsersAdmin() {
         loading={loading}
         pagination={pagination}
         onPageChange={(next) => setPage(next)}
+        keyExtractor={(row) => row.id}
       />
       {/* RBAC v2: Edit Access Modal */}
       <UserAccessModal

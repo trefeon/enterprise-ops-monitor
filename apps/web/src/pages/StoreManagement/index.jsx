@@ -18,6 +18,7 @@ import { EmptyState } from '@/components/shared/EmptyState'
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { getFeatureStory } from '../../data/stories';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 const AREA_OPTIONS = [
   { id: '2', label: 'NORTH HUB' },
@@ -290,8 +291,12 @@ const StoreManagement = () => {
         <EmptyState
           title="Failed to load stores"
           description={error}
-          icon="error"
-          action={{ label: 'Retry', icon: 'refresh', onClick: fetchData }}
+          icon={<AlertTriangle className="size-8" />}
+          action={
+            <Button onClick={fetchData}>
+              <RefreshCw className="mr-2 size-4" /> Retry
+            </Button>
+          }
         />
       ) : (
         <DataTable
@@ -301,6 +306,7 @@ const StoreManagement = () => {
           pagination={pagination}
           onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
           emptyState="No stores found."
+          keyExtractor={(row) => row.storeCode ?? row.id}
         />
       )}
     </PageShell>

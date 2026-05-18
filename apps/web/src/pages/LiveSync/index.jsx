@@ -446,7 +446,7 @@ const LiveSync = () => {
           title="Longest Delay"
           value={oldest?.ageSec != null ? formatDuration(oldest.ageSec) : '-'}
           subtitle={oldest?.storeName || 'Stable'}
-          color={oldest?.ageSec > 3600 ? 'error' : 'warning'}
+          color={oldest?.ageSec != null && oldest.ageSec > 3600 ? 'error' : oldest?.ageSec != null ? 'warning' : 'default'}
         />
       </section>
 

@@ -28,6 +28,7 @@ import {
 import { formatDateTime, formatTime } from '../../lib/date';
 import { StatusBadge } from '@/components/shared/StatusBadge'
 import { getFeatureStory } from '../../data/stories';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
 import {
   Loader2,
   Database,
@@ -74,7 +75,7 @@ const STATUS_STYLES = {
   },
   UNKNOWN: {
     label: 'Unknown',
-    variant: 'neutral',
+    variant: 'secondary',
     dot: 'bg-muted-foreground',
   },
 };
@@ -378,8 +379,12 @@ const SystemHealth = () => {
         <EmptyState
           title="Failed to load system health"
           description={error}
-          icon="error"
-          action={{ label: 'Retry', icon: 'refresh', onClick: refreshAll }}
+          icon={<AlertTriangle className="size-8" />}
+          action={
+            <Button onClick={refreshAll}>
+              <RefreshCw className="mr-2 size-4" /> Retry
+            </Button>
+          }
         />
       </PageShell>
     );
