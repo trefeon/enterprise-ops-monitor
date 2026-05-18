@@ -31,7 +31,7 @@ import { MachineTable } from './components/MachineTable';
 import type { AgentMachine } from './types';
 
 const STATUS_OPTIONS = [
-  { value: 'all', label: 'All Statuses' },
+  { value: 'all', label: '(ALL STATUS)' },
   { value: 'online', label: 'Online' },
   { value: 'offline', label: 'Offline' },
   { value: 'healthy', label: 'Healthy' },
@@ -124,7 +124,7 @@ export default function OfficeAgentsPage() {
             </SelectContent>
           </Select>
           {stats.critical > 0 && (
-            <div className="flex min-h-[44px] items-center gap-2 rounded-md border border-red-500/30 bg-red-500/10 px-3 text-sm text-red-500">
+            <div className="flex min-h-[44px] items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 text-sm font-medium text-red-500">
               <AlertCircle className="size-4" />
               {stats.critical} machine(s) need attention
             </div>
