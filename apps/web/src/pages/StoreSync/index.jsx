@@ -21,9 +21,9 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table';
-import { StatusBadge } from '@/components/shared/StatusBadge'
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import ProgressBar from '../../components/ui/ProgressBar';
-import { EmptyState } from '@/components/shared/EmptyState'
+import { EmptyState } from '@/components/shared/EmptyState';
 import Modal from '../../components/ui/Modal';
 import { formatDate, formatDateTime, formatTime, getWibParts, getWibToday } from '../../lib/date';
 import { getFeatureStory } from '../../data/stories';
@@ -636,7 +636,7 @@ const StoreSync = () => {
           className="mb-0"
           actions={
             <div className="flex flex-col sm:flex-row items-center gap-3">
-              <label className="flex h-11 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground cursor-pointer transition-colors hover:bg-muted/30">
+              <label className="flex h-11 w-full sm:w-auto items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground cursor-pointer transition-colors hover:bg-muted/30">
                 <input
                   type="checkbox"
                   checked={excludeBazar}
@@ -644,7 +644,7 @@ const StoreSync = () => {
                     setExcludeBazar(e.target.checked);
                     setPagination((p) => ({ ...p, page: 1 }));
                   }}
-                  className="rounded border-border bg-transparent text-primary focus:ring-primary/50"
+                  className="shrink-0 rounded border-border bg-transparent text-primary focus:ring-primary/50"
                 />
                 Exclude &gt; 7 days
               </label>
