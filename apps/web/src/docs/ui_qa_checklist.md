@@ -28,9 +28,10 @@
 
 - [ ] Dashboard/Home matches reference spacing and card styles.
 - [ ] EOD Monitor matches reference spacing and table styles.
-- [ ] EOD By Area matches reference spacing and table styles.
-- [ ] Data Toko matches reference spacing and table styles.
+- [ ] EOD branch summaries match reference spacing and table styles.
+- [ ] Store Directory matches reference spacing and table styles.
 - [ ] After-Hours page matches reference spacing, card styles, and table states.
-- [ ] After-Hours settings panel renders quick presets (Telegram + Webhook Gateway Group) and helper hints correctly.
-- [ ] After-Hours templates show initial/final fields with schedule labels.
+- [ ] After-Hours settings panel renders Telegram, WhatsApp, and schedule controls correctly.
+- [ ] After-Hours templates show stage fields with schedule labels.
+- [ ] After-Hours monthly report renders the default `23:15` to `01:00` window when no custom schedule exists.
 - [ ] Login page has no inline styles and uses design tokens.

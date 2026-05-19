@@ -62,7 +62,7 @@ test("resolveMonthlyReportDate shifts midnight final checks to the previous day"
   assert.equal(resolveMonthlyReportDate("2026-03-31T23:45:00+07:00", "2026-03-31"), "2026-03-31");
 });
 
-test("generateMonthlyReport rejects when warning schedule config is absent", async () => {
+test("generateMonthlyReport uses default window start when warning schedule config is absent", async () => {
   const queryLog = [];
   const sequelize = {
     query: async (sql, options = {}) => {
@@ -72,14 +72,47 @@ test("generateMonthlyReport rejects when warning schedule config is absent", asy
     },
   };
 
-  await assert.rejects(
-    () => generateMonthlyReport(sequelize, { targetMonth: "2026-03" }),
-    /warning_schedule_times/
-  );
+  const result = await generateMonthlyReport(sequelize, { targetMonth: "2026-03" });
 
+  assert.equal(result.reportWindowStart, "23:15");
+  assert.equal(result.reportWindowEndExclusive, "01:00");
+  assert.equal(result.totalStores, 0);
   assert.equal(
     queryLog.some((entry) => entry.sql.includes("FROM afterhours_pc_log")),
-    false
+    true
+  );
+});
+
+test("generateMonthlyReport uses default window start when warning schedule config is malformed", async () => {
+  const queryLog = [];
+  const sequelize = {
+    query: async (sql, options = {}) => {
+      queryLog.push({ sql, bind: options.bind || [] });
+
+      if (sql.includes("FROM afterhours_config")) {
+        return [
+          [
+            {
+              key: "warning_schedule_times",
+              value: '["25:99","invalid"]',
+            },
+          ],
+        ];
+      }
+
+      return [[], null];
+    },
+  };
+
+  const result = await generateMonthlyReport(sequelize, { targetMonth: "2026-03" });
+
+  assert.equal(result.reportWindowStart, "23:15");
+  assert.equal(result.reportWindowEndExclusive, "01:00");
+  assert.equal(
+    queryLog.some(
+      (entry) => entry.sql.includes("FROM afterhours_pc_log") && entry.bind[2] === "23:15:00"
+    ),
+    true
   );
 });
 

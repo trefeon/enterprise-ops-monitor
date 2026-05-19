@@ -1,3 +1,5 @@
+const { DEFAULT_AFTERHOURS_CONFIG } = require("../config/afterhoursDefaults");
+
 async function ensureEodLogUniqueIndex(db) {
   if (!db?.sequelize) return;
 
@@ -458,6 +460,18 @@ async function ensureAfterhoursConfigTable(db) {
         updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
       );
     `);
+
+    for (const [key, value] of Object.entries(DEFAULT_AFTERHOURS_CONFIG)) {
+      await db.sequelize.query(
+        `INSERT INTO afterhours_config (key, value, updated_at)
+         VALUES ($1, $2, NOW())
+         ON CONFLICT (key) DO UPDATE SET
+           value = EXCLUDED.value,
+           updated_at = NOW()
+         WHERE afterhours_config.value IS NULL OR BTRIM(afterhours_config.value) = ''`,
+        { bind: [key, value] }
+      );
+    }
   } catch (err) {
     console.warn(
       "[ensureDb] Non-fatal DB ensure step failed (afterhours_config):",

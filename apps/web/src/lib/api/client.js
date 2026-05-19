@@ -20,7 +20,7 @@ export const apiClient = axios.create({
   },
 });
 
-// Request interceptor to attach token if needed (though cookie is preferred per blueprint)
+// Request interceptor attaches the stored bearer token for authenticated calls.
 apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token') || sessionStorage.getItem('token');

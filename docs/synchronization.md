@@ -39,16 +39,16 @@ Controller routes
 
 Static configuration in `apps/api/services/dataClient.js`:
 
-| ID | Name | Code |
-|----|------|------|
-| 1 | NORTH HUB | north |
-| 2 | EAST HUB | east |
-| 3 | CENTRAL HUB | central |
-| 4 | COASTAL HUB | coastal |
-| 5 | HIGHLAND HUB | highland |
-| 6 | WEST HUB | west |
-| 7 | RIVER HUB | river |
-| 8 | SOUTH HUB | south |
+| ID  | Name         | Code |
+| --- | ------------ | ---- |
+| 2   | NORTH HUB    | 302  |
+| 3   | EAST HUB     | 303  |
+| 4   | CENTRAL HUB  | 304  |
+| 5   | COASTAL HUB  | 305  |
+| 6   | HIGHLAND HUB | 306  |
+| 7   | WEST HUB     | 307  |
+| 8   | RIVER HUB    | 308  |
+| 9   | SOUTH HUB    | 309  |
 
 ## Data Client (`dataClient.js`)
 
@@ -65,6 +65,7 @@ Core fetch logic with these behaviors:
 ### cache.js
 
 In-memory `Map`-based TTL cache with request dedup:
+
 - `get(key, fetcher, ttlMs)` — Returns cached value or calls `fetcher()` and caches result
 - Concurrent requests for the same key share one in-flight request (via `inFlight` Map of promises)
 - `invalidateAll()` — Clears all caches
@@ -73,10 +74,10 @@ In-memory `Map`-based TTL cache with request dedup:
 
 EOD cache TTL varies by time of day (WIB):
 
-| Time Window | TTL | Rationale |
-|-------------|-----|-----------|
-| Before 16:00 | 20 min | Low activity, no need for fresh data |
-| 16:00 – 20:00 | 5 min | EOD window approaching |
+| Time Window   | TTL    | Rationale                            |
+| ------------- | ------ | ------------------------------------ |
+| Before 16:00  | 20 min | Low activity, no need for fresh data |
+| 16:00 – 20:00 | 5 min  | EOD window approaching               |
 | 20:00 – 23:59 | 90 sec | Peak EOD processing — near real-time |
 
 Sync cache: 30s static TTL. Employee cache: 12h static TTL.
@@ -85,19 +86,20 @@ Sync cache: 30s static TTL. Employee cache: 12h static TTL.
 
 Polling loop at 30s cadence in WIB timezone. Checks current WIB time against configured schedules:
 
-| Trigger | Config | Description |
-|---------|--------|-------------|
-| EOD sync | `DATA_EOD_POLL_MS` | Periodic EOD data fetch |
-| EOD final sync | `DATA_EOD_FINAL_SYNC_TIMES` | Comma-separated WIB times (e.g. "21:00,22:00,23:00") |
-| Employee daily sync | `DATA_EMPLOYEE_DAILY_SYNC_HHMM` | HHMM WIB time for daily employee sync |
-| After-hours check | Per `afterhours_config` | Periodic PC detection check |
-| Monthly report | Configurable day | Generate monthly after-hours report |
+| Trigger             | Config                                     | Description                                                                                  |
+| ------------------- | ------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| EOD sync            | `DATA_EOD_POLL_MS`                         | Periodic EOD data fetch                                                                      |
+| EOD final sync      | `DATA_EOD_FINAL_SYNC_TIMES`                | Comma-separated WIB times (e.g. "21:00,22:00,23:00")                                         |
+| Employee daily sync | `DATA_EMPLOYEE_DAILY_SYNC_HHMM`            | HHMM WIB time for daily employee sync                                                        |
+| After-hours check   | `afterhours_config.warning_schedule_times` | Periodic PC detection check; defaults to `23:15`, `23:30`, `23:45`, `00:00` WIB when missing |
+| Monthly report      | Configurable day                           | Generate monthly after-hours report                                                          |
 
 All events recorded in `service_heartbeats` table.
 
 ## Persistence (`dataPersist.js` + `dataDb.js`)
 
 When `DATA_PERSIST_ENABLED=true`:
+
 1. Fetch from external API via dataClient
 2. Parse and transform payloads
 3. Upsert into normalized DB tables using raw SQL
@@ -106,12 +108,14 @@ When `DATA_PERSIST_ENABLED=true`:
 ## Data Source Resolution (`dataSource.js`)
 
 Intelligent retrieval:
+
 1. If `DATA_USE_DB=true` (default): Query DB tables first
 2. If DB unavailable or `DATA_USE_DB=false`: Fall back to live API via dataGateway
 
 ## Sync Alerting
 
 `syncAlertService.js` monitors sync freshness:
+
 - Checks stores against stale thresholds
 - Creates `SyncAlertState` records for problematic stores
 - Can trigger notifications via `notifyService.js`
@@ -119,6 +123,7 @@ Intelligent retrieval:
 ## Notifications (`notifyService.js`)
 
 Dispatches after-hours alerts via:
+
 - **Telegram**: `sendTelegramMessage(chatId, message)` — uses `TELEGRAM_BOT_TOKEN`
 - **WhatsApp**: `sendWhatsAppMessage(to, message)` — uses `WHATSAPP_API_URL` + `WHATSAPP_API_KEY`
 - Configurable via `afterhours_config` KV table

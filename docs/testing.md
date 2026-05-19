@@ -4,16 +4,16 @@
 
 The project uses two separate test runners:
 
-| App | Runner | Config |
-|-----|--------|--------|
+| App              | Runner                           | Config                                            |
+| ---------------- | -------------------------------- | ------------------------------------------------- |
 | API (`apps/api`) | Node Test Runner (`node --test`) | `apps/api/package.json` — `"test": "node --test"` |
-| Web (`apps/web`) | Vitest 4 | `apps/web/vite.config.js` — Vitest config |
+| Web (`apps/web`) | Vitest 4                         | `apps/web/vite.config.js` — Vitest config         |
 
 ## Running Tests
 
 ```bash
 # All tests
-pnpm test
+pnpm -r test
 
 # API tests only
 pnpm --filter api test
@@ -31,37 +31,39 @@ Node `node:test` + `supertest` for HTTP assertions.
 
 ### Smoke Tests
 
-| File | Description |
-|------|-------------|
+| File                 | Description                                 |
+| -------------------- | ------------------------------------------- |
 | `auth.smoke.test.js` | Auth endpoints — login, me, change-password |
-| `meta.smoke.test.js` | Metadata endpoint |
-| `sync.smoke.test.js` | Sync endpoints |
-| `time.test.js` | Time utility tests |
+| `meta.smoke.test.js` | Metadata endpoint                           |
+| `sync.smoke.test.js` | Sync endpoints                              |
+| `time.test.js`       | Time utility tests                          |
 
 ### Unit Tests
 
-| File | Description |
-|------|-------------|
-| `unit/validators.test.js` | Zod password schema validation |
-| `unit/afterhours_service.test.js` | After-hours detection logic |
-| `unit/afterhours_window.test.js` | After-hours time window tests |
-| `unit/afterhours_monthly_report.test.js` | Monthly report generation |
-| `unit/data_client_retry.test.js` | External API retry logic |
-| `unit/dataSyncService_optimization.test.js` | Sync optimization |
-| `unit/dashboard_summary.test.js` | Dashboard summary aggregation |
-| `unit/notify_service.test.js` | Notification dispatch |
-| `unit/rbac_escalation.test.js` | RBAC privilege escalation prevention |
-| `unit/store_controller_export.test.js` | Store export functionality |
-| `unit/sync_query_optimization.test.js` | Sync query performance |
-| `unit/system_controller_export_logs.test.js` | System log export |
+| File                                         | Description                          |
+| -------------------------------------------- | ------------------------------------ |
+| `unit/validators.test.js`                    | Zod password schema validation       |
+| `unit/afterhours_service.test.js`            | After-hours detection logic          |
+| `unit/afterhours_window.test.js`             | After-hours time window tests        |
+| `unit/afterhours_monthly_report.test.js`     | Monthly report generation            |
+| `unit/data_client_retry.test.js`             | External API retry logic             |
+| `unit/dataSyncService_optimization.test.js`  | Sync optimization                    |
+| `unit/dashboard_summary.test.js`             | Dashboard summary aggregation        |
+| `unit/notify_service.test.js`                | Notification dispatch                |
+| `unit/rbac_escalation.test.js`               | RBAC privilege escalation prevention |
+| `unit/store_controller_export.test.js`       | Store export functionality           |
+| `unit/sync_query_optimization.test.js`       | Sync query performance               |
+| `unit/system_controller_export_logs.test.js` | System log export                    |
 
 ### Benchmark
 
-| File | Description |
-|------|-------------|
+| File                      | Description                      |
+| ------------------------- | -------------------------------- |
 | `benchmark_sync_logic.js` | Sync logic performance benchmark |
 
 ### Test Patterns
+
+After-hours monthly report tests should cover both configured schedules and the default fallback schedule. Missing or malformed `warning_schedule_times` must produce a normal report window (`23:15` to `01:00` WIB), not a 500-class service failure.
 
 ```js
 // Smoke test pattern
@@ -87,8 +89,8 @@ Vitest + @testing-library/react + jsdom.
 
 ### Test Files
 
-| File | Description |
-|------|-------------|
+| File                               | Description                    |
+| ---------------------------------- | ------------------------------ |
 | `components/PrivateRoute.test.jsx` | Auth guard component (3 cases) |
 
 ### Test Patterns
@@ -128,10 +130,10 @@ pnpm format:check
 pnpm format:write
 ```
 
-| Tool | Configuration |
-|------|---------------|
-| ESLint | `apps/api/eslint.config.js`, `apps/web/eslint.config.js` |
-| Prettier | `apps/api/.prettierrc`, `apps/web/.prettierrc.json` |
+| Tool        | Configuration                                                |
+| ----------- | ------------------------------------------------------------ |
+| ESLint      | `apps/api/eslint.config.js`, `apps/web/eslint.config.js`     |
+| Prettier    | `apps/api/.prettierrc`, `apps/web/.prettierrc.json`          |
 | lint-staged | Root `package.json` — runs ESLint + Prettier on staged files |
 
 ## CI Contract

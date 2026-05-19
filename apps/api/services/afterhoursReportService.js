@@ -8,6 +8,7 @@
 
 const { toWibDate, toWibIso } = require("../utils/time");
 const { loadAfterhoursRuntimeConfig } = require("./afterhoursService");
+const { DEFAULT_WARNING_SCHEDULE_TIMES } = require("../config/afterhoursDefaults");
 
 const MONTHLY_REPORT_VIOLATION_WINDOW_START = "23:15:00";
 const MONTHLY_REPORT_VIOLATION_WINDOW_END_EXCLUSIVE = "01:00:00";
@@ -37,11 +38,13 @@ function resolveViolationWindow() {
 }
 
 function resolveConfiguredMonthlyWindowStart(runtimeConfig = {}) {
-  const scheduleTimes = parseScheduleValue(runtimeConfig.warning_schedule_times);
+  const configuredScheduleTimes = parseScheduleValue(runtimeConfig.warning_schedule_times);
+  const scheduleTimes =
+    configuredScheduleTimes.length > 0 ? configuredScheduleTimes : DEFAULT_WARNING_SCHEDULE_TIMES;
   const firstScheduledTime = normalizeDailyTime(scheduleTimes[0]);
   if (firstScheduledTime) return firstScheduledTime;
 
-  return null;
+  return normalizeDailyTime(DEFAULT_WARNING_SCHEDULE_TIMES[0]);
 }
 
 function normalizeDailyTime(value) {
@@ -82,12 +85,8 @@ async function resolveMonthlyReportWindow(sequelize, options = {}) {
   const runtimeConfig = await loadAfterhoursRuntimeConfig(sequelize);
   const configuredWindowStart = resolveConfiguredMonthlyWindowStart(runtimeConfig);
 
-  if (!configuredWindowStart) {
-    throw new Error("Missing after-hours warning_schedule_times configuration");
-  }
-
   return {
-    afterhoursWindowStart: configuredWindowStart,
+    afterhoursWindowStart: configuredWindowStart || fallback.afterhoursWindowStart,
     afterhoursWindowEndExclusive:
       explicitWindowEndExclusive || fallback.afterhoursWindowEndExclusive,
   };

@@ -14,13 +14,13 @@ The app turns scattered operational checks into a single authenticated console: 
 
 ## Tech Stack
 
-| Layer | Stack |
-| --- | --- |
-| Frontend | React, Vite, Tailwind CSS, React Router |
-| Backend | Node.js, Express, Sequelize, PostgreSQL |
-| Security | JWT auth, bcrypt passwords, RBAC v2, branch scoping |
+| Layer      | Stack                                                      |
+| ---------- | ---------------------------------------------------------- |
+| Frontend   | React, Vite, Tailwind CSS, React Router                    |
+| Backend    | Node.js, Express, Sequelize, PostgreSQL                    |
+| Security   | JWT auth, bcrypt passwords, RBAC v2, branch scoping        |
 | Operations | Docker Compose, Nginx, scheduled sync jobs, backup tooling |
-| Demo Data | Mock API plus generated sample records for local demos |
+| Demo Data  | Mock API plus generated sample records for local demos     |
 
 ## Feature Stories
 
@@ -36,11 +36,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** A user can understand the day-state in seconds, then jump directly into the feature that needs attention.
 
-| Metric | Value |
-| --- | --- |
-| Primary view | 1 page |
-| Alert feed | Latest 10 |
-| EOD refresh window | 60 sec |
+| Metric             | Value     |
+| ------------------ | --------- |
+| Primary view       | 1 page    |
+| Alert feed         | Latest 10 |
+| EOD refresh window | 60 sec    |
 
 **Technical note:** The page pulls dashboard summary and alert data together, then attempts a one-time sync when a fresh install has no usable data yet.
 
@@ -56,11 +56,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Reviewers can see the login flow in action without typing or searching for demo credentials.
 
-| Metric | Value |
-| --- | --- |
-| Demo account | 1 (primary) |
-| Auto-type animation | Yes |
-| Help panel | Inline |
+| Metric              | Value       |
+| ------------------- | ----------- |
+| Demo account        | 1 (primary) |
+| Auto-type animation | Yes         |
+| Help panel          | Inline      |
 
 ### Logout
 
@@ -74,11 +74,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Session cleanup is visible, recoverable, and consistent with the rest of the permission-gated workflow.
 
-| Metric | Value |
-| --- | --- |
-| Confirmation | Required |
-| Fallback | Local logout |
-| Redirect | /login |
+| Metric       | Value        |
+| ------------ | ------------ |
+| Confirmation | Required     |
+| Fallback     | Local logout |
+| Redirect     | /login       |
 
 ### Profile
 
@@ -92,11 +92,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Reviewers can see how account identity connects to permissions without opening the admin console first.
 
-| Metric | Value |
-| --- | --- |
-| Password flow | Self-service |
-| Admin shortcut | Conditional |
-| Session action | Logout |
+| Metric         | Value        |
+| -------------- | ------------ |
+| Password flow  | Self-service |
+| Admin shortcut | Conditional  |
+| Session action | Logout       |
 
 ### Store Sync
 
@@ -110,11 +110,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Operators can identify exactly which store is late, when it last synced, and whether the problem is isolated to a branch or store.
 
-| Metric | Value |
-| --- | --- |
-| UI refresh | 10 sec |
-| History window | 30 min + day view |
-| Branches modeled | 8 |
+| Metric           | Value             |
+| ---------------- | ----------------- |
+| UI refresh       | 10 sec            |
+| History window   | 30 min + day view |
+| Branches modeled | 8                 |
 
 **Technical note:** The sync-audit source is fetched sequentially because the upstream endpoint can duplicate or miss data when branches are queried in parallel.
 
@@ -130,11 +130,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Late stores, failed uploads, and branch-level bottlenecks become actionable from a single operational view.
 
-| Metric | Value |
-| --- | --- |
-| Auto-refresh | 30 sec |
-| EOD starts | 19:30 WIB |
-| Export | XLSX |
+| Metric       | Value     |
+| ------------ | --------- |
+| Auto-refresh | 30 sec    |
+| EOD starts   | 19:30 WIB |
+| Export       | XLSX      |
 
 **Technical note:** Database upserts preserve completed EOD records with "Ok is Final" protection, so nightly resets do not downgrade already-complete stores.
 
@@ -150,11 +150,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Store identity and ownership questions can be answered without leaving the operations console.
 
-| Metric | Value |
-| --- | --- |
-| Branches modeled | 8 |
-| Page size | 50 |
-| Export | XLSX |
+| Metric           | Value |
+| ---------------- | ----- |
+| Branches modeled | 8     |
+| Page size        | 50    |
+| Export           | XLSX  |
 
 ### Employee Directory
 
@@ -168,11 +168,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Teams can validate NIK-to-store relationships without manual spreadsheet reconciliation.
 
-| Metric | Value |
-| --- | --- |
+| Metric       | Value    |
+| ------------ | -------- |
 | Search modes | NIK/name |
-| Page size | 20 |
-| Export | CSV |
+| Page size    | 20       |
+| Export       | CSV      |
 
 **Technical note:** Employee and EOD source fetches use limited concurrency across branches to balance speed with upstream stability.
 
@@ -188,11 +188,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Database recovery moves from an invisible background job to an auditable operational workflow.
 
-| Metric | Value |
-| --- | --- |
-| Default schedule | 00:05 daily |
-| Page size | 25 |
-| Restore guard | Confirm text |
+| Metric           | Value        |
+| ---------------- | ------------ |
+| Default schedule | 00:05 daily  |
+| Page size        | 25           |
+| Restore guard    | Confirm text |
 
 ### System Health
 
@@ -206,11 +206,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Support users get a practical first-response console instead of guessing from user reports alone.
 
-| Metric | Value |
-| --- | --- |
-| Log levels | 4 |
-| Export limit | 10000 |
-| Guarded actions | 2 |
+| Metric          | Value |
+| --------------- | ----- |
+| Log levels      | 4     |
+| Export limit    | 10000 |
+| Guarded actions | 2     |
 
 ### Agent Updater
 
@@ -224,11 +224,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Operators can see rollout status by branch and store, then focus only on nodes that are outdated or unhealthy.
 
-| Metric | Value |
-| --- | --- |
-| Polling | 30 sec |
+| Metric       | Value  |
+| ------------ | ------ |
+| Polling      | 30 sec |
 | Upload limit | 100 MB |
-| Artifact | .exe |
+| Artifact     | .exe   |
 
 ### Office Agent Monitor
 
@@ -242,11 +242,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Support can identify which laptop needs attention, whether the issue is resource pressure or missed heartbeats, and when it last checked in.
 
-| Metric | Value |
-| --- | --- |
-| Heartbeat cadence | 60 sec |
-| Machines modeled | 6 |
-| Detail depth | 10 heartbeats |
+| Metric            | Value         |
+| ----------------- | ------------- |
+| Heartbeat cadence | 60 sec        |
+| Machines modeled  | 6             |
+| Detail depth      | 10 heartbeats |
 
 **Technical note:** The page uses frontend-only mock state so the portfolio can demonstrate real-time monitoring behavior without requiring a Windows agent backend.
 
@@ -262,11 +262,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Each user can receive only the access they need, with branch-level visibility aligned to their operational responsibility.
 
-| Metric | Value |
-| --- | --- |
-| Scope model | Branch-based |
-| Override types | Allow/deny |
-| Admin page size | 25 |
+| Metric          | Value        |
+| --------------- | ------------ |
+| Scope model     | Branch-based |
+| Override types  | Allow/deny   |
+| Admin page size | 25           |
 
 ### Roles
 
@@ -280,10 +280,10 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Least-privilege access can be configured without changing code whenever responsibility changes.
 
-| Metric | Value |
-| --- | --- |
-| System roles | 6 |
-| Permissions | 30 |
+| Metric           | Value    |
+| ---------------- | -------- |
+| System roles     | 6        |
+| Permissions      | 30       |
 | Override support | Per user |
 
 **Technical note:** RBAC v2 resolves database-backed roles, user permission overrides, and branch scopes while retaining legacy role fallback compatibility.
@@ -300,11 +300,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Off-window activity becomes visible, repeat offenders can be ranked, and branch notifications can be managed in one place.
 
-| Metric | Value |
-| --- | --- |
-| Warning stages | 4 |
-| Report view | Monthly |
-| Export | XLSX |
+| Metric         | Value   |
+| -------------- | ------- |
+| Warning stages | 4       |
+| Report view    | Monthly |
+| Export         | XLSX    |
 
 ### After Hours Report
 
@@ -318,11 +318,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Managers can see recurring patterns instead of isolated events, then focus follow-up on branches and stores with repeat violations.
 
-| Metric | Value |
-| --- | --- |
-| Report grain | Monthly |
+| Metric       | Value          |
+| ------------ | -------------- |
+| Report grain | Monthly        |
 | Ranking view | Branch + store |
-| Export | XLSX |
+| Export       | XLSX           |
 
 ### Live Sync
 
@@ -336,11 +336,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** Teams can keep a shared operational screen open without exposing account-management or write-capable workflows.
 
-| Metric | Value |
-| --- | --- |
-| Routes | /live + /live.html |
-| Mode | Read-only |
-| Display | Wallboard |
+| Metric  | Value              |
+| ------- | ------------------ |
+| Routes  | /live + /live.html |
+| Mode    | Read-only          |
+| Display | Wallboard          |
 
 ### About This Project
 
@@ -354,11 +354,11 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Impact:** The app can explain itself during a live review and connect each operational screen to the portfolio goals it demonstrates.
 
-| Metric | Value |
-| --- | --- |
-| Story catalog | All routes |
-| Disclosure | In-app |
-| Backend changes | None |
+| Metric          | Value      |
+| --------------- | ---------- |
+| Story catalog   | All routes |
+| Disclosure      | In-app     |
+| Backend changes | None       |
 
 ## Running Locally
 
@@ -367,13 +367,10 @@ All commands are run from the `enterprise-ops-monitor/` directory.
 ### Demo Mode
 
 ```bash
-cd mock-api
-npm install
-npm start
+pnpm --dir mock-api install
+pnpm --dir mock-api start
 
-cd ../apps/web
-npm install
-VITE_API_URL=http://localhost:4000 npm run dev
+VITE_API_URL=http://localhost:4000 pnpm dev
 ```
 
 Open `http://localhost:5173`.
@@ -392,8 +389,7 @@ Open `http://localhost:5173`. The API is available at `http://localhost:3000`.
 The storytelling layer is frontend-only and should be verified with:
 
 ```bash
-cd apps/web
-npm test
-npm run typecheck
-npm run build
+pnpm --filter web test
+pnpm --filter web typecheck
+pnpm --filter web build
 ```

@@ -13,6 +13,7 @@
 ## 🚨 The Problem
 
 Managing EOD compliance across 8+ retail branches was a nightly challenge:
+
 - Ops team had to manually check each branch one by one
 - Sync failures went undetected until the next morning
 - Backup procedures were inconsistent and untracked
@@ -32,19 +33,19 @@ Managing EOD compliance across 8+ retail branches was a nightly challenge:
 | **System Health** | No backend visibility → Live health checks with latency metrics → <2 minute MTTD |
 | **Agent Updater** | Manual per-branch updates → Centralized push with heartbeat tracking → 2 hours → 5 minutes |
 | **After Hours** | Missed anomalies → Automated monitoring window → Caught 3 data corruption incidents |
-| **RBAC** | Shared admin login → 5 roles, 14 permissions, branch scoping → Full audit accountability |
+| **RBAC** | Shared admin login → 7 roles, 30 permissions, branch scoping → Full audit accountability |
 
 ---
 
 ## 🛠️ Tech Stack
 
-| Category | Technologies |
-|----------|-------------|
-| **Frontend** | React 19, Vite 7, TailwindCSS 3, React Router 7, Axios |
-| **Auth & Security** | JWT, bcryptjs, RBAC v2 (5 roles, 14 permissions, branch-level scoping), Helmet, CORS, Rate Limiting |
-| **Testing** | Vitest, Supertest, Node Test Runner |
-| **Infrastructure** | Docker, Docker Compose, Nginx (reverse proxy + caching) |
-| **Demo/Mock** | Express + @faker-js/faker (fully simulated data) |
+| Category            | Technologies                                                                                        |
+| ------------------- | --------------------------------------------------------------------------------------------------- |
+| **Frontend**        | React 19, Vite 7, TailwindCSS 3, React Router 7, Axios                                              |
+| **Auth & Security** | JWT, bcryptjs, RBAC v2 (7 roles, 30 permissions, branch-level scoping), Helmet, CORS, Rate Limiting |
+| **Testing**         | Vitest, Supertest, Node Test Runner                                                                 |
+| **Infrastructure**  | Docker, Docker Compose, Nginx (reverse proxy + caching)                                             |
+| **Demo/Mock**       | Express + @faker-js/faker (fully simulated data)                                                    |
 
 ---
 
@@ -85,10 +86,11 @@ enterprise-ops-monitor/
 
 ```bash
 # Terminal 1: Start the mock API
-cd mock-api && npm install && npm start
+pnpm --dir mock-api install
+pnpm --dir mock-api start
 
 # Terminal 2: Start the frontend pointed at mock API
-cd apps/web && npm install && VITE_API_URL=http://localhost:4000 npm run dev
+VITE_API_URL=http://localhost:4000 pnpm dev
 ```
 
 Then open **http://localhost:5173** in your browser.
@@ -115,29 +117,29 @@ docker compose -f docker-compose.demo.yml up -d --build
 
 ---
 
-## 🔌 API Endpoints
+## 🔌 API Surface
 
-The REST API provides these endpoints (all prefixed with `/api`):
+The REST API is mounted under `/api`; see [docs/api_contracts.md](docs/api_contracts.md) for the full route contract. Main modules:
 
-| Endpoint | Description |
-|----------|-------------|
-| `GET /api/dashboard` | Dashboard summary with KPIs |
-| `GET /api/eod/status` | Per-store EOD status |
-| `GET /api/eod/history` | Historical EOD logs |
-| `GET /api/stores` | Store directory with branch info |
-| `GET /api/employees` | Employee list with NIK-to-store mapping |
-| `GET /api/sync/status` | Sync health per store |
-| `GET /api/sync/audit` | Sync audit log entries |
-| `GET /api/backups` | Backup file list |
-| `GET /api/agents` | Agent heartbeat status |
-| `GET /api/alerts` | Active alerts |
-| `GET /api/system/health` | System health metrics |
-| `GET /api/afterhours` | After-hours upload activity |
-| `POST /api/sync/trigger` | Trigger manual sync |
-| `POST /api/backup/trigger` | Trigger manual backup |
-| `POST /api/auth/login` | Authentication |
-| `GET /api/users`, `POST /api/users`, etc. | User management |
-| `GET /api/roles`, etc. | Role & permission management |
+| Endpoint                                  | Description                             |
+| ----------------------------------------- | --------------------------------------- |
+| `GET /api/dashboard`                      | Dashboard summary and operational KPIs  |
+| `GET /api/eod`                            | Paginated EOD logs                      |
+| `GET /api/eod/live`                       | Live EOD data from source/cache         |
+| `GET /api/stores`                         | Store directory with branch info        |
+| `GET /api/employees`                      | Employee list with NIK-to-store mapping |
+| `GET /api/sync`                           | Sync health per store                   |
+| `GET /api/sync/history`                   | Sync audit history                      |
+| `GET /api/backups`                        | Backup file list                        |
+| `GET /api/agent`                          | Agent heartbeat status                  |
+| `GET /api/system/health`                  | System health metrics                   |
+| `GET /api/afterhours`                     | After-hours upload activity             |
+| `GET /api/afterhours/report`              | Monthly after-hours violation ranking   |
+| `POST /api/eod/sync`                      | Trigger EOD sync                        |
+| `POST /api/backups/run`                   | Trigger manual backup                   |
+| `POST /api/auth/login`                    | Authentication                          |
+| `GET /api/users`, `POST /api/users`, etc. | User management                         |
+| `GET /api/roles`, etc.                    | Role & permission management            |
 
 ---
 
@@ -160,10 +162,13 @@ See **[PORTFOLIO.md](./PORTFOLIO.md)** for the complete narrative — the proble
 
 ```bash
 # API tests
-cd apps/api && npm test
+pnpm --filter api test
 
 # Web tests
-cd apps/web && npm test
+pnpm --filter web test
+
+# Full repository check
+pnpm check:all
 ```
 
 ---

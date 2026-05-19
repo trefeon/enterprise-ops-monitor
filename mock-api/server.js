@@ -54,6 +54,14 @@ function wibMinute() {
   return wib.getUTCMinutes();
 }
 
+function buildDemoStoreCode(branchId, sequence) {
+  const branchNumber = Number.parseInt(String(branchId || ""), 10);
+  const storeSequence = Number.parseInt(String(sequence || ""), 10);
+  const normalizedBranch = Number.isFinite(branchNumber) ? branchNumber : 0;
+  const normalizedSequence = Number.isFinite(storeSequence) ? storeSequence : 0;
+  return String(710000 + normalizedBranch * 1000 + normalizedSequence).padStart(6, "0");
+}
+
 function daysAgo(n) {
   const d = new Date(Date.now() - n * 86400000);
   return d;
@@ -98,26 +106,26 @@ function paginate(items, query) {
   };
 }
 
-// ─── Branch & Store Data (aligned with demo dataClient.js) ──────────────────────
+// ─── Branch & Store Data (synthetic portfolio demo IDs) ─────────────────────────
 const BRANCHES = [
-  { id: "2", code: "302", name: "NORTH HUB", region: "Alpha" },
-  { id: "3", code: "303", name: "EAST HUB", region: "Alpha" },
-  { id: "4", code: "304", name: "CENTRAL HUB", region: "Beta" },
-  { id: "5", code: "305", name: "COASTAL HUB", region: "Beta" },
-  { id: "6", code: "306", name: "HIGHLAND HUB", region: "Gamma" },
-  { id: "7", code: "307", name: "WEST HUB", region: "Gamma" },
-  { id: "8", code: "308", name: "RIVER HUB", region: "Delta" },
-  { id: "9", code: "309", name: "SOUTH HUB", region: "Delta" },
+  { id: "2", code: "H02", name: "NORTH HUB", region: "Alpha" },
+  { id: "3", code: "H03", name: "EAST HUB", region: "Alpha" },
+  { id: "4", code: "H04", name: "CENTRAL HUB", region: "Beta" },
+  { id: "5", code: "H05", name: "COASTAL HUB", region: "Beta" },
+  { id: "6", code: "H06", name: "HIGHLAND HUB", region: "Gamma" },
+  { id: "7", code: "H07", name: "WEST HUB", region: "Gamma" },
+  { id: "8", code: "H08", name: "RIVER HUB", region: "Delta" },
+  { id: "9", code: "H09", name: "SOUTH HUB", region: "Delta" },
 ];
 
-// Generate realistic store codes per branch: branch_code + 2-digit store index
+// Generate sortable demo store IDs: 710000 + branchId * 1000 + store sequence.
 function buildStores() {
   const stores = [];
   let globalIdx = 1;
   for (const branch of BRANCHES) {
     const storeCount = randomInt(3, 6);
     for (let s = 0; s < storeCount; s++) {
-      const storeCode = `${branch.code}${String(s + 1).padStart(2, "0")}`;
+      const storeCode = buildDemoStoreCode(branch.id, s + 1);
       stores.push({
         id: storeCode,
         storeCode,
@@ -1045,7 +1053,9 @@ for (let i = 0; i < 30; i++) {
 }
 
 const MOCK_AFTERHOURS_SETTINGS = {
-  warning_stage_times: "20:00,21:00,22:00",
+  warning_schedule_times: '["23:15","23:30","23:45","00:00"]',
+  first_warning_time: "23:15",
+  final_warning_time: "00:00",
   whatsapp_notify_enabled: "true",
   telegram_notify_enabled: "true",
   check_window_start: "20:00",
@@ -1122,7 +1132,7 @@ app.post("/api/afterhours/check", (req, res) => {
     totalViolations,
     branchCount: randomInt(2, 4),
     stageResults: [
-      { warningStage: 1, totalStages: 3, totalViolations, telegramSuccess: 1, whatsappSuccess: 1 }
+      { warningStage: 1, totalStages: 4, totalViolations, telegramSuccess: 1, whatsappSuccess: 1 }
     ]
   });
 });
@@ -1165,8 +1175,8 @@ app.get("/api/afterhours/report", (req, res) => {
     summary: {
       totalStores: stores.length,
       totalViolationDays: ranking.reduce((sum, s) => sum + s.violation_count, 0),
-      reportWindowStart: "20:00 WIB",
-      reportWindowEndExclusive: "06:00 WIB",
+      reportWindowStart: "23:15",
+      reportWindowEndExclusive: "01:00",
       generatedAt: new Date().toISOString()
     },
     filters: {

@@ -27,6 +27,7 @@ Express API (port 3000)
 React 19 SPA built with Vite 7. Uses React Router 7 for client-side routing, TailwindCSS 3 + shadcn/ui for styling, and Axios for API communication.
 
 Key patterns:
+
 - `React.lazy` + `Suspense` for code splitting — each page is a separate chunk
 - `AuthContext` wraps the entire app — provides user, permissions, and branch scopes
 - `PrivateRoute` component gates routes by required permissions
@@ -38,6 +39,7 @@ Key patterns:
 Express 5 REST API with Sequelize 6 ORM against PostgreSQL 15. CommonJS modules.
 
 Middleware stack (in order):
+
 1. `requestId` — UUID per request (`X-Request-Id` header)
 2. `helmet` — security headers
 3. `cors` — configured from env
@@ -80,15 +82,19 @@ dataGateway/ (TTL cache layer)
 ### Scheduler
 
 `dataScheduler.js` runs `setInterval` at 30s polling cadence in WIB timezone. Triggers:
+
 - EOD sync at configurable intervals (`DATA_EOD_POLL_MS`)
 - EOD final sync at configurable WIB times (`DATA_EOD_FINAL_SYNC_TIMES`)
 - Employee daily sync at configurable HHMM (`DATA_EMPLOYEE_DAILY_SYNC_HHMM`)
-- After-hours PC check per schedule
+- After-hours PC check from `afterhours_config.warning_schedule_times`
 - Monthly after-hours report on configurable day
+
+Fresh and upgraded databases receive default after-hours warning schedule rows during `ensureDb.js` startup seeding, so report generation works even before an admin opens the settings screen.
 
 ### Caching
 
 The dataGateway layer uses:
+
 - **In-memory TTL cache** with request dedup (concurrent requests to the same key share one in-flight request)
 - **Adaptive EOD TTL**: 20 min before 16:00 WIB, 5 min 16:00–20:00, 90 sec after 20:00
 - **Sync cache TTL**: 30s (static)
@@ -127,10 +133,10 @@ enterprise-ops-monitor/
 
 ## Key Architectural Decisions
 
-| Decision | Rationale |
-|----------|-----------|
-| DB-first with live fallback | External APIs may be slow or unavailable; cached DB provides resilience |
+| Decision                       | Rationale                                                                  |
+| ------------------------------ | -------------------------------------------------------------------------- |
+| DB-first with live fallback    | External APIs may be slow or unavailable; cached DB provides resilience    |
 | Sequential branch fetch (sync) | Upstream endpoint duplicates/misses data when branches queried in parallel |
-| RBAC v2 (DB-backed) | Enables runtime role editing without code changes |
-| Code splitting per page | Optimizes initial bundle size for SPA |
-| CommonJS for API, ESM for web | API runs on older Node patterns; web uses modern bundler |
+| RBAC v2 (DB-backed)            | Enables runtime role editing without code changes                          |
+| Code splitting per page        | Optimizes initial bundle size for SPA                                      |
+| CommonJS for API, ESM for web  | API runs on older Node patterns; web uses modern bundler                   |

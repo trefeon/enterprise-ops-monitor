@@ -1,27 +1,42 @@
-# React + Vite
+# Enterprise Operations Monitor Web
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React 19 + Vite 7 SPA for the Enterprise Operations Monitor dashboard. The app uses Tailwind CSS 3, shadcn/Base UI primitives, Lucide icons, and the Industrial Clarity design system documented in [`../../DESIGN.md`](../../DESIGN.md).
 
-## Enterprise Ops Monitor Frontend Notes
+## Development
 
-This project contains product-specific pages beyond the default Vite template, including:
+Run commands from the repository root:
 
-- `Admin -> After-Hours` monitor and notification settings UI
+```bash
+pnpm i
+pnpm dev
+```
 
-For feature and API documentation, see:
+The web app runs at `http://localhost:5173` and proxies API calls through `VITE_API_URL` when provided.
 
-- `../../docs/afterhours_notifications.md`
-- `../../docs/internal_api.md`
+For mock API demo mode:
 
-Currently, two official plugins are available:
+```bash
+pnpm --dir mock-api install
+pnpm --dir mock-api start
+VITE_API_URL=http://localhost:4000 pnpm dev
+```
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Project Notes
 
-## React Compiler
+- Routes and providers are defined in `src/App.jsx`.
+- API calls go through `src/lib/api/client.js`; do not call Axios directly from pages.
+- Auth state lives in `src/context/AuthProvider.jsx` and uses JWT bearer tokens.
+- Route permissions use `PrivateRoute` and constants from `src/lib/auth/permissions.js`.
+- Shared UI components live in `src/components/shared`; shadcn/Base UI primitives live in `src/components/ui`.
+- Global tokens and design utilities live in `src/index.css`.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Checks
 
-## Expanding the ESLint configuration
+```bash
+pnpm --filter web lint
+pnpm --filter web typecheck
+pnpm --filter web test
+pnpm --filter web build
+```
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+Frontend implementation details are documented in [`docs/design.md`](docs/design.md).

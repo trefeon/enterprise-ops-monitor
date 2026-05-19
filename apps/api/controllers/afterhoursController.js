@@ -12,6 +12,7 @@ const {
 } = require("../services/afterhoursReportService");
 const { toWibDate } = require("../utils/time");
 const { getRequestAllowedBranches } = require("../middleware/rbac");
+const { getDefaultWarningScheduleTimes } = require("../config/afterhoursDefaults");
 const ExcelJS = require("exceljs");
 
 const CONFIG_KEYS = [
@@ -640,7 +641,7 @@ async function loadWarningStageTimes(sequelize) {
 
   const scheduleTimes = uniqueOrderedTimes(parseScheduleValue(cfg.warning_schedule_times));
   if (scheduleTimes.length === 0) {
-    throw new Error("Missing after-hours warning_schedule_times configuration");
+    return getDefaultWarningScheduleTimes();
   }
 
   return scheduleTimes.slice(0, 4);
@@ -1022,12 +1023,14 @@ async function getMonthlyReport(req, res) {
     ...row,
   }));
 
-  const summaryRow = await loadMonthlyReportSummary({
-    reportMonth,
-    branch,
-    search,
-    allowedBranches,
-  });
+  const summaryRow = await resolveMonthlyReportWindowSummary(
+    await loadMonthlyReportSummary({
+      reportMonth,
+      branch,
+      search,
+      allowedBranches,
+    })
+  );
 
   return ok(res, {
     reportMonth,

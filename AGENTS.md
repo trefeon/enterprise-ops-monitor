@@ -25,13 +25,13 @@ Real-time dashboard for retail EOD processes, store sync health, backups, agents
 
 | Action      | Command (run from repo root)                      |
 | ----------- | ------------------------------------------------- |
-| Install all | `pnpm install`                                    |
+| Install all | `pnpm i`                                          |
 | Dev (web)   | `pnpm dev`                                        |
 | Dev (API)   | `pnpm dev:api`                                    |
 | Build web   | `pnpm build`                                      |
 | Lint all    | `pnpm lint`                                       |
 | Typecheck   | `pnpm typecheck`                                  |
-| Test all    | `pnpm test`                                       |
+| Test all    | `pnpm -r test`                                    |
 | Full check  | `pnpm check:all`                                  |
 | Docker up   | `pnpm up` / `docker compose up -d`                |
 | Docker demo | `docker compose -f docker-compose.demo.yml up -d` |

@@ -6,16 +6,16 @@ React 19 SPA built with Vite 7, React Router 7, TailwindCSS 3, and shadcn/ui com
 
 ## Tech Stack
 
-| Category | Library |
-|----------|---------|
-| Framework | React 19 |
-| Bundler | Vite 7 |
-| Routing | React Router 7 |
-| Styling | TailwindCSS 3 + shadcn/ui |
-| Icons | lucide-react |
-| HTTP | Axios |
-| Auth | AuthContext (JWT localStorage/sessionStorage/cookie) |
-| Testing | Vitest 4 + @testing-library/react |
+| Category  | Library                                                 |
+| --------- | ------------------------------------------------------- |
+| Framework | React 19                                                |
+| Bundler   | Vite 7                                                  |
+| Routing   | React Router 7                                          |
+| Styling   | TailwindCSS 3 + shadcn/ui                               |
+| Icons     | lucide-react                                            |
+| HTTP      | Axios                                                   |
+| Auth      | AuthContext (JWT in localStorage or sessionStorage)     |
+| Testing   | Vitest 4 + @testing-library/react                       |
 | Typecheck | TypeScript 5.9 (JSDoc in JS files, `.ts` in some pages) |
 
 ## Routing
@@ -85,7 +85,7 @@ Defined in `apps/web/src/App.jsx`. Uses `React.lazy` + `Suspense` for code split
 ## Auth Flow
 
 1. User logs in via `POST /api/auth/login` — receives JWT + user info + permissions
-2. Token stored in `localStorage` (or `sessionStorage` / cookie, depending on "remember me")
+2. Token stored in `localStorage` when "remember me" is enabled, otherwise `sessionStorage`
 3. `AuthContext` parses token, sets `user` object with `effectivePerms` and `branchScope`
 4. `PrivateRoute` checks auth state before rendering protected routes
 5. API requests include `Authorization: Bearer <token>` header via Axios interceptor
@@ -95,17 +95,18 @@ Defined in `apps/web/src/App.jsx`. Uses `React.lazy` + `Suspense` for code split
 
 Three levels of permission enforcement:
 
-| Level | Mechanism | File |
-|-------|-----------|------|
-| Route | `<PrivateRoute requiredPerm={Permissions.SYNC_VIEW}>` | `PrivateRoute.jsx` |
-| Component | `<Guard permission="EOD_SYNC"><button>Sync</button></Guard>` | Shared guard component |
-| Function | `hasPermission(user, "EOD_SYNC")` — returns boolean | `lib/auth/permissions.js` |
+| Level     | Mechanism                                                    | File                      |
+| --------- | ------------------------------------------------------------ | ------------------------- |
+| Route     | `<PrivateRoute requiredPerm={Permissions.SYNC_VIEW}>`        | `PrivateRoute.jsx`        |
+| Component | `<Guard permission="EOD_SYNC"><button>Sync</button></Guard>` | Shared guard component    |
+| Function  | `hasPermission(user, "EOD_SYNC")` — returns boolean          | `lib/auth/permissions.js` |
 
 Permissions are computed server-side and returned as `user.effectivePerms`. The frontend mirrors the permission constants in `lib/auth/permissions.js`.
 
 ## API Client
 
 Located in `apps/web/src/lib/api/`. Axios-based with:
+
 - Base URL from `VITE_API_URL` env var
 - Request interceptor: attaches JWT token
 - Response interceptor: unwraps `{ ok, data, meta, error }` envelope, handles 401
@@ -117,7 +118,7 @@ Located in `apps/web/src/lib/api/`. Axios-based with:
 - **Shared components**: `components/shared/` — `DataTable`, `StatCard`, `StatusBadge`, `SearchBar`, `PageHeader`, `EmptyState`, `UserAccessModal`
 - **UI primitives**: `components/ui/` — shadcn/ui generated components
 - **Auth**: `context/AuthContext.jsx` + `context/AuthProvider.jsx`
-- **Styles**: `index.css` for Tailwind directives + custom tokens; `App.css` for app-level overrides
+- **Styles**: `index.css` for Tailwind directives, design tokens, custom utilities, and app-level overrides
 - **Dark mode**: `dark` class on root div; forced by default
 - **Code splitting**: All 18 pages are `React.lazy` loaded
 
