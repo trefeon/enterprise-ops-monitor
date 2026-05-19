@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { apiGet, apiPost, apiPut } from '../../lib/api/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import Toolbar from '../../components/ui/Toolbar';
 import {
   Select,
   SelectContent,
@@ -11,6 +12,7 @@ import {
 } from '@/components/ui/select';
 import { StatCard } from '@/components/shared/StatCard';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import {
   Table,
   TableHeader,
@@ -21,16 +23,15 @@ import {
 } from '@/components/ui/table';
 import { useToast } from '../../components/ui/ToastContext';
 import { useAuth } from '../../context/AuthContext';
-import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { SearchBar } from '@/components/shared/SearchBar';
-import { getFeatureStory } from '../../data/stories';
 import {
   Loader2,
   Clock,
-  Search,
   Save,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
   Calendar,
   RotateCw,
   RefreshCw,
@@ -64,16 +65,12 @@ const LIMIT_OPTIONS = [
 const MONTHLY_REPORT_WHATSAPP_TARGETS_SAMPLE = '120000000000099,000000000000';
 const DEFAULT_WINDOW_START = '23:15';
 
-const TOOLBAR_FIELD_CLASS = '!h-11 !rounded-xl !border-border/70 !bg-background shadow-sm';
-const TOOLBAR_BUTTON_CLASS =
-  '!h-11 w-full justify-center !rounded-md border border-border bg-background text-foreground hover:bg-secondary sm:w-auto';
-const TOOLBAR_ICON_BUTTON_CLASS =
-  '!h-11 !w-11 shrink-0 !rounded-md border border-border bg-background !px-0 text-foreground hover:bg-secondary';
+const TOOLBAR_FIELD_CLASS = 'w-full';
+const TOOLBAR_BUTTON_CLASS = 'w-full justify-center sm:w-auto';
+const TOOLBAR_ICON_BUTTON_CLASS = '!w-10 shrink-0 !px-0';
 const TOOLBAR_PRIMARY_BUTTON_CLASS = '!h-11 w-full justify-center !rounded-md sm:w-auto';
-const TOOLBAR_PANEL_CLASS = 'rounded-lg border border-border bg-background/75 p-4';
-const TOOLBAR_LABEL_CLASS = 'text-xs font-semibold uppercase tracking-widest text-muted-foreground';
 const TOOLBAR_META_PILL_CLASS =
-  'rounded-xs border border-border bg-background/80 px-3 py-1 text-xs text-muted-foreground';
+  'rounded-sm border border-border bg-background/80 px-3 py-1 text-xs text-muted-foreground';
 
 function getDefaultMonth() {
   const now = new Date();
@@ -484,557 +481,440 @@ export default function AfterHoursReport() {
   const medalClasses = ['text-status-warning', 'text-muted-foreground', 'text-status-warning/70'];
 
   return (
-    <>
-      <div className="space-y-5">
-        <FeatureStoryBanner story={getFeatureStory('after-hours-report')} />
-
-        <Card className="overflow-hidden py-3">
-          <CardContent>
-            <div className="grid gap-5 border-b border-border/60 px-5 py-5 lg:grid-cols-2 lg:px-6">
-              <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-xs border border-border bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  <FileText className="size-3 text-status-info" />
-                  After-Hours Monthly Report
-                </div>
-
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-semibold tracking-tight text-foreground">
-                    Clean, searchable monthly reports ready for sharing
-                  </h2>
-                  <p className="max-w-2xl text-sm leading-6 text-muted-foreground">
-                    Select a month, filter by branch or store name, generate Excel for Excel/WPS,
-                    and automatically send it to WhatsApp on the 1st of every month at 09:00 WIB.
-                    This report follows the production after-hours check configuration, including
-                    00:00 logs which are correctly attributed to the previous business day.
-                  </p>
-                </div>
-
-                <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                  <span className="rounded-xs border border-border bg-background/70 px-3 py-1">
-                    Search + filters
-                  </span>
-                  <span className="rounded-xs border border-border bg-background/70 px-3 py-1">
-                    XLSX export
-                  </span>
-                  <span className="rounded-xs border border-border bg-background/70 px-3 py-1">
-                    Final check window
-                  </span>
-                  <span className="rounded-xs border border-border bg-background/70 px-3 py-1">
-                    WhatsApp auto-send 09:00 WIB
-                  </span>
-                </div>
+    <div className="space-y-6">
+      <Card className="p-0">
+        <CardContent className="p-5">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="space-y-2">
+              <div className="inline-flex items-center gap-2 rounded-sm border border-border bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                <FileText className="size-3 text-status-info" />
+                Monthly Report Delivery
               </div>
-
-              <div className="rounded-lg border border-border bg-background/90 p-4">
-                <div className="flex items-start justify-between gap-3">
-                  <div className="space-y-2">
-                    <h3 className="text-sm font-semibold text-foreground">
-                      WhatsApp Broadcast Target
-                    </h3>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Enter chat or group IDs for automatic monthly report delivery.
-                    </p>
-                  </div>
-
-                  <span
-                    className={`rounded-xs px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
-                      monthlyReportBroadcastEnabled
-                        ? 'bg-status-success/10 text-status-success'
-                        : 'bg-muted text-muted-foreground'
-                    }`}
-                  >
-                    {monthlyReportBroadcastEnabled ? 'Enabled' : 'Disabled'}
-                  </span>
-                </div>
-
-                <div className="mt-4 space-y-3">
-                  <div className="relative w-full">
-                    <div className="pointer-events-none absolute left-3 inset-y-0 flex items-center text-muted-foreground">
-                      <Save className="size-4" />
-                    </div>
-                    <Input
-                      type="text"
-                      value={monthlyReportWhatsappTargets}
-                      onChange={(e) => setMonthlyReportWhatsappTargets(e.target.value)}
-                      placeholder={MONTHLY_REPORT_WHATSAPP_TARGETS_SAMPLE}
-                      disabled={loadingMonthlyReportSettings}
-                      className="!h-11 !rounded-sm !bg-background !pl-11"
-                    />
-                  </div>
-
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <p className="text-xs text-muted-foreground">
-                      Separate multiple targets with commas. Example:{' '}
-                      <code className="text-foreground">
-                        {MONTHLY_REPORT_WHATSAPP_TARGETS_SAMPLE}
-                      </code>
-                    </p>
-                    <Button
-                      size="sm"
-                      onClick={handleSaveMonthlyReportSettings}
-                      disabled={loadingMonthlyReportSettings}
-                    >
-                      {savingMonthlyReportSettings && <Loader2 className="size-4 animate-spin" />}
-                      <Save className="size-4" />
-                      Save Target
-                    </Button>
-                  </div>
-                </div>
-              </div>
+              <h2 className="text-lg font-semibold tracking-normal text-foreground">
+                WhatsApp broadcast target
+              </h2>
+              <p className="max-w-3xl text-sm leading-6 text-muted-foreground">
+                Configure the target list used when monthly after-hours reports are generated and
+                sent automatically at 09:00 WIB.
+              </p>
             </div>
-            <div className="px-5 py-5 lg:px-6">
-              <div className="rounded-lg border border-border bg-muted/20 p-4 sm:p-5">
-                <div className="grid gap-4 xl:grid-cols-12">
-                  <div className={`${TOOLBAR_PANEL_CLASS} xl:col-span-5`}>
-                    <div className="space-y-2">
-                      <p className={TOOLBAR_LABEL_CLASS}>Search Store</p>
-                      <SearchBar
-                        value={search}
-                        onValueChange={(val) => {
-                          setSearch(val);
-                          setExpandedRow(null);
-                        }}
-                        placeholder="Search violating store code or name..."
-                        className={TOOLBAR_FIELD_CLASS}
-                      />
-                      <p className="text-xs leading-5 text-muted-foreground">
-                        Search by store code or store name that violated the window.
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className={`${TOOLBAR_PANEL_CLASS} xl:col-span-4`}>
-                    <div className="space-y-3">
-                      <div className="space-y-1">
-                        <p className={TOOLBAR_LABEL_CLASS}>Report Period</p>
-                        <p className="text-sm font-semibold text-foreground">
-                          {formatMonthLabel(month + '-01')}
-                        </p>
-                      </div>
-
-                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="md"
-                          className={TOOLBAR_ICON_BUTTON_CLASS}
-                          onClick={() => setMonth((prev) => shiftMonth(prev, -1))}
-                          aria-label="Previous month"
-                        >
-                          <ChevronLeft className="size-4" />
-                        </Button>
-
-                        <Select
-                          value={month}
-                          onValueChange={(val) => {
-                            const e = {
-                              target: {
-                                value: val,
-                              },
-                            };
-
-                            return setMonth(e.target.value);
-                          }}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select Month" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {monthOptions.map((value) => (
-                              <SelectItem key={value} value={value}>
-                                {formatMonthLabel(`${value}-01`)}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="md"
-                          className={TOOLBAR_ICON_BUTTON_CLASS}
-                          onClick={() => setMonth((prev) => shiftMonth(prev, 1))}
-                          disabled={month >= currentMonth}
-                          aria-label="Next month"
-                        >
-                          <ChevronRight className="size-4" />
-                        </Button>
-
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="md"
-                          className={`${TOOLBAR_BUTTON_CLASS} sm:w-36`}
-                          onClick={() => setMonth(currentMonth)}
-                        >
-                          <Calendar className="size-4" />
-                          This Month
-                        </Button>
-                      </div>
-
-                      <div className="space-y-2">
-                        <p className={TOOLBAR_LABEL_CLASS}>Violation Window</p>
-                        <div className="relative w-full">
-                          <div className="pointer-events-none absolute left-3 inset-y-0 flex items-center text-muted-foreground">
-                            <Clock className="size-4" />
-                          </div>
-                          <Input
-                            type="time"
-                            value={windowStart}
-                            onChange={(e) => {
-                              windowStartEditedRef.current = true;
-                              setWindowStart(e.target.value);
-                              setExpandedRow(null);
-                            }}
-                            step="300"
-                            className={cn(TOOLBAR_FIELD_CLASS, '!pl-11')}
-                          />
-                        </div>
-                        <p className="text-xs leading-5 text-muted-foreground">
-                          Default reports start recording violations from 23:15 WIB. Change this
-                          value only for custom reports before Generate / Download.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div
-                    className={`${TOOLBAR_PANEL_CLASS} grid gap-4 sm:grid-cols-2 xl:col-span-3 xl:grid-cols-1`}
-                  >
-                    <div className="space-y-2">
-                      <p className={TOOLBAR_LABEL_CLASS}>Branch</p>
-                      <Select
-                        value={branch ? String(branch) : ''}
-                        onValueChange={(val) => {
-                          const e = {
-                            target: {
-                              value: val,
-                            },
-                          };
-
-                          return setBranch(e.target.value);
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Branch: All">
-                            {branch
-                              ? `Branch: ${BRANCH_OPTIONS.find((b) => String(b.id) === String(branch))?.label || branch}`
-                              : undefined}
-                          </SelectValue>
-                        </SelectTrigger>
-                        <SelectContent>
-                          {BRANCH_OPTIONS.map((b) => (
-                            <SelectItem key={b.id} value={b.id}>
-                              {b.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <p className={TOOLBAR_LABEL_CLASS}>Ranking Limit</p>
-                      <Select
-                        value={limit}
-                        onValueChange={(val) => {
-                          const e = {
-                            target: {
-                              value: val,
-                            },
-                          };
-
-                          return setLimit(e.target.value);
-                        }}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Limit: Top 20" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {LIMIT_OPTIONS.map((opt) => (
-                            <SelectItem key={opt.value} value={opt.value}>
-                              {opt.label}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="mt-4 flex flex-col gap-4 border-t border-border/60 pt-4 xl:flex-row xl:items-center xl:justify-between">
-                  <div className="flex flex-wrap gap-2">
-                    {activeFilters.map((item) => (
-                      <span key={item} className={TOOLBAR_META_PILL_CLASS}>
-                        {item}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
-                    <Button
-                      variant="ghost"
-                      size="md"
-                      className={`${TOOLBAR_BUTTON_CLASS} sm:w-32`}
-                      onClick={() => {
-                        setBranch('');
-                        setSearch('');
-                        setLimit('20');
-                        windowStartEditedRef.current = false;
-                        setWindowStart(DEFAULT_WINDOW_START);
-                        setMonth(getDefaultMonth());
-                        setExpandedRow(null);
-                      }}
-                    >
-                      <RefreshCw className="mr-2 size-4" />
-                      Reset
-                    </Button>
-
-                    {hasExportableReport && (
-                      <Button
-                        variant="secondary"
-                        size="md"
-                        className={`${TOOLBAR_BUTTON_CLASS} sm:w-40`}
-                        onClick={handleDownloadReport}
-                        disabled={loading || generating || downloading}
-                      >
-                        {downloading ? (
-                          <Loader2 className="animate-spin mr-2 size-4" />
-                        ) : (
-                          <Download className="mr-2 size-4" />
-                        )}
-                        {downloading ? 'Downloading...' : 'Download Excel'}
-                      </Button>
-                    )}
-
-                    <Button
-                      onClick={handleGenerate}
-                      size="md"
-                      className={`${TOOLBAR_PRIMARY_BUTTON_CLASS} sm:w-44`}
-                      disabled={loading || generating || downloading}
-                    >
-                      {generating ? (
-                        <Loader2 className="animate-spin mr-2 size-4" />
-                      ) : (
-                        <FileText className="mr-2 size-4" />
-                      )}
-                      {generating ? 'Generating...' : 'Generate Report'}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-        {/* Month Chips */}
-        {availableMonths.length > 0 && (
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-xs font-medium text-muted-foreground">Available Reports:</span>
-            {availableMonths.map((m) => {
-              const monthStr =
-                typeof m.report_month === 'string'
-                  ? m.report_month.slice(0, 7)
-                  : new Date(m.report_month).toISOString().slice(0, 7);
-              return (
-                <Button
-                  key={monthStr}
-                  size="sm"
-                  variant={monthStr === month ? 'default' : 'secondary'}
-                  onClick={() => setMonth(monthStr)}
-                  className="h-7 rounded-full px-3 text-xs"
-                >
-                  {formatMonthLabel(m.report_month)} ({m.store_count})
-                </Button>
-              );
-            })}
+            <StatusBadge variant={monthlyReportBroadcastEnabled ? 'success' : 'neutral'} size="lg">
+              {monthlyReportBroadcastEnabled ? 'Enabled' : 'Disabled'}
+            </StatusBadge>
           </div>
-        )}
 
-        {/* Stats Cards */}
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-          <StatCard
-            title="Violating Stores"
-            value={totalStores}
-            icon={<Store className="size-5" />}
-            status={totalStores > 0 ? 'error' : 'success'}
-            subtext={`${selectedBranchLabel} • ${formatMonthLabel(month + '-01')} • Window: ${selectedWindowLabel}${normalizedSearch ? ` • Search: ${normalizedSearch}` : ''}`}
-            className={
-              totalStores > 0
-                ? 'border-destructive/30 bg-destructive/5'
-                : 'border-status-success/30 bg-status-success/5'
-            }
-          />
-          <StatCard
-            title="Total Violation Days"
-            value={totalViolationDays}
-            icon={<Calendar className="size-5" />}
-            status={totalViolationDays > 0 ? 'warning' : 'success'}
-            subtext="Accumulated across all stores"
-            className={
-              totalViolationDays > 0
-                ? 'border-status-warning/30 bg-status-warning/5'
-                : 'border-status-success/30 bg-status-success/5'
-            }
-          />
-          <StatCard
-            title="Report Period"
-            value={formatMonthLabel(month + '-01')}
-            icon={<Calendar className="size-5" />}
-            status="info"
-            subtext={
-              branch || normalizedSearch
-                ? [
-                    branch ? `Filtered: ${selectedBranchLabel}` : null,
-                    normalizedSearch ? `Search: ${normalizedSearch}` : null,
-                  ]
-                    .filter(Boolean)
-                    .join(' • ')
-                : 'All monitored branches'
-            }
-            className="border-status-info/30 bg-status-info/5"
-          />
-        </div>
-
-        {/* Ranking Table */}
-        <Card className="p-0 overflow-hidden">
-          <CardContent className="p-0">
-            {!loading && ranking.length > 0 && (
-              <div className="flex flex-col gap-1 border-b border-border bg-muted/20 px-4 py-3 text-xs sm:flex-row sm:items-center sm:justify-between">
-                <span className="font-medium text-foreground">
-                  {selectedBranchLabel} • {formatMonthLabel(month + '-01')}
-                </span>
-                <span className="text-muted-foreground">Top {ranking.length} violating stores</span>
+          <div className="mt-4 flex flex-col gap-3 lg:flex-row lg:items-start">
+            <div className="relative w-full lg:flex-1">
+              <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground">
+                <Save className="size-4" />
               </div>
-            )}
-            {loading ? (
-              <div className="flex h-32 items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin text-primary" />
-              </div>
-            ) : ranking.length === 0 ? (
-              <EmptyState
-                title="No report data"
-                description={
-                  normalizedSearch
-                    ? `No violating stores match the search "${normalizedSearch}" for ${formatMonthLabel(month + '-01')}.`
-                    : `No report data available for ${formatMonthLabel(month + '-01')}. Click "Generate Report" to create one.`
-                }
-                icon={<Save className="size-8" />}
+              <Input
+                type="text"
+                value={monthlyReportWhatsappTargets}
+                onChange={(e) => setMonthlyReportWhatsappTargets(e.target.value)}
+                placeholder={MONTHLY_REPORT_WHATSAPP_TARGETS_SAMPLE}
+                disabled={loadingMonthlyReportSettings}
+                className="!pl-11"
               />
-            ) : (
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Rank</TableHead>
-                    <TableHead>Store</TableHead>
-                    <TableHead>Branch</TableHead>
-                    <TableHead>Violation Days</TableHead>
-                    <TableHead>Detail</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {ranking.map((item) => {
-                    const isExpanded = expandedRow === item.store_code;
-                    const dates = Array.isArray(item.violation_dates) ? item.violation_dates : [];
-                    const timestamps = Array.isArray(item.violation_timestamps)
-                      ? item.violation_timestamps
-                      : [];
-                    const detailItems = timestamps.length > 0 ? timestamps : dates;
-                    const detailLabel = timestamps.length > 0 ? 'times' : 'dates';
-                    return (
-                      <React.Fragment key={item.store_code}>
-                        <TableRow className={item.rank <= 3 ? 'bg-destructive/5' : ''}>
-                          <TableCell>
-                            <span className="flex items-center gap-1.5">
-                              {item.rank <= 3 ? (
-                                <Trophy className={cn('size-4', medalClasses[item.rank - 1])} />
-                              ) : (
-                                <span className="inline-flex h-6 w-6 items-center justify-center rounded-full bg-secondary text-xs font-bold text-secondary-foreground">
-                                  {item.rank}
-                                </span>
-                              )}
+            </div>
+            <Button
+              size="sm"
+              onClick={handleSaveMonthlyReportSettings}
+              disabled={loadingMonthlyReportSettings}
+            >
+              {savingMonthlyReportSettings && <Loader2 className="size-4 animate-spin" />}
+              <Save className="size-4" />
+              Save Target
+            </Button>
+          </div>
+
+          <p className="mt-2 text-xs text-muted-foreground">
+            Separate multiple targets with commas. Example:{' '}
+            <code className="text-foreground">{MONTHLY_REPORT_WHATSAPP_TARGETS_SAMPLE}</code>
+          </p>
+        </CardContent>
+      </Card>
+
+      <Toolbar>
+        <div className="flex w-full flex-col gap-3">
+          <div className="grid gap-2 lg:grid-cols-3">
+            <SearchBar
+              value={search}
+              onValueChange={(val) => {
+                setSearch(val);
+                setExpandedRow(null);
+              }}
+              placeholder="Search violating store code or name..."
+              className="w-full"
+            />
+            <Select
+              value={branch ? String(branch) : ''}
+              onValueChange={(val) => {
+                setBranch(val);
+                setExpandedRow(null);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-full">
+                <SelectValue placeholder="Branch: All">
+                  {branch
+                    ? `Branch: ${BRANCH_OPTIONS.find((b) => String(b.id) === String(branch))?.label || branch}`
+                    : undefined}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                {BRANCH_OPTIONS.map((b) => (
+                  <SelectItem key={b.id} value={b.id}>
+                    {b.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={limit}
+              onValueChange={(val) => {
+                setLimit(val);
+                setExpandedRow(null);
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-full">
+                <SelectValue placeholder="Limit: Top 20" />
+              </SelectTrigger>
+              <SelectContent>
+                {LIMIT_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="flex flex-col gap-2 border-t border-border/60 pt-3 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <div className="flex w-full min-w-0 gap-2 sm:w-auto">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className={TOOLBAR_ICON_BUTTON_CLASS}
+                  onClick={() => setMonth((prev) => shiftMonth(prev, -1))}
+                  aria-label="Previous month"
+                >
+                  <ChevronLeft className="size-4" />
+                </Button>
+                <Select value={month} onValueChange={(val) => setMonth(val)}>
+                  <SelectTrigger className="min-w-0 flex-1 sm:w-52">
+                    <SelectValue placeholder="Select Month" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {monthOptions.map((value) => (
+                      <SelectItem key={value} value={value}>
+                        {formatMonthLabel(`${value}-01`)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon-sm"
+                  className={TOOLBAR_ICON_BUTTON_CLASS}
+                  onClick={() => setMonth((prev) => shiftMonth(prev, 1))}
+                  disabled={month >= currentMonth}
+                  aria-label="Next month"
+                >
+                  <ChevronRight className="size-4" />
+                </Button>
+              </div>
+              <div className="relative w-full sm:w-40">
+                <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground">
+                  <Clock className="size-4" />
+                </div>
+                <Input
+                  type="time"
+                  value={windowStart}
+                  onChange={(e) => {
+                    windowStartEditedRef.current = true;
+                    setWindowStart(e.target.value);
+                    setExpandedRow(null);
+                  }}
+                  step="300"
+                  className={cn(TOOLBAR_FIELD_CLASS, '!pl-11')}
+                />
+              </div>
+            </div>
+
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={TOOLBAR_BUTTON_CLASS}
+                onClick={() => {
+                  setBranch('');
+                  setSearch('');
+                  setLimit('20');
+                  windowStartEditedRef.current = false;
+                  setWindowStart(DEFAULT_WINDOW_START);
+                  setMonth(getDefaultMonth());
+                  setExpandedRow(null);
+                }}
+              >
+                <RefreshCw className="size-4" />
+                Reset
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                className={TOOLBAR_BUTTON_CLASS}
+                onClick={() => setMonth(currentMonth)}
+              >
+                <Calendar className="size-4" />
+                This Month
+              </Button>
+              {hasExportableReport && (
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  className={TOOLBAR_BUTTON_CLASS}
+                  onClick={handleDownloadReport}
+                  disabled={loading || generating || downloading}
+                >
+                  {downloading ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Download className="size-4" />
+                  )}
+                  {downloading ? 'Downloading...' : 'Download Excel'}
+                </Button>
+              )}
+              <Button
+                onClick={handleGenerate}
+                size="sm"
+                className={TOOLBAR_PRIMARY_BUTTON_CLASS}
+                disabled={loading || generating || downloading}
+              >
+                {generating ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <FileText className="size-4" />
+                )}
+                {generating ? 'Generating...' : 'Generate Report'}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Toolbar>
+
+      <div className="flex flex-wrap gap-2">
+        {activeFilters.map((item) => (
+          <span key={item} className={TOOLBAR_META_PILL_CLASS}>
+            {item}
+          </span>
+        ))}
+      </div>
+      {/* Month Chips */}
+      {availableMonths.length > 0 && (
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-medium text-muted-foreground">Available Reports:</span>
+          {availableMonths.map((m) => {
+            const monthStr =
+              typeof m.report_month === 'string'
+                ? m.report_month.slice(0, 7)
+                : new Date(m.report_month).toISOString().slice(0, 7);
+            return (
+              <Button
+                key={monthStr}
+                size="sm"
+                variant={monthStr === month ? 'default' : 'secondary'}
+                onClick={() => setMonth(monthStr)}
+                className="h-7 rounded-sm px-3 text-xs"
+              >
+                {formatMonthLabel(m.report_month)} ({m.store_count})
+              </Button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+        <StatCard
+          title="Violating Stores"
+          value={totalStores}
+          icon={<Store className="size-5" />}
+          status={totalStores > 0 ? 'error' : 'success'}
+          subtext={`${selectedBranchLabel} • ${formatMonthLabel(month + '-01')} • Window: ${selectedWindowLabel}${normalizedSearch ? ` • Search: ${normalizedSearch}` : ''}`}
+        />
+        <StatCard
+          title="Total Violation Days"
+          value={totalViolationDays}
+          icon={<Calendar className="size-5" />}
+          status={totalViolationDays > 0 ? 'warning' : 'success'}
+          subtext="Accumulated across all stores"
+        />
+        <StatCard
+          title="Report Period"
+          value={formatMonthLabel(month + '-01')}
+          icon={<Calendar className="size-5" />}
+          status="info"
+          subtext={
+            branch || normalizedSearch
+              ? [
+                  branch ? `Filtered: ${selectedBranchLabel}` : null,
+                  normalizedSearch ? `Search: ${normalizedSearch}` : null,
+                ]
+                  .filter(Boolean)
+                  .join(' • ')
+              : 'All monitored branches'
+          }
+        />
+      </div>
+
+      {/* Ranking Table */}
+      <Card className="p-0 overflow-hidden">
+        <CardContent className="p-0">
+          {!loading && ranking.length > 0 && (
+            <div className="flex flex-col gap-1 border-b border-border bg-muted/20 px-4 py-3 text-xs sm:flex-row sm:items-center sm:justify-between">
+              <span className="font-medium text-foreground">
+                {selectedBranchLabel} • {formatMonthLabel(month + '-01')}
+              </span>
+              <span className="text-muted-foreground">Top {ranking.length} violating stores</span>
+            </div>
+          )}
+          {loading ? (
+            <div className="flex h-32 items-center justify-center">
+              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </div>
+          ) : ranking.length === 0 ? (
+            <EmptyState
+              title="No report data"
+              description={
+                normalizedSearch
+                  ? `No violating stores match the search "${normalizedSearch}" for ${formatMonthLabel(month + '-01')}.`
+                  : `No report data available for ${formatMonthLabel(month + '-01')}. Click "Generate Report" to create one.`
+              }
+              icon={<Save className="size-8" />}
+            />
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Rank</TableHead>
+                  <TableHead>Store</TableHead>
+                  <TableHead>Branch</TableHead>
+                  <TableHead>Violation Days</TableHead>
+                  <TableHead>Detail</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {ranking.map((item) => {
+                  const isExpanded = expandedRow === item.store_code;
+                  const dates = Array.isArray(item.violation_dates) ? item.violation_dates : [];
+                  const timestamps = Array.isArray(item.violation_timestamps)
+                    ? item.violation_timestamps
+                    : [];
+                  const detailItems = timestamps.length > 0 ? timestamps : dates;
+                  const detailLabel = timestamps.length > 0 ? 'times' : 'dates';
+                  return (
+                    <React.Fragment key={item.store_code}>
+                      <TableRow className={item.rank <= 3 ? 'bg-destructive/5' : ''}>
+                        <TableCell>
+                          <span className="flex items-center gap-1.5">
+                            {item.rank <= 3 ? (
+                              <Trophy className={cn('size-4', medalClasses[item.rank - 1])} />
+                            ) : (
+                              <span className="inline-flex h-6 w-6 items-center justify-center rounded-sm bg-secondary text-xs font-bold text-secondary-foreground">
+                                {item.rank}
+                              </span>
+                            )}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="font-mono text-xs text-foreground">
+                              {item.store_code}
                             </span>
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex flex-col">
-                              <span className="font-mono text-xs text-foreground">
-                                {item.store_code}
-                              </span>
-                              <span className="text-xs text-muted-foreground">
-                                {item.store_name || '—'}
-                              </span>
+                            <span className="text-xs text-muted-foreground">
+                              {item.store_name || '—'}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
+                            {item.branch_name || item.branch_id}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <span className="flex items-center gap-1.5">
+                            <span
+                              className={`text-sm font-bold ${
+                                item.violation_count >= 20
+                                  ? 'text-destructive'
+                                  : item.violation_count >= 10
+                                    ? 'text-status-warning'
+                                    : 'text-foreground'
+                              }`}
+                            >
+                              {item.violation_count}
+                            </span>
+                            <span className="text-xs text-muted-foreground">day(s)</span>
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setExpandedRow(isExpanded ? null : item.store_code)}
+                          >
+                            {isExpanded ? (
+                              <ChevronUp className="size-4" />
+                            ) : (
+                              <ChevronDown className="size-4" />
+                            )}
+                            {detailItems.length} {detailLabel}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                      {isExpanded && detailItems.length > 0 && (
+                        <TableRow>
+                          <TableCell />
+                          <TableCell colSpan={4}>
+                            <div className="flex flex-wrap gap-1.5 py-1">
+                              {detailItems.map((timestampStr) => (
+                                <span
+                                  key={timestampStr}
+                                  className="inline-flex items-center rounded-sm border border-border/60 bg-background px-2.5 py-1 text-xs text-foreground"
+                                >
+                                  {formatReportTimelineItem(timestampStr)}
+                                </span>
+                              ))}
                             </div>
                           </TableCell>
-                          <TableCell>
-                            <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
-                              {item.branch_name || item.branch_id}
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <span className="flex items-center gap-1.5">
-                              <span
-                                className={`text-sm font-bold ${
-                                  item.violation_count >= 20
-                                    ? 'text-destructive'
-                                    : item.violation_count >= 10
-                                      ? 'text-status-warning'
-                                      : 'text-foreground'
-                                }`}
-                              >
-                                {item.violation_count}
-                              </span>
-                              <span className="text-xs text-muted-foreground">day(s)</span>
-                            </span>
-                          </TableCell>
-                          <TableCell>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              icon={isExpanded ? 'expand_less' : 'expand_more'}
-                              onClick={() => setExpandedRow(isExpanded ? null : item.store_code)}
-                            >
-                              {detailItems.length} {detailLabel}
-                            </Button>
-                          </TableCell>
                         </TableRow>
-                        {isExpanded && detailItems.length > 0 && (
-                          <TableRow>
-                            <TableCell />
-                            <TableCell colSpan={4}>
-                              <div className="flex flex-wrap gap-1.5 py-1">
-                                {detailItems.map((timestampStr) => (
-                                  <span
-                                    key={timestampStr}
-                                    className="inline-flex items-center rounded-full border border-border/60 bg-background px-2.5 py-1 text-xs text-foreground shadow-sm"
-                                  >
-                                    {formatReportTimelineItem(timestampStr)}
-                                  </span>
-                                ))}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        )}
-                      </React.Fragment>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            )}
-            {!loading && ranking.length > 0 && (
-              <div className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-                <span className="text-muted-foreground">
-                  Showing <span className="font-medium text-foreground">{ranking.length}</span> of{' '}
-                  <span className="font-medium text-foreground">{totalStores}</span> violating
-                  store(s)
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {ranking[0]?.generated_at
-                    ? `Generated: ${formatGeneratedAt(ranking[0].generated_at)}`
-                    : ''}
-                </span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          )}
+          {!loading && ranking.length > 0 && (
+            <div className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
+              <span className="text-muted-foreground">
+                Showing <span className="font-medium text-foreground">{ranking.length}</span> of{' '}
+                <span className="font-medium text-foreground">{totalStores}</span> violating
+                store(s)
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {ranking[0]?.generated_at
+                  ? `Generated: ${formatGeneratedAt(ranking[0].generated_at)}`
+                  : ''}
+              </span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }

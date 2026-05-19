@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { apiGet, apiPost, apiPut } from '../../lib/api/client';
 import PageShell from '../../components/ui/PageShell';
 import PageHeader from '../../components/ui/PageHeader';
+import Toolbar from '../../components/ui/Toolbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -13,6 +14,7 @@ import {
 } from '@/components/ui/select';
 import { StatCard } from '@/components/shared/StatCard';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { StatusBadge } from '@/components/shared/StatusBadge';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { DatePicker } from '../../components/shared/DatePicker';
 import { SearchBar } from '../../components/shared/SearchBar';
@@ -185,13 +187,9 @@ const WHATSAPP_API_KEY_SAMPLE = 'demo-api-key';
 const WHATSAPP_API_SECRET_SAMPLE = 'demo-api-secret';
 const EMPTY_WARNING_SCHEDULE_TIMES = ['', '', '', ''];
 
-const TOOLBAR_FIELD_CLASS = '!h-10 !rounded-xl !bg-background shadow-sm';
-const TOOLBAR_BUTTON_CLASS =
-  'w-full justify-center !rounded-xl border border-border/70 bg-background text-foreground shadow-sm hover:bg-muted sm:w-auto';
-const NOTIFICATION_FIELD_CLASS =
-  '!h-10 !rounded-xl !bg-background/40 hover:!bg-background/70 focus:!bg-background border border-border/80 focus:border-primary/50 transition-all shadow-sm';
+const NOTIFICATION_FIELD_CLASS = '!h-10 border-border/80 bg-background/70 focus:border-primary/50';
 const NOTIFICATION_TEXTAREA_CLASS =
-  'min-h-56 w-full rounded-2xl border border-border/80 bg-background/40 hover:bg-background/70 focus:bg-background px-4 py-3 font-mono text-sm text-foreground shadow-sm placeholder:text-muted-foreground/60 transition-all focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40';
+  'min-h-56 w-full rounded-md border border-border/80 bg-background/70 px-4 py-3 font-mono text-sm text-foreground placeholder:text-muted-foreground/60 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20';
 
 function isValidHhmm(value) {
   return /^\d{2}:\d{2}$/.test(String(value || '').trim());
@@ -350,13 +348,13 @@ function getBranchNotificationValue(targetMap, branchId) {
 
 function NotificationTargetRow({ label, helperText, value, onChange, placeholder, icon }) {
   return (
-    <div className="grid gap-3 rounded-2xl border border-border/40 bg-muted/5 hover:bg-muted/10 transition-colors duration-250 p-4 lg:grid-cols-2 lg:items-center">
+    <div className="grid gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:bg-secondary/40 lg:grid-cols-2 lg:items-center">
       <div className="space-y-1">
         <p className="text-sm font-semibold tracking-wide text-foreground">{label}</p>
-        <p className="text-xs text-muted-foreground/80 leading-relaxed">{helperText}</p>
+        <p className="text-xs leading-relaxed text-muted-foreground">{helperText}</p>
       </div>
       <div className="relative w-full min-w-0">
-        <div className="absolute left-3.5 inset-y-0 flex items-center text-muted-foreground/60 pointer-events-none">
+        <div className="pointer-events-none absolute inset-y-0 left-3.5 flex items-center text-muted-foreground">
           {icon}
         </div>
         <Input
@@ -364,7 +362,7 @@ function NotificationTargetRow({ label, helperText, value, onChange, placeholder
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className={`${NOTIFICATION_FIELD_CLASS} font-mono !pl-10 !h-10 text-xs rounded-xl`}
+          className={`${NOTIFICATION_FIELD_CLASS} !h-10 !pl-10 font-mono text-xs`}
         />
       </div>
     </div>
@@ -392,13 +390,13 @@ function NotificationTargetEditor({
       <p className="text-xs text-muted-foreground">{description}</p>
 
       {mode === 'branch' ? (
-        <div className="space-y-3 rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm">
+        <div className="space-y-3 rounded-lg border border-border bg-background/60 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs text-muted-foreground">
               Branch form menyimpan mapping sebagai JSON di belakang layar. Target yang kosong akan
               memakai fallback <span className="font-medium text-foreground">All Branches</span>.
             </p>
-            <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="rounded-sm bg-muted px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Branch ID → Target
             </span>
           </div>
@@ -433,14 +431,14 @@ function NotificationTargetEditor({
           </p>
         </div>
       ) : (
-        <div className="space-y-3 rounded-2xl border border-border/60 bg-background/80 p-4 shadow-sm">
+        <div className="space-y-3 rounded-lg border border-border bg-background/60 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <p className="text-xs text-muted-foreground">
               Advanced JSON mode. Use branch IDs as keys and{' '}
               <span className="font-medium text-foreground">_all</span> as fallback. Existing custom
               keys are preserved.
             </p>
-            <span className="rounded-full bg-muted px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <span className="rounded-sm bg-muted px-2.5 py-1 text-xs font-medium uppercase tracking-wide text-muted-foreground">
               Raw JSON
             </span>
           </div>
@@ -910,31 +908,32 @@ export default function AfterHours() {
           ) : null
         }
       />
-      {/* Tab Bar */}
-      <div className="flex items-center gap-1 border-b border-border">
-        <button
-          onClick={() => setActiveTab('monitor')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-            activeTab === 'monitor'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <Moon className="size-4" />
-          Daily Monitor
-        </button>
-        <button
-          onClick={() => setActiveTab('report')}
-          className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
-            activeTab === 'report'
-              ? 'border-primary text-primary'
-              : 'border-transparent text-muted-foreground hover:text-foreground'
-          }`}
-        >
-          <FileText className="size-4" />
-          Monthly Report
-        </button>
-      </div>
+      <Card className="p-0">
+        <CardContent className="p-1">
+          <div className="grid gap-1 sm:inline-grid sm:grid-cols-2">
+            <Button
+              type="button"
+              variant={activeTab === 'monitor' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveTab('monitor')}
+              className="justify-start sm:justify-center"
+            >
+              <Moon className="size-4" />
+              Daily Monitor
+            </Button>
+            <Button
+              type="button"
+              variant={activeTab === 'report' ? 'default' : 'ghost'}
+              size="sm"
+              onClick={() => setActiveTab('report')}
+              className="justify-start sm:justify-center"
+            >
+              <FileText className="size-4" />
+              Monthly Report
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
       {activeTab === 'report' ? (
         <Suspense
           fallback={
@@ -947,39 +946,61 @@ export default function AfterHours() {
         </Suspense>
       ) : (
         <>
-          <Card className="!gap-0 overflow-hidden !p-0">
-            <div className="flex flex-col gap-3 border-b border-border/40 bg-muted/20 px-6 py-4 md:flex-row md:items-center md:justify-between">
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
+            <StatCard
+              title="PCs Still Online"
+              value={totalViolations}
+              icon={<Monitor className="size-5" />}
+              status={totalViolations > 0 ? 'error' : 'success'}
+              subtext={formatDate(date)}
+            />
+            <StatCard
+              title="Branches Affected"
+              value={branchCount}
+              icon={<Store className="size-5" />}
+              status={branchCount > 0 ? 'warning' : 'success'}
+              subtext={branch ? `Filtered: ${selectedBranchLabel}` : 'All monitored branches'}
+            />
+            <StatCard
+              title="Latest Last Sync"
+              value={latestSyncTime}
+              icon={<Clock className="size-5" />}
+              status="info"
+            />
+          </div>
+
+          <Card className="overflow-hidden p-0">
+            <div className="flex flex-col gap-3 border-b border-border bg-card px-5 py-4 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
                 <div
-                  className={`rounded-lg border p-2.5 transition-all duration-300 ${
+                  className={`rounded-lg border p-2.5 ${
                     notifyEnabled
-                      ? 'bg-status-success/10 text-status-success border-status-success/30 afterhours-glow-success'
-                      : 'bg-primary/10 text-primary border-primary/20 afterhours-glow-primary'
+                      ? 'border-status-success/20 bg-status-success/10 text-status-success'
+                      : 'border-border bg-muted text-muted-foreground'
                   }`}
                 >
-                  <NotificationsActive
-                    className={`size-5 ${notifyEnabled ? 'animate-pulse' : ''}`}
-                  />
+                  <NotificationsActive className="size-5" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-semibold tracking-wide text-foreground flex items-center gap-2">
+                  <h2 className="flex items-center gap-2 text-sm font-semibold tracking-wide text-foreground">
                     Automation & Notification Settings
-                    {notifyEnabled && (
-                      <span className="flex h-2 w-2 relative">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-status-success opacity-75"></span>
-                        <span className="relative inline-flex rounded-full h-2 w-2 bg-status-success"></span>
-                      </span>
-                    )}
+                    <StatusBadge
+                      variant={notifyEnabled ? 'success' : 'neutral'}
+                      size="sm"
+                      live={notifyEnabled}
+                    >
+                      {notifyEnabled ? 'Enabled' : 'Disabled'}
+                    </StatusBadge>
                   </h2>
-                  <p className="text-xs text-muted-foreground mt-0.5">
+                  <p className="mt-0.5 text-xs text-muted-foreground">
                     Configure Telegram and WhatsApp alerts for after-hours violations.
                   </p>
                 </div>
               </div>
 
               <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-2.5 rounded-xs border border-border bg-muted px-3 py-1.5">
-                  <span className="font-bold uppercase tracking-wider text-muted-foreground text-3xs">
+                <div className="flex items-center gap-2.5 rounded-md border border-border bg-secondary px-3 py-1.5">
+                  <span className="text-3xs font-bold uppercase tracking-wider text-muted-foreground">
                     Status
                   </span>
                   <button
@@ -989,10 +1010,8 @@ export default function AfterHours() {
                     onClick={() =>
                       updateSetting('notify_enabled', notifyEnabled ? 'false' : 'true')
                     }
-                    className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer items-center rounded-full transition-all duration-300 ease-in-out focus:outline-none ${
-                      notifyEnabled
-                        ? 'bg-status-success afterhours-switch-glow'
-                        : 'bg-muted-foreground/30'
+                    className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 ${
+                      notifyEnabled ? 'bg-status-success' : 'bg-muted-foreground/30'
                     }`}
                   >
                     <span
@@ -1002,7 +1021,7 @@ export default function AfterHours() {
                     />
                   </button>
                   <span
-                    className={`text-xs font-black uppercase tracking-wider transition-colors duration-300 ${
+                    className={`text-xs font-bold uppercase tracking-wider transition-colors ${
                       notifyEnabled ? 'text-status-success' : 'text-muted-foreground'
                     }`}
                   >
@@ -1014,11 +1033,7 @@ export default function AfterHours() {
                   variant="outline"
                   size="sm"
                   onClick={() => setShowSettings((prev) => !prev)}
-                  className={`h-9 rounded-xl border border-border/80 px-4 transition-all duration-300 ${
-                    showSettings
-                      ? 'bg-primary/10 text-primary border-primary/30 afterhours-button-glow'
-                      : 'bg-background hover:bg-muted/50 hover:text-foreground'
-                  }`}
+                  className={showSettings ? 'border-primary/40 bg-primary/10 text-primary' : ''}
                 >
                   {showSettings ? (
                     <>
@@ -1036,19 +1051,19 @@ export default function AfterHours() {
             </div>
             {showSettings && (
               <>
-                <div className="flex flex-col gap-3 border-b border-border/40 bg-muted/5 backdrop-blur-md px-6 py-3.5 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex flex-col gap-3 border-b border-border bg-secondary/30 px-5 py-3.5 lg:flex-row lg:items-center lg:justify-between">
                   <p className="text-xs text-muted-foreground">
                     Branch form adalah mode default. Advanced JSON dipakai kalau mau custom penuh
                     atau bulk edit mapping.
                   </p>
-                  <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-muted/30 border border-border/40">
+                  <div className="flex flex-wrap items-center gap-1.5 rounded-md border border-border bg-background p-1">
                     <Button
                       variant={notificationEditorMode === 'branch' ? 'secondary' : 'ghost'}
                       size="sm"
                       onClick={() => handleNotificationModeChange('branch')}
-                      className={`rounded-lg h-8 px-3 text-xs font-semibold transition-all duration-200 ${
+                      className={`h-8 rounded-sm px-3 text-xs font-semibold transition-colors ${
                         notificationEditorMode === 'branch'
-                          ? 'bg-background text-foreground shadow-sm'
+                          ? 'bg-secondary text-foreground'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -1059,9 +1074,9 @@ export default function AfterHours() {
                       variant={notificationEditorMode === 'advanced' ? 'secondary' : 'ghost'}
                       size="sm"
                       onClick={() => handleNotificationModeChange('advanced')}
-                      className={`rounded-lg h-8 px-3 text-xs font-semibold transition-all duration-200 ${
+                      className={`h-8 rounded-sm px-3 text-xs font-semibold transition-colors ${
                         notificationEditorMode === 'advanced'
-                          ? 'bg-background text-foreground shadow-sm'
+                          ? 'bg-secondary text-foreground'
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
@@ -1071,10 +1086,10 @@ export default function AfterHours() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 gap-8 px-6 py-6 lg:grid-cols-2">
+                <div className="grid grid-cols-1 gap-6 px-5 py-5 lg:grid-cols-2">
                   <div className="space-y-4">
                     <h4 className="mb-4 flex items-center gap-2.5 border-b border-border/40 pb-3 text-sm font-bold tracking-wider uppercase text-foreground">
-                      <span className="p-1.5 rounded-lg bg-status-info/10 text-status-info border border-status-info/20">
+                      <span className="rounded-md border border-status-info/20 bg-status-info/10 p-1.5 text-status-info">
                         <Send className="size-4" />
                       </span>
                       Telegram Configuration
@@ -1134,13 +1149,13 @@ export default function AfterHours() {
                             }
                             onChange={(e) => updateTemplateByStage('telegram', idx, e.target.value)}
                             rows={4}
-                            className="w-full resize-none rounded-xl border border-border bg-background/30 hover:bg-background/50 focus:bg-background/80 px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/40"
+                            className="w-full resize-none rounded-md border border-border bg-background/70 px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 transition-all focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                           />
                         </div>
                       );
                     })}
 
-                    <p className="mt-1.5 inline-block rounded bg-muted/50 px-2 py-1 text-xs text-muted-foreground">
+                    <p className="mt-1.5 inline-block rounded-sm bg-muted/50 px-2 py-1 text-xs text-muted-foreground">
                       Variables: <code className="text-foreground">{'{branch}'}</code>,{' '}
                       <code className="text-foreground">{'{date}'}</code>,{' '}
                       <code className="text-foreground">{'{count}'}</code>,{' '}
@@ -1152,7 +1167,7 @@ export default function AfterHours() {
 
                   <div className="space-y-4">
                     <h4 className="mb-4 flex items-center gap-2.5 border-b border-border/40 pb-3 text-sm font-bold tracking-wider uppercase text-foreground">
-                      <span className="p-1.5 rounded-lg bg-status-success/10 text-status-success border border-status-success/20">
+                      <span className="rounded-md border border-status-success/20 bg-status-success/10 p-1.5 text-status-success">
                         <MessageSquare className="size-4" />
                       </span>
                       WhatsApp Gateway (API)
@@ -1252,13 +1267,13 @@ export default function AfterHours() {
                             }
                             onChange={(e) => updateTemplateByStage('whatsapp', idx, e.target.value)}
                             rows={4}
-                            className="w-full resize-none rounded-xl border border-border bg-background/30 hover:bg-background/50 focus:bg-background/80 px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 transition-all duration-200 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary/40 focus-visible:border-primary/40"
+                            className="w-full resize-none rounded-md border border-border bg-background/70 px-3 py-2 font-mono text-xs text-foreground placeholder:text-muted-foreground/50 transition-all focus-visible:border-primary/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
                           />
                         </div>
                       );
                     })}
 
-                    <p className="mt-1.5 inline-block rounded bg-muted/50 px-2 py-1 text-xs text-muted-foreground">
+                    <p className="mt-1.5 inline-block rounded-sm bg-muted/50 px-2 py-1 text-xs text-muted-foreground">
                       Variables: <code className="text-foreground">{'{branch}'}</code>,{' '}
                       <code className="text-foreground">{'{date}'}</code>,{' '}
                       <code className="text-foreground">{'{count}'}</code>,{' '}
@@ -1269,7 +1284,7 @@ export default function AfterHours() {
                   </div>
                 </div>
 
-                <div className="flex flex-col gap-6 border-t border-border/40 bg-muted/5 px-6 py-6 md:flex-row md:items-end md:justify-between rounded-b-4xl">
+                <div className="flex flex-col gap-6 border-t border-border bg-secondary/20 px-5 py-5 md:flex-row md:items-end md:justify-between">
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4 w-full">
                     <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                       {normalizedScheduleTimes.map((timeValue, idx) => (
@@ -1286,7 +1301,7 @@ export default function AfterHours() {
                               type="time"
                               value={timeValue}
                               onChange={(e) => updateScheduleTime(idx, e.target.value)}
-                              className="!pl-11 !h-10 !rounded-xl !bg-background/40 hover:!bg-background/70 focus:!bg-background border border-border/80 focus:border-primary/50 text-xs transition-all shadow-sm"
+                              className="!h-10 !pl-11 border-border/80 bg-background/70 text-xs focus:border-primary/50"
                             />
                           </div>
                         </div>
@@ -1298,13 +1313,13 @@ export default function AfterHours() {
                     <Button
                       variant="ghost"
                       onClick={handleDiscardSettings}
-                      className="rounded-xl px-5 h-10 text-xs font-semibold border border-border/40 hover:bg-muted/50 transition-all text-muted-foreground hover:text-foreground"
+                      className="h-10 px-5 text-xs font-semibold"
                     >
                       Discard
                     </Button>
                     <Button
                       onClick={handleSaveSettings}
-                      className="rounded-xl px-5 h-10 text-xs font-semibold bg-primary hover:bg-primary/95 text-primary-foreground shadow-lg hover:shadow-primary/10 transition-all duration-300"
+                      className="h-10 px-5 text-xs font-semibold"
                     >
                       {savingSettings ? (
                         <Loader2 className="animate-spin mr-2 size-4" />
@@ -1318,84 +1333,65 @@ export default function AfterHours() {
               </>
             )}
           </Card>
-          <Card className="overflow-hidden py-2">
-            <CardContent className="py-2 px-4">
-              <div className="flex flex-col xl:flex-row items-center gap-3">
-                <div className="relative flex-1 w-full">
-                  <SearchBar
-                    value={search}
-                    onValueChange={(val) => {
-                      setSearch(val);
-                      setPage(1);
-                    }}
-                    placeholder="Search by store code or name..."
-                    className="rounded-full h-11 border-border/60 bg-background/50 hover:bg-background transition-colors"
-                  />
-                </div>
-
-                <div className="flex flex-col sm:flex-row items-center gap-2 w-full xl:w-auto">
-                  <div className="relative w-full sm:w-auto">
-                    <Select
-                      value={branch ? String(branch) : ''}
-                      onValueChange={(val) => {
-                        setBranch(val);
-                        setPage(1);
-                      }}
-                    >
-                      <SelectTrigger className="w-full md:w-60 h-11 rounded-full border-border/60 bg-background/50 hover:bg-background transition-colors px-4 flex items-center justify-start gap-2">
-                        <span className="shrink-0 text-3xs font-black uppercase tracking-widest-lg text-muted-foreground/60">
-                          BRANCH:
-                        </span>
-                        <SelectValue placeholder="All Branches">
-                          <span className="font-bold text-foreground">
-                            {branch
-                              ? BRANCH_OPTIONS.find((b) => String(b.id) === String(branch))
-                                  ?.label || branch
-                              : 'ALL'}
-                          </span>
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        {BRANCH_OPTIONS.map((b) => (
-                          <SelectItem key={b.id} value={b.id}>
-                            {b.label}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  <div className="relative w-full sm:w-auto">
-                    <span className="absolute left-10 top-1/2 -translate-y-1/2 text-3xs font-black uppercase tracking-widest-lg text-muted-foreground/40 pointer-events-none hidden md:block z-10">
-                      FOR
-                    </span>
-                    <DatePicker
-                      value={date}
-                      onValueChange={(val) => {
-                        setDate(val);
-                        setPage(1);
-                      }}
-                      className="rounded-full h-11 border-border/60 bg-background/50 hover:bg-background transition-colors w-full md:w-52 md:pl-20"
-                    />
-                  </div>
-
-                  <Button
-                    variant="ghost"
-                    size="md"
-                    className="h-11 rounded-full border border-border/60 bg-background/50 hover:bg-foreground hover:text-background transition-all px-6 w-full sm:w-auto group/reset"
-                    onClick={() => {
-                      setSearch('');
-                      setBranch('');
-                      setPage(1);
-                    }}
-                  >
-                    <RefreshCw className="mr-2 size-4 group-hover/reset:rotate-180 transition-transform duration-500" />
-                    Reset
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <Toolbar
+            left={
+              <>
+                <SearchBar
+                  value={search}
+                  onValueChange={(val) => {
+                    setSearch(val);
+                    setPage(1);
+                  }}
+                  placeholder="Search by store code or name..."
+                  className="w-full md:max-w-sm"
+                />
+                <Select
+                  value={branch ? String(branch) : ''}
+                  onValueChange={(val) => {
+                    setBranch(val);
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="w-full md:w-56">
+                    <SelectValue placeholder="Branch: All">
+                      {branch
+                        ? `Branch: ${BRANCH_OPTIONS.find((b) => String(b.id) === String(branch))?.label || branch}`
+                        : undefined}
+                    </SelectValue>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BRANCH_OPTIONS.map((b) => (
+                      <SelectItem key={b.id} value={b.id}>
+                        {b.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <DatePicker
+                  value={date}
+                  onValueChange={(val) => {
+                    setDate(val);
+                    setPage(1);
+                  }}
+                  className="w-full shrink-0 md:w-auto"
+                />
+              </>
+            }
+            right={
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearch('');
+                  setBranch('');
+                  setPage(1);
+                }}
+              >
+                <RefreshCw className="size-4" />
+                Reset
+              </Button>
+            }
+          />
           {availableDates.length > 0 && (
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground">Recent Checks:</span>
@@ -1406,7 +1402,7 @@ export default function AfterHours() {
                     setDate(d.check_date);
                     setPage(1);
                   }}
-                  className={`rounded-full px-3 py-1 text-xs transition-colors ${
+                  className={`rounded-sm px-3 py-1 text-xs transition-colors ${
                     d.check_date === date
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
@@ -1433,7 +1429,7 @@ export default function AfterHours() {
                       setBranch('');
                       setPage(1);
                     }}
-                    className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                    className={`rounded-sm px-3 py-1 text-xs font-medium transition-colors ${
                       !branch
                         ? 'bg-primary text-primary-foreground'
                         : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
@@ -1451,7 +1447,7 @@ export default function AfterHours() {
                           setBranch(branch === branchId ? '' : branchId);
                           setPage(1);
                         }}
-                        className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+                        className={`rounded-sm px-3 py-1 text-xs font-medium transition-colors ${
                           branch === branchId
                             ? 'bg-primary text-primary-foreground'
                             : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
@@ -1504,21 +1500,16 @@ export default function AfterHours() {
                     <TableBody>
                       {violations.map((v) => {
                         const statusLabel = v.notified ? 'NOTIFIED' : 'PENDING';
-                        const statusTextClass = v.notified
-                          ? 'text-status-success'
-                          : 'text-status-warning';
-                        const statusDotClass = v.notified
-                          ? 'bg-status-success'
-                          : 'bg-status-warning animate-pulse';
                         return (
                           <TableRow key={v.id}>
                             <TableCell>
-                              <span
-                                className={`inline-flex items-center gap-1.5 text-xs font-semibold ${statusTextClass}`}
+                              <StatusBadge
+                                variant={v.notified ? 'success' : 'warning'}
+                                size="sm"
+                                live={!v.notified}
                               >
-                                <span className={`h-2 w-2 rounded-full ${statusDotClass}`} />
                                 {statusLabel}
-                              </span>
+                              </StatusBadge>
                             </TableCell>
                             <TableCell>
                               <div className="flex flex-col">
@@ -1585,39 +1576,6 @@ export default function AfterHours() {
               )}
             </CardContent>
           </Card>
-          <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
-            <StatCard
-              title="PCs Still Online"
-              value={totalViolations}
-              icon={<Monitor className="size-5" />}
-              status={totalViolations > 0 ? 'error' : 'success'}
-              subtext={formatDate(date)}
-              className={
-                totalViolations > 0
-                  ? 'border-destructive/30 bg-destructive/5'
-                  : 'border-status-success/30 bg-status-success/5'
-              }
-            />
-            <StatCard
-              title="Branches Affected"
-              value={branchCount}
-              icon={<Store className="size-5" />}
-              status={branchCount > 0 ? 'warning' : 'success'}
-              subtext={branch ? `Filtered: ${selectedBranchLabel}` : 'All monitored branches'}
-              className={
-                branchCount > 0
-                  ? 'border-status-warning/30 bg-status-warning/5'
-                  : 'border-status-success/30 bg-status-success/5'
-              }
-            />
-            <StatCard
-              title="Latest Last Sync"
-              value={latestSyncTime}
-              icon={<Clock className="size-5" />}
-              status="info"
-              className="border-status-info/30 bg-status-info/5"
-            />
-          </div>
         </> /* end monitor tab */
       )}
     </PageShell>

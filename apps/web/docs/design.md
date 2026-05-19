@@ -1,338 +1,312 @@
-# Frontend Design — Enterprise Operations Monitor
+# Web App Design And Architecture
 
-## Stack Overview
+**Status:** Current implementation guide
+**Visual system:** [../../../DESIGN.md](../../../DESIGN.md)
+**Verified against:** `src/App.jsx`, `src/index.css`, `tailwind.config.js`, `index.html`, shared UI primitives, app shell, and route pages
 
-| Layer | Technology |
-| --- | --- |
-| Framework | React 19 |
-| Build | Vite 7 |
-| Language | Hybrid JSX / TSX (`.jsx` pages, `.tsx` shared components) |
-| Routing | React Router 7 (lazy-loaded routes, nested layouts) |
-| Styling | Tailwind CSS 3 + CSS custom properties |
-| Component System | shadcn/ui (base-nova style) + custom legacy components |
-| Icons | Lucide React |
-| Animation | Framer Motion 12 |
-| HTTP Client | Axios 1.13 with request/response interceptors |
-| Test | Vitest 4 + jsdom + @testing-library/react |
-| Lint | ESLint 9 + Prettier 3 |
-| Auth | JWT (Bearer token) via Axios interceptor |
+This document explains how the React/Vite frontend is structured and how the design system is applied in code. It intentionally avoids duplicating the full token spec; use the root `DESIGN.md` for exact colors, typography, spacing, radius, motion, and component styling rules.
 
-## Project Structure
+## Stack
 
-```
-src/
-├── main.jsx                  # Entry point — renders <App> with StrictMode
-├── App.jsx                   # Root component — router, providers, lazy pages
-├── index.css                 # Global styles, CSS variables, Tailwind layers
-├── vite-env.d.ts             # Vite type declarations
-│
-├── context/
-│   ├── AuthContext.jsx        # createContext / useAuth hook
-│   └── AuthProvider.jsx       # login(), logout(), token/user persistence
-│
-├── components/
-│   ├── AppShell.jsx           # Re-exports Layout (route wrapper)
-│   ├── Layout.jsx             # Sidebar + Header + <Outlet> shell
-│   ├── Sidebar.jsx            # Collapsible nav, permission-filtered links
-│   ├── Header.jsx             # Top bar with mobile menu toggle + profile shortcut
-│   ├── PrivateRoute.jsx       # Auth guard + permission check per route
-│   ├── ErrorBoundary.jsx      # Class-based crash recovery UI
-│   ├── PageTransition.jsx     # Framer Motion fade/slide wrapper
-│   ├── PageLoader.jsx         # Suspense fallback spinner
-│   ├── FeatureStoryBanner.jsx # Per-page problem/solution/impact accordion
-│   ├── UserAccessModal.jsx    # Bulk user permission management UI
-│   ├── auth/
-│   │   └── Guard.jsx          # Action-level permission gate (hides/falls back)
-│   ├── shared/
-│   │   ├── DataTable.tsx      # Reusable sortable/filterable table
-│   │   ├── StatCard.tsx       # KPI card with icon + value + subtext
-│   │   ├── PageHeader.tsx     # Title + description + meta + actions row
-│   │   ├── SearchBar.tsx      # Debounced search input
-│   │   ├── StatusBadge.tsx    # Colored status indicator
-│   │   └── EmptyState.tsx     # Placeholder for empty data
-│   └── ui/                    # shadcn/ui primitives + legacy UI
-│       ├── button.tsx, card.tsx, input.tsx, select.tsx, ...
-│       ├── badge.tsx, table.tsx, skeleton.tsx, progress.tsx
-│       ├── dialog.tsx, sheet.tsx, separator.tsx
-│       ├── sonner.tsx         # Toast notification shim (sonner)
-│       ├── Toast.jsx / ToastContext.jsx  # Legacy toast wrapper
-│       ├── Modal.jsx, ConfirmDialog.jsx  # Legacy modal/dialog
-│       ├── DataTable.jsx, EmptyState.jsx # Legacy shared data components
-│       ├── Divider.jsx, IconButton.jsx, IconLink.jsx
-│       ├── PageShell.jsx, PageHeader.jsx, StatCard.jsx
-│       ├── ProgressBar.jsx, SectionCard.jsx, StatusBadge.jsx
-│       └── Toolbar.jsx
-│
-├── lib/
-│   ├── api/
-│   │   ├── client.js          # Axios instance, interceptors, apiGet/Post/Patch/Put/Delete
-│   │   ├── types.js           # API response envelope type helpers
-│   │   └── types.d.ts         # TypeScript declarations for envelope
-│   ├── auth/
-│   │   ├── permissions.js     # All 30 permission constants, groups, RolePermissions, hasPermission()
-│   │   ├── roleMap.js         # Normalizes role names to canonical IDs
-│   │   └── roles.js           # hasAtLeast() role hierarchy check
-│   ├── dashboard/
-│   │   └── data.js            # Dashboard data transformation helpers
-│   ├── date.js                # WIB timezone utilities (Intl.DateTimeFormat)
-│   └── utils.ts               # Generic cn() classname merger
-│
-├── data/
-│   └── stories.js             # Feature story definitions (16 features)
-│       # Each story: id, featureName, route, tagline, problem, solution,
-│       # impact, metrics[], techHighlight, materialIcon
-│
-├── pages/
-│   ├── Dashboard/             # / — KPI cards, alerts table, auto-refresh 60s (TSX)
-│   │   ├── index.tsx, types.ts, hooks/useDashboard.ts
-│   ├── EODMonitor/            # /eod — Store EOD status, filters, retry, export
-│   │   └── index.jsx
-│   ├── StoreSync/             # /sync — Branch health, store freshness, history views
-│   │   └── index.jsx
-│   ├── StoreManagement/       # /stores — Searchable store directory
-│   │   └── index.jsx
-│   ├── IdentityCheck/         # /identity — Employee NIK/name directory
-│   │   └── index.jsx
-│   ├── Backups/               # /backups — Snapshot list, run/delete/restore
-│   │   └── index.jsx
-│   ├── SystemHealth/          # /system — Service status, healthchecks, log viewer
-│   │   └── index.jsx
-│   ├── AgentUpdater/          # /agent-updater — Agent rollout, version upload
-│   │   └── index.jsx
-│   ├── office-agents/         # /office-agents — Machine monitoring (TSX)
-│   │   ├── index.tsx, types.ts, mock-data.ts
-│   │   ├── hooks/useOfficeAgents.ts
-│   │   └── components/
-│   │       ├── MachineTable.tsx, MachineDetailDrawer.tsx
-│   │       ├── DownloadDialog.tsx, LabelEditDialog.tsx
-│   ├── UsersAdmin/            # /admin/users — User CRUD, roles, scopes
-│   │   └── index.jsx
-│   ├── RolesAdmin/            # /admin/roles — Role editor, permission groups
-│   │   └── index.jsx
-│   ├── AfterHours/            # /admin/afterhours — Violation checks, notifications
-│   │   └── index.jsx (lazy imports AfterHoursReport)
-│   ├── AfterHoursReport/      # Lazy-loaded monthly report view
-│   │   └── index.jsx
-│   ├── LiveSync/              # /live, /live.html — Public wallboard
-│   │   └── index.jsx
-│   ├── Login/                 # /login — Demo auto-type, manual login
-│   │   └── index.jsx
-│   ├── Logout/                # /logout — Confirmation-based session exit
-│   │   └── index.jsx
-│   ├── Profile/               # /profile — User info, password change
-│   │   └── index.jsx
-│   └── About/                 # /about — Portfolio narrative, feature catalog
-│       └── index.jsx
-│
-├── assets/                    # Static assets
-├── test/
-│   └── setupTests.js          # Vitest test setup
-├── types/                     # Global type declarations
-└── docs/
-    └── design.md              # This file
+| Layer         | Current implementation                                  |
+| ------------- | ------------------------------------------------------- |
+| Framework     | React 19                                                |
+| Build         | Vite 7                                                  |
+| Language      | Hybrid JSX / TSX                                        |
+| Routing       | React Router 7                                          |
+| Styling       | Tailwind CSS 3.4 + CSS custom properties                |
+| UI primitives | shadcn/Base UI primitives plus local wrappers           |
+| Icons         | Lucide React                                            |
+| Animation     | Framer Motion route/page transitions plus CSS utilities |
+| HTTP          | Axios 1.13 through `lib/api/client.js`                  |
+| Tests         | Vitest 4, jsdom, Testing Library                        |
+| Lint / format | ESLint 9, Prettier 3                                    |
+| Auth          | JWT bearer token injected by Axios interceptor          |
+
+## Source Map
+
+```text
+apps/web/
+├── index.html                  # Google Font links, root element
+├── tailwind.config.js          # Tailwind v3 token mappings
+├── package.json                # React/Vite/Tailwind package versions
+└── src/
+    ├── App.jsx                 # Router, providers, lazy routes
+    ├── main.jsx                # React entry point
+    ├── index.css               # Global tokens, utilities, base styles
+    ├── context/
+    │   ├── AuthContext.jsx
+    │   └── AuthProvider.jsx
+    ├── components/
+    │   ├── Layout.jsx          # Sidebar, header, sheet, route outlet
+    │   ├── Sidebar.jsx         # Permission-filtered nav
+    │   ├── Header.jsx          # Sticky mobile-aware top bar
+    │   ├── PrivateRoute.jsx    # Auth and route permission guard
+    │   ├── FeatureStoryBanner.jsx
+    │   ├── PageTransition.jsx
+    │   ├── PageLoader.jsx
+    │   ├── shared/             # Preferred TSX shared components
+    │   └── ui/                 # shadcn/Base UI and legacy wrappers
+    ├── data/stories.js         # Feature narrative content
+    ├── lib/
+    │   ├── api/client.js       # apiGet/apiPost/apiPatch/apiPut/apiDelete
+    │   ├── auth/permissions.js # Permission constants and helpers
+    │   ├── auth/roleMap.js
+    │   ├── auth/roles.js
+    │   ├── date.js             # WIB date/time helpers
+    │   └── utils.ts            # cn() class merger
+    └── pages/                  # Lazy-loaded route modules
 ```
 
-## Architecture & Design Decisions
+## Provider And Routing Model
 
-### 1. Routing Architecture
+The root app uses a layered provider and guard tree:
 
-The app uses a **layered route guard** pattern:
-
-```
-<BrowserRouter>
-  <ErrorBoundary>                          # Catches render crashes
-    <AuthProvider>                          # JWT state, login/logout
-      <ToastProvider>                       # Toast notification context
-        <Suspense>                          # Lazy-load fallback
+```jsx
+<ErrorBoundary>
+  <AuthProvider>
+    <ToastProvider>
+      <BrowserRouter>
+        <Suspense>
           <Routes>
-            /login        → Login           # Public
-            /live         → LiveSync        # Public
-            /live.html    → LiveSync        # Public
+            {/* public routes */}
+            <Route path="/login" element={<Login />} />
+            <Route path="/live" element={<LiveSync />} />
+            <Route path="/live.html" element={<LiveSync />} />
 
-            <PrivateRoute>                  # Auth gate (no user → redirect /login)
-              <AppShell>                    # Sidebar + Header + <Outlet>
-                <PrivateRoute perm=X>       # Permission gate per route
-                  PAGE
-                </PrivateRoute>
-                /about → About              # Auth-only, no extra permission
-                /profile → Profile          # Auth-only, no extra permission
-                /logout → Logout            # Auth-only, no extra permission
-              </AppShell>
-            </PrivateRoute>
+            {/* private app shell */}
+            <Route element={<PrivateRoute />}>
+              <Route element={<AppShell />}>
+                <Route path="/" element={<PrivateRoute requiredPerm={...}><Dashboard /></PrivateRoute>} />
+              </Route>
+            </Route>
           </Routes>
         </Suspense>
-      </ToastProvider>
-    </AuthProvider>
-  </ErrorBoundary>
-</BrowserRouter>
+      </BrowserRouter>
+    </ToastProvider>
+  </AuthProvider>
+</ErrorBoundary>
 ```
 
-- **Lazy loading** — all pages use `React.lazy()` + `Suspense` for code splitting
-- **PageTransition** — each route gets a framer-motion fade+slide animation
-- `/eod-area` redirects to `/eod` for backward compatibility
+Important details:
 
-### 2. Authentication & State
+- Pages are imported with `React.lazy()`.
+- `PageTransition` wraps public routes and the private `<Outlet>`.
+- `/eod-area` redirects to `/eod`.
+- `/live` and `/live.html` are public wallboard routes.
+- Private pages are wrapped by `Layout` through `AppShell`.
+- Route permissions use `PrivateRoute requiredPerm={Permissions.X}`.
 
-**AuthProvider** manages the entire auth lifecycle:
+## Route Inventory
 
-- **Storage**: Dual-mode — `localStorage` (persistent/"Remember me") or `sessionStorage` (session-only)
-- **Token**: JWT stored as `token` key, injected via Axios interceptor (`Authorization: Bearer <token>`)
-- **User**: Stored as JSON `user` key, refreshed on mount via `GET /auth/me`
-- **RBAC v2**: User object carries `effectivePerms[]`, `roleNames[]`, `scopeBranches[]`, `isAllBranches`
-- **Logout**: Clears both storages, deletes Axios header, sets user to null
+| Route                 | Page module             | Access            |
+| --------------------- | ----------------------- | ----------------- |
+| `/login`              | `pages/Login`           | Public            |
+| `/live`, `/live.html` | `pages/LiveSync`        | Public            |
+| `/`                   | `pages/Dashboard`       | `DASHBOARD_VIEW`  |
+| `/eod`                | `pages/EODMonitor`      | `EOD_VIEW`        |
+| `/stores`             | `pages/StoreManagement` | `STORES_VIEW`     |
+| `/sync`               | `pages/StoreSync`       | `SYNC_VIEW`       |
+| `/identity`           | `pages/IdentityCheck`   | `EMPLOYEES_VIEW`  |
+| `/backups`            | `pages/Backups`         | `BACKUPS_VIEW`    |
+| `/system`             | `pages/SystemHealth`    | `SYSTEM_VIEW`     |
+| `/admin/users`        | `pages/UsersAdmin`      | `ACCOUNTS_VIEW`   |
+| `/admin/roles`        | `pages/RolesAdmin`      | `ROLES_VIEW`      |
+| `/admin/afterhours`   | `pages/AfterHours`      | `AFTERHOURS_VIEW` |
+| `/agent-updater`      | `pages/AgentUpdater`    | `AGENT_UPDATE`    |
+| `/office-agents`      | `pages/office-agents`   | `AGENT_UPDATE`    |
+| `/about`              | `pages/About`           | Authenticated     |
+| `/profile`            | `pages/Profile`         | Authenticated     |
+| `/logout`             | `pages/Logout`          | Authenticated     |
 
-### 3. Authorization (RBAC)
+After Hours owns two tab views in one route: Daily Monitor and a lazy-loaded Monthly Report module. Monthly Report is nested tab content and must not render its own `PageShell` or `FeatureStoryBanner`.
 
-Three-layer permission check:
+## App Shell
 
-| Layer | Mechanism | Location |
-| --- | --- | --- |
-| Route access | `<PrivateRoute requiredPerm={X}>` | `App.jsx` |
-| Nav visibility | `Sidebar.jsx` filters items via `hasPermission()` | `Sidebar.jsx` |
-| Action visibility | `<Guard permission={X}>` shows/hides buttons | per-page |
+Source files:
 
-- **30 permissions** across 8 categories (Monitoring, Store Ops, Employee Data, Backups, System, After Hours, User Management, Agent)
-- **7 system roles**: `viewer`, `ops`, `admin`, `super_admin`, `demo`, `it`, `hc`
-- **hasPermission(user, perm)**: First checks `user.effectivePerms` (RBAC v2), falls back to legacy `RolePermissions` map
-- **Guard component**: Shows children for demo users (action buttons visible but handler-blocked on click + 403 from API)
+- `components/Layout.jsx`
+- `components/Sidebar.jsx`
+- `components/Header.jsx`
+- `components/ui/sheet.tsx`
 
-### 4. API Communication
+Shell behavior:
 
-**Axios client** (base `VITE_API_URL || /api`):
+- Root shell is dark-only and full height.
+- Desktop sidebar is fixed at `w-60` (240px).
+- Collapsed desktop sidebar is `md:w-20` (80px), persisted in `localStorage`.
+- Mobile sidebar uses a left `Sheet` drawer at `w-60`.
+- Header is sticky, `h-12`, with a mobile menu trigger and mobile profile shortcut.
+- Main content is the only scrollable pane.
 
-- **Request interceptor**: Attaches Bearer token from storage
-- **Response interceptor**: Unwraps `response.data`, normalizes errors to `{ ok, code, message }`
-- **Error types**: `TIMEOUT`, `NETWORK_ERROR`, `HTTP_ERROR`, `CANCELED`, `UNAUTHORIZED`, `INVALID_CREDENTIALS`
-- **API envelope**: All responses follow `{ ok: boolean, data: any, meta: object|null, error: object|null }`
-- **Helpers**: `apiGet`, `apiPost`, `apiPatch`, `apiPut`, `apiDelete` for typed requests
+Navigation behavior:
 
-### 5. Styling System
+- Sidebar links are filtered by `hasPermission(user, permission)`.
+- Active app links use green `bg-primary/10 text-primary`.
+- Portfolio/About link uses info-blue status styling.
+- Icons are Lucide components stored in the nav item config.
 
-**CSS Variables** with HSL color space for theming:
+## Page Template
 
-```
---background: 0 0% 3.9%       # Dark mode
---foreground: 0 0% 98%
---border: 220 10% 14%
---radius: 14px
-```
+Private routed pages should follow this shape:
 
-**Custom semantic colors** (HSL):
-
-| Token | Purpose |
-| --- | --- |
-| `--success` (150 100% 38%) | Green status |
-| `--warning` (45 100% 55%) | Yellow/orange alerts |
-| `--info` (210 100% 60%) | Blue info |
-| `--destructive` | Red errors |
-| `--brand` | Primary brand blue |
-
-**Spacing system** (CSS custom properties exposed as Tailwind tokens):
-
-- `--page-px: 24px`, `--page-py: 24px`
-- `--section-gap: 24px`
-- `--card-p: 24px`
-- `--table-cell-px: 12px`, `--table-cell-py: 10px`
-- `--row-h: 60px`
-
-**Tailwind layers**:
-
-| Class | Purpose |
-| --- | --- |
-| `.page-container` | Max-width wrapper with responsive padding |
-| `.page-header` | Title row with actions |
-| `.surface-card` | Standard card with border + shadow |
-| `.table-base` / `.table-row` / `.table-cell` | Table structure |
-| `.glass-panel` | Frosted glass effect |
-| `.glow-button` | Button with glow shadow |
-| `.animate-in` | Entry animation |
-
-**Dark mode**: Set to `class` strategy, root `<div>` has `dark` class. No light mode toggle.
-
-### 6. Page Layout
-
-```
-┌─────────────────────────────────────────────────┐
-│ Sidebar (collapsible)  │  Header (sticky)       │
-│                        │                        │
-│ ┌───────┐              │  ┌─────────────────┐  │
-│ │ Logo  │              │  │ Mobile menu btn  │  │
-│ └───────┘              │  │ Profile avatar   │  │
-│                        │  └─────────────────┘  │
-│ Nav items              ├────────────────────────┤
-│ (filtered by perm)     │                        │
-│                        │  <main> (scrollable)   │
-│ • Dashboard            │  ┌─────────────────┐  │
-│ • Store Sync           │  │ PageShell       │  │
-│ • EOD Monitor          │  │  ┌───────────┐  │  │
-│ • Store Directory      │  │  │ Feature   │  │  │
-│ • Employee Dir         │  │  │ Story     │  │  │
-│ • Backups              │  │  │ Banner    │  │  │
-│ • System               │  │  └───────────┘  │  │
-│ • Agent Updater        │  │  ┌───────────┐  │  │
-│ • Office Agents        │  │  │ Page      │  │  │
-│ • Accounts             │  │  │ Header    │  │  │
-│ • Roles                │  │  └───────────┘  │  │
-│ • After Hours          │  │  ┌───────────┐  │  │
-│                        │  │  │ Content   │  │  │
-│ ───────────            │  │  └───────────┘  │  │
-│ • About This Project   │  └─────────────────┘  │
-│                        │                        │
-│ [User profile block]   │                        │
-└─────────────────────────────────────────────────┘
+```jsx
+<PageShell>
+  <FeatureStoryBanner story={getFeatureStory('feature-id')} />
+  <PageHeader title="..." subtitle="..." />
+  {/* optional StatCard grid */}
+  {/* optional Toolbar */}
+  {/* primary table, grid, or form content */}
+  {/* dialogs and drawers */}
+</PageShell>
 ```
 
-**Sidebar**:
-- Collapsible (persisted to `localStorage`)
-- Navigation items filtered by user permissions
-- Support section for About
-- User profile summary at bottom → navigates to `/profile`
+Rules:
 
-**Layout**: `<div class="dark bg-background text-foreground overflow-hidden h-screen flex">` — full-height flex container.
+- Use exactly one top-level feature banner per routed page.
+- Nested subviews and tabs do not get their own page shell or feature banner.
+- `PageHeader` comes after the feature banner.
+- Keep KPI rows before dense tables when they orient the user.
+- Use `Toolbar` for search/filter/action rows.
+- Keep table and form controls responsive by wrapping rows instead of compressing all controls into one line.
 
-### 7. Timezone Handling
+## Styling Implementation
 
-All times are **WIB (Asia/Jakarta, UTC+7)**. Date utilities in `lib/date.js`:
+Global tokens and utilities are in `src/index.css`.
 
-- `formatDate()` — e.g., "17 May 2026"
-- `formatTime()` — e.g., "19:30:45"
-- `formatDateTime()` — e.g., "17 May 2026, 19:30"
-- `getWibToday()` — ISO date string for API queries
-- `getWibParts()` — Parsed date components
-- `isWithinEodWindowNow()` — Returns true after 19:30 WIB
+Key utility classes:
 
-No external date libraries — `Intl.DateTimeFormat` with `timeZone: 'Asia/Jakarta'` throughout.
+| Class                                                         | Owner                | Purpose                                  |
+| ------------------------------------------------------------- | -------------------- | ---------------------------------------- |
+| `.page-container`                                             | `PageShell` only     | Max width, page padding, vertical rhythm |
+| `.page-header`                                                | page header wrappers | Header row and bottom border             |
+| `.page-title`                                                 | page titles          | Display title style                      |
+| `.page-subtitle`                                              | page subtitles       | Muted description style                  |
+| `.page-meta`                                                  | metadata             | Mono small text                          |
+| `.section-title`                                              | section headings     | Display section heading                  |
+| `.surface-card`                                               | card-like wrappers   | Standard surface                         |
+| `.surface-card-compact`                                       | compact surfaces     | Dense panels and filters                 |
+| `.form-label`                                                 | labels               | Uppercase operational labels             |
+| `.table-base`, `.table-head-row`, `.table-row`, `.table-cell` | legacy tables        | Shared table rhythm                      |
+| `.login-*`                                                    | login page           | Login-specific responsive styling        |
+| `.live-*`                                                     | LiveSync             | Live wallboard-specific sizing           |
+| `.portfolio-*`                                                | About/story pages    | Portfolio narrative styling              |
 
-### 8. Component Hierarchy
+Do not add page-specific global utilities unless the style is reused and cannot be expressed cleanly with existing components/tokens.
 
-**shadcn/ui primitives** (in `components/ui/`, mostly `.tsx`):
-- `button.tsx` — CVA variant-based button (default, secondary, destructive, ghost, outline, link)
-- `card.tsx` — Card, CardHeader, CardTitle, CardContent, CardFooter
-- `dialog.tsx` — Modal dialog with Radix UI
-- `sheet.tsx` — Slide-out panel (mobile sidebar)
-- `select.tsx` — Custom styled select with Radix UI
-- `table.tsx` — Semantic table with Tailwind styling
-- `badge.tsx` — Inline status labels
-- `input.tsx` — Styled input
-- `skeleton.tsx` — Loading skeleton
-- `progress.tsx` — Progress bar
-- `separator.tsx` — Visual divider
-- `sonner.tsx` — Toast shim
+## Component Ownership
 
-**Legacy UI components** (in `components/ui/`, `.jsx`):
-- Legacy versions predate shadcn migration: `Modal.jsx`, `ConfirmDialog.jsx`, `DataTable.jsx`, `ProgressBar.jsx`, `StatCard.jsx`, `PageHeader.jsx`, `StatusBadge.jsx`, `EmptyState.jsx`, `Toolbar.jsx`, `SectionCard.jsx`
+### Preferred Shared Components
 
-**Shared components** (in `components/shared/`, `.tsx`):
-- `StatCard.tsx` — Icon-based KPI card (newer version)
-- `DataTable.tsx` — Reusable sortable table
-- `PageHeader.tsx` — Title + description + actions
-- `SearchBar.tsx` — Debounced search with icon
-- `StatusBadge.tsx` — Colored dot + label
-- `EmptyState.tsx` — Icon + message placeholder
+Use these for new or migrated work:
 
-### 9. Feature Story System
+- `components/shared/StatCard.tsx`
+- `components/shared/StatusBadge.tsx`
+- `components/shared/SearchBar.tsx`
+- `components/shared/DatePicker.tsx`
+- `components/shared/DataTable.tsx`
+- `components/shared/PageHeader.tsx`
+- `components/shared/EmptyState.tsx`
 
-Each page is documented with a "feature story" in `data/stories.js` — a design pattern for portfolio context:
+### UI Primitives And Wrappers
+
+Use these for primitives and existing JSX pages:
+
+- `components/ui/button.tsx`
+- `components/ui/card.tsx`
+- `components/ui/input.tsx`
+- `components/ui/select.tsx`
+- `components/ui/table.tsx`
+- `components/ui/dialog.tsx`
+- `components/ui/sheet.tsx`
+- `components/ui/badge.tsx`
+- `components/ui/skeleton.tsx`
+- `components/ui/progress.tsx`
+- `components/ui/Toolbar.jsx`
+- `components/ui/PageShell.jsx`
+- `components/ui/PageHeader.jsx`
+- `components/ui/Toast.jsx` and `ToastContext.jsx`
+- `components/ui/Modal.jsx`, `ConfirmDialog.jsx`, `DataTable.jsx`, `ProgressBar.jsx`, `SectionCard.jsx`
+
+Legacy JSX components remain because the app is hybrid JSX/TSX. Prefer TSX shared components for new shared UI, but keep edits compatible with existing JSX pages.
+
+## Icons
+
+The rendered icon system is Lucide React.
+
+Historical note: `data/stories.js` still uses a property named `materialIcon`. That property is only a compatibility key; `FeatureStoryBanner.jsx` maps those string values to Lucide components. Do not add Material Symbols font imports, icon font spans, or new string-icon APIs.
+
+## Authentication And Authorization
+
+Auth state lives in `AuthProvider` and is exposed through `useAuth()`.
+
+Storage:
+
+- Persistent login uses `localStorage`.
+- Session-only login uses `sessionStorage`.
+- Token and user keys are mirrored according to the selected login mode.
+
+API auth:
+
+- `lib/api/client.js` injects `Authorization: Bearer <token>`.
+- Responses are unwrapped to the API envelope shape.
+- Errors are normalized to `{ ok: false, code, message, original }`.
+
+Permission checks:
+
+| Layer             | Mechanism                                       |
+| ----------------- | ----------------------------------------------- |
+| Route access      | `<PrivateRoute requiredPerm={Permissions.X}>`   |
+| Nav visibility    | `Sidebar.jsx` filters with `hasPermission()`    |
+| Action visibility | `<Guard permission={Permissions.X}>`            |
+| Write blocking    | Page-level `isDemoUser` guards plus backend 403 |
+
+Do not compare `user.role` directly for access decisions. Use `hasPermission(user, permission)`.
+
+## API Pattern
+
+Use these helpers from `lib/api/client.js`:
+
+```js
+apiGet(url, config);
+apiPost(url, data, config);
+apiPatch(url, data, config);
+apiPut(url, data, config);
+apiDelete(url, config);
+```
+
+Do not import Axios directly in pages. The client wrapper handles base URL, token injection, envelope unwrapping, timeout handling, and normalized errors.
+
+API responses follow:
+
+```js
+{
+  ok: boolean,
+  data: unknown,
+  meta: object | null,
+  error: object | null
+}
+```
+
+## Toasts
+
+`ToastProvider` provides:
+
+- `push({ variant, title, message, duration })`
+- `dismiss(id)`
+- `showToast(message, variant)` compatibility helper
+
+Variants are `success`, `warning`, `error`, `info`, and `neutral`. Toasts use Lucide icons and an elevated popover surface.
+
+## Feature Story System
+
+Source:
+
+- `data/stories.js`
+- `components/FeatureStoryBanner.jsx`
+- `pages/About/index.jsx`
+
+Each story can include:
 
 ```js
 {
@@ -340,83 +314,95 @@ Each page is documented with a "feature story" in `data/stories.js` — a design
   featureName: 'Dashboard',
   route: '/',
   materialIcon: 'dashboard',
-  tagline: 'The daily control room for store operations.',
+  tagline: '...',
   problem: '...',
   solution: '...',
   impact: '...',
   metrics: [{ label: '...', value: '...' }],
-  techHighlight: '...',    // Optional technical note
+  techHighlight: '...',
+  banner: true
 }
 ```
 
-- **FeatureStoryBanner** — Accordion on every page showing Problem / Solution / Impact
-- **About page** — Full feature catalog with all 16 stories
-- **Banner toggle**: `banner: false` disables per-page banner (e.g., About page itself)
+`banner: false` disables banner rendering for a story. The About page renders the full story catalog.
 
-### 10. Demo Account Protection
+## Time And Dates
 
-The app has a **read-only demo sandbox**:
+All user-facing operational dates and times are WIB (`Asia/Jakarta`, UTC+7).
 
-| Layer | Mechanism |
-| --- | --- |
-| Route guard | `PrivateRoute` requires auth, no special demo path |
-| Nav visibility | All nav items visible to demo (read permissions granted) |
-| Action visibility | `<Guard>` shows all buttons to demo users |
-| Action blocking | Page-level `isDemoUser` checks block writes with toast notification |
-| API enforcement | Backend returns 403 for write endpoints under demo account |
+Use helpers from `lib/date.js`, including:
 
-Demo login is at `/login` with an auto-typing credential animation (typewriter effect for username/password).
+- `formatDate()`
+- `formatTime()`
+- `formatDateTime()`
+- `getWibToday()`
+- `getWibParts()`
+- `isWithinEodWindowNow()`
 
-### 11. Performance Patterns
+Do not use raw `toLocaleString()` in pages because it follows the browser locale.
 
-- **Lazy loading**: All pages via `React.lazy()` + `Suspense`
-- **Auto-refresh**: Polling intervals per page (EOD: 30s, Sync: 10s, Dashboard: 60s, Agent: 30s, Live: 10s)
-- **Conditional refresh**: Dashboard only polls during EOD window (after 19:30 WIB)
-- **Debounced search**: Store/employee searches debounce before API call
-- **useCallback/useMemo**: Heavy computations wrapped where applicable
+## Data Fetching
 
-### 12. Build & Dev
+Most pages use local `useState` plus `useEffect`/`useCallback`.
 
-| Script | Command |
-| --- | --- |
-| Dev | `vite` (HMR on local network) |
-| Build | `vite build` |
-| Preview | `vite preview` |
-| Test | `vitest run` |
-| Typecheck | `tsc --noEmit` |
-| Lint | `eslint .` |
-| Format | `prettier --write "src/**/*.{js,jsx,css}"` |
+Current patterns:
 
-**Proxy**: Vite dev server proxies `/api/*` → `http://localhost:3000` (avoids CORS in dev).
+- Dashboard auto-refreshes during the EOD window.
+- Store Sync and LiveSync use interval polling.
+- EOD Monitor supports auto-refresh controls.
+- Search pages debounce input in page logic.
+- Long-running requests should ignore stale responses or clean up timers on unmount.
 
-**Allowed hosts**: `dash.lmntea.fun` accepted by dev server.
+There is no global server-state manager in this app.
 
-### 13. Page-by-Page Details
+## Demo User Pattern
 
-| Page | Route | Key Features | Auto-refresh | Permission |
-| --- | --- | --- | --- | --- |
-| Dashboard | `/` | KPI stats, alerts table, quick-nav cards | 60s (EOD window) | `DASHBOARD_VIEW` |
-| Login | `/login` | Demo auto-type, manual login, remember-me | — | Public |
-| Logout | `/logout` | Confirmation dialog, API + local cleanup | — | Auth |
-| Profile | `/profile` | User info, password change, admin link | — | Auth |
-| Store Sync | `/sync` | Branch health, freshness grid, history | 10s | `SYNC_VIEW` |
-| EOD Monitor | `/eod` | Status grid, filters, retry, export | 30s | `EOD_VIEW` |
-| Store Directory | `/stores` | Search, branch filter, XLSX export | — | `STORES_VIEW` |
-| Employee Directory | `/identity` | NIK/name search, role filter, CSV export | — | `EMPLOYEES_VIEW` |
-| Backups | `/backups` | Health card, snapshots, run/delete/restore | — | `BACKUPS_VIEW` |
-| System Health | `/system` | Service cards, log viewer, healthcheck | — | `SYSTEM_VIEW` |
-| Agent Updater | `/agent-updater` | Node table, version upload, status | 30s | `AGENT_UPDATE` |
-| Office Agent Monitor | `/office-agents` | Machine inventory, heartbeat, labels | — | `AGENT_UPDATE` |
-| Accounts | `/admin/users` | Create/edit/delete users, scope, roles | — | `ACCOUNTS_VIEW` |
-| Roles | `/admin/roles` | Permissions editor, create custom roles | — | `ROLES_VIEW` |
-| After Hours | `/admin/afterhours` | Violations, notifications, staged warnings | — | `AFTERHOURS_VIEW` |
-| Live Sync | `/live` | Public wallboard, EOD + sync signals | 10s | Public |
-| About | `/about` | Feature catalog, demo disclosure | — | Auth |
+Demo users can see operational actions but cannot mutate data.
 
-### 14. Key Design Patterns
+Pattern:
 
-- **Dual data-fetch pattern**: Pages use either `useAuth().api` directly or imported `apiGet()/apiPost()` — both resolve through the same Axios client
-- **PageShell wrapper**: Every page wraps content in `<PageShell>` which provides `page-container` class (max-width + padding + spacing)
-- **FeatureStoryBanner**: Every operational page starts with an expandable accordion explaining the feature's problem/solution/impact
-- **Guard component**: Conditionally renders children based on permission — used for action buttons (not route-level, which uses PrivateRoute)
-- **EmptyState**: Shown when data is null/empty after loading completes — consistent icon + message + optional action
+```js
+const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo';
+
+if (isDemoUser) {
+  push({ variant: 'warning', title: 'Demo Account', message: 'This action is not available.' });
+  return;
+}
+```
+
+The backend also enforces write protection.
+
+## Design Checks For UI Work
+
+Before finishing visual work, check for stale design patterns:
+
+```bash
+rg "material-symbols|Material Symbols" apps/web
+rg "rounded-4xl|rounded-5xl|shadow-2xl|bg-white|text-white|bg-black|text-black" apps/web/src
+```
+
+Expected result:
+
+- No Material Symbols imports or font spans.
+- No oversized operational radii.
+- No raw black/white primary surfaces.
+- Any remaining shadows should be intentional overlay shadows.
+
+## Verification Commands
+
+Use pnpm only:
+
+```bash
+pnpm --filter web lint
+pnpm --filter web typecheck
+pnpm --filter web test
+pnpm --filter web build
+```
+
+For broader repo confidence:
+
+```bash
+pnpm check:all
+```
+
+For frontend visual changes, also run the app and inspect affected routes in a browser at desktop and mobile widths.

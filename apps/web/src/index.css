@@ -363,20 +363,6 @@
     background: var(--accent-muted);
     border: 1px solid var(--border-accent);
   }
-
-  /* AfterHours Page Utilities */
-  .afterhours-glow-success {
-    box-shadow: 0 0 15px rgb(34 197 94 / 0.15);
-  }
-  .afterhours-glow-primary {
-    box-shadow: 0 0 15px rgb(255 255 255 / 0.05);
-  }
-  .afterhours-switch-glow {
-    box-shadow: 0 0 10px rgb(34 197 94 / 0.4);
-  }
-  .afterhours-button-glow {
-    box-shadow: 0 0 10px rgb(255 255 255 / 0.05);
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

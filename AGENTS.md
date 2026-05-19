@@ -9,31 +9,31 @@ Real-time dashboard for retail EOD processes, store sync health, backups, agents
 
 ## Agent Compatibility
 
-| Tool | Setup Required | Native Support |
-|------|---------------|:--------------:|
-| OpenAI Codex | None | ✅ |
-| GitHub Copilot | None | ✅ |
-| Cursor | None | ✅ |
-| Windsurf | None | ✅ |
-| Amp (Sourcegraph) | None | ✅ |
-| Devin | None | ✅ |
-| Antigravity | Reads `AGENTS.md` (via `.agents/` sync) | ✅ |
-| Gemini CLI | Set `fileName: "AGENTS.md"` in `.gemini/settings.json` | ⚙️ Config |
-| Claude Code | Reads `CLAUDE.md` (add wrapper file if needed) | ⚠️ Wrapper |
+| Tool              | Setup Required                                         | Native Support |
+| ----------------- | ------------------------------------------------------ | :------------: |
+| OpenAI Codex      | None                                                   |       ✅       |
+| GitHub Copilot    | None                                                   |       ✅       |
+| Cursor            | None                                                   |       ✅       |
+| Windsurf          | None                                                   |       ✅       |
+| Amp (Sourcegraph) | None                                                   |       ✅       |
+| Devin             | None                                                   |       ✅       |
+| Antigravity       | Reads `AGENTS.md` (via `.agents/` sync)                |       ✅       |
+| Gemini CLI        | Set `fileName: "AGENTS.md"` in `.gemini/settings.json` |   ⚙️ Config    |
+| Claude Code       | Reads `CLAUDE.md` (add wrapper file if needed)         |   ⚠️ Wrapper   |
 
 ## Quick Commands
 
-| Action | Command (run from repo root) |
-|--------|------------------------------|
-| Install all | `pnpm install` |
-| Dev (web) | `pnpm dev` |
-| Dev (API) | `pnpm dev:api` |
-| Build web | `pnpm build` |
-| Lint all | `pnpm lint` |
-| Typecheck | `pnpm typecheck` |
-| Test all | `pnpm test` |
-| Full check | `pnpm check:all` |
-| Docker up | `pnpm up` / `docker compose up -d` |
+| Action      | Command (run from repo root)                      |
+| ----------- | ------------------------------------------------- |
+| Install all | `pnpm install`                                    |
+| Dev (web)   | `pnpm dev`                                        |
+| Dev (API)   | `pnpm dev:api`                                    |
+| Build web   | `pnpm build`                                      |
+| Lint all    | `pnpm lint`                                       |
+| Typecheck   | `pnpm typecheck`                                  |
+| Test all    | `pnpm test`                                       |
+| Full check  | `pnpm check:all`                                  |
+| Docker up   | `pnpm up` / `docker compose up -d`                |
 | Docker demo | `docker compose -f docker-compose.demo.yml up -d` |
 
 ## Monorepo Layout
@@ -85,18 +85,21 @@ backups/           Runtime backup files
 ## Frontend Conventions
 
 ### Component Architecture
+
 - **Hybrid TSX/JSX**: New shared components → `components/shared/*.tsx`. Legacy UI → `components/ui/*.jsx`. shadcn primitives → `components/ui/*.tsx`.
-- **Page template**: Every page wraps content in `<PageShell>` and starts with `<FeatureStoryBanner story={getFeatureStory('page-id')} />`.
+- **Page template**: Routed private pages wrap content in `<PageShell>` and start with one `<FeatureStoryBanner story={getFeatureStory('page-id')} />`. Nested tab/subview content must not render another page shell or banner.
 - **Page layout**: `<PageHeader title={...} />` follows the banner, then page-specific content.
 - **Imports**: New `.tsx` files use `@/` alias (`@/components/ui/button`). Legacy `.jsx` may use relative `../../`.
 
 ### API Calls
+
 - Use `apiGet()`, `apiPost()`, `apiPatch()`, `apiPut()`, `apiDelete()` from `lib/api/client.js`.
 - Never import or call `axios` directly — the client wrapper handles token injection, error normalization, and envelope unwrapping.
 - Response is already unwrapped: `{ ok, data, meta, error }`.
 - Error objects: `{ ok: false, code, message }` — catch with try/catch.
 
 ### Auth & Permissions
+
 - **Route protection**: `<PrivateRoute requiredPerm={Permissions.X}>` in `App.jsx`.
 - **Permission check**: `hasPermission(user, Permissions.X)` — never compare `user.role` directly.
 - **Action button visibility**: `<Guard permission={Permissions.X}>` for conditional render.
@@ -104,30 +107,35 @@ backups/           Runtime backup files
 - **Auth state**: `useAuth()` hook provides `{ user, loading, login, logout, api }`.
 
 ### UI Patterns
-- **Icons**: In-page use `lucide-react` (`RefreshCw`, `AlertTriangle`, etc.). Legacy code uses Material Symbols (`<span class="material-symbols-outlined">icon_name</span>`).
-- **StatCards**: `shared/StatCard.tsx` for new pages (takes `ReactNode` icon). Legacy `ui/StatCard.jsx` takes Material Symbol string.
+
+- **Icons**: Use `lucide-react` (`RefreshCw`, `AlertTriangle`, etc.). `stories.js` still has a `materialIcon` key name for compatibility, but `FeatureStoryBanner` maps it to Lucide icons. Do not add Material Symbols font imports or spans.
+- **StatCards**: Prefer `shared/StatCard.tsx` for new pages. Both shared and legacy `ui/StatCard.jsx` take ReactNode/Lucide icons.
 - **Tables**: Prefer shadcn `<Table>` from `@/components/ui/table`. Legacy pages use `DataTable.jsx`.
 - **Empty state**: Use `<EmptyState>` when data is null/empty after loading.
 - **Loading**: Use `<Skeleton>` from shadcn for new pages, `<ProgressBar>` for legacy.
 
 ### Data Fetching Pattern
+
 - Pages manage state locally with `useState` + `useCallback` (no global state manager).
 - Fetch in `useEffect` with cleanup via `useRef` or `active` flag.
 - Auto-refresh pages use `setInterval` inside `useEffect`, cleanup in return.
 - Demo user checks: `const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo')`.
 
 ### Time & Dates
+
 - **All times are WIB** (Asia/Jakarta, UTC+7).
 - Import from `lib/date.js`: `formatDate()`, `formatTime()`, `formatDateTime()`, `getWibToday()`.
 - Never use `new Date().toLocaleString()` — it respects the browser locale, not WIB.
 - EOD window check: `isWithinEodWindowNow()` (returns true after 19:30 WIB).
 
 ### Project Context (Portfolio Stories)
+
 - Every feature has a story in `data/stories.js` with `{ id, tagline, problem, solution, impact, metrics, techHighlight }`.
 - The `<FeatureStoryBanner>` displays Problem/Solution/Impact on the page.
 - The `/about` page renders the full catalog of all 16 feature stories.
 
 ### Design Tokens
-- CSS variables in `index.css`: `--radius: 14px`, `--section-gap: 24px`, `--success`, `--warning`, `--info`, etc.
+
+- CSS variables in `index.css`: `--bg-base`, `--bg-surface`, `--accent-solid`, `--radius: var(--radius-lg)`, `--section-gap`, `--success`, `--warning`, `--info`, etc.
 - Semantic colors exposed as Tailwind: `text-status-success`, `border-status-info/30`, `bg-status-error/10`.
 - Spacing: `page-container` (max-width), `section-title`, `surface-card`.
