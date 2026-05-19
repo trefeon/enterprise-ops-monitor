@@ -17,24 +17,17 @@ export function EmptyState({
   action,
   className,
 }: EmptyStateProps) {
-  const isMaterialIcon = typeof icon === 'string';
-
   return (
-    <Card className={cn('border-dashed border-border/60 bg-muted/5', className)}>
+    <Card className={cn('border-dashed bg-card', className)}>
       <CardContent className="flex flex-col items-center justify-center py-16 text-center">
         {icon && (
-          <div className="mb-6 flex size-16 items-center justify-center rounded-full bg-muted shadow-inner">
-            <span
-              className={cn(
-                'text-muted-foreground transition-colors',
-                isMaterialIcon ? 'material-symbols-outlined text-3xl' : '[&>svg]:size-8'
-              )}
-            >
-              {icon}
-            </span>
+          <div className="mb-6 flex size-14 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground">
+            <span className="transition-colors [&>svg]:size-8">{icon}</span>
           </div>
         )}
-        <h3 className="text-xl font-bold tracking-tight text-foreground mb-2">{title}</h3>
+        <h3 className="mb-2 font-display text-lg font-semibold tracking-normal text-foreground">
+          {title}
+        </h3>
         {description && (
           <p className="text-sm text-muted-foreground mb-8 max-w-md leading-relaxed">
             {description}

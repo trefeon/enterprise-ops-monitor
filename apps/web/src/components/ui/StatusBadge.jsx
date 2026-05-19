@@ -6,12 +6,21 @@ const StatusBadge = ({ variant = 'neutral', size = 'md', className = '', childre
     success: 'success',
     warning: 'warning',
     error: 'destructive',
-    neutral: 'secondary',
-    info: 'outline',
+    destructive: 'destructive',
+    neutral: 'neutral',
+    info: 'info',
   };
   const sizes = {
-    sm: 'h-5 px-2',
-    md: 'h-6 px-2.5',
+    sm: 'h-5 gap-1 px-2 text-[10px]',
+    md: 'h-6 gap-1.5 px-2.5 text-[11px]',
+  };
+  const dotStyles = {
+    success: 'bg-status-success',
+    warning: 'bg-status-warning',
+    error: 'bg-status-error',
+    destructive: 'bg-status-error',
+    neutral: 'bg-status-neutral',
+    info: 'bg-status-info',
   };
 
   return (
@@ -19,6 +28,9 @@ const StatusBadge = ({ variant = 'neutral', size = 'md', className = '', childre
       variant={variants[variant] || variants.neutral}
       className={`${sizes[size] || sizes.md} ${className}`}
     >
+      <span
+        className={`size-1.5 shrink-0 rounded-full ${dotStyles[variant] || dotStyles.neutral}`}
+      />
       {children}
     </Badge>
   );

@@ -21,9 +21,7 @@ export const IconButton = ({
   showDot = false,
   ...props
 }) => {
-  const isMaterialIcon = typeof icon === 'string';
-
-  let colorClass = 'text-muted-foreground hover:text-foreground hover:bg-accent';
+  let colorClass = 'text-muted-foreground hover:text-foreground hover:bg-secondary';
 
   if (intent === 'danger') {
     colorClass =
@@ -38,7 +36,7 @@ export const IconButton = ({
     <button
       onClick={onClick}
       className={cn(
-        'relative flex min-h-[44px] min-w-[44px] items-center justify-center rounded-xl p-2 transition-all active:scale-95 border border-transparent',
+        'relative flex min-h-10 min-w-10 items-center justify-center rounded-md border border-transparent p-2 transition-all active:scale-95',
         colorClass,
         disabled && 'opacity-50 cursor-not-allowed grayscale',
         className
@@ -48,14 +46,7 @@ export const IconButton = ({
       disabled={disabled}
       {...props}
     >
-      <span
-        className={cn(
-          'shrink-0 flex items-center justify-center',
-          isMaterialIcon ? 'material-symbols-outlined text-xl leading-none' : '[&>svg]:size-5'
-        )}
-      >
-        {icon}
-      </span>
+      <span className="flex shrink-0 items-center justify-center [&>svg]:size-5">{icon}</span>
       {showDot && (
         <span className="absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-status-error ring-2 ring-background animate-pulse" />
       )}

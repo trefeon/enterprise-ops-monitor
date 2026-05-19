@@ -1,4 +1,5 @@
 import React from 'react';
+import { Info, RefreshCw } from 'lucide-react';
 import StatusBadge from '../../ui/StatusBadge';
 import IconButton from '../../ui/IconButton';
 import { formatDateTime, formatTime } from '../../../lib/date';
@@ -36,7 +37,7 @@ export const getEodMonitorColumns = ({ onView, onRetry, canRetry }) => [
       <div className="flex justify-end gap-2">
         <IconButton
           label="Detail"
-          icon="info"
+          icon={<Info className="size-4" />}
           onClick={(e) => {
             e.stopPropagation();
             onView && onView(r);
@@ -44,7 +45,7 @@ export const getEodMonitorColumns = ({ onView, onRetry, canRetry }) => [
         />
         <IconButton
           label="Retry"
-          icon="refresh"
+          icon={<RefreshCw className="size-4" />}
           intent="primary"
           disabled={!canRetry}
           onClick={(e) => {

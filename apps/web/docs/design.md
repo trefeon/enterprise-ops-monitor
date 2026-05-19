@@ -10,7 +10,7 @@
 | Routing | React Router 7 (lazy-loaded routes, nested layouts) |
 | Styling | Tailwind CSS 3 + CSS custom properties |
 | Component System | shadcn/ui (base-nova style) + custom legacy components |
-| Icons | Lucide React (primary) + Material Symbols (legacy) |
+| Icons | Lucide React |
 | Animation | Framer Motion 12 |
 | HTTP Client | Axios 1.13 with request/response interceptors |
 | Test | Vitest 4 + jsdom + @testing-library/react |

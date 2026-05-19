@@ -1,24 +1,25 @@
 import React from 'react';
+import { Inbox } from 'lucide-react';
 import { Button } from './button';
 import { Card, CardContent } from './card';
 
 const EmptyState = ({
   title = 'No data available',
   description = 'There are no records to display at this time.',
-  icon = 'inbox',
+  icon = <Inbox className="size-7" />,
   action = null,
 }) => {
   return (
-    <Card className="border-dashed">
+    <Card className="border-dashed bg-card">
       <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-        <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center mb-4">
-          <span className="material-symbols-outlined text-muted-foreground text-2xl">{icon}</span>
+        <div className="mb-4 flex size-12 items-center justify-center rounded-lg border border-border bg-muted text-muted-foreground">
+          {icon}
         </div>
-        <h3 className="text-lg font-medium text-foreground mb-1">{title}</h3>
-        <p className="text-sm text-muted-foreground max-w-sm mb-6">{description}</p>
+        <h3 className="mb-1 font-display text-lg font-semibold text-foreground">{title}</h3>
+        <p className="mb-6 max-w-sm text-sm text-muted-foreground">{description}</p>
         {action && (
           <Button onClick={action.onClick}>
-            {action.icon && <span className="material-symbols-outlined mr-1.5">{action.icon}</span>}
+            {action.icon}
             {action.label}
           </Button>
         )}

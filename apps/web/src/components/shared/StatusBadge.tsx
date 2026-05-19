@@ -3,17 +3,38 @@ import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 interface StatusBadgeProps {
-  variant: 'success' | 'warning' | 'destructive' | 'default' | 'secondary' | 'outline';
+  variant:
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'destructive'
+    | 'info'
+    | 'neutral'
+    | 'default'
+    | 'secondary'
+    | 'outline';
   children: ReactNode;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
+  live?: boolean;
 }
 
-export function StatusBadge({ variant, children, className, size = 'md' }: StatusBadgeProps) {
+export function StatusBadge({ variant, children, className, size = 'md', live }: StatusBadgeProps) {
+  const normalizedVariant = variant === 'error' ? 'destructive' : variant;
+  const badgeVariant =
+    normalizedVariant === 'destructive'
+      ? 'destructive'
+      : normalizedVariant === 'neutral'
+        ? 'neutral'
+        : normalizedVariant;
+
   const dotColor = {
     success: 'bg-status-success',
     warning: 'bg-status-warning',
     destructive: 'bg-destructive',
+    error: 'bg-destructive',
+    info: 'bg-status-info',
+    neutral: 'bg-status-neutral',
     default: 'bg-primary-foreground',
     secondary: 'bg-secondary-foreground',
     outline: 'bg-muted-foreground',
@@ -33,13 +54,15 @@ export function StatusBadge({ variant, children, className, size = 'md' }: Statu
 
   return (
     <Badge
-      variant={variant}
-      className={cn('font-bold uppercase tracking-wider', sizes[size], className)}
+      variant={badgeVariant}
+      className={cn('font-semibold uppercase tracking-wider', sizes[size], className)}
     >
       <span
         className={cn(
-          'shrink-0 rounded-full',
-          dotColor[variant] || dotColor.default,
+          'relative shrink-0 rounded-full',
+          dotColor[normalizedVariant] || dotColor.default,
+          live &&
+            "after:absolute after:inset-[-2px] after:rounded-full after:bg-current after:content-[''] after:animate-ping",
           dotSizes[size]
         )}
       />

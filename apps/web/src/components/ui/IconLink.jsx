@@ -12,9 +12,7 @@ import { cn } from '@/lib/utils';
  * @param {string} [props.className]
  */
 export default function IconLink({ to, icon, label, intent = 'neutral', className = '' }) {
-  const isMaterialIcon = typeof icon === 'string';
-
-  let colorClass = 'text-muted-foreground hover:text-foreground hover:bg-accent';
+  let colorClass = 'text-muted-foreground hover:text-foreground hover:bg-secondary';
 
   if (intent === 'danger') {
     colorClass =
@@ -27,21 +25,14 @@ export default function IconLink({ to, icon, label, intent = 'neutral', classNam
     <Link
       to={to}
       className={cn(
-        'p-2 rounded-xl transition-all flex items-center justify-center active:scale-95 border border-transparent',
+        'flex min-h-10 min-w-10 items-center justify-center rounded-md border border-transparent p-2 transition-all active:scale-95',
         colorClass,
         className
       )}
       title={label}
       aria-label={label}
     >
-      <span
-        className={cn(
-          'shrink-0 flex items-center justify-center',
-          isMaterialIcon ? 'material-symbols-outlined text-xl leading-none' : '[&>svg]:size-5'
-        )}
-      >
-        {icon}
-      </span>
+      <span className="flex shrink-0 items-center justify-center [&>svg]:size-5">{icon}</span>
     </Link>
   );
 }

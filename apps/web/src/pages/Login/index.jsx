@@ -124,22 +124,24 @@ const Login = () => {
   };
 
   return (
-    <div className="dark bg-background text-foreground min-h-screen flex flex-col md:flex-row overflow-hidden">
+    <div className="login-shell">
       {/* Need Help Modal */}
       {helpOpen && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm"
           onClick={() => setHelpOpen(false)}
         >
           <div
-            className="w-full max-w-sm rounded-3xl p-6 shadow-2xl bg-card border border-border/60 animate-in fade-in zoom-in duration-200"
+            className="login-modal-panel animate-in w-full max-w-sm rounded-xl border border-border bg-card p-6 duration-200 fade-in zoom-in"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-bold tracking-tight">Need Assistance?</h3>
+            <div className="mb-6 flex items-center justify-between">
+              <h3 className="font-display text-lg font-semibold tracking-normal">
+                Need Assistance?
+              </h3>
               <button
                 type="button"
-                className="p-1 rounded-full hover:bg-muted transition-colors"
+                className="rounded-md p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20"
                 onClick={() => setHelpOpen(false)}
               >
                 <X className="size-5" />
@@ -147,24 +149,20 @@ const Login = () => {
             </div>
 
             <div className="space-y-4">
-              <div className="p-4 rounded-2xl bg-muted/30 border border-border/40">
+              <div className="rounded-lg border border-border bg-muted p-4">
                 <div className="flex gap-4">
                   <Compass className="size-5 text-muted-foreground" />
                   <div>
-                    <div className="text-sm font-bold">How to sign in</div>
-                    <div className="text-xs text-muted-foreground mt-1">
+                    <div className="text-sm font-semibold">How to sign in</div>
+                    <div className="mt-1 text-xs text-muted-foreground">
                       Use the "demo" quick login button to explore.
                     </div>
                   </div>
                 </div>
               </div>
 
-              <Button
-                onClick={openSupportChannel}
-                variant="secondary"
-                className="w-full h-12 rounded-2xl font-bold"
-              >
-                <Activity className="mr-2 size-4" />
+              <Button onClick={openSupportChannel} variant="secondary" className="h-12 w-full">
+                <Activity className="size-4" />
                 Contact IT Support
               </Button>
             </div>
@@ -173,75 +171,78 @@ const Login = () => {
       )}
 
       {/* Left Section: Branding */}
-      <section className="hidden md:flex w-1/2 flex-col justify-between p-16 relative overflow-hidden bg-muted/5 border-r border-border/40">
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
+      <section className="relative hidden overflow-hidden border-r border-border bg-background p-12 md:flex md:flex-col md:justify-between lg:p-16">
+        <div className="pointer-events-none absolute inset-0 opacity-100">
           <div className="absolute top-0 left-0 w-full h-full bg-radial-login" />
         </div>
 
-        <div className="z-10 flex items-center gap-4 text-foreground font-black tracking-tighter">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-xl shadow-primary/20">
-            <LineChart className="size-7" />
+        <div className="z-10 flex items-center gap-3 font-display font-bold tracking-normal text-foreground">
+          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <LineChart className="size-5" />
           </div>
-          <span className="text-lg uppercase tracking-widest-lg">Operations Hub</span>
+          <span className="login-brand-label">Operations Hub</span>
         </div>
 
         <div className="z-10 max-w-lg">
-          <h1 className="text-5xl lg:text-7xl font-black text-foreground leading-tightest tracking-tight mb-8">
+          <h1 className="mb-6 font-display text-5xl font-bold leading-tight tracking-normal text-foreground">
             Enterprise <br /> Monitor
           </h1>
-          <p className="text-muted-foreground text-xl mb-12 leading-relaxed font-medium">
+          <p className="mb-10 max-w-md text-base leading-7 text-muted-foreground">
             Real-time tracking for Store EOD processes, data integrity, and network-wide system
             health.
           </p>
           <div className="flex flex-wrap gap-4">
-            <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-status-success/10 border border-status-success/20 text-3xs font-black uppercase tracking-widest text-status-success">
-              <span className="w-2 h-2 rounded-full bg-status-success animate-pulse" />
+            <div className="login-chip flex items-center gap-2 rounded-xs bg-status-success/10 px-2 py-1 text-status-success">
+              <span className="size-1.5 rounded-full bg-status-success animate-pulse" />
               Operational
             </div>
-            <div className="flex items-center gap-2.5 px-5 py-2.5 rounded-full bg-muted/30 border border-border/40 text-3xs font-black uppercase tracking-widest text-muted-foreground">
-              <ShieldCheck className="size-4" />
+            <div className="login-chip flex items-center gap-2 rounded-xs bg-secondary px-2 py-1 text-muted-foreground">
+              <ShieldCheck className="size-3" />
               Secure Hub
             </div>
           </div>
         </div>
 
-        <div className="z-10 text-3xs font-black uppercase tracking-widest text-muted-foreground/40">
+        <div className="z-10 font-mono text-xs text-muted-foreground">
           © 2026 Enterprise Operations Monitor
         </div>
       </section>
 
       {/* Right Section: Form */}
-      <main className="flex-1 flex flex-col justify-center items-center p-6 md:p-12 relative">
+      <main className="relative flex flex-1 flex-col items-center justify-center border-l border-border bg-card/95 p-6 md:p-10 lg:p-12">
+        <div className="mb-8 flex items-center gap-3 self-start md:hidden">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <LineChart className="size-5" />
+          </div>
+          <span className="login-brand-label font-display font-bold">Operations Hub</span>
+        </div>
         <div className="w-full max-w-md">
-          <div className="rounded-5xl border border-border/60 bg-card p-8 sm:p-12 shadow-2xl">
-            <div className="text-center mb-10">
-              <h2 className="text-3xl font-black tracking-tight text-foreground mb-3">
+          <div className="login-card-elevated rounded-xl border border-border bg-card p-6 sm:p-8">
+            <div className="mb-8">
+              <h2 className="mb-2 font-display text-2xl font-semibold tracking-normal text-foreground">
                 Welcome Back
               </h2>
-              <p className="text-muted-foreground font-medium">Access your operational dashboard</p>
+              <p className="text-sm text-muted-foreground">Access your operational dashboard</p>
             </div>
 
             {error && (
-              <div className="mb-8 p-4 bg-status-error/10 border border-status-error/20 rounded-2xl flex items-start gap-3 text-status-error text-sm animate-in fade-in duration-300">
-                <AlertCircle className="size-5 shrink-0 mt-0.5" />
+              <div className="animate-in mb-6 flex items-start gap-3 rounded-md border border-status-error/20 bg-status-error/10 p-4 text-sm text-status-error duration-300 fade-in">
+                <AlertCircle className="mt-0.5 size-4 shrink-0" />
                 <p className="font-medium leading-relaxed">{error}</p>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <label
-                  className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 ml-4"
-                  htmlFor="username"
-                >
+                <label className="form-label" htmlFor="username">
                   Identity
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
-                    <User className="size-5" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground transition-colors group-focus-within:text-primary">
+                    <User className="size-3.5" />
                   </div>
                   <input
-                    className="block w-full pl-12 pr-4 h-14 bg-muted/30 border border-border/60 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-foreground font-medium placeholder:text-muted-foreground/40"
+                    className="login-input pl-10 pr-3"
                     id="username"
                     name="username"
                     placeholder="Username"
@@ -254,18 +255,15 @@ const Login = () => {
               </div>
 
               <div className="space-y-2">
-                <label
-                  className="text-xs font-black uppercase tracking-widest text-muted-foreground/60 ml-4"
-                  htmlFor="password"
-                >
+                <label className="form-label" htmlFor="password">
                   Security Key
                 </label>
                 <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-muted-foreground group-focus-within:text-primary transition-colors">
-                    <Lock className="size-5" />
+                  <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground transition-colors group-focus-within:text-primary">
+                    <Lock className="size-3.5" />
                   </div>
                   <input
-                    className="block w-full pl-12 pr-12 h-14 bg-muted/30 border border-border/60 rounded-2xl focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all outline-none text-foreground font-medium placeholder:text-muted-foreground/40"
+                    className="login-input pl-10 pr-11"
                     id="password"
                     name="password"
                     placeholder="Password"
@@ -275,25 +273,25 @@ const Login = () => {
                     required
                   />
                   <button
-                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                    className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20"
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+                    {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                   </button>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3 px-2">
+              <div className="flex items-center gap-3">
                 <input
-                  className="size-4 rounded-md border-border/60 bg-muted/30 text-primary focus:ring-primary/20"
+                  className="size-4 rounded-sm border-border bg-input text-primary focus:ring-primary/20"
                   id="remember"
                   type="checkbox"
                   checked={rememberMe}
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
                 <label
-                  className="text-xs font-bold text-muted-foreground cursor-pointer"
+                  className="cursor-pointer text-xs font-medium text-muted-foreground"
                   htmlFor="remember"
                 >
                   Keep me signed in
@@ -301,60 +299,58 @@ const Login = () => {
               </div>
 
               <Button
-                className="w-full h-14 rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-primary/20 hover:shadow-primary/30 transition-all active:scale-98"
+                className="h-12 w-full uppercase tracking-wide active:scale-98"
                 type="submit"
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <Loader2 className="animate-spin size-5 mr-2" />
+                  <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <LogIn className="size-5 mr-2" />
+                  <LogIn className="size-4" />
                 )}
                 Sign In
               </Button>
             </form>
 
-            <div className="mt-10 pt-8 border-t border-border/40">
-              <p className="text-3xs font-black text-muted-foreground/40 uppercase tracking-widest-lg text-center mb-6">
-                Portfolio Showcase
-              </p>
+            <div className="mt-8 border-t border-border pt-6">
+              <p className="form-label mb-4 text-center">Portfolio Showcase</p>
               {DEMO_ACCOUNTS.map((acc) => (
                 <button
                   key={acc.username}
                   disabled={isAnimating || isLoading}
                   onClick={() => typeCredentials(acc.username, acc.password)}
-                  className="w-full group flex items-center justify-between p-4 rounded-2xl bg-muted/20 border border-border/40 hover:border-primary/40 hover:bg-background transition-all active:scale-98"
+                  className="group flex w-full items-center justify-between rounded-lg border border-border bg-muted p-4 transition-all hover:border-primary/40 hover:bg-secondary active:scale-98 disabled:cursor-not-allowed disabled:opacity-60"
                 >
                   <div className="flex items-center gap-3 text-left">
-                    <div className="size-10 flex items-center justify-center rounded-xl bg-background border border-border/60 group-hover:text-primary transition-colors">
-                      <Key className="size-5" />
+                    <div className="flex size-10 items-center justify-center rounded-lg border border-border bg-background transition-colors group-hover:text-primary">
+                      <Key className="size-4" />
                     </div>
                     <div>
-                      <div className="text-sm font-bold">{acc.label}</div>
-                      <div className="text-3xs text-muted-foreground uppercase font-black tracking-widest">
+                      <div className="text-sm font-semibold">{acc.label}</div>
+                      <div className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
                         Login: {acc.username}
                       </div>
                     </div>
                   </div>
-                  <div className="text-3xs font-black uppercase tracking-widest text-primary/40 group-hover:text-primary transition-colors">
+                  <div className="login-chip text-primary/60 transition-colors group-hover:text-primary">
                     QUICK START
                   </div>
                 </button>
               ))}
             </div>
 
-            <div className="mt-10 text-center">
-              <span className="text-3xs font-black uppercase tracking-widest text-muted-foreground/30">
+            <div className="mt-8 text-center">
+              <span className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
                 v2.4.0 • PRODUCTION READY
               </span>
             </div>
           </div>
         </div>
 
-        <div className="mt-8 flex items-center gap-8">
+        <div className="mt-8 flex items-center gap-6">
           <button
             type="button"
-            className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-status-success/70 hover:text-status-success transition-all"
+            className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-status-success/80 transition-colors hover:text-status-success focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20"
             onClick={() => window.open('/live', '_blank', 'noopener')}
           >
             <Tv className="size-4" />
@@ -362,7 +358,7 @@ const Login = () => {
           </button>
           <button
             type="button"
-            className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-muted-foreground hover:text-foreground transition-all"
+            className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20"
             onClick={() => setHelpOpen(true)}
           >
             <HelpCircle className="size-4" />
@@ -371,8 +367,8 @@ const Login = () => {
         </div>
       </main>
 
-      <div className="md:hidden p-8 border-t border-border bg-card text-center">
-        <p className="text-3xs font-black uppercase tracking-widest-lg text-muted-foreground/60">
+      <div className="border-t border-border bg-card p-6 text-center md:hidden">
+        <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
           Enterprise Operations Platform
         </p>
       </div>

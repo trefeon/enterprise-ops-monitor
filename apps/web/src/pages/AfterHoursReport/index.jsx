@@ -37,6 +37,7 @@ import {
   Download,
   Trophy,
   FileText,
+  Store,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
@@ -65,14 +66,14 @@ const DEFAULT_WINDOW_START = '23:15';
 
 const TOOLBAR_FIELD_CLASS = '!h-11 !rounded-xl !border-border/70 !bg-background shadow-sm';
 const TOOLBAR_BUTTON_CLASS =
-  '!h-11 w-full justify-center !rounded-xl border border-border/70 bg-background text-foreground shadow-sm hover:bg-muted sm:w-auto';
+  '!h-11 w-full justify-center !rounded-md border border-border bg-background text-foreground hover:bg-secondary sm:w-auto';
 const TOOLBAR_ICON_BUTTON_CLASS =
-  '!h-11 !w-11 shrink-0 !rounded-xl border border-border/70 bg-background !px-0 text-foreground shadow-sm hover:bg-muted';
-const TOOLBAR_PRIMARY_BUTTON_CLASS = '!h-11 w-full justify-center !rounded-xl shadow-sm sm:w-auto';
-const TOOLBAR_PANEL_CLASS = 'rounded-2xl border border-border/60 bg-background/75 p-4 shadow-sm';
+  '!h-11 !w-11 shrink-0 !rounded-md border border-border bg-background !px-0 text-foreground hover:bg-secondary';
+const TOOLBAR_PRIMARY_BUTTON_CLASS = '!h-11 w-full justify-center !rounded-md sm:w-auto';
+const TOOLBAR_PANEL_CLASS = 'rounded-lg border border-border bg-background/75 p-4';
 const TOOLBAR_LABEL_CLASS = 'text-xs font-semibold uppercase tracking-widest text-muted-foreground';
 const TOOLBAR_META_PILL_CLASS =
-  'rounded-full border border-border/60 bg-background/80 px-3 py-1 text-xs text-muted-foreground';
+  'rounded-xs border border-border bg-background/80 px-3 py-1 text-xs text-muted-foreground';
 
 function getDefaultMonth() {
   const now = new Date();
@@ -480,25 +481,19 @@ export default function AfterHoursReport() {
   }
 
   // Medal colors for top 3
-  const medalClasses = [
-    'text-yellow-500', // gold
-    'text-gray-400', // silver
-    'text-amber-700', // bronze
-  ];
+  const medalClasses = ['text-status-warning', 'text-muted-foreground', 'text-status-warning/70'];
 
   return (
     <>
       <div className="space-y-5">
         <FeatureStoryBanner story={getFeatureStory('after-hours-report')} />
 
-        <Card className="py-3 overflow-hidden rounded-3xl border border-border/70 bg-gradient-to-br from-background via-background to-muted/20 shadow-sm">
+        <Card className="overflow-hidden py-3">
           <CardContent>
             <div className="grid gap-5 border-b border-border/60 px-5 py-5 lg:grid-cols-2 lg:px-6">
               <div className="space-y-3">
-                <div className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  <span className="material-symbols-outlined text-sm text-status-info">
-                    assessment
-                  </span>
+                <div className="inline-flex items-center gap-2 rounded-xs border border-border bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  <FileText className="size-3 text-status-info" />
                   After-Hours Monthly Report
                 </div>
 
@@ -515,22 +510,22 @@ export default function AfterHoursReport() {
                 </div>
 
                 <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                  <span className="rounded-full border border-border/60 bg-background/70 px-3 py-1">
+                  <span className="rounded-xs border border-border bg-background/70 px-3 py-1">
                     Search + filters
                   </span>
-                  <span className="rounded-full border border-border/60 bg-background/70 px-3 py-1">
+                  <span className="rounded-xs border border-border bg-background/70 px-3 py-1">
                     XLSX export
                   </span>
-                  <span className="rounded-full border border-border/60 bg-background/70 px-3 py-1">
+                  <span className="rounded-xs border border-border bg-background/70 px-3 py-1">
                     Final check window
                   </span>
-                  <span className="rounded-full border border-border/60 bg-background/70 px-3 py-1">
+                  <span className="rounded-xs border border-border bg-background/70 px-3 py-1">
                     WhatsApp auto-send 09:00 WIB
                   </span>
                 </div>
               </div>
 
-              <div className="rounded-2xl border border-border/60 bg-background/90 p-4 shadow-sm">
+              <div className="rounded-lg border border-border bg-background/90 p-4">
                 <div className="flex items-start justify-between gap-3">
                   <div className="space-y-2">
                     <h3 className="text-sm font-semibold text-foreground">
@@ -542,7 +537,7 @@ export default function AfterHoursReport() {
                   </div>
 
                   <span
-                    className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
+                    className={`rounded-xs px-3 py-1 text-xs font-semibold uppercase tracking-wide ${
                       monthlyReportBroadcastEnabled
                         ? 'bg-status-success/10 text-status-success'
                         : 'bg-muted text-muted-foreground'
@@ -563,7 +558,7 @@ export default function AfterHoursReport() {
                       onChange={(e) => setMonthlyReportWhatsappTargets(e.target.value)}
                       placeholder={MONTHLY_REPORT_WHATSAPP_TARGETS_SAMPLE}
                       disabled={loadingMonthlyReportSettings}
-                      className="!pl-11 !h-11 !rounded-xl !bg-background shadow-sm"
+                      className="!h-11 !rounded-sm !bg-background !pl-11"
                     />
                   </div>
 
@@ -579,8 +574,8 @@ export default function AfterHoursReport() {
                       onClick={handleSaveMonthlyReportSettings}
                       disabled={loadingMonthlyReportSettings}
                     >
-                      {savingMonthlyReportSettings && <Loader2 className="animate-spin mr-2" />}
-                      <span className="material-symbols-outlined mr-2">save</span>
+                      {savingMonthlyReportSettings && <Loader2 className="size-4 animate-spin" />}
+                      <Save className="size-4" />
                       Save Target
                     </Button>
                   </div>
@@ -588,7 +583,7 @@ export default function AfterHoursReport() {
               </div>
             </div>
             <div className="px-5 py-5 lg:px-6">
-              <div className="rounded-3xl border border-border/60 bg-muted/20 p-4 sm:p-5">
+              <div className="rounded-lg border border-border bg-muted/20 p-4 sm:p-5">
                 <div className="grid gap-4 xl:grid-cols-12">
                   <div className={`${TOOLBAR_PANEL_CLASS} xl:col-span-5`}>
                     <div className="space-y-2">
@@ -626,7 +621,7 @@ export default function AfterHoursReport() {
                           onClick={() => setMonth((prev) => shiftMonth(prev, -1))}
                           aria-label="Previous month"
                         >
-                          <span className="material-symbols-outlined">chevron_left</span>
+                          <ChevronLeft className="size-4" />
                         </Button>
 
                         <Select
@@ -662,7 +657,7 @@ export default function AfterHoursReport() {
                           disabled={month >= currentMonth}
                           aria-label="Next month"
                         >
-                          <span className="material-symbols-outlined">chevron_right</span>
+                          <ChevronRight className="size-4" />
                         </Button>
 
                         <Button
@@ -672,7 +667,7 @@ export default function AfterHoursReport() {
                           className={`${TOOLBAR_BUTTON_CLASS} sm:w-36`}
                           onClick={() => setMonth(currentMonth)}
                         >
-                          <span className="material-symbols-outlined mr-2">today</span>
+                          <Calendar className="size-4" />
                           This Month
                         </Button>
                       </div>
@@ -859,7 +854,7 @@ export default function AfterHoursReport() {
           <StatCard
             title="Violating Stores"
             value={totalStores}
-            icon="store"
+            icon={<Store className="size-5" />}
             status={totalStores > 0 ? 'error' : 'success'}
             subtext={`${selectedBranchLabel} • ${formatMonthLabel(month + '-01')} • Window: ${selectedWindowLabel}${normalizedSearch ? ` • Search: ${normalizedSearch}` : ''}`}
             className={
@@ -883,7 +878,7 @@ export default function AfterHoursReport() {
           <StatCard
             title="Report Period"
             value={formatMonthLabel(month + '-01')}
-            icon="date_range"
+            icon={<Calendar className="size-5" />}
             status="info"
             subtext={
               branch || normalizedSearch

@@ -150,7 +150,7 @@ export default function UsersAdmin() {
         render: (row) => {
           const scope = row.branchScope;
           if (scope === 'ALL') {
-            return <span className="text-xs text-green-600 font-medium">ALL</span>;
+            return <span className="text-xs font-medium text-status-success">ALL</span>;
           }
           if (Array.isArray(scope)) {
             return <span className="text-xs">{scope.length} branches</span>;
@@ -170,8 +170,8 @@ export default function UsersAdmin() {
           }
           return (
             <div className="flex gap-2 justify-center text-xs">
-              {allow > 0 && <span className="text-green-600">+{allow}</span>}
-              {deny > 0 && <span className="text-red-600">-{deny}</span>}
+              {allow > 0 && <span className="text-status-success">+{allow}</span>}
+              {deny > 0 && <span className="text-status-error">-{deny}</span>}
             </div>
           );
         },

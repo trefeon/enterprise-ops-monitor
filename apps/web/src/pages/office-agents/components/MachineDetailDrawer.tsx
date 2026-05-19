@@ -167,7 +167,7 @@ export function MachineDetailDrawer({ machine, onClose }: Props) {
               {heartbeat_history.map((hb, idx) => (
                 <div key={idx} className="flex items-center gap-2 text-xs text-muted-foreground">
                   <span
-                    className={`size-1.5 rounded-full ${idx === 0 ? 'bg-emerald-500' : 'bg-muted-foreground/30'}`}
+                    className={`size-1.5 rounded-full ${idx === 0 ? 'bg-status-success' : 'bg-muted-foreground/30'}`}
                   />
                   {formatHb(hb)}
                 </div>

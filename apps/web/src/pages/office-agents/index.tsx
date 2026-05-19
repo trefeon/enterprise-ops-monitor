@@ -44,37 +44,37 @@ const getStatusLabelAndIcon = (status: string) => {
     case 'online':
       return {
         label: 'Online',
-        icon: <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />,
-        color: 'text-emerald-500 dark:text-emerald-400'
+        icon: <span className="h-2 w-2 animate-pulse rounded-full bg-status-success" />,
+        color: 'text-status-success'
       };
     case 'offline':
       return {
         label: 'Offline',
-        icon: <span className="h-2 w-2 rounded-full bg-zinc-500 dark:bg-zinc-600" />,
-        color: 'text-zinc-500 dark:text-zinc-400'
+        icon: <span className="h-2 w-2 rounded-full bg-status-neutral" />,
+        color: 'text-muted-foreground'
       };
     case 'healthy':
       return {
         label: 'Healthy',
-        icon: <CheckCircle className="size-4 text-emerald-500" />,
-        color: 'text-emerald-500 dark:text-emerald-400'
+        icon: <CheckCircle className="size-4 text-status-success" />,
+        color: 'text-status-success'
       };
     case 'warning':
       return {
         label: 'Warning',
-        icon: <AlertTriangle className="size-4 text-amber-500" />,
-        color: 'text-amber-500 dark:text-amber-400'
+        icon: <AlertTriangle className="size-4 text-status-warning" />,
+        color: 'text-status-warning'
       };
     case 'critical':
       return {
         label: 'Critical',
-        icon: <XCircle className="size-4 text-red-500" />,
-        color: 'text-red-500 dark:text-red-400'
+        icon: <XCircle className="size-4 text-status-error" />,
+        color: 'text-status-error'
       };
     default:
       return {
         label: 'All Statuses',
-        icon: <Monitor className="size-4 text-sky-500 dark:text-sky-400" />,
+        icon: <Monitor className="size-4 text-status-info" />,
         color: 'text-foreground'
       };
   }
@@ -125,20 +125,20 @@ export default function OfficeAgentsPage() {
         <StatCard
           title="Healthy"
           value={stats.healthy}
-          icon={<CheckCircle className="size-5 text-emerald-500" />}
-          className="border-emerald-500/30"
+          icon={<CheckCircle className="size-5 text-status-success" />}
+          className="border-status-success/30"
         />
         <StatCard
           title="Warning"
           value={stats.warning}
-          icon={<AlertTriangle className="size-5 text-amber-500" />}
-          className="border-amber-500/30"
+          icon={<AlertTriangle className="size-5 text-status-warning" />}
+          className="border-status-warning/30"
         />
         <StatCard
           title="Critical"
           value={stats.critical}
-          icon={<XCircle className="size-5 text-red-500" />}
-          className="border-red-500/30"
+          icon={<XCircle className="size-5 text-status-error" />}
+          className="border-status-error/30"
         />
       </div>
       <Card>
@@ -153,7 +153,7 @@ export default function OfficeAgentsPage() {
             value={statusFilter}
             onValueChange={(value) => setStatusFilter(value as typeof statusFilter)}
           >
-            <SelectTrigger className="w-full min-h-[44px] md:w-60 bg-zinc-900/40 border-border/80 transition-all hover:bg-zinc-900/60 hover:border-border">
+            <SelectTrigger className="w-full min-h-10 border-border bg-input transition-all hover:border-border md:w-60">
               <span className="flex items-center gap-2">
                 <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mr-1">Status:</span>
                 {(() => {
@@ -182,7 +182,7 @@ export default function OfficeAgentsPage() {
             </SelectContent>
           </Select>
           {stats.critical > 0 && (
-            <div className="flex min-h-[44px] items-center gap-2 rounded-full border border-red-500/30 bg-red-500/10 px-4 text-sm font-medium text-red-500">
+            <div className="flex min-h-10 items-center gap-2 rounded-md border border-status-error/30 bg-status-error/10 px-4 text-sm font-medium text-status-error">
               <AlertCircle className="size-4" />
               {stats.critical} machine(s) need attention
             </div>

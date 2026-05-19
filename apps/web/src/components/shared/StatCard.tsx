@@ -19,27 +19,27 @@ interface StatCardProps {
 const statusStyles: Record<StatStatus, { value: string; rail: string; icon: string }> = {
   default: {
     value: 'text-foreground',
-    rail: 'bg-foreground/10',
-    icon: 'border-border/70 bg-muted/50 text-foreground',
+    rail: 'bg-border',
+    icon: 'border-border bg-muted text-foreground',
   },
   success: {
     value: 'text-status-success',
-    rail: 'bg-status-success/30',
+    rail: 'bg-status-success',
     icon: 'border-status-success/15 bg-status-success/10 text-status-success',
   },
   warning: {
     value: 'text-status-warning',
-    rail: 'bg-status-warning/30',
+    rail: 'bg-status-warning',
     icon: 'border-status-warning/15 bg-status-warning/10 text-status-warning',
   },
   error: {
     value: 'text-status-error',
-    rail: 'bg-status-error/30',
+    rail: 'bg-status-error',
     icon: 'border-status-error/15 bg-status-error/10 text-status-error',
   },
   info: {
     value: 'text-status-info',
-    rail: 'bg-status-info/30',
+    rail: 'bg-status-info',
     icon: 'border-status-info/15 bg-status-info/10 text-status-info',
   },
 };
@@ -55,7 +55,6 @@ export function StatCard({
   status = 'default',
   onClick,
 }: StatCardProps) {
-  const isMaterialIcon = typeof icon === 'string';
   const styles = statusStyles[status] || statusStyles.default;
   const accent = accentProp || styles.value;
 
@@ -63,14 +62,14 @@ export function StatCard({
     <Card
       onClick={onClick}
       className={cn(
-        'group relative flex h-full flex-col overflow-hidden transition-all',
-        onClick && 'cursor-pointer hover:border-primary/50 hover:shadow-md active:scale-[0.98]',
+        'group relative flex h-full flex-col overflow-hidden transition-colors',
+        onClick && 'cursor-pointer hover:border-primary/50 active:scale-[0.98]',
         className
       )}
     >
-      <CardContent className="flex flex-1 flex-col pt-4">
+      <CardContent className="flex flex-1 flex-col pt-5">
         {/* Top semantic rail */}
-        <div className={cn('absolute inset-x-0 top-0 h-1', styles.rail)} />
+        <div className={cn('absolute inset-x-0 top-0 h-0.5', styles.rail)} />
 
         <div className="relative flex flex-1 flex-col">
           <div className="flex items-start justify-between gap-3">
@@ -80,8 +79,7 @@ export function StatCard({
             {icon ? (
               <span
                 className={cn(
-                  'flex size-10 shrink-0 items-center justify-center rounded-xl border shadow-sm transition-transform duration-200 group-hover:-translate-y-0.5',
-                  isMaterialIcon ? 'material-symbols-outlined text-xl' : '[&>svg]:size-5',
+                  'flex size-10 shrink-0 items-center justify-center rounded-lg border transition-transform duration-200 group-hover:-translate-y-0.5 [&>svg]:size-5',
                   styles.icon,
                   accentProp
                 )}
@@ -94,7 +92,7 @@ export function StatCard({
           </div>
 
           <div className="mt-2">
-            <div className={cn('text-2xl font-bold tracking-tight sm:text-[1.8rem]', accent)}>
+            <div className={cn('font-mono text-[1.75rem] font-bold leading-tight tracking-normal', accent)}>
               {value}
             </div>
           </div>

@@ -4,11 +4,11 @@ import { X, CheckCircle2, AlertTriangle, AlertCircle, Info } from 'lucide-react'
 import { cn } from '@/lib/utils';
 
 const variantStyles = {
-  success: 'bg-status-success/15 text-status-success border-status-success/30',
-  warning: 'bg-status-warning/15 text-status-warning border-status-warning/30',
-  error: 'bg-status-error/15 text-status-error border-status-error/30',
-  info: 'bg-status-info/15 text-status-info border-status-info/30',
-  neutral: 'bg-muted text-foreground border-border',
+  success: 'border-l-status-success text-status-success',
+  warning: 'border-l-status-warning text-status-warning',
+  error: 'border-l-status-error text-status-error',
+  info: 'border-l-status-info text-status-info',
+  neutral: 'border-l-muted-foreground text-foreground',
 };
 
 const iconMap = {
@@ -37,7 +37,14 @@ export const ToastProvider = ({ children }) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  const value = useMemo(() => ({ push, dismiss }), [push, dismiss]);
+  const showToast = useCallback(
+    (message, variant = 'neutral') => {
+      push({ variant, message });
+    },
+    [push]
+  );
+
+  const value = useMemo(() => ({ push, dismiss, showToast }), [push, dismiss, showToast]);
 
   return (
     <ToastContext.Provider value={value}>
@@ -47,7 +54,7 @@ export const ToastProvider = ({ children }) => {
           <div
             key={toast.id}
             className={cn(
-              'rounded-xl border px-4 py-3 text-sm shadow-xl animate-in slide-in-from-right-full duration-300',
+              'animate-in rounded-md border border-border border-l-4 bg-popover px-4 py-3 text-sm shadow-[0_8px_32px_rgb(0_0_0_/_0.5)] duration-300 slide-in-from-right-full',
               variantStyles[toast.variant] || variantStyles.neutral
             )}
           >
@@ -62,7 +69,7 @@ export const ToastProvider = ({ children }) => {
                 </div>
               </div>
               <button
-                className="text-muted-foreground hover:text-foreground p-1 hover:bg-black/5 rounded transition-colors"
+                className="rounded p-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/20"
                 onClick={() => dismiss(toast.id)}
                 aria-label="Dismiss"
               >

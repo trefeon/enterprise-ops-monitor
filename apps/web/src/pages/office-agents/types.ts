@@ -44,7 +44,7 @@ export function categorizeHealth(metrics: AgentMetrics): HealthCategory {
 }
 
 export function getHealthColor(percent: number): string {
-  if (percent >= 90) return 'bg-red-500';
-  if (percent >= 70) return 'bg-amber-500';
+  if (percent >= 90) return 'bg-status-error';
+  if (percent >= 70) return 'bg-status-warning';
   return 'bg-primary';
 }

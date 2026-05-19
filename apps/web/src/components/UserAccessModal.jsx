@@ -223,7 +223,7 @@ export default function UserAccessModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm">
       <Card className="w-full max-w-2xl max-h-screen overflow-hidden m-4 flex flex-col">
         <CardContent className="p-0">
           <div className="p-4 border-b border-border flex items-center justify-between">

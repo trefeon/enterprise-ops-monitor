@@ -53,7 +53,7 @@ export function DataTable<T>({
   className,
 }: DataTableProps<T>) {
   const content = (
-    <div className={cn('relative overflow-x-auto', className)}>
+    <div className={cn('relative overflow-x-auto rounded-lg border border-border bg-card', className)}>
       <Table className={tableFixed ? 'table-fixed' : ''}>
         <TableHeader>
           <TableRow>
@@ -108,8 +108,8 @@ export function DataTable<T>({
       {pagination && (
         <div
           className={cn(
-            'flex flex-col gap-3 border-t px-4 py-3 sm:flex-row sm:items-center sm:justify-between bg-card text-xs',
-            noCard && 'rounded-b-lg border-x border-b'
+            'flex flex-col gap-3 border-t bg-card px-4 py-3 font-mono text-xs sm:flex-row sm:items-center sm:justify-between',
+            noCard && 'rounded-b-lg'
           )}
         >
           <div className="text-muted-foreground">
@@ -159,7 +159,7 @@ export function DataTable<T>({
   if (noCard) return content;
 
   return (
-    <Card className="p-0 overflow-hidden flex flex-col border-border/60">
+    <Card className="flex flex-col overflow-hidden p-0">
       <CardContent className="p-0">{content}</CardContent>
     </Card>
   );

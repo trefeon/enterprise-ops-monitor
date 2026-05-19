@@ -369,8 +369,8 @@ const LiveSync = () => {
       {/* ── Header Bar ─────────────────────────────────────────── */}
       <header className="flex shrink-0 items-center justify-between border-b border-border/40 bg-card px-6 py-4 backdrop-blur-xl">
         <div className="flex items-center gap-5">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-2xl shadow-primary/20">
-            <Radio className="size-7" />
+          <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Radio className="size-5" />
           </div>
           <div>
             <h1 className="text-xl font-black uppercase tracking-tight text-foreground">
@@ -501,7 +501,7 @@ const LiveSync = () => {
           </div>
           <div
             ref={scrollRef}
-            className="flex-1 overflow-y-auto rounded-4xl border border-border/40 bg-card shadow-inner scrollbar-none"
+            className="flex-1 overflow-y-auto rounded-lg border border-border bg-card scrollbar-none"
           >
             {lateStores.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 gap-4">
@@ -553,7 +553,7 @@ const LiveSync = () => {
           </div>
           <div
             ref={eodScrollRef}
-            className="flex-1 overflow-y-auto rounded-4xl border border-border/40 bg-card shadow-inner scrollbar-none"
+            className="flex-1 overflow-y-auto rounded-lg border border-border bg-card scrollbar-none"
           >
             {eodRanking.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 gap-4">

@@ -11,9 +11,19 @@ export default {
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
-        'background-light': '#f8fafc',
-        'background-dark': '#09090b',
+        'bg-base': 'var(--bg-base)',
+        'bg-surface': 'var(--bg-surface)',
+        'bg-elevated': 'var(--bg-elevated)',
+        'bg-input': 'var(--bg-input)',
+        'bg-hover': 'var(--bg-hover)',
         foreground: 'hsl(var(--foreground))',
+        text: {
+          primary: 'var(--text-primary)',
+          secondary: 'var(--text-secondary)',
+          muted: 'var(--text-muted)',
+          disabled: 'var(--text-disabled)',
+          inverse: 'var(--text-inverse)',
+        },
         primary: {
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
@@ -48,14 +58,22 @@ export default {
           warning: 'hsl(var(--warning))',
           error: 'hsl(var(--destructive))',
           info: 'hsl(var(--info))',
+          neutral: 'var(--color-neutral)',
+        },
+        'status-bg': {
+          success: 'var(--bg-success)',
+          warning: 'var(--bg-warning)',
+          error: 'var(--bg-danger)',
+          info: 'var(--bg-info)',
         },
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
-        '4xl': '2rem',
-        '5xl': '2.5rem',
+        xs: 'var(--radius-xs)',
+        sm: 'var(--radius-sm)',
+        md: 'var(--radius-md)',
+        lg: 'var(--radius-lg)',
+        xl: 'var(--radius-xl)',
+        '2xl': 'var(--radius-2xl)',
       },
       fontSize: {
         '3xs': ['10px', { lineHeight: '1.4' }],
@@ -78,7 +96,8 @@ export default {
         '98': '0.98',
       },
       backgroundImage: {
-        'radial-login': 'radial-gradient(circle at 20% 20%, var(--primary) 0%, transparent 40%)',
+        'radial-login':
+          'radial-gradient(ellipse 60% 60% at 30% 50%, hsl(var(--primary) / 0.06) 0%, transparent 70%)',
       },
       spacing: {
         'page-x': 'var(--page-px)',
@@ -92,8 +111,11 @@ export default {
         row: 'var(--row-h)',
       },
       fontFamily: {
-        sans: ['Inter', ...fontFamily.sans],
-        display: ['Inter', ...fontFamily.sans],
+        sans: ['var(--font-body)', ...fontFamily.sans],
+        body: ['var(--font-body)', ...fontFamily.sans],
+        display: ['var(--font-display)', ...fontFamily.sans],
+        heading: ['var(--font-display)', ...fontFamily.sans],
+        mono: ['var(--font-mono)', ...fontFamily.mono],
       },
       animation: {
         'fade-in': 'fadeIn 0.5s ease-out',

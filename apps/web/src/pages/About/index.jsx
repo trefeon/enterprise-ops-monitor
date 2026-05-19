@@ -60,9 +60,9 @@ export default function About() {
       <FeatureStoryBanner story={getFeatureStory('about')} />
 
       {/* Hero Section */}
-      <section className="relative overflow-hidden rounded-3xl bg-primary/5 border border-primary/10 p-8 md:p-12 mb-8">
+      <section className="relative mb-8 overflow-hidden rounded-lg border border-primary/10 bg-primary/5 p-8 md:p-12">
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold uppercase tracking-widest mb-4">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-xs bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
             <Rocket className="size-3" /> Portfolio Case Study
           </div>
           <h1 className="text-4xl md:text-5xl font-black text-foreground tracking-tight mb-4">
@@ -297,7 +297,7 @@ export default function About() {
         </p>
         <Button
           size="lg"
-          className="rounded-full px-8 h-12 text-base font-bold shadow-xl shadow-primary/20 hover:bg-foreground hover:text-background transition-all"
+          className="h-12 px-8 text-base font-semibold"
           onClick={() => navigate('/')}
         >
           Launch Operations Hub <ChevronRight className="ml-2 size-5" />

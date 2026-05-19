@@ -65,21 +65,21 @@ function getHealthConfig(systemHealth: string) {
     case 'OK':
       return {
         label: 'Operational',
-        dot: 'bg-emerald-500',
-        pulse: 'bg-emerald-500/70',
+        dot: 'bg-status-success',
+        pulse: 'bg-status-success/70',
         subtext: 'All systems normal',
       };
     case 'WARNING':
       return {
         label: 'Degraded',
-        dot: 'bg-amber-500',
+        dot: 'bg-status-warning',
         pulse: null,
         subtext: 'Some services degraded',
       };
     case 'CRITICAL':
       return {
         label: 'Critical',
-        dot: 'bg-red-500',
+        dot: 'bg-status-error',
         pulse: null,
         subtext: 'Immediate attention needed',
       };

@@ -19,17 +19,17 @@ const Header = ({ onMobileMenuClick }) => {
   };
 
   return (
-    <header className="h-16 border-b border-border flex items-center justify-between px-6 bg-card sticky top-0 z-30">
+    <header className="sticky top-0 z-30 flex h-12 items-center justify-between border-b border-border bg-card/95 px-6 backdrop-blur">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"
           size="icon"
           onClick={onMobileMenuClick}
-          className="md:hidden text-muted-foreground hover:text-primary transition-colors"
+          className="text-muted-foreground transition-colors hover:text-primary md:hidden"
         >
           <Menu className="size-5" />
         </Button>
-        <div className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 hidden sm:block">
+        <div className="hidden font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:block">
           Enterprise Operations Platform
         </div>
       </div>
@@ -38,7 +38,7 @@ const Header = ({ onMobileMenuClick }) => {
       <div className="flex items-center gap-4 md:hidden">
         <Button
           onClick={() => navigate('/profile')}
-          className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-primary-foreground font-black text-xs shadow-md shadow-primary/20 ring-2 ring-ring/30"
+          className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground ring-2 ring-ring/20"
           aria-label="Open profile"
           title="Profile"
         >

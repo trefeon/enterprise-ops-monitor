@@ -127,27 +127,27 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
     <aside
       className={cn(
         'relative z-50 flex h-full flex-col border-r border-border bg-card transition-all duration-300 ease-in-out',
-        collapsed ? 'md:w-20' : 'md:w-64',
-        inSheet ? 'w-64' : 'w-64'
+        collapsed ? 'md:w-20' : 'md:w-60',
+        inSheet ? 'w-60' : 'w-60'
       )}
     >
       {/* Logo Area */}
       <div
         className={cn(
-          'h-16 flex items-center border-b border-border',
+          'flex h-14 items-center border-b border-border',
           collapsed ? 'md:justify-center md:px-2' : 'justify-between px-5'
         )}
       >
         <div
           className={cn(
-            'flex items-center gap-3 text-foreground font-black tracking-tight whitespace-nowrap',
+            'flex items-center gap-3 font-display font-bold tracking-normal text-foreground whitespace-nowrap',
             collapsed ? 'md:hidden' : 'overflow-hidden'
           )}
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-lg shadow-primary/20">
-            <LineChart className="size-5" />
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <LineChart className="size-4" />
           </div>
-          <span className="text-sm uppercase tracking-wider">Ops Hub</span>
+          <span className="text-[13px] uppercase tracking-[0.12em]">Ops Hub</span>
         </div>
 
         <div className="flex items-center gap-1">
@@ -156,7 +156,7 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
             variant="ghost"
             size="icon"
             onClick={toggleCollapsed}
-            className="hidden md:flex text-muted-foreground hover:text-primary transition-colors"
+            className="hidden text-muted-foreground transition-colors hover:text-primary md:flex"
             aria-label={collapsed ? 'Expand' : 'Collapse'}
           >
             {collapsed ? <ChevronRight className="size-5" /> : <ChevronLeft className="size-5" />}
@@ -175,7 +175,7 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto py-6 space-y-1.5 px-4 scrollbar-none">
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-4 scrollbar-none">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -185,39 +185,31 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
               onClick={() => setMobileOpen(false)}
               className={({ isActive }) =>
                 cn(
-                  'flex min-h-[44px] items-center gap-4 px-4 py-2 rounded-xl transition-all duration-200 group relative',
+                  'group relative flex min-h-9 items-center gap-2.5 rounded-md px-3 py-2 text-[13.5px] font-medium transition-all duration-150',
                   isActive
-                    ? 'bg-primary/10 text-primary font-bold'
-                    : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+                    ? 'bg-primary/10 text-primary font-semibold'
+                    : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                   collapsed ? 'md:justify-center' : ''
                 )
               }
               title={collapsed ? item.label : ''}
             >
-              <Icon
-                className={cn(
-                  'size-5 shrink-0 transition-transform group-hover:scale-110',
-                  collapsed ? '' : ''
-                )}
-              />
+              <Icon className={cn('size-4 shrink-0 transition-colors', collapsed ? '' : '')} />
               <span
-                className={cn(
-                  'text-sm font-semibold tracking-tight transition-opacity duration-300',
-                  collapsed ? 'md:hidden' : 'block'
-                )}
+                className={cn('transition-opacity duration-300', collapsed ? 'md:hidden' : 'block')}
               >
                 {item.label}
               </span>
               {/* Active Indicator Dot */}
-              <div className="absolute left-0 w-1 h-6 bg-primary rounded-r-full opacity-0 scale-y-0 transition-all duration-300 group-[.active]:opacity-100 group-[.active]:scale-y-100" />
+              <div className="absolute left-0 h-5 w-0.5 scale-y-0 rounded-r-full bg-primary opacity-0 transition-all duration-150 group-[.active]:scale-y-100 group-[.active]:opacity-100" />
             </NavLink>
           );
         })}
 
-        <div className="mt-8 border-t border-border/50 pt-6">
+        <div className="mt-6 border-t border-border/50 pt-4">
           <p
             className={cn(
-              'px-4 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground/60 mb-4',
+              'mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60',
               collapsed ? 'md:hidden' : 'block'
             )}
           >
@@ -232,19 +224,19 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
                 onClick={() => setMobileOpen(false)}
                 className={({ isActive }) =>
                   cn(
-                    'flex min-h-[44px] items-center gap-4 px-4 py-2 rounded-xl transition-all duration-200 group relative',
+                    'group relative flex min-h-9 items-center gap-2.5 rounded-md px-3 py-2 text-[13.5px] font-medium transition-all duration-150',
                     isActive
-                      ? 'bg-status-info/10 text-status-info font-bold'
-                      : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
+                      ? 'bg-status-info/10 text-status-info font-semibold'
+                      : 'text-muted-foreground hover:bg-secondary hover:text-foreground',
                     collapsed ? 'md:justify-center' : ''
                   )
                 }
                 title={collapsed ? item.label : ''}
               >
-                <Icon className="size-5 shrink-0 transition-transform group-hover:scale-110" />
+                <Icon className="size-4 shrink-0 transition-colors" />
                 <span
                   className={cn(
-                    'text-sm font-semibold tracking-tight',
+                    'transition-opacity duration-300',
                     collapsed ? 'md:hidden' : 'block'
                   )}
                 >
@@ -257,29 +249,29 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
       </nav>
 
       {/* User Profile Summary (Bottom) */}
-      <div className="p-4 border-t border-border/50 mt-auto">
+      <div className="mt-auto border-t border-border/50 p-3">
         <Button
           variant="ghost"
           onClick={handleProfile}
           className={cn(
-            'h-auto w-full justify-start p-2 rounded-2xl hover:bg-muted/50 transition-all border border-transparent hover:border-border',
+            'h-auto w-full justify-start rounded-lg border border-transparent p-2 transition-all hover:border-border hover:bg-secondary',
             collapsed ? 'md:justify-center' : ''
           )}
           title={collapsed ? 'Profile' : ''}
         >
-          <div className="w-10 h-10 shrink-0 rounded-xl bg-gradient-to-br from-primary to-primary/60 flex items-center justify-center text-primary-foreground font-black text-xs shadow-md shadow-primary/20">
+          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
             {initials}
           </div>
           <div
             className={cn(
-              'min-w-0 text-left ml-3 transition-opacity duration-300',
+              'ml-3 min-w-0 text-left transition-opacity duration-300',
               collapsed ? 'md:hidden' : 'block'
             )}
           >
-            <div className="text-sm font-bold text-foreground truncate leading-tight">
+            <div className="truncate text-sm font-semibold leading-tight text-foreground">
               {usernameLabel}
             </div>
-            <div className="text-[10px] text-muted-foreground uppercase font-black tracking-widest truncate">
+            <div className="truncate font-mono text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
               {roleLabel}
             </div>
           </div>

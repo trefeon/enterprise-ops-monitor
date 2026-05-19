@@ -1,4 +1,5 @@
 import React from 'react';
+import { Download, RotateCcw, Trash2 } from 'lucide-react';
 import StatusBadge from '../../ui/StatusBadge';
 import IconButton from '../../ui/IconButton';
 import { formatDate, formatDateTime } from '../../../lib/date';
@@ -36,7 +37,7 @@ export const getBackupColumns = ({ onDownload, onDelete, onRestore, canDelete, c
       <div className="flex justify-end gap-2">
         <IconButton
           label="Download"
-          icon="download"
+          icon={<Download className="size-4" />}
           onClick={(e) => {
             e.stopPropagation();
             onDownload && onDownload(r);
@@ -44,7 +45,7 @@ export const getBackupColumns = ({ onDownload, onDelete, onRestore, canDelete, c
         />
         <IconButton
           label="Restore"
-          icon="settings_backup_restore"
+          icon={<RotateCcw className="size-4" />}
           intent="primary"
           disabled={!canRestore}
           onClick={(e) => {
@@ -54,7 +55,7 @@ export const getBackupColumns = ({ onDownload, onDelete, onRestore, canDelete, c
         />
         <IconButton
           label="Delete"
-          icon="delete"
+          icon={<Trash2 className="size-4" />}
           intent="danger"
           disabled={!canDelete}
           onClick={(e) => {

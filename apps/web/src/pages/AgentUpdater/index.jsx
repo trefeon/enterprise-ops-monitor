@@ -736,9 +736,9 @@ const AgentUpdater = () => {
                 Publisher Binary (.exe)
               </label>
               <div className="flex items-center justify-center w-full">
-                <label className="flex flex-col items-center justify-center w-full h-40 border-2 border-dashed rounded-4xl cursor-pointer bg-muted/20 hover:bg-muted/40 border-border/60 hover:border-primary/40 transition-all group/upload">
+                <label className="group/upload flex h-40 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/20 transition-all hover:border-primary/40 hover:bg-muted">
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <div className="size-12 flex items-center justify-center rounded-2xl bg-muted border border-border/60 mb-4 group-hover/upload:bg-primary/10 group-hover/upload:text-primary transition-colors">
+                    <div className="mb-4 flex size-12 items-center justify-center rounded-lg border border-border bg-muted transition-colors group-hover/upload:bg-primary/10 group-hover/upload:text-primary">
                       <FileUp className="size-6" />
                     </div>
                     <p className="text-sm font-bold text-foreground">
@@ -766,7 +766,7 @@ const AgentUpdater = () => {
                 value={version}
                 onChange={(e) => setVersion(e.target.value)}
                 required
-                className="h-14 rounded-2xl pl-5 font-bold"
+                className="h-12 rounded-sm pl-5 font-semibold"
               />
               <div className="flex items-center gap-3 px-4 pt-1">
                 <div className="flex flex-col">

@@ -10,7 +10,7 @@ import { PermissionGroups } from '../../lib/auth/permissions';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
 import { Card, CardContent } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Edit3, Loader2, Plus, Trash2 } from 'lucide-react';
 
 export default function RolesAdmin() {
   const { user } = useAuth();
@@ -186,7 +186,7 @@ export default function RolesAdmin() {
         actions={
           <Guard user={user} permission="ROLES_EDIT">
             <Button onClick={handleCreate}>
-              <span className="material-symbols-outlined text-lg mr-1">add</span>
+              <Plus className="size-4" />
               Create Role
             </Button>
           </Guard>
@@ -194,7 +194,7 @@ export default function RolesAdmin() {
       />
       {/* Role Editor Modal */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm">
           <Card className="w-full max-w-2xl max-h-screen overflow-y-auto m-4">
             <CardContent>
               <div className="p-6">
@@ -217,7 +217,7 @@ export default function RolesAdmin() {
                             name: e.target.value.toLowerCase().replace(/[^a-z_]/g, ''),
                           })
                         }
-                        className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
+                        className="login-input px-3"
                         placeholder="custom_role"
                       />
                     </div>
@@ -229,7 +229,7 @@ export default function RolesAdmin() {
                       type="text"
                       value={editForm.label}
                       onChange={(e) => setEditForm({ ...editForm, label: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground"
+                      className="login-input px-3"
                       placeholder="Custom Role"
                     />
                   </div>
@@ -239,7 +239,7 @@ export default function RolesAdmin() {
                     <textarea
                       value={editForm.description}
                       onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                      className="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground resize-none"
+                      className="w-full resize-none rounded-sm border border-input bg-input px-3 py-2 text-foreground outline-none transition-colors hover:border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
                       rows={2}
                       placeholder="Role description..."
                     />
@@ -247,7 +247,7 @@ export default function RolesAdmin() {
 
                   <div>
                     <label className="block text-sm font-medium mb-2">Permissions</label>
-                    <div className="space-y-4 max-h-64 overflow-y-auto border border-border rounded-lg p-3">
+                    <div className="max-h-64 space-y-4 overflow-y-auto rounded-lg border border-border p-3">
                       {Object.entries(PermissionGroups).map(([group, perms]) => (
                         <div key={group}>
                           <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">
@@ -332,15 +332,13 @@ export default function RolesAdmin() {
                 <div className="flex items-center gap-2">
                   <Guard user={user} permission="ROLES_EDIT">
                     <Button variant="ghost" size="sm" onClick={() => handleEdit(role)}>
-                      <span className="material-symbols-outlined text-lg">edit</span>
+                      <Edit3 className="size-4" />
                     </Button>
                   </Guard>
                   {!role.is_system && (
                     <Guard user={user} permission="ROLES_EDIT">
                       <Button variant="ghost" size="sm" onClick={() => handleDelete(role)}>
-                        <span className="material-symbols-outlined text-lg text-destructive">
-                          delete
-                        </span>
+                        <Trash2 className="size-4 text-destructive" />
                       </Button>
                     </Guard>
                   )}

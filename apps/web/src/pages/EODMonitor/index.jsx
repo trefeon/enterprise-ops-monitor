@@ -36,7 +36,23 @@ import {
 } from '@/components/ui/table';
 import { formatDate, formatDateTime, formatTime, getWibToday } from '../../lib/date';
 import { getFeatureStory } from '../../data/stories';
-import { Loader2, Clock, User, Shield, RotateCw, Pause, Play, RefreshCw } from 'lucide-react';
+import {
+  Loader2,
+  Clock,
+  User,
+  Shield,
+  RotateCw,
+  Pause,
+  Play,
+  RefreshCw,
+  Store,
+  CheckCircle2,
+  Hourglass,
+  CircleAlert,
+  ChevronLeft,
+  ChevronRight,
+  Download,
+} from 'lucide-react';
 import { hasPermission } from '../../lib/auth/permissions';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -576,7 +592,7 @@ const EODMonitor = () => {
         <StatCard
           title="Total Stores"
           value={statsLoading || statsError ? '-' : stats.total}
-          icon="storefront"
+          icon={<Store className="size-5" />}
           subtext="Active locations"
           onClick={() => {
             const newParams = new URLSearchParams(searchParams);
@@ -588,7 +604,7 @@ const EODMonitor = () => {
         <StatCard
           title="EOD Completed"
           value={statsLoading || statsError ? '-' : stats.done}
-          icon="check_circle"
+          icon={<CheckCircle2 className="size-5" />}
           status="success"
           footer={
             <ProgressBar
@@ -606,7 +622,7 @@ const EODMonitor = () => {
         <StatCard
           title="Pending"
           value={statsLoading || statsError ? '-' : stats.pending}
-          icon="pending"
+          icon={<Hourglass className="size-5" />}
           status="warning"
           footer={
             <ProgressBar
@@ -624,7 +640,7 @@ const EODMonitor = () => {
         <StatCard
           title="Failed"
           value={statsLoading || statsError ? '-' : stats.failed}
-          icon="error"
+          icon={<CircleAlert className="size-5" />}
           status="error"
           subtext="Needs attention"
           onClick={() => {
@@ -787,12 +803,12 @@ const EODMonitor = () => {
               onClick={handleExport}
               title={`Export Excel for ${formatDate(filters.date)}`}
             >
-              {exporting && <Loader2 className="animate-spin mr-2" />}
-              <span className="material-symbols-outlined mr-2">download</span>
+              {exporting && <Loader2 className="size-4 animate-spin" />}
+              <Download className="size-4" />
               {exportButtonLabel}
             </Button>
             <Button variant="ghost" size="sm" onClick={handleResetFilters}>
-              <span className="material-symbols-outlined mr-2 text-base">restart_alt</span>
+              <RotateCw className="size-4" />
               Reset
             </Button>
           </div>
@@ -935,7 +951,7 @@ const EODMonitor = () => {
                   </Select>
                   <div className="flex gap-1">
                     <IconButton
-                      icon="chevron_left"
+                      icon={<ChevronLeft className="size-4" />}
                       label="Previous page"
                       disabled={pagination.page <= 1}
                       onClick={() =>
@@ -943,7 +959,7 @@ const EODMonitor = () => {
                       }
                     />
                     <IconButton
-                      icon="chevron_right"
+                      icon={<ChevronRight className="size-4" />}
                       label="Next page"
                       disabled={pagination.page * pagination.pageSize >= pagination.total}
                       onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
@@ -1121,7 +1137,7 @@ const EODMonitor = () => {
                 </span>
                 <div className="flex gap-2">
                   <IconButton
-                    icon="chevron_left"
+                    icon={<ChevronLeft className="size-4" />}
                     label="Previous branch stores page"
                     onClick={() => {
                       const newPage = Math.max(branchStoresPagination.page - 1, 1);
@@ -1131,7 +1147,7 @@ const EODMonitor = () => {
                     disabled={branchStoresPagination.page <= 1}
                   />
                   <IconButton
-                    icon="chevron_right"
+                    icon={<ChevronRight className="size-4" />}
                     label="Next branch stores page"
                     onClick={() => {
                       const totalPages = Math.ceil(

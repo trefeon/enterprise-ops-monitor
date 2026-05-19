@@ -27,7 +27,17 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import Modal from '../../components/ui/Modal';
 import { formatDate, formatDateTime, formatTime, getWibParts, getWibToday } from '../../lib/date';
 import { getFeatureStory } from '../../data/stories';
-import { Loader2, Store, CheckCircle, AlertTriangle, Clock, RefreshCw } from 'lucide-react';
+import {
+  Loader2,
+  Store,
+  CheckCircle,
+  AlertTriangle,
+  Clock,
+  RefreshCw,
+  History,
+  ChevronLeft,
+  ChevronRight,
+} from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { SearchBar } from '@/components/shared/SearchBar';
@@ -791,7 +801,7 @@ const StoreSync = () => {
                           }}
                           title="View sync history"
                         >
-                          <span className="material-symbols-outlined text-base">history</span>
+                          <History className="size-4" />
                         </button>
                       </TableCell>
                     </TableRow>
@@ -813,7 +823,7 @@ const StoreSync = () => {
                   }
                   disabled={pagination.page <= 1}
                 >
-                  <span className="material-symbols-outlined text-lg">chevron_left</span>
+                  <ChevronLeft className="size-4" />
                 </Button>
                 <Button
                   variant="ghost"
@@ -827,7 +837,7 @@ const StoreSync = () => {
                   }
                   disabled={pagination.page >= totalPages}
                 >
-                  <span className="material-symbols-outlined text-lg">chevron_right</span>
+                  <ChevronRight className="size-4" />
                 </Button>
               </div>
             </div>
@@ -898,11 +908,11 @@ const StoreSync = () => {
                       : isStale
                         ? 'warning'
                         : 'success';
-                    const statusIcon = isProblem
-                      ? 'sync_problem'
+                    const StatusIcon = isProblem
+                      ? RefreshCw
                       : isStale
-                        ? 'warning'
-                        : 'check_circle';
+                        ? AlertTriangle
+                        : CheckCircle;
                     const statusClass = isProblem
                       ? 'border-status-error/30 bg-status-error/5'
                       : isStale
@@ -914,17 +924,15 @@ const StoreSync = () => {
                         className={`flex items-center justify-between p-3 rounded-lg border ${statusClass}`}
                       >
                         <div className="flex items-center gap-3">
-                          <span
-                            className={`material-symbols-outlined text-lg ${
+                          <StatusIcon
+                            className={`size-4 ${
                               isProblem
                                 ? 'text-status-error'
                                 : isStale
                                   ? 'text-status-warning'
                                   : 'text-status-success'
                             }`}
-                          >
-                            {statusIcon}
-                          </span>
+                          />
                           <div>
                             <div className="text-sm text-foreground">
                               {bucketLabel ? `Interval ${bucketLabel}` : 'Latest snapshot'}

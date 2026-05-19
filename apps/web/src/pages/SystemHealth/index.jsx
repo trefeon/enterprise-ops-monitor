@@ -45,6 +45,9 @@ import {
   Search,
   Activity,
   Download,
+  Copy,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -623,8 +626,8 @@ const SystemHealth = () => {
             <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
               <div className="relative group">
                 <div className="relative w-full">
-                  <span className="absolute left-3 inset-y-0 flex items-center text-muted-foreground material-symbols-outlined text-xl leading-none pointer-events-none">
-                    search
+                  <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground">
+                    <Search className="size-4" />
                   </span>
                   <Input
                     placeholder="Filter logs..."
@@ -709,9 +712,7 @@ const SystemHealth = () => {
                             className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
                             onClick={() => handleCopyLog(log)}
                           >
-                            <span className="material-symbols-outlined text-base">
-                              content_copy
-                            </span>
+                            <Copy className="size-4" />
                           </button>
                         </TableCell>
                       </TableRow>
@@ -725,16 +726,16 @@ const SystemHealth = () => {
                 </span>
                 <div className="flex w-full justify-end gap-2 sm:w-auto">
                   <button
-                    className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-50 border border-transparent hover:border-border transition-all"
+                    className="rounded-md border border-transparent p-1 text-muted-foreground transition-all hover:border-border hover:bg-secondary hover:text-foreground disabled:opacity-50"
                     onClick={() =>
                       setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
                     }
                     disabled={pagination.page <= 1}
                   >
-                    <span className="material-symbols-outlined text-lg">chevron_left</span>
+                    <ChevronLeft className="size-4" />
                   </button>
                   <button
-                    className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground disabled:opacity-50 border border-transparent hover:border-border transition-all"
+                    className="rounded-md border border-transparent p-1 text-muted-foreground transition-all hover:border-border hover:bg-secondary hover:text-foreground disabled:opacity-50"
                     onClick={() =>
                       setPagination((prev) => ({
                         ...prev,
@@ -743,7 +744,7 @@ const SystemHealth = () => {
                     }
                     disabled={pagination.page * pagination.pageSize >= totalLogs}
                   >
-                    <span className="material-symbols-outlined text-lg">chevron_right</span>
+                    <ChevronRight className="size-4" />
                   </button>
                 </div>
               </div>

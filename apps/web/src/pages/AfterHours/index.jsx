@@ -947,11 +947,11 @@ export default function AfterHours() {
         </Suspense>
       ) : (
         <>
-          <Card className="!p-0 !gap-0 overflow-hidden rounded-4xl border border-border/60 bg-gradient-to-br from-background via-background/95 to-muted/20 shadow-md backdrop-blur-sm">
+          <Card className="!gap-0 overflow-hidden !p-0">
             <div className="flex flex-col gap-3 border-b border-border/40 bg-muted/20 px-6 py-4 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
                 <div
-                  className={`p-2.5 rounded-xl border transition-all duration-300 ${
+                  className={`rounded-lg border p-2.5 transition-all duration-300 ${
                     notifyEnabled
                       ? 'bg-status-success/10 text-status-success border-status-success/30 afterhours-glow-success'
                       : 'bg-primary/10 text-primary border-primary/20 afterhours-glow-primary'
@@ -978,7 +978,7 @@ export default function AfterHours() {
               </div>
 
               <div className="flex flex-wrap items-center gap-4">
-                <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-full border border-border/40 bg-muted/30">
+                <div className="flex items-center gap-2.5 rounded-xs border border-border bg-muted px-3 py-1.5">
                   <span className="font-bold uppercase tracking-wider text-muted-foreground text-3xs">
                     Status
                   </span>
@@ -996,7 +996,7 @@ export default function AfterHours() {
                     }`}
                   >
                     <span
-                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-md ring-0 transition duration-300 ease-in-out ${
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-foreground ring-0 transition duration-300 ease-in-out ${
                         notifyEnabled ? 'translate-x-5' : 'translate-x-0.5'
                       }`}
                     />
@@ -1318,7 +1318,7 @@ export default function AfterHours() {
               </>
             )}
           </Card>
-          <Card className="py-2 overflow-hidden rounded-4xl bg-muted/5 border-border/40 shadow-sm">
+          <Card className="overflow-hidden py-2">
             <CardContent className="py-2 px-4">
               <div className="flex flex-col xl:flex-row items-center gap-3">
                 <div className="relative flex-1 w-full">

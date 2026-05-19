@@ -18,7 +18,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { getFeatureStory } from '../../data/stories';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Download, RefreshCw, Search } from 'lucide-react';
 
 const AREA_OPTIONS = [
   { id: '2', label: 'NORTH HUB' },
@@ -210,7 +210,7 @@ const StoreManagement = () => {
         subtitle="Monitor operational status and manage store configurations."
         actions={
           <Button variant="secondary" onClick={handleExport}>
-            <span className="material-symbols-outlined mr-2">download</span>
+            <Download className="size-4" />
             Export Excel
           </Button>
         }
@@ -282,7 +282,7 @@ const StoreManagement = () => {
         }
         right={
           <Button variant="secondary" onClick={applyFilters}>
-            <span className="material-symbols-outlined mr-2 text-base">search</span>
+            <Search className="size-4" />
             Apply
           </Button>
         }

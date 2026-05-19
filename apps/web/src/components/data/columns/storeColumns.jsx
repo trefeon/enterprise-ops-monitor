@@ -1,4 +1,5 @@
 import React from 'react';
+import { ArrowRight } from 'lucide-react';
 import StatusBadge from '../../ui/StatusBadge';
 import IconButton from '../../ui/IconButton';
 
@@ -24,7 +25,7 @@ export const getStoreColumns = ({ onView }) => [
       <div className="flex justify-end">
         <IconButton
           label="View"
-          icon="arrow_forward"
+          icon={<ArrowRight className="size-4" />}
           onClick={(e) => {
             e.stopPropagation();
             onView && onView(r);

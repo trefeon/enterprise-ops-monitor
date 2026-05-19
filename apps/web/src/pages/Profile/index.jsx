@@ -12,7 +12,7 @@ import { hasPermission, Permissions } from '../../lib/auth/permissions';
 import { apiPatch } from '../../lib/api/client';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
-import { Loader2 } from 'lucide-react';
+import { AlertCircle, Key, Loader2 } from 'lucide-react';
 
 function getInitials(username, role) {
   const source = (username || role || '').trim();
@@ -109,7 +109,7 @@ const Profile = () => {
 
         <SectionCard>
           <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-primary flex items-center justify-center text-primary-foreground font-bold text-lg ring-2 ring-ring/30">
+            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground ring-2 ring-ring/20">
               {initials}
             </div>
             <div className="min-w-0">
@@ -137,7 +137,7 @@ const Profile = () => {
             </Button>
             {!isEnvAdmin && (
               <Button variant="secondary" onClick={() => setShowPasswordModal(true)}>
-                <span className="material-symbols-outlined text-base mr-1">key</span>
+                <Key className="size-4" />
                 Change Password
               </Button>
             )}
@@ -154,8 +154,8 @@ const Profile = () => {
       <Modal open={showPasswordModal} onClose={closePasswordModal} title="Change Password">
         <form onSubmit={handlePasswordChange} className="space-y-4">
           {error && (
-            <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-lg text-red-500 text-sm flex items-center gap-2">
-              <span className="material-symbols-outlined text-lg">error</span>
+            <div className="flex items-center gap-2 rounded-lg border border-status-error/20 bg-status-error/10 p-3 text-sm text-status-error">
+              <AlertCircle className="size-4" />
               {error}
             </div>
           )}

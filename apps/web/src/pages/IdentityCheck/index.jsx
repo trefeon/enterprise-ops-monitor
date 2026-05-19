@@ -18,7 +18,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { getFeatureStory } from '../../data/stories';
-import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Download, RefreshCw, Search } from 'lucide-react';
 
 const BRANCH_OPTIONS = [
   { id: '2', label: 'NORTH HUB' },
@@ -179,7 +179,7 @@ const IdentityCheck = () => {
         subtitle="Search employees by NIK or name, and review their branch/store assignment."
         actions={
           <Button variant="secondary" onClick={handleExport}>
-            <span className="material-symbols-outlined mr-2">download</span>
+            <Download className="size-4" />
             Export CSV
           </Button>
         }
@@ -251,7 +251,7 @@ const IdentityCheck = () => {
         }
         right={
           <Button variant="secondary" onClick={applyFilters}>
-            <span className="material-symbols-outlined mr-2 text-base">search</span>
+            <Search className="size-4" />
             Apply
           </Button>
         }

@@ -10,18 +10,18 @@ const Layout = () => {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   return (
-    <div className="dark bg-background text-foreground overflow-hidden h-screen flex font-display">
+    <div className="dark flex h-screen overflow-hidden bg-background font-body text-foreground">
       <div className="hidden md:flex">
         <Sidebar setMobileOpen={setMobileOpen} />
       </div>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" showCloseButton={false} className="w-64 p-0 sm:max-w-64">
+        <SheetContent side="left" showCloseButton={false} className="w-60 p-0 sm:max-w-60">
           <Sidebar setMobileOpen={setMobileOpen} inSheet />
         </SheetContent>
       </Sheet>
 
-      <div className="flex-1 flex flex-col min-w-0 relative">
+      <div className="relative flex min-w-0 flex-1 flex-col">
         <Header onMobileMenuClick={() => setMobileOpen(!mobileOpen)} />
         <main className="flex-1 overflow-y-auto scroll-smooth">
           <Suspense fallback={<PageLoader />}>

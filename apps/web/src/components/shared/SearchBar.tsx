@@ -22,8 +22,8 @@ export function SearchBar({
 
   return (
     <div className="relative w-full">
-      <div className="pointer-events-none absolute left-3 inset-y-0 flex items-center text-muted-foreground z-10">
-        <Search className="size-5" />
+      <div className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-muted-foreground">
+        <Search className="size-3.5" />
       </div>
       <Input
         value={value}
