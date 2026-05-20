@@ -335,6 +335,14 @@ export default function AfterHoursReport() {
   }, [loadMonthlyReportSettings]);
 
   const handleSaveMonthlyReportSettings = async () => {
+    if (isDemoUser) {
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
+      return;
+    }
     setSavingMonthlyReportSettings(true);
     try {
       const normalizedTargets = normalizeMonthlyReportWhatsappTargets(monthlyReportWhatsappTargets);
@@ -368,6 +376,14 @@ export default function AfterHoursReport() {
   };
 
   const handleGenerate = async () => {
+    if (isDemoUser) {
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
+      return;
+    }
     setGenerating(true);
     try {
       const res = await apiPost('/afterhours/report/generate', {

@@ -60,6 +60,11 @@ const Profile = () => {
     e.preventDefault();
     setError('');
 
+    if (user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo') {
+      setError('This action is not available in the demo account');
+      return;
+    }
+
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       setError('New passwords do not match');
       return;
@@ -135,7 +140,7 @@ const Profile = () => {
             <Button variant="secondary" onClick={() => navigate('/')}>
               Back
             </Button>
-            {!isEnvAdmin && (
+            {!isEnvAdmin && !user?.isDemo && !user?.roleNames?.includes('demo') && user?.role !== 'demo' && (
               <Button variant="secondary" onClick={() => setShowPasswordModal(true)}>
                 <Key className="size-4" />
                 Change Password

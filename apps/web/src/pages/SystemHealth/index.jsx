@@ -258,6 +258,16 @@ const SystemHealth = () => {
 
   const handleRestart = async () => {
     if (!restartTarget) return;
+    if (isDemoUser) {
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
+      setRestartTarget(null);
+      setRestartConfirm('');
+      return;
+    }
     setRestartLoading(true);
     try {
       const res = await api.post(

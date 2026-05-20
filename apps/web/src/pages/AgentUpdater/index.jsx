@@ -143,6 +143,14 @@ const AgentUpdater = () => {
   const [isDeploying, setIsDeploying] = useState(false);
 
   const handleRefresh = () => {
+    if (isDemoUser) {
+      push({
+        variant: 'warning',
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
+      return;
+    }
     fetchData();
   };
 

@@ -423,49 +423,6 @@ const Backups = () => {
             </div>
           </CardContent>
         </Card>
-
-        <Card className="flex flex-col justify-between border-border/60">
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 text-foreground">
-                <Clock className="size-5 text-muted-foreground" />
-                <h3 className="text-sm font-bold uppercase tracking-wider">Backup Schedule</h3>
-              </div>
-              <StatusBadge variant={scheduleStatusVariant}>{scheduleStatusLabel}</StatusBadge>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <span className="text-3xs text-muted-foreground uppercase tracking-widest font-black">
-                  Next Window
-                </span>
-                <span className="text-base font-bold text-foreground">
-                  {scheduleTime ? `Daily ${scheduleTime} WIB` : scheduleCron ? 'Custom' : '-'}
-                </span>
-                <span className="text-3xs text-muted-foreground font-medium">TZ: {scheduleTz}</span>
-              </div>
-              <div className="flex flex-col gap-1.5 border-l border-border/40 pl-4">
-                <span className="text-3xs text-muted-foreground uppercase tracking-widest font-black">
-                  Latest Point
-                </span>
-                <span className="text-base font-bold text-foreground">
-                  {formatDateTime(summary?.latestBackupAt)}
-                </span>
-                <span className="text-3xs text-muted-foreground truncate font-medium">
-                  {summary?.latestFileName || '-'}
-                </span>
-              </div>
-            </div>
-            <div className="mt-4 pt-4 border-t border-border/20 flex items-center justify-between">
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                {scheduleStatusIcon}
-                {scheduleStatusText}
-              </div>
-              <span className="text-3xs font-bold text-primary uppercase tracking-widest">
-                Total Snapshots: {backupCount ?? '-'}
-              </span>
-            </div>
-          </CardContent>
-        </Card>
       </section>
 
       <section className="space-y-4">
@@ -479,14 +436,14 @@ const Backups = () => {
           />
         </div>
         <Card className="p-0 overflow-hidden border-border/60">
-          <CardContent className="p-0">
+          <div className="overflow-x-auto">
             <Table className="table-fixed">
               <TableHeader>
                 <TableRow className="bg-muted/30">
-                  <TableHead className="w-2/5">File Name</TableHead>
-                  <TableHead className="w-1/5 text-right">Size</TableHead>
-                  <TableHead className="w-1/5 text-center">Date Created</TableHead>
-                  <TableHead className="w-1/5 text-center">Actions</TableHead>
+                  <TableHead className="min-w-48 w-2/5">File Name</TableHead>
+                  <TableHead className="min-w-20 w-1/5 text-right">Size</TableHead>
+                  <TableHead className="min-w-28 w-1/5 text-center">Date Created</TableHead>
+                  <TableHead className="min-w-44 w-1/5 text-center">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -616,7 +573,7 @@ const Backups = () => {
                 </Button>
               </div>
             </div>
-          </CardContent>
+          </div>
         </Card>
       </section>
 

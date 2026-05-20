@@ -157,6 +157,20 @@ export default function DashboardPage() {
     });
   }, [summary, autoSyncAttempted, handleManualSync, push]);
 
+  const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo');
+
+  const handleRefresh = useCallback(() => {
+    if (isDemoUser) {
+      push({
+        variant: 'warning' as const,
+        title: 'Demo Account',
+        message: 'This action is not available in the demo account.',
+      });
+      return;
+    }
+    fetchData();
+  }, [isDemoUser, push, fetchData]);
+
   const handleBackup = useCallback(async () => {
     if (user?.isDemo) {
       push({
@@ -254,7 +268,7 @@ export default function DashboardPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => fetchData()}
+              onClick={handleRefresh}
               disabled={loading || syncing}
               title="Manual Refresh"
             >
