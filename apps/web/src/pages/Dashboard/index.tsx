@@ -64,28 +64,28 @@ function getHealthConfig(systemHealth: string) {
   switch (systemHealth) {
     case 'OK':
       return {
-        label: 'Operational',
+        label: 'Healthy',
         dot: 'bg-status-success',
         pulse: 'bg-status-success/70',
         subtext: 'All systems normal',
       };
     case 'WARNING':
       return {
-        label: 'Degraded',
+        label: 'Warning',
         dot: 'bg-status-warning',
         pulse: null,
         subtext: 'Some services degraded',
       };
     case 'CRITICAL':
       return {
-        label: 'Critical',
+        label: 'Error',
         dot: 'bg-status-error',
         pulse: null,
         subtext: 'Immediate attention needed',
       };
     default:
       return {
-        label: systemHealth || 'Unknown',
+        label: systemHealth || 'Bad',
         dot: 'bg-muted-foreground',
         pulse: null,
         subtext: 'Status unavailable',
@@ -344,7 +344,7 @@ export default function DashboardPage() {
                   <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
                     Operational Pulse
                   </CardTitle>
-                  <StatusBadge variant={health.label === 'Operational' ? 'success' : 'warning'}>
+                  <StatusBadge variant={health.label === 'Healthy' ? 'success' : 'warning'}>
                     LIVE
                   </StatusBadge>
                 </div>
@@ -451,10 +451,10 @@ export default function DashboardPage() {
                             )}
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-foreground leading-none mb-1 truncate">
+                            <p className="text-xs font-bold text-foreground leading-none mb-1 break-words">
                               {alert.title}
                             </p>
-                            <p className="text-[10px] text-muted-foreground uppercase truncate">
+                            <p className="text-[10px] text-muted-foreground uppercase break-words">
                               {formatAlertType(alert.type)} • {formatDateTime(alert.createdAt)}
                             </p>
                           </div>

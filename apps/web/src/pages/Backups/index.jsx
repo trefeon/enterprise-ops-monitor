@@ -468,14 +468,14 @@ const Backups = () => {
                       key={file.fileName}
                       className="group hover:bg-muted/30 transition-colors"
                     >
-                      <TableCell className="truncate">
-                        <div className="flex items-center gap-3 truncate">
+                      <TableCell className="break-words">
+                        <div className="flex items-center gap-3">
                           <div className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-xl bg-muted/50 text-foreground border border-border/60 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
                             {file.typeIcon && <file.typeIcon className="size-5" />}
                           </div>
-                          <div className="flex flex-col truncate">
+                          <div className="flex flex-col min-w-0">
                             <span
-                              className="font-bold text-foreground truncate text-sm"
+                              className="font-bold text-foreground text-sm break-all"
                               title={file.fileName}
                             >
                               {file.fileName}

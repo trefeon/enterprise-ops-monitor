@@ -558,7 +558,7 @@ const StoreSync = () => {
           icon={<Clock className="size-5" />}
           value={summary?.oldest?.ageSec != null ? formatDuration(summary.oldest.ageSec) : '-'}
           subtext={
-            <span className="block truncate" title={summary?.oldest?.namaToko}>
+              <span className="block break-words" title={summary?.oldest?.namaToko}>
               {summary?.oldest?.namaToko || '-'}
             </span>
           }
@@ -612,7 +612,7 @@ const StoreSync = () => {
                 >
                   <div className="flex flex-col gap-3 p-4">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-foreground truncate">{branch.name}</span>
+                      <span className="font-medium text-foreground break-words">{branch.name}</span>
                       <StatusBadge variant={statusVariant}>{badgeLabel}</StatusBadge>
                     </div>
                     <ProgressBar

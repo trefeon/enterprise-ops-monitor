@@ -110,11 +110,22 @@ const BRANCHES = [
   { id: "9", code: "H09", name: "SOUTH HUB", region: "Delta" },
 ];
 
-// Generate sortable demo store IDs
-let globalMockStoreIndex = 100000;
+// Generate unique random store codes (alphanumeric, e.g. ST-A7K2M)
+const USED_STORE_CODES = new Set();
+
 function buildDemoStoreCode() {
-  globalMockStoreIndex++;
-  return String(globalMockStoreIndex);
+  let code;
+  do {
+    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    code = 'ST-' +
+      letters[randomInt(0, letters.length - 1)] +
+      String(randomInt(0, 9)) +
+      letters[randomInt(0, letters.length - 1)] +
+      String(randomInt(0, 9)) +
+      letters[randomInt(0, letters.length - 1)];
+  } while (USED_STORE_CODES.has(code));
+  USED_STORE_CODES.add(code);
+  return code;
 }
 
 function buildStores() {
@@ -127,16 +138,16 @@ function buildStores() {
       stores.push({
         id: storeCode,
         storeCode,
-        storeName: `Demo Retail Store ${storeCode}`,
+        storeName: `${faker.company.name()} ${storeCode}`,
         branchId: branch.id,
         branchName: branch.name,
         region: branch.region,
         area: branch.region,
         regional: branch.region,
-        city: `Demo City ${branch.id}`,
-        address: `Demo Street ${String(globalIdx).padStart(3, "0")}`,
-        phone: `000-000-${String(globalIdx).padStart(4, "0")}`,
-        picName: `Demo Contact ${String(globalIdx).padStart(3, "0")}`,
+        city: `${faker.location.city()}`,
+        address: `${faker.location.streetAddress()}`,
+        phone: `+62-812-${String(randomInt(1000, 9999))}-${String(randomInt(1000, 9999))}`,
+        picName: `${faker.person.firstName()} ${faker.person.lastName()}`,
         status: "active",
         employeeCount: randomInt(15, 40),
         openingDate: faker.date.past({ years: 5 }).toISOString().slice(0, 10),
@@ -600,6 +611,13 @@ app.get("/api/eod/export", (req, res) => {
   });
 });
 
+app.post("/api/eod/sync", (req, res) => {
+  const { date, scope } = req.body || {};
+  setTimeout(() => {
+    return ok(res, { queued: true, date: date || toWibDate(), scope: scope || 'all', storeCount: STORES.length });
+  }, 300);
+});
+
 app.post("/api/eod/retry", (req, res) => {
   const { storeCode, date } = req.body || {};
   if (!storeCode) return fail(res, 400, "BAD_REQUEST", "storeCode is required");
@@ -680,19 +698,19 @@ app.get("/api/employees", (req, res) => {
   const datePrefix = `${yy}${mm}${dd}`;
 
   STORES.forEach((store) => {
-    // Determine deterministic count based on store code so it doesn't jump randomly
-    const count = 15 + (Number(store.storeCode) % 10);
+    // Deterministic count based on store code hash
+    const hash = store.storeCode.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    const count = 15 + (hash % 10);
     for (let i = 0; i < count; i++) {
       const pIdx = String(localMockEmployeeIndex).padStart(4, "0");
       localMockEmployeeIndex++;
 
-      
       const newNik = `${datePrefix}${pIdx}`;
 
       employees.push({
         id: `demo-employee-${pIdx}`,
         nik: newNik,
-        fullName: `Demo Employee ${newNik}`,
+        fullName: `${faker.person.firstName()} ${faker.person.lastName()}`,
         role: pickRandom(["Store Manager", "Assistant Manager", "Supervisor", "Cashier", "Sales Associate", "Warehouse Staff"]),
         storeCode: store.storeCode,
         storeName: store.storeName,
@@ -727,7 +745,8 @@ app.get("/api/employees/:nik", (req, res) => {
   const datePrefix = `${yy}${mm}${dd}`;
 
   STORES.forEach((store) => {
-    const count = 15 + (Number(store.storeCode) % 10);
+    const hash = store.storeCode.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    const count = 15 + (hash % 10);
     for (let i = 0; i < count; i++) {
       const pIdx = String(localMockEmployeeIndex).padStart(4, "0");
       localMockEmployeeIndex++;
@@ -736,7 +755,7 @@ app.get("/api/employees/:nik", (req, res) => {
       employees.push({
         id: `demo-employee-${pIdx}`,
         nik: newNik,
-        fullName: `Demo Employee ${newNik}`,
+        fullName: `${faker.person.firstName()} ${faker.person.lastName()}`,
         role: pickRandom(["Store Manager", "Assistant Manager", "Supervisor"]),
         storeCode: store.storeCode,
         storeName: store.storeName,
@@ -753,9 +772,151 @@ app.get("/api/employees/:nik", (req, res) => {
 });
 
 // ─── Sync ──────────────────────────────────────────────────────────────────────
+app.get("/api/sync/summary", (req, res) => {
+  const excludeBazar = req.query.excludeBazar === '1';
+  const stores = excludeBazar ? STORES.filter(s => !s.storeName.toLowerCase().includes('bazar')) : STORES;
+
+  const synced = stores.filter(() => Math.random() > 0.2).length;
+  const stale = stores.filter(() => Math.random() > 0.7).length;
+  const problem = stores.filter(() => Math.random() > 0.85).length;
+  const oldestIdx = randomInt(0, Math.max(0, stores.length - 1));
+  const oldest = stores[oldestIdx];
+
+  return ok(res, {
+    totalStores: stores.length,
+    synced,
+    stale,
+    problem,
+    oldest: oldest ? {
+      storeCode: oldest.storeCode,
+      namaToko: oldest.storeName,
+      ageSec: randomInt(300, 3600),
+    } : null,
+    thresholdsSec: {
+      syncedMax: 300,
+      staleMax: 600,
+    },
+  }, { timezone: "Asia/Jakarta", updatedAt: toWibIso(new Date()) });
+});
+
+app.get("/api/sync/stores", (req, res) => {
+  const { page, pageSize, sort, branch, status, search, excludeBazar } = req.query;
+  let stores = excludeBazar === '1' ? STORES.filter(s => !s.storeName.toLowerCase().includes('bazar')) : [...STORES];
+
+  if (branch) stores = stores.filter(s => String(s.branchId) === String(branch));
+  if (status) {
+    stores = stores.filter(s => {
+      const ageSec = randomInt(0, 1800);
+      if (status === 'problem') return ageSec > 600 || Math.random() > 0.85;
+      if (status === 'stale') return ageSec > 300 && ageSec <= 600;
+      if (status === 'synced') return ageSec <= 300;
+      return true;
+    });
+  }
+  if (search) {
+    const needle = search.toLowerCase();
+    stores = stores.filter(s => s.storeCode.toLowerCase().includes(needle) || s.storeName.toLowerCase().includes(needle));
+  }
+
+  const data = stores.map(store => {
+    const lastSyncAgoSec = randomInt(0, 1800);
+    const isProblem = lastSyncAgoSec > 600 || Math.random() > 0.85;
+    const isStale = !isProblem && lastSyncAgoSec > 300;
+    return {
+      storeId: store.storeCode,
+      storeCode: store.storeCode,
+      storeName: store.storeName,
+      branchId: store.branchId,
+      branchName: store.branchName,
+      lastSyncAt: randomPastMinutes(30),
+      lastSyncAgoSec,
+      status: isProblem ? 'problem' : isStale ? 'stale' : 'synced',
+      isProblem,
+      isStale,
+    };
+  });
+
+  if (sort === 'ageDesc') data.sort((a, b) => b.lastSyncAgoSec - a.lastSyncAgoSec);
+
+  const result = paginate(data, { page, pageSize });
+  return ok(res, result.data, result.meta);
+});
+
+app.post("/api/sync/refresh", (req, res) => {
+  setTimeout(() => {
+    return ok(res, { total: STORES.length, refreshedAt: toWibIso(new Date()) });
+  }, 300);
+});
+
+app.get("/api/sync/history/:storeCode", (req, res) => {
+  const { storeCode } = req.params;
+  const minutes = parseInt(req.query.minutes || '30', 10);
+  const store = STORES.find(s => s.storeCode === storeCode);
+  if (!store) return fail(res, 404, "NOT_FOUND", "Store not found");
+
+  const records = [];
+  const now = new Date();
+  for (let i = 0; i < Math.min(10, minutes / 3); i++) {
+    const polledAt = new Date(now.getTime() - i * 3 * 60000);
+    const lastSyncAgoSec = randomInt(0, minutes * 60);
+    const isProblem = lastSyncAgoSec > 600;
+    const isStale = !isProblem && lastSyncAgoSec > 300;
+    records.push({
+      id: `hist-${storeCode}-${i}`,
+      storeCode,
+      storeName: store.storeName,
+      polledAt: polledAt.toISOString(),
+      lastSyncAt: new Date(polledAt.getTime() - lastSyncAgoSec * 1000).toISOString(),
+      isProblem,
+      isStale,
+    });
+  }
+  return ok(res, { records, storeCode }, { timezone: "Asia/Jakarta" });
+});
+
+app.get("/api/sync/history/:storeCode/summary", (req, res) => {
+  const { storeCode } = req.params;
+  const { date, bucketMinutes } = req.query;
+  const store = STORES.find(s => s.storeCode === storeCode);
+  if (!store) return fail(res, 404, "NOT_FOUND", "Store not found");
+
+  const bucketMin = parseInt(bucketMinutes || '10', 10);
+  const buckets = [];
+  for (let h = 6; h < 23; h += Math.max(1, Math.floor(bucketMin / 60))) {
+    const bucketStart = new Date();
+    bucketStart.setHours(h, 0, 0, 0);
+    const bucketEnd = new Date(bucketStart.getTime() + bucketMin * 60000);
+    const isProblem = Math.random() > 0.8;
+    const isStale = !isProblem && Math.random() > 0.6;
+    buckets.push({
+      id: `bucket-${storeCode}-${h}`,
+      storeCode,
+      storeName: store.storeName,
+      bucketStart: bucketStart.toISOString(),
+      bucketEnd: bucketEnd.toISOString(),
+      isProblem,
+      isStale,
+    });
+  }
+
+  const syncedBuckets = buckets.filter(b => !b.isProblem && !b.isStale).length;
+  const staleBuckets = buckets.filter(b => b.isStale).length;
+  const problemBuckets = buckets.filter(b => b.isProblem).length;
+
+  return ok(res, {
+    buckets,
+    summary: {
+      totalBuckets: buckets.length,
+      syncedBuckets,
+      staleBuckets,
+      problemBuckets,
+    },
+  }, { timezone: "Asia/Jakarta" });
+});
+
 app.get("/api/sync/status", (req, res) => {
   const data = STORES.map((store) => {
-    const statusWeights = store.storeCode.endsWith("01") ? [60, 20, 10, 10] : [70, 15, 10, 5];
+    const statusWeights = store.storeCode.endsWith("1") ? [60, 20, 10, 10] : [70, 15, 10, 5];
     const statuses = ["synced", "synced", "delayed", "error"];
     return {
       storeId: store.storeCode,
@@ -1055,7 +1216,85 @@ app.post("/api/system/restart/:service", (req, res) => {
   return ok(res, { queued: true, service, requestedAt: new Date().toISOString() });
 });
 
-// Legacy health endpoint
+app.post("/api/system/healthcheck", (req, res) => {
+  return ok(res, {
+    database: pickRandom(["healthy", "healthy", "degraded"]),
+    api: "healthy",
+    scheduler: pickRandom(["running", "running", "idle"]),
+    backup: pickRandom(["healthy", "healthy", "degraded"]),
+    checkedAt: toWibIso(new Date()),
+  });
+});
+
+app.get("/api/system/logs/export", (req, res) => {
+  return ok(res, {
+    fileName: `system_logs_${toWibDate()}.xlsx`,
+    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    contentBase64: Buffer.from("mock excel content").toString("base64"),
+  });
+});
+
+// ─── Agent Monitoring ──────────────────────────────────────────────────────────
+const OFFICE_MACHINES = [
+  { id: "OM-001", hostname: "HQ-LAPTOP-01", label: "Head Office - Finance", os: "Windows 11 Pro", cpu: "Intel i7-12700H", ram: "16GB", disk: "512GB SSD", status: "online" },
+  { id: "OM-002", hostname: "HQ-LAPTOP-02", label: "Head Office - HR", os: "Windows 11 Pro", cpu: "Intel i5-12400", ram: "8GB", disk: "256GB SSD", status: "online" },
+  { id: "OM-003", hostname: "NORTH-DESK-01", label: "North Hub - Admin", os: "Windows 10 Pro", cpu: "AMD Ryzen 5 5600G", ram: "16GB", disk: "512GB SSD", status: "online" },
+  { id: "OM-004", hostname: "EAST-DESK-01", label: "East Hub - Operations", os: "Windows 11 Pro", cpu: "Intel i7-12700", ram: "32GB", disk: "1TB SSD", status: "offline" },
+  { id: "OM-005", hostname: "CENTRAL-PC-01", label: "Central Hub - Manager", os: "Windows 11 Pro", cpu: "Intel i5-13500", ram: "16GB", disk: "512GB SSD", status: "online" },
+  { id: "OM-006", hostname: "WEST-LAPTOP-01", label: "West Hub - IT", os: "Windows 11 Pro", cpu: "AMD Ryzen 7 5800H", ram: "32GB", disk: "1TB SSD", status: "online" },
+  { id: "OM-007", hostname: "SOUTH-DESK-01", label: "South Hub - Admin", os: "Windows 10 Pro", cpu: "Intel i3-12100", ram: "8GB", disk: "256GB SSD", status: "warning" },
+  { id: "OM-008", hostname: "COASTAL-PC-01", label: "Coastal Hub - Operations", os: "Windows 11 Pro", cpu: "Intel i5-12400", ram: "16GB", disk: "512GB SSD", status: "online" },
+];
+
+app.get("/api/agent/monitoring", (req, res) => {
+  const { areaId, region, q } = req.query;
+  let machines = OFFICE_MACHINES.map(m => ({
+    ...m,
+    cpu_percent: m.status === 'online' ? randomInt(5, 85) : 0,
+    ram_percent: m.status === 'online' ? randomInt(20, 90) : 0,
+    disk_percent: randomInt(30, 95),
+    network_up: m.status === 'online' ? randomInt(100, 5000) : 0,
+    network_down: m.status === 'online' ? randomInt(500, 10000) : 0,
+    agent_version: `v${randomInt(2, 4)}.${randomInt(0, 9)}.${randomInt(0, 99)}`,
+    last_heartbeat: m.status === 'online' ? randomPastMinutes(2) : randomPastMinutes(1440),
+    uptime_sec: m.status === 'online' ? randomInt(3600, 604800) : 0,
+    is_update_pending: Math.random() > 0.7,
+    processes: m.status === 'online' ? randomInt(50, 200) : 0,
+  }));
+
+  if (areaId) machines = machines.filter(m => m.id.includes(areaId) || (m.label && m.label.toLowerCase().includes(areaId.toLowerCase())));
+  if (region) machines = machines.filter(m => m.label && m.label.toLowerCase().includes(region.toLowerCase()));
+  if (q) {
+    const needle = q.toLowerCase();
+    machines = machines.filter(m => m.hostname.toLowerCase().includes(needle) || (m.label && m.label.toLowerCase().includes(needle)));
+  }
+
+  return ok(res, machines, { timezone: "Asia/Jakarta", total: machines.length });
+});
+
+app.get("/api/agent/monitoring/export", (req, res) => {
+  return ok(res, {
+    fileName: `agent_monitoring_${toWibDate()}.xlsx`,
+    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    contentBase64: Buffer.from("mock excel content").toString("base64"),
+  });
+});
+
+app.delete("/api/agent/monitoring/:storeId", (req, res) => {
+  const { storeId } = req.params;
+  return ok(res, { deleted: true, storeId, resetTo: "not_installed" });
+});
+
+app.get("/api/agent/suggest-version", (req, res) => {
+  return ok(res, { suggestedVersion: "4.2.1", currentVersion: "4.1.0", releaseNotes: "Bug fixes and performance improvements" });
+});
+
+app.post("/api/agent/upload", (req, res) => {
+  const { version } = req.body || {};
+  return ok(res, { uploaded: true, version: version || "4.2.1", deployedAt: toWibIso(new Date()) });
+});
+
+// ─── After Hours ──────────────────────────────────────────────────────────────
 app.get("/api/system/health", (req, res) => {
   return ok(res, {
     status: pickRandom(["healthy", "healthy", "healthy", "degraded"]),

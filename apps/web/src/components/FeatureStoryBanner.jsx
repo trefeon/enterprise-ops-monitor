@@ -67,7 +67,7 @@ export default function FeatureStoryBanner({ story }) {
             <span className="block text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">
               Feature Narrative
             </span>
-            <span className="block truncate text-base font-bold text-foreground">
+            <span className="block text-base font-bold text-foreground line-clamp-2 leading-snug">
               {story.tagline}
             </span>
           </span>
@@ -79,6 +79,9 @@ export default function FeatureStoryBanner({ story }) {
 
       {open && (
         <div className="animate-in slide-in-from-top-2 fade-in duration-200 border-t border-primary/10 px-5 pb-5 pt-5">
+          <p className="text-sm font-medium text-foreground mb-5 leading-relaxed">
+            {story.tagline}
+          </p>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             <StoryBlock
               label="The Problem"

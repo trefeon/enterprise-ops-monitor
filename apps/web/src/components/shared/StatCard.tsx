@@ -73,7 +73,7 @@ export function StatCard({
 
         <div className="relative flex flex-1 flex-col">
           <div className="flex min-w-0 items-start justify-between gap-3">
-            <span className="min-w-0 text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">
+            <span className="min-w-0 text-xs font-medium text-muted-foreground uppercase tracking-wider break-words">
               {title}
             </span>
             {icon ? (

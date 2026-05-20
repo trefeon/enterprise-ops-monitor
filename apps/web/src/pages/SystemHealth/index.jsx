@@ -456,7 +456,7 @@ const SystemHealth = () => {
                 </div>
                 <Monitor className="size-8 text-muted-foreground" />
               </div>
-              <div className="text-xs text-muted-foreground truncate">Host {overview?.hostname || '-'}</div>
+              <div className="text-xs text-muted-foreground break-words">Host {overview?.hostname || '-'}</div>
             </CardContent>
           </Card>
 
@@ -601,10 +601,10 @@ const SystemHealth = () => {
                       </div>
 
                       <div className="flex min-w-0 flex-col">
-                        <span className="truncate text-sm font-semibold text-foreground tracking-tight">
+                        <span className="break-words text-sm font-semibold text-foreground tracking-tight">
                           {service.name}
                         </span>
-                        <span className="truncate live-text-3xs text-muted-foreground uppercase font-medium tracking-wide">
+                        <span className="break-words live-text-3xs text-muted-foreground uppercase font-medium tracking-wide">
                           {timestampLabel} {formatTime(timestampValue)}
                         </span>
                       </div>

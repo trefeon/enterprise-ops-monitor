@@ -118,7 +118,7 @@ const Profile = () => {
               {initials}
             </div>
             <div className="min-w-0">
-              <div className="text-base font-semibold text-foreground truncate">
+              <div className="text-base font-semibold text-foreground break-words">
                 {username || 'Admin'}
               </div>
               <div className="text-xs text-muted-foreground uppercase tracking-wide">{role}</div>
