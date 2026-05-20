@@ -612,7 +612,7 @@ const StoreSync = () => {
                 >
                   <div className="flex flex-col gap-3 p-4">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium text-foreground">{branch.name}</span>
+                      <span className="font-medium text-foreground truncate">{branch.name}</span>
                       <StatusBadge variant={statusVariant}>{badgeLabel}</StatusBadge>
                     </div>
                     <ProgressBar

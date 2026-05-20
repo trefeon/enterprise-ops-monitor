@@ -72,8 +72,8 @@ export function StatCard({
         <div className={cn('absolute inset-x-0 top-0 h-0.5', styles.rail)} />
 
         <div className="relative flex flex-1 flex-col">
-          <div className="flex items-start justify-between gap-3">
-            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <div className="flex min-w-0 items-start justify-between gap-3">
+            <span className="min-w-0 text-xs font-medium text-muted-foreground uppercase tracking-wider truncate">
               {title}
             </span>
             {icon ? (
@@ -92,14 +92,14 @@ export function StatCard({
           </div>
 
           <div className="mt-2">
-            <div className={cn('font-mono text-[1.75rem] font-bold leading-tight tracking-normal', accent)}>
+            <div className={cn('font-mono text-[1.75rem] font-bold leading-tight tracking-normal break-words', accent)}>
               {value}
             </div>
           </div>
 
           <div className="mt-auto pt-2">
             {footer && <div className="mb-2">{footer}</div>}
-            {subtext && <p className="text-xs text-muted-foreground leading-relaxed">{subtext}</p>}
+            {subtext && <p className="text-xs text-muted-foreground leading-relaxed break-words">{subtext}</p>}
           </div>
         </div>
       </CardContent>

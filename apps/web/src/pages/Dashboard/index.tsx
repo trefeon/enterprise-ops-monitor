@@ -437,7 +437,7 @@ export default function DashboardPage() {
                             )}
                           />
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-bold text-foreground leading-none mb-1">
+                            <p className="text-xs font-bold text-foreground leading-none mb-1 truncate">
                               {alert.title}
                             </p>
                             <p className="text-[10px] text-muted-foreground uppercase truncate">

@@ -185,19 +185,19 @@
   }
 
   .page-title {
-    @apply font-display text-[2rem] font-bold leading-tight tracking-normal text-foreground;
+    @apply font-display text-xl sm:text-2xl md:text-[2rem] font-bold leading-tight tracking-normal text-foreground;
   }
 
   .page-subtitle {
-    @apply max-w-3xl text-sm leading-6 text-muted-foreground;
+    @apply max-w-3xl text-sm leading-6 text-muted-foreground break-words;
   }
 
   .page-meta {
-    @apply font-mono text-xs text-muted-foreground;
+    @apply font-mono text-xs text-muted-foreground break-words;
   }
 
   .section-title {
-    @apply mb-4 font-display text-lg font-semibold tracking-normal text-foreground;
+    @apply mb-4 font-display text-lg font-semibold tracking-normal text-foreground break-words;
   }
 
   /* Utility class to be used by Card ONLY */

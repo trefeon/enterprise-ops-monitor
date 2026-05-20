@@ -681,7 +681,7 @@ const EODMonitor = () => {
                   <Card className="transition-all hover:shadow-md hover:ring-1 hover:ring-ring cursor-pointer min-h-36 justify-between border border-border/50">
                     <CardContent className="p-4 flex flex-col gap-3.5 h-full justify-between">
                       <div className="flex items-center justify-between gap-2">
-                        <div className="font-semibold text-foreground tracking-tight">
+                        <div className="font-semibold text-foreground tracking-tight truncate">
                           {branch.areaName}
                         </div>
                         <div

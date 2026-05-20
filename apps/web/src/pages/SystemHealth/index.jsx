@@ -442,11 +442,11 @@ const SystemHealth = () => {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <p className="text-muted-foreground text-sm font-medium mb-1">Operating System</p>
-                  <h3 className="text-foreground text-xl font-bold">{overview?.platform || '-'}</h3>
+                  <h3 className="text-foreground text-xl font-bold break-words">{overview?.platform || '-'}</h3>
                 </div>
                 <Monitor className="size-8 text-muted-foreground" />
               </div>
-              <div className="text-xs text-muted-foreground">Host {overview?.hostname || '-'}</div>
+              <div className="text-xs text-muted-foreground truncate">Host {overview?.hostname || '-'}</div>
             </CardContent>
           </Card>
 

@@ -411,7 +411,7 @@ const Backups = () => {
                 {summary?.storagePath && (
                   <p className="text-3xs text-muted-foreground uppercase font-medium">
                     Path:{' '}
-                    <code className="text-foreground lowercase font-mono">
+                    <code className="text-foreground lowercase font-mono break-all">
                       {summary.storagePath}
                     </code>
                   </p>

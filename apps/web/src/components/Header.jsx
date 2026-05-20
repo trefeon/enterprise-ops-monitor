@@ -38,7 +38,7 @@ const Header = ({ onMobileMenuClick }) => {
       <div className="flex items-center gap-4 md:hidden">
         <Button
           onClick={() => navigate('/profile')}
-          className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground ring-2 ring-ring/20"
+          className="h-9 w-9 min-h-0 rounded-lg bg-primary p-0 text-xs font-bold text-primary-foreground ring-2 ring-ring/20"
           aria-label="Open profile"
           title="Profile"
         >

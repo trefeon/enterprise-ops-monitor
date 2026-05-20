@@ -148,7 +148,7 @@ function StoryBlock({ label, tone, text, icon }) {
         {icon}
         <p className="text-[10px] font-black uppercase tracking-widest">{label}</p>
       </div>
-      <p className="text-sm leading-relaxed text-muted-foreground">{text}</p>
+      <p className="text-sm leading-relaxed text-muted-foreground break-words">{text}</p>
     </div>
   );
 }
