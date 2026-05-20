@@ -37,8 +37,8 @@ async function seed() {
     let storesCreated = 0;
     for (let i = 1; i <= 20; i++) {
       const storeData = {
-        store_code: `STR${i.toString().padStart(3, "0")}`,
-        store_name: `Demo Retail Store ${i}`,
+        store_code: `${100000 + i}`,
+        store_name: `Demo Retail Store ${100000 + i}`,
         area: i <= 5 ? "Zone Alpha" : i <= 10 ? "Zone Beta" : "Zone Gamma",
         region: "Region A",
         is_active: true,
@@ -57,7 +57,7 @@ async function seed() {
     // 5 Done, 2 Failed, rest Pending (no log)
     for (let i = 1; i <= 5; i++) {
       eodLogs.push({
-        store_code: `STR${i.toString().padStart(3, "0")}`,
+        store_code: `${100000 + i}`,
         date: today,
         status: "DONE",
         message: "Synced successfully",
@@ -65,14 +65,14 @@ async function seed() {
       });
     }
     eodLogs.push({
-      store_code: `STR006`,
+      store_code: `100006`,
       date: today,
       status: "FAILED",
       message: "Connection Timeout",
       source: "API",
     });
     eodLogs.push({
-      store_code: `STR007`,
+      store_code: `100007`,
       date: today,
       status: "FAILED",
       message: "Auth Error",
@@ -82,27 +82,33 @@ async function seed() {
     await db.EODLog.bulkCreate(eodLogs);
     console.log("EOD Logs created");
 
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(-2);
+    const mm = String(now.getMonth() + 1).padStart(2, "0");
+    const dd = String(now.getDate()).padStart(2, "0");
+    const datePrefix = `${yy}${mm}${dd}`;
+
     // 4. Create Employees
     await db.Employee.bulkCreate([
       {
-        nik: "12345",
-        full_name: "Demo Employee STR001-01",
+        nik: `${datePrefix}0001`,
+        full_name: "Demo Employee 100001-01",
         role: "Manager",
-        store_code: "STR001",
+        store_code: "100001",
         status: "ACTIVE",
       },
       {
-        nik: "67890",
-        full_name: "Demo Employee STR001-02",
+        nik: `${datePrefix}0002`,
+        full_name: "Demo Employee 100001-02",
         role: "Staff",
-        store_code: "STR001",
+        store_code: "100001",
         status: "ACTIVE",
       },
       {
-        nik: "11223",
-        full_name: "Demo Employee STR002-01",
+        nik: `${datePrefix}0003`,
+        full_name: "Demo Employee 100002-01",
         role: "Staff",
-        store_code: "STR002",
+        store_code: "100002",
         status: "INACTIVE",
       },
     ]);

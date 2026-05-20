@@ -54,14 +54,6 @@ function wibMinute() {
   return wib.getUTCMinutes();
 }
 
-function buildDemoStoreCode(branchId, sequence) {
-  const branchNumber = Number.parseInt(String(branchId || ""), 10);
-  const storeSequence = Number.parseInt(String(sequence || ""), 10);
-  const normalizedBranch = Number.isFinite(branchNumber) ? branchNumber : 0;
-  const normalizedSequence = Number.isFinite(storeSequence) ? storeSequence : 0;
-  return String(710000 + normalizedBranch * 1000 + normalizedSequence).padStart(6, "0");
-}
-
 function daysAgo(n) {
   const d = new Date(Date.now() - n * 86400000);
   return d;
@@ -118,18 +110,24 @@ const BRANCHES = [
   { id: "9", code: "H09", name: "SOUTH HUB", region: "Delta" },
 ];
 
-// Generate sortable demo store IDs: 710000 + branchId * 1000 + store sequence.
+// Generate sortable demo store IDs
+let globalMockStoreIndex = 100000;
+function buildDemoStoreCode() {
+  globalMockStoreIndex++;
+  return String(globalMockStoreIndex);
+}
+
 function buildStores() {
   const stores = [];
   let globalIdx = 1;
   for (const branch of BRANCHES) {
     const storeCount = randomInt(3, 6);
     for (let s = 0; s < storeCount; s++) {
-      const storeCode = buildDemoStoreCode(branch.id, s + 1);
+      const storeCode = buildDemoStoreCode();
       stores.push({
         id: storeCode,
         storeCode,
-        storeName: `Demo Retail Store ${String(globalIdx).padStart(3, "0")}`,
+        storeName: `Demo Retail Store ${storeCode}`,
         branchId: branch.id,
         branchName: branch.name,
         region: branch.region,
@@ -671,16 +669,30 @@ app.get("/api/stores/:storeCode", (req, res) => {
 });
 
 // ─── Employees ─────────────────────────────────────────────────────────────────
+
 app.get("/api/employees", (req, res) => {
+  let localMockEmployeeIndex = 1;
   const employees = [];
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(-2);
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  const datePrefix = `${yy}${mm}${dd}`;
+
   STORES.forEach((store) => {
-    const count = randomInt(15, 25);
+    // Determine deterministic count based on store code so it doesn't jump randomly
+    const count = 15 + (Number(store.storeCode) % 10);
     for (let i = 0; i < count; i++) {
-      const employeeCode = `${store.storeCode}-${String(i + 1).padStart(2, "0")}`;
+      const pIdx = String(localMockEmployeeIndex).padStart(4, "0");
+      localMockEmployeeIndex++;
+
+      
+      const newNik = `${datePrefix}${pIdx}`;
+
       employees.push({
-        id: `demo-employee-${employeeCode}`,
-        nik: `DEMO-${employeeCode}`,
-        fullName: `Demo Employee ${employeeCode}`,
+        id: `demo-employee-${pIdx}`,
+        nik: newNik,
+        fullName: `Demo Employee ${newNik}`,
         role: pickRandom(["Store Manager", "Assistant Manager", "Supervisor", "Cashier", "Sales Associate", "Warehouse Staff"]),
         storeCode: store.storeCode,
         storeName: store.storeName,
@@ -706,14 +718,25 @@ app.get("/api/employees", (req, res) => {
 });
 
 app.get("/api/employees/:nik", (req, res) => {
+  let localMockEmployeeIndex = 1;
   const employees = [];
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(-2);
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  const datePrefix = `${yy}${mm}${dd}`;
+
   STORES.forEach((store) => {
-    for (let i = 0; i < randomInt(15, 25); i++) {
-      const employeeCode = `${store.storeCode}-${String(i + 1).padStart(2, "0")}`;
+    const count = 15 + (Number(store.storeCode) % 10);
+    for (let i = 0; i < count; i++) {
+      const pIdx = String(localMockEmployeeIndex).padStart(4, "0");
+      localMockEmployeeIndex++;
+      const newNik = `${datePrefix}${pIdx}`;
+
       employees.push({
-        id: `demo-employee-${employeeCode}`,
-        nik: `DEMO-${employeeCode}`,
-        fullName: `Demo Employee ${employeeCode}`,
+        id: `demo-employee-${pIdx}`,
+        nik: newNik,
+        fullName: `Demo Employee ${newNik}`,
         role: pickRandom(["Store Manager", "Assistant Manager", "Supervisor"]),
         storeCode: store.storeCode,
         storeName: store.storeName,

@@ -193,11 +193,25 @@ function buildEodRecord(store, { dayOffset = 0, history = false } = {}) {
   };
 }
 
+let globalStoreIndex = 100000;
+let globalEmployeeIndex = 1;
+
 function buildEmployeesForStore(store, employeeCount) {
   const employees = [];
+  
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(-2);
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  const datePrefix = `${yy}${mm}${dd}`;
+
   for (let index = 0; index < employeeCount; index += 1) {
     const fullName = `Demo Employee ${store.storeCode}-${String(index + 1).padStart(2, "0")}`;
-    const nik = `${store.branchId}${String(store.ordinal).padStart(3, "0")}${String(index + 1).padStart(2, "0")}`;
+    
+    // NIK Format: YYMMDD + global sequential ID
+    const nik = `${datePrefix}${String(globalEmployeeIndex).padStart(4, "0")}`;
+    globalEmployeeIndex++;
+
     const jobName = pick(JOB_TITLES);
     const lastActivity = offsetDate({ hours: randInt(0, 72), minutes: randInt(0, 59) });
 
@@ -235,8 +249,9 @@ function buildEmployeesForStore(store, employeeCount) {
 }
 
 function buildStoreBlueprint(branch, ordinal) {
-  const storeCode = Number(`${branch.code}${String(ordinal).padStart(3, "0")}`);
-  const storeName = `Demo Retail Store ${branch.code}-${String(ordinal).padStart(3, "0")}`;
+  globalStoreIndex++;
+  const storeCode = globalStoreIndex;
+  const storeName = `Demo Retail Store ${storeCode}`;
   const branchName = branch.name;
   const area = `${pick(AREAS)} ${titleCase(branch.name)}`;
   const regional = pick(REGIONALS);
