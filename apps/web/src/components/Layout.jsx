@@ -16,7 +16,7 @@ const Layout = () => {
       </div>
 
       <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-        <SheetContent side="left" showCloseButton={false} className="w-60 p-0 sm:max-w-60">
+        <SheetContent side="left" showCloseButton={false} className="w-60 p-0 data-[side=left]:w-60 data-[side=left]:sm:max-w-60">
           <Sidebar setMobileOpen={setMobileOpen} inSheet />
         </SheetContent>
       </Sheet>

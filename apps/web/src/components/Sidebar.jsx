@@ -128,7 +128,7 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
       className={cn(
         'relative z-50 flex h-full flex-col border-r border-border bg-card transition-all duration-300 ease-in-out',
         collapsed ? 'md:w-20' : 'md:w-60',
-        inSheet ? 'w-60' : 'w-60'
+        inSheet ? 'w-full' : 'w-60'
       )}
     >
       {/* Logo Area */}
@@ -167,7 +167,7 @@ const Sidebar = ({ setMobileOpen, inSheet = false }) => {
             variant="ghost"
             size="icon"
             onClick={() => setMobileOpen(false)}
-            className="md:hidden"
+            className="md:hidden focus-visible:ring-0 focus-visible:border-transparent focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-transparent"
           >
             <X className="size-5" />
           </Button>

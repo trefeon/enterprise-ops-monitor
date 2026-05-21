@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import {
   ChevronDown,
   ChevronUp,
@@ -52,7 +53,12 @@ export default function FeatureStoryBanner({ story }) {
   const Icon = ICON_MAP[story.materialIcon] || ICON_MAP.info;
 
   return (
-    <section className="group rounded-lg border border-primary/20 bg-primary/[0.03] transition-colors hover:border-primary/30">
+    <motion.section
+      className="group rounded-lg border border-primary/20 bg-primary/[0.03] transition-colors hover:border-primary/30"
+      initial={{ opacity: 0, y: -10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+    >
       <button
         type="button"
         className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
@@ -140,7 +146,7 @@ export default function FeatureStoryBanner({ story }) {
           )}
         </div>
       )}
-    </section>
+    </motion.section>
   );
 }
 
