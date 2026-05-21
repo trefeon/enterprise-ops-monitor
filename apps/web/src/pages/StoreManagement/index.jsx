@@ -2,9 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/ui/ToastContext';
 import { Button } from '@/components/ui/button';
-import PageHeader from '../../components/ui/PageHeader';
-import PageShell from '../../components/ui/PageShell';
-import Toolbar from '../../components/ui/Toolbar';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { PageShell } from '@/components/shared/PageShell';
+import { Toolbar } from '@/components/shared/Toolbar';
 import { Input } from '@/components/ui/input';
 import {
   Select,

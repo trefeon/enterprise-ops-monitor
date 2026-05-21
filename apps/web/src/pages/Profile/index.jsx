@@ -1,11 +1,11 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageHeader from '../../components/ui/PageHeader';
-import PageShell from '../../components/ui/PageShell';
-import { SectionCard } from '../../components/ui/SectionCard';
+import PageHeader from '@/components/shared/PageHeader';
+import PageShell from '@/components/shared/PageShell';
+import { SectionCard } from '@/components/shared/SectionCard';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import Modal from '../../components/ui/Modal';
+import Modal from '@/components/shared/Modal';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/ui/ToastContext';
 import { hasPermission, Permissions } from '../../lib/auth/permissions';
@@ -140,12 +140,15 @@ const Profile = () => {
             <Button variant="secondary" onClick={() => navigate('/')}>
               Back
             </Button>
-            {!isEnvAdmin && !user?.isDemo && !user?.roleNames?.includes('demo') && user?.role !== 'demo' && (
-              <Button variant="secondary" onClick={() => setShowPasswordModal(true)}>
-                <Key className="size-4" />
-                Change Password
-              </Button>
-            )}
+            {!isEnvAdmin &&
+              !user?.isDemo &&
+              !user?.roleNames?.includes('demo') &&
+              user?.role !== 'demo' && (
+                <Button variant="secondary" onClick={() => setShowPasswordModal(true)}>
+                  <Key className="size-4" />
+                  Change Password
+                </Button>
+              )}
             {canManageAccounts && (
               <Button onClick={() => navigate('/admin/users')}>Account Management</Button>
             )}

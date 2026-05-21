@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiGet, apiPost, apiPut, apiDelete } from '../../lib/api/client';
-import PageShell from '../../components/ui/PageShell';
-import PageHeader from '../../components/ui/PageHeader';
+import { PageShell } from '@/components/shared/PageShell';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Guard } from '../../components/auth/Guard';
 import { useToast } from '../../components/ui/ToastContext';

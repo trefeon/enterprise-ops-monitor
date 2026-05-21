@@ -10,6 +10,7 @@ const { buildExternalMeta } = require("../services/dataGateway/meta");
 const { parsePercent, isComplete, fetchHistoryByStore } = require("../services/eodHistory");
 const { getAllowedBranches } = require("../services/authzService");
 const { ensureBranchAccessForBranchId, ensureStoreBranchAccess } = require("../middleware/rbac");
+const excel = require("../utils/excel");
 
 const EOD_EXPORT_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
@@ -29,7 +30,7 @@ function isBazarStore(name) {
  * Returns all-time EOD failure ranking: stores ranked by failure count.
  * Excludes bazar stores. Cached for 5 minutes.
  */
-exports.getLiveEodRanking = async (req, res) => {
+exports.getLiveEodRanking = async (req, res, next) => {
   try {
     const now = Date.now();
 
@@ -131,8 +132,7 @@ exports.getLiveEodRanking = async (req, res) => {
 
     return ok(res, cachePayload.data, cachePayload.meta);
   } catch (error) {
-    console.error("Live EOD Ranking Error:", error);
-    return fail(res, 500, "INTERNAL_ERROR", "Failed to compute EOD ranking");
+    next(error);
   }
 };
 
@@ -243,16 +243,6 @@ function formatDateOnly(value) {
   return String(value).slice(0, 10);
 }
 
-function formatExportDateTime(value) {
-  const iso = toWibIso(value);
-  return iso ? iso.replace("T", " ").replace("+07:00", " WIB") : "—";
-}
-
-function formatLabel(value, fallback = "All") {
-  const raw = String(value ?? "").trim();
-  return raw || fallback;
-}
-
 function formatStatusLabel(value) {
   const raw = String(value ?? "")
     .trim()
@@ -272,56 +262,6 @@ function formatReportDateLabel(value) {
     return `${day}/${month}/${year}`;
   }
   return raw;
-}
-
-function setThinBorder(cell) {
-  cell.border = {
-    top: { style: "thin", color: { argb: "D1D5DB" } },
-    left: { style: "thin", color: { argb: "D1D5DB" } },
-    bottom: { style: "thin", color: { argb: "D1D5DB" } },
-    right: { style: "thin", color: { argb: "D1D5DB" } },
-  };
-}
-
-function styleTitleCell(cell) {
-  cell.font = { name: "Arial", size: 16, bold: true, color: { argb: "FFFFFF" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1E293B" } };
-  cell.alignment = { horizontal: "center", vertical: "middle" };
-}
-
-function styleSubtitleCell(cell) {
-  cell.font = { name: "Arial", size: 11, italic: true, color: { argb: "475569" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "E2E8F0" } };
-  cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-}
-
-function styleSummaryLabel(cell) {
-  cell.font = { name: "Arial", bold: true, color: { argb: "334155" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
-  cell.alignment = { vertical: "middle" };
-  setThinBorder(cell);
-}
-
-function styleSummaryValue(cell) {
-  cell.font = { name: "Arial", color: { argb: "0F172A" } };
-  cell.alignment = { vertical: "middle", wrapText: true };
-  setThinBorder(cell);
-}
-
-function styleTableHeader(cell) {
-  cell.font = { name: "Arial", bold: true, color: { argb: "FFFFFF" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "111827" } };
-  cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-  setThinBorder(cell);
-}
-
-function styleTableCell(cell, { center = false, wrap = false, alt = false } = {}) {
-  cell.font = { name: "Arial", size: 10, color: { argb: "0F172A" } };
-  cell.alignment = { vertical: "top", horizontal: center ? "center" : "left", wrapText: wrap };
-  cell.fill = alt
-    ? { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } }
-    : { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFF" } };
-  setThinBorder(cell);
 }
 
 function buildEodWorkbook({
@@ -352,18 +292,18 @@ function buildEodWorkbook({
   summarySheet.columns = [{ width: 24 }, { width: 38 }, { width: 24 }, { width: 38 }];
   summarySheet.mergeCells("A1:D1");
   summarySheet.getCell("A1").value = "EOD Monitor Report";
-  styleTitleCell(summarySheet.getCell("A1"));
+  excel.styleTitleCell(summarySheet.getCell("A1"));
   summarySheet.getRow(1).height = 26;
 
   summarySheet.mergeCells("A2:D2");
   summarySheet.getCell("A2").value =
     `Date: ${formatReportDateLabel(reportDate)} | Branch: ${scopeLabel} | Status: ${statusLabel} | Search: ${searchLabel}`;
-  styleSubtitleCell(summarySheet.getCell("A2"));
+  excel.styleSubtitleCell(summarySheet.getCell("A2"));
   summarySheet.getRow(2).height = 24;
 
   summarySheet.mergeCells("A3:D3");
   summarySheet.getCell("A3").value = `Generated at ${generatedAt} | Export format: XLSX`;
-  styleSubtitleCell(summarySheet.getCell("A3"));
+  excel.styleSubtitleCell(summarySheet.getCell("A3"));
   summarySheet.getRow(3).height = 22;
 
   const summaryPairs = [
@@ -381,10 +321,10 @@ function buildEodWorkbook({
     summarySheet.getCell(`B${rowNumber}`).value = pair[1];
     summarySheet.getCell(`C${rowNumber}`).value = pair[2];
     summarySheet.getCell(`D${rowNumber}`).value = pair[3];
-    styleSummaryLabel(summarySheet.getCell(`A${rowNumber}`));
-    styleSummaryValue(summarySheet.getCell(`B${rowNumber}`));
-    styleSummaryLabel(summarySheet.getCell(`C${rowNumber}`));
-    styleSummaryValue(summarySheet.getCell(`D${rowNumber}`));
+    excel.styleSummaryLabel(summarySheet.getCell(`A${rowNumber}`));
+    excel.styleSummaryValue(summarySheet.getCell(`B${rowNumber}`));
+    excel.styleSummaryLabel(summarySheet.getCell(`C${rowNumber}`));
+    excel.styleSummaryValue(summarySheet.getCell(`D${rowNumber}`));
     summarySheet.getRow(rowNumber).height = 22;
   });
 
@@ -406,19 +346,19 @@ function buildEodWorkbook({
 
   branchSheet.mergeCells("A1:G1");
   branchSheet.getCell("A1").value = "Branch Network Health";
-  styleTitleCell(branchSheet.getCell("A1"));
+  excel.styleTitleCell(branchSheet.getCell("A1"));
   branchSheet.getRow(1).height = 26;
 
   branchSheet.mergeCells("A2:G2");
   branchSheet.getCell("A2").value =
     `Date: ${formatReportDateLabel(reportDate)} | Scope: ${scopeLabel} | Rows: ${scopeStoreCount}`;
-  styleSubtitleCell(branchSheet.getCell("A2"));
+  excel.styleSubtitleCell(branchSheet.getCell("A2"));
   branchSheet.getRow(2).height = 22;
 
   branchSheet.mergeCells("A3:G3");
   branchSheet.getCell("A3").value =
     "Columns: Rank, Branch, Total Stores, Done, Pending, Failed, Completion Rate.";
-  styleSubtitleCell(branchSheet.getCell("A3"));
+  excel.styleSubtitleCell(branchSheet.getCell("A3"));
   branchSheet.getRow(3).height = 24;
 
   const branchHeader = branchSheet.getRow(4);
@@ -432,7 +372,7 @@ function buildEodWorkbook({
     "Completion Rate",
   ];
   branchHeader.height = 22;
-  branchHeader.eachCell((cell) => styleTableHeader(cell));
+  branchHeader.eachCell((cell) => excel.styleTableHeader(cell));
   branchSheet.autoFilter = "A4:G4";
 
   if (branchRows.length === 0) {
@@ -442,7 +382,7 @@ function buildEodWorkbook({
     emptyCell.alignment = { horizontal: "center", vertical: "middle" };
     emptyCell.font = { name: "Arial", italic: true, color: { argb: "64748B" } };
     emptyCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
-    setThinBorder(emptyCell);
+    excel.setThinBorder(emptyCell);
   } else {
     branchRows.forEach((row, index) => {
       const dataRow = branchSheet.addRow([
@@ -467,7 +407,7 @@ function buildEodWorkbook({
       dataRow.eachCell((cell, colNumber) => {
         const center = colNumber !== 2;
         const wrap = colNumber === 2;
-        styleTableCell(cell, { center, wrap, alt: isAlt });
+        excel.styleTableCell(cell, { center, wrap, alt: isAlt });
       });
     });
   }
@@ -492,19 +432,19 @@ function buildEodWorkbook({
 
   storesSheet.mergeCells("A1:I1");
   storesSheet.getCell("A1").value = "Store EOD Status";
-  styleTitleCell(storesSheet.getCell("A1"));
+  excel.styleTitleCell(storesSheet.getCell("A1"));
   storesSheet.getRow(1).height = 26;
 
   storesSheet.mergeCells("A2:I2");
   storesSheet.getCell("A2").value =
     `Date: ${formatReportDateLabel(reportDate)} | Branch: ${scopeLabel} | Status: ${statusLabel} | Search: ${searchLabel}`;
-  styleSubtitleCell(storesSheet.getCell("A2"));
+  excel.styleSubtitleCell(storesSheet.getCell("A2"));
   storesSheet.getRow(2).height = 22;
 
   storesSheet.mergeCells("A3:I3");
   storesSheet.getCell("A3").value =
     "Columns: Rank, Store Code, Store Name, Branch, Status, Last EOD, Last Sync, Source, Error Message.";
-  styleSubtitleCell(storesSheet.getCell("A3"));
+  excel.styleSubtitleCell(storesSheet.getCell("A3"));
   storesSheet.getRow(3).height = 24;
 
   const storeHeader = storesSheet.getRow(4);
@@ -520,7 +460,7 @@ function buildEodWorkbook({
     "Error Message",
   ];
   storeHeader.height = 22;
-  storeHeader.eachCell((cell) => styleTableHeader(cell));
+  storeHeader.eachCell((cell) => excel.styleTableHeader(cell));
   storesSheet.autoFilter = "A4:I4";
 
   if (storeRows.length === 0) {
@@ -530,7 +470,7 @@ function buildEodWorkbook({
     emptyCell.alignment = { horizontal: "center", vertical: "middle" };
     emptyCell.font = { name: "Arial", italic: true, color: { argb: "64748B" } };
     emptyCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
-    setThinBorder(emptyCell);
+    excel.setThinBorder(emptyCell);
   } else {
     storeRows.forEach((row, index) => {
       const dataRow = storesSheet.addRow([
@@ -539,8 +479,8 @@ function buildEodWorkbook({
         row.storeName || "—",
         row.areaName || row.areaId || "—",
         formatStatusLabel(row.status),
-        formatExportDateTime(row.lastEodAt),
-        formatExportDateTime(row.lastSyncAt),
+        excel.formatExportDateTime(row.lastEodAt),
+        excel.formatExportDateTime(row.lastSyncAt),
         String(row.source || "-").toUpperCase(),
         row.errorMessage || "—",
       ]);
@@ -557,7 +497,7 @@ function buildEodWorkbook({
           colNumber === 7 ||
           colNumber === 8;
         const wrap = colNumber === 3 || colNumber === 4 || colNumber === 9;
-        styleTableCell(cell, { center, wrap, alt: isAlt });
+        excel.styleTableCell(cell, { center, wrap, alt: isAlt });
       });
     });
   }
@@ -577,23 +517,23 @@ function buildEodExportFileName(reportDate) {
 }
 
 // Backward-compatible route: GET /eod
-exports.getEODMonitor = async (req, res) => {
+exports.getEODMonitor = async (req, res, next) => {
   // Delegate to /eod/stores behavior
   req.query = {
     ...req.query,
     areaId: req.query.areaId || req.query.area,
     q: req.query.q || req.query.search,
   };
-  return exports.getEODStores(req, res);
+  return exports.getEODStores(req, res, next);
 };
 
 // Backward-compatible route: GET /eod/area
-exports.getEODByArea = async (req, res) => {
-  return exports.getEODAreas(req, res);
+exports.getEODByArea = async (req, res, next) => {
+  return exports.getEODAreas(req, res, next);
 };
 
 // New: GET /eod/stores
-exports.getEODStores = async (req, res) => {
+exports.getEODStores = async (req, res, next) => {
   try {
     const { date, areaId, status, q } = req.query;
     const statusFilter = normalizeStatus(status);
@@ -665,13 +605,12 @@ exports.getEODStores = async (req, res) => {
       snapshotMode: snap.mode,
     });
   } catch (error) {
-    console.error("EOD Stores Error:", error);
-    return fail(res, 500, "INTERNAL_ERROR", "Internal Server Error");
+    next(error);
   }
 };
 
 // New: GET /eod/areas
-exports.getEODAreas = async (req, res) => {
+exports.getEODAreas = async (req, res, next) => {
   try {
     const { date } = req.query;
 
@@ -704,18 +643,17 @@ exports.getEODAreas = async (req, res) => {
       snapshotMode: snap.mode,
     });
   } catch (error) {
-    console.error("EOD Areas Error:", error);
-    return fail(res, 500, "INTERNAL_ERROR", "Internal Server Error");
+    next(error);
   }
 };
 
 // New: GET /eod/summary-by-branch
-exports.getEODSummaryByBranch = async (req, res) => {
-  return exports.getEODAreas(req, res);
+exports.getEODSummaryByBranch = async (req, res, next) => {
+  return exports.getEODAreas(req, res, next);
 };
 
 // New: GET /eod/late-stores
-exports.getLateEodStores = async (req, res) => {
+exports.getLateEodStores = async (req, res, next) => {
   try {
     const { date, branchId } = req.query;
     const now = new Date();
@@ -767,13 +705,12 @@ exports.getLateEodStores = async (req, res) => {
       snapshotMode: snap.mode,
     });
   } catch (error) {
-    console.error("Late EOD Error:", error);
-    return fail(res, 500, "INTERNAL_ERROR", "Internal Server Error");
+    next(error);
   }
 };
 
 // New: GET /eod/history
-exports.getEODHistoryByStore = async (req, res) => {
+exports.getEODHistoryByStore = async (req, res, next) => {
   try {
     const { storeCode, from, to } = req.query;
     if (!storeCode) return fail(res, 400, "BAD_REQUEST", "storeCode is required");
@@ -826,13 +763,12 @@ exports.getEODHistoryByStore = async (req, res) => {
       source: "history",
     });
   } catch (error) {
-    console.error("EOD History Error:", error);
-    return fail(res, 500, "INTERNAL_ERROR", "Internal Server Error");
+    next(error);
   }
 };
 
 // New: GET /eod/export
-exports.exportEod = async (req, res) => {
+exports.exportEod = async (req, res, next) => {
   try {
     const date = req.query.date || null;
     const areaId = req.query.areaId || req.query.branchId || req.query.area || null;
@@ -869,10 +805,10 @@ exports.exportEod = async (req, res) => {
 
     const workbook = buildEodWorkbook({
       reportDate: queryDate,
-      generatedAt: formatExportDateTime(new Date()),
-      scopeLabel: formatLabel(scopeBranchName, "All Branches"),
+      generatedAt: excel.formatExportDateTime(new Date()),
+      scopeLabel: excel.formatLabel(scopeBranchName, "All Branches"),
       statusLabel: formatStatusLabel(status),
-      searchLabel: formatLabel(search, "All"),
+      searchLabel: excel.formatLabel(search, "All"),
       scopeStoreCount: scopeRows.length,
       visibleStoreCount: visibleRows.length,
       doneCount,
@@ -894,12 +830,11 @@ exports.exportEod = async (req, res) => {
       contentBase64: buildEodExportBase64(buffer),
     });
   } catch (error) {
-    console.error("EOD Export Error:", error);
-    return fail(res, 500, "INTERNAL_ERROR", "Export Failed");
+    next(error);
   }
 };
 
-exports.manualSync = async (req, res) => {
+exports.manualSync = async (req, res, next) => {
   try {
     const { date, scope, storeCode, store_code } = req.body;
     const targetStoreCode = storeCode || store_code;
@@ -947,12 +882,11 @@ exports.manualSync = async (req, res) => {
       date: queryDate,
     });
   } catch (error) {
-    console.error("Manual Sync Error:", error);
-    return fail(res, 500, "INTERNAL_ERROR", "Sync Failed");
+    next(error);
   }
 };
 
-exports.getEODStoreDetail = async (req, res) => {
+exports.getEODStoreDetail = async (req, res, next) => {
   try {
     const { storeCode } = req.params;
     const { date } = req.query;
@@ -1017,12 +951,11 @@ exports.getEODStoreDetail = async (req, res) => {
       { ...externalMeta, date: queryDate, timezone: "Asia/Jakarta", snapshotMode: snap.mode }
     );
   } catch (error) {
-    console.error("EOD Detail Error:", error);
-    return fail(res, 500, "INTERNAL_ERROR", "Internal Server Error");
+    next(error);
   }
 };
 
-exports.getEODTrend = async (req, res) => {
+exports.getEODTrend = async (req, res, next) => {
   try {
     const rawDays = parseInt(req.query.days, 10);
     const days = Number.isFinite(rawDays) && rawDays > 0 ? Math.min(rawDays, 30) : 7;
@@ -1088,12 +1021,11 @@ exports.getEODTrend = async (req, res) => {
 
     return ok(res, data, { timezone: "Asia/Jakarta" });
   } catch (error) {
-    console.error("EOD Trend Error:", error);
-    return fail(res, 500, "INTERNAL_ERROR", "Internal Server Error");
+    next(error);
   }
 };
 
-exports.retryEOD = async (req, res) => {
+exports.retryEOD = async (req, res, next) => {
   try {
     const { storeCode, date } = req.body || {};
     if (!storeCode) return fail(res, 400, "BAD_REQUEST", "storeCode is required");
@@ -1120,13 +1052,12 @@ exports.retryEOD = async (req, res) => {
 
     return ok(res, { queued: true, storeCode, date: queryDate });
   } catch (error) {
-    console.error("EOD Retry Error:", error);
-    return fail(res, 500, "INTERNAL_ERROR", "Retry Failed");
+    next(error);
   }
 };
 
 // New: POST /eod/retry-batch
-exports.retryEodBatch = async (req, res) => {
+exports.retryEodBatch = async (req, res, next) => {
   try {
     const { storeCodes, stores, date } = req.body || {};
     const queryDate = date || toWibDate();
@@ -1206,7 +1137,6 @@ exports.retryEodBatch = async (req, res) => {
       date: queryDate,
     });
   } catch (error) {
-    console.error("EOD Batch Retry Error:", error);
-    return fail(res, 500, "INTERNAL_ERROR", "Retry Failed");
+    next(error);
   }
 };

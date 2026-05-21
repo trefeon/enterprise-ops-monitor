@@ -30,7 +30,7 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import { DataTable } from '@/components/shared/DataTable';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/EmptyState';
-import PageShell from '@/components/ui/PageShell';
+import PageShell from '@/components/shared/PageShell';
 import { Guard } from '@/components/auth/Guard';
 import FeatureStoryBanner from '@/components/FeatureStoryBanner';
 import { hasPermission, Permissions } from '@/lib/auth/permissions';

@@ -4,7 +4,8 @@ const ExcelJS = require("exceljs");
 const { AgentMonitoring, sequelize, Sequelize } = require("../models");
 const { ok, fail } = require("../utils/response");
 const { getAllowedBranches } = require("../services/authzService");
-const { toWibIso, toWibDate } = require("../utils/time");
+const { toWibDate } = require("../utils/time");
+const excel = require("../utils/excel");
 
 const DEFAULT_AGENT_UPDATE_DIR = path.resolve(__dirname, "../../../agent_updates");
 const configuredAgentUpdateDir = String(process.env.AGENT_UPDATE_DIR || "").trim();
@@ -156,7 +157,7 @@ exports.getAgentVersion = async (req, res) => {
  * DELETE /api/agent/monitoring/:store_id
  * Allows admin/super_admin to delete an agent_monitoring row.
  */
-exports.deleteAgentData = async (req, res) => {
+exports.deleteAgentData = async (req, res, next) => {
   try {
     const { store_id } = req.params;
     const roles = req.authz?.roleNames || [];
@@ -167,8 +168,7 @@ exports.deleteAgentData = async (req, res) => {
     if (!result) return fail(res, 404, "NOT_FOUND", "Agent record not found");
     return ok(res, { message: "Agent status reset successfully" });
   } catch (err) {
-    console.error("Error in deleteAgentData:", err.message);
-    return fail(res, 500, "DELETE_ERROR", "Failed to reset agent status");
+    next(err);
   }
 };
 
@@ -217,7 +217,7 @@ exports.downloadPublisher = async (req, res) => {
  * POST /api/agent/upload
  * Admin uploads new publisher and sets version
  */
-exports.uploadPublisher = async (req, res) => {
+exports.uploadPublisher = async (req, res, next) => {
   try {
     const { version } = req.body;
     if (!version) return fail(res, 400, "VALIDATION", "Version string is required");
@@ -231,8 +231,7 @@ exports.uploadPublisher = async (req, res) => {
 
     return ok(res, { message: "Update deployed successfully", version });
   } catch (err) {
-    console.error("Error in uploadPublisher:", err.message);
-    return fail(res, 500, "DEPLOY_ERROR", "Deployment failed: " + err.message);
+    next(err);
   }
 };
 
@@ -242,7 +241,7 @@ exports.uploadPublisher = async (req, res) => {
  * Supports filtering: ?areaId=X&region=Y&q=search
  * Respects branch scope enforcement.
  */
-exports.getMonitoringData = async (req, res) => {
+exports.getMonitoringData = async (req, res, next) => {
   try {
     const { areaId, region, q } = req.query;
 
@@ -304,8 +303,7 @@ exports.getMonitoringData = async (req, res) => {
 
     return ok(res, rows, { activeDownloads });
   } catch (err) {
-    console.error("Error in getMonitoringData:", err.message);
-    return fail(res, 500, "FETCH_ERROR", "Failed to fetch monitoring data");
+    next(err);
   }
 };
 
@@ -314,7 +312,7 @@ exports.getMonitoringData = async (req, res) => {
  * Returns current version + auto-suggested next version.
  * Supports alphanumeric suffixes (e.g. 1.0.15a -> 1.0.16a).
  */
-exports.suggestVersion = (_req, res) => {
+exports.suggestVersion = (_req, res, next) => {
   try {
     const current = getCachedVersion();
 
@@ -332,8 +330,8 @@ exports.suggestVersion = (_req, res) => {
     }
 
     return ok(res, { current, suggested: parts.join(".") });
-  } catch {
-    return ok(res, { current: "1.0.0", suggested: "1.0.1" });
+  } catch (err) {
+    next(err);
   }
 };
 
@@ -366,61 +364,11 @@ exports.downloadSetupScript = (req, res) => {
 
 const AGENT_EXPORT_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
-function setThinBorder(cell) {
-  cell.border = {
-    top: { style: "thin", color: { argb: "D1D5DB" } },
-    left: { style: "thin", color: { argb: "D1D5DB" } },
-    bottom: { style: "thin", color: { argb: "D1D5DB" } },
-    right: { style: "thin", color: { argb: "D1D5DB" } },
-  };
-}
-
-function styleTitleCell(cell) {
-  cell.font = { name: "Arial", size: 16, bold: true, color: { argb: "FFFFFF" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1E293B" } };
-  cell.alignment = { horizontal: "center", vertical: "middle" };
-}
-
-function styleSubtitleCell(cell) {
-  cell.font = { name: "Arial", size: 11, italic: true, color: { argb: "475569" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "E2E8F0" } };
-  cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-}
-
-function styleSummaryLabel(cell) {
-  cell.font = { name: "Arial", bold: true, color: { argb: "334155" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
-  cell.alignment = { vertical: "middle" };
-  setThinBorder(cell);
-}
-
-function styleSummaryValue(cell) {
-  cell.font = { name: "Arial", color: { argb: "0F172A" } };
-  cell.alignment = { vertical: "middle", wrapText: true };
-  setThinBorder(cell);
-}
-
-function styleTableHeader(cell) {
-  cell.font = { name: "Arial", bold: true, color: { argb: "FFFFFF" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "111827" } };
-  cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-  setThinBorder(cell);
-}
-
-function styleTableCell(cell, { center = false, wrap = false, alt = false } = {}) {
-  cell.font = { name: "Arial", size: 10, color: { argb: "0F172A" } };
-  cell.alignment = { vertical: "top", horizontal: center ? "center" : "left", wrapText: wrap };
-  cell.fill = alt
-    ? { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } }
-    : { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFF" } };
-  setThinBorder(cell);
-}
-
 function styleChecklistHeader(cell) {
   cell.font = { name: "Arial", bold: true, color: { argb: "FFFFFF" } };
   cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "065F46" } };
   cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-  setThinBorder(cell);
+  excel.setThinBorder(cell);
 }
 
 function styleChecklistCell(cell, { alt = false } = {}) {
@@ -429,12 +377,7 @@ function styleChecklistCell(cell, { alt = false } = {}) {
   cell.fill = alt
     ? { type: "pattern", pattern: "solid", fgColor: { argb: "ECFDF5" } }
     : { type: "pattern", pattern: "solid", fgColor: { argb: "F0FDF4" } };
-  setThinBorder(cell);
-}
-
-function formatExportDateTime(value) {
-  const iso = toWibIso(value);
-  return iso ? iso.replace("T", " ").replace("+07:00", " WIB") : "—";
+  excel.setThinBorder(cell);
 }
 
 function deriveStatusLabel(row, currentVersion) {
@@ -459,7 +402,7 @@ function deriveStatusLabel(row, currentVersion) {
  * Generates Excel report of agent monitoring data.
  * Grouped by branch (all branches), with checklist columns.
  */
-exports.exportAgentReport = async (req, res) => {
+exports.exportAgentReport = async (req, res, next) => {
   try {
     // Fetch all stores with agent data (same query as getMonitoringData but no filters)
     let rows = await sequelize.query(
@@ -498,7 +441,7 @@ exports.exportAgentReport = async (req, res) => {
     }
 
     const currentVersion = getCachedVersion();
-    const generatedAt = formatExportDateTime(new Date());
+    const generatedAt = excel.formatExportDateTime(new Date());
 
     // Compute stats
     const installedAgents = rows.filter((r) => r.last_check_at);
@@ -562,17 +505,17 @@ exports.exportAgentReport = async (req, res) => {
 
     summarySheet.mergeCells("A1:D1");
     summarySheet.getCell("A1").value = "Agent Updater Report";
-    styleTitleCell(summarySheet.getCell("A1"));
+    excel.styleTitleCell(summarySheet.getCell("A1"));
     summarySheet.getRow(1).height = 26;
 
     summarySheet.mergeCells("A2:D2");
     summarySheet.getCell("A2").value = `DemoAgentPublisher Agent Monitoring — All Branches`;
-    styleSubtitleCell(summarySheet.getCell("A2"));
+    excel.styleSubtitleCell(summarySheet.getCell("A2"));
     summarySheet.getRow(2).height = 24;
 
     summarySheet.mergeCells("A3:D3");
     summarySheet.getCell("A3").value = `Generated at ${generatedAt} | Export format: XLSX`;
-    styleSubtitleCell(summarySheet.getCell("A3"));
+    excel.styleSubtitleCell(summarySheet.getCell("A3"));
     summarySheet.getRow(3).height = 22;
 
     const summaryPairs = [
@@ -597,10 +540,10 @@ exports.exportAgentReport = async (req, res) => {
       summarySheet.getCell(`B${rowNumber}`).value = pair[1];
       summarySheet.getCell(`C${rowNumber}`).value = pair[2];
       summarySheet.getCell(`D${rowNumber}`).value = pair[3];
-      styleSummaryLabel(summarySheet.getCell(`A${rowNumber}`));
-      styleSummaryValue(summarySheet.getCell(`B${rowNumber}`));
-      styleSummaryLabel(summarySheet.getCell(`C${rowNumber}`));
-      styleSummaryValue(summarySheet.getCell(`D${rowNumber}`));
+      excel.styleSummaryLabel(summarySheet.getCell(`A${rowNumber}`));
+      excel.styleSummaryValue(summarySheet.getCell(`B${rowNumber}`));
+      excel.styleSummaryLabel(summarySheet.getCell(`C${rowNumber}`));
+      excel.styleSummaryValue(summarySheet.getCell(`D${rowNumber}`));
       summarySheet.getRow(rowNumber).height = 22;
     });
 
@@ -627,18 +570,18 @@ exports.exportAgentReport = async (req, res) => {
 
     branchSheet.mergeCells("A1:K1");
     branchSheet.getCell("A1").value = "Agent Status by Branch";
-    styleTitleCell(branchSheet.getCell("A1"));
+    excel.styleTitleCell(branchSheet.getCell("A1"));
     branchSheet.getRow(1).height = 26;
 
     branchSheet.mergeCells("A2:K2");
     branchSheet.getCell("A2").value =
       `Version: ${currentVersion} | Total Stores: ${rows.length} | Installed: ${installedAgents.length}`;
-    styleSubtitleCell(branchSheet.getCell("A2"));
+    excel.styleSubtitleCell(branchSheet.getCell("A2"));
     branchSheet.getRow(2).height = 22;
 
     branchSheet.mergeCells("A3:K3");
     branchSheet.getCell("A3").value = "Overview of agent deployment health per branch/cabang.";
-    styleSubtitleCell(branchSheet.getCell("A3"));
+    excel.styleSubtitleCell(branchSheet.getCell("A3"));
     branchSheet.getRow(3).height = 24;
 
     const branchHeader = branchSheet.getRow(4);
@@ -656,7 +599,7 @@ exports.exportAgentReport = async (req, res) => {
       "Sync Rate",
     ];
     branchHeader.height = 22;
-    branchHeader.eachCell((cell) => styleTableHeader(cell));
+    branchHeader.eachCell((cell) => excel.styleTableHeader(cell));
     branchSheet.autoFilter = "A4:K4";
 
     branchRows.forEach((row, index) => {
@@ -681,7 +624,7 @@ exports.exportAgentReport = async (req, res) => {
       dataRow.eachCell((cell, colNumber) => {
         const center = colNumber !== 2;
         const wrap = colNumber === 2;
-        styleTableCell(cell, { center, wrap, alt: isAlt });
+        excel.styleTableCell(cell, { center, wrap, alt: isAlt });
       });
     });
 
@@ -709,19 +652,19 @@ exports.exportAgentReport = async (req, res) => {
 
     storesSheet.mergeCells("A1:L1");
     storesSheet.getCell("A1").value = "Agent Updater — Store Detail Report";
-    styleTitleCell(storesSheet.getCell("A1"));
+    excel.styleTitleCell(storesSheet.getCell("A1"));
     storesSheet.getRow(1).height = 26;
 
     storesSheet.mergeCells("A2:L2");
     storesSheet.getCell("A2").value =
       `Version: ${currentVersion} | All Branches | ${rows.length} Stores | ${generatedAt}`;
-    styleSubtitleCell(storesSheet.getCell("A2"));
+    excel.styleSubtitleCell(storesSheet.getCell("A2"));
     storesSheet.getRow(2).height = 22;
 
     storesSheet.mergeCells("A3:L3");
     storesSheet.getCell("A3").value =
       "Green columns (Verified, Action Taken, Notes) are for manual checklist — use dropdown or type freely.";
-    styleSubtitleCell(storesSheet.getCell("A3"));
+    excel.styleSubtitleCell(storesSheet.getCell("A3"));
     storesSheet.getRow(3).height = 24;
 
     const storeHeader = storesSheet.getRow(4);
@@ -744,7 +687,7 @@ exports.exportAgentReport = async (req, res) => {
       if (colNumber >= 10) {
         styleChecklistHeader(cell);
       } else {
-        styleTableHeader(cell);
+        excel.styleTableHeader(cell);
       }
     });
     storesSheet.autoFilter = "A4:L4";
@@ -756,7 +699,7 @@ exports.exportAgentReport = async (req, res) => {
         !row.worker_version || isNaN(workerNum) || workerNum < 4
           ? "legacy"
           : `v${row.worker_version}`;
-      const lastCheckIn = row.last_check_at ? formatExportDateTime(row.last_check_at) : "—";
+      const lastCheckIn = row.last_check_at ? excel.formatExportDateTime(row.last_check_at) : "—";
       const errorMsg = row.last_error || row.status_message || "—";
 
       const dataRow = storesSheet.addRow([
@@ -783,7 +726,7 @@ exports.exportAgentReport = async (req, res) => {
         } else {
           const center = colNumber === 1 || colNumber === 5 || colNumber === 6 || colNumber === 7;
           const wrap = colNumber === 3 || colNumber === 9;
-          styleTableCell(cell, { center, wrap, alt: isAlt });
+          excel.styleTableCell(cell, { center, wrap, alt: isAlt });
         }
       });
 
@@ -871,7 +814,6 @@ exports.exportAgentReport = async (req, res) => {
       contentBase64: base64,
     });
   } catch (err) {
-    console.error("Error in exportAgentReport:", err);
-    return fail(res, 500, "EXPORT_ERROR", "Failed to export agent report");
+    next(err);
   }
 };

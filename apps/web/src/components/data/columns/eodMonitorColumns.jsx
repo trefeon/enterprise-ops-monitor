@@ -1,7 +1,7 @@
 import React from 'react';
 import { Info, RefreshCw } from 'lucide-react';
-import StatusBadge from '../../ui/StatusBadge';
-import IconButton from '../../ui/IconButton';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { IconButton } from '@/components/shared/IconButton';
 import { formatDateTime, formatTime } from '../../../lib/date';
 
 export const getEodMonitorColumns = ({ onView, onRetry, canRetry }) => [

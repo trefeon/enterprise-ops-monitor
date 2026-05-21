@@ -10,21 +10,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import PageShell from '../../components/ui/PageShell';
+import { PageShell } from '@/components/shared/PageShell';
 import { StatCard } from '@/components/shared/StatCard';
 import { PageHeader } from '@/components/shared/PageHeader';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/shared/DataTable';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import ProgressBar from '../../components/ui/ProgressBar';
+import { ProgressBar } from '@/components/shared/ProgressBar';
 import { EmptyState } from '@/components/shared/EmptyState';
-import Modal from '../../components/ui/Modal';
+import { Modal } from '@/components/shared/Modal';
 import { formatDate, formatDateTime, formatTime, getWibParts, getWibToday } from '../../lib/date';
 import { getFeatureStory } from '../../data/stories';
 import {
@@ -35,8 +28,6 @@ import {
   Clock,
   RefreshCw,
   History,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
@@ -422,7 +413,86 @@ const StoreSync = () => {
     return () => clearInterval(interval);
   }, [fetchSummary, fetchStatus, fetchStores, serverNowMs, getNextRefreshAtMs, getNextAlignedAtMs]);
 
-  const totalPages = Math.ceil((pagination.total || 0) / pagination.pageSize);
+  const storeColumns = useMemo(
+    () => [
+      {
+        header: 'Store Code',
+        className: 'w-28 tabular-nums',
+        accessor: 'storeCode',
+      },
+      {
+        header: 'Store Name',
+        className: 'w-64 text-foreground',
+        accessor: 'storeName',
+        render: (store) => store.storeName || '-',
+      },
+      {
+        header: 'Branch',
+        className: 'w-40 text-muted-foreground',
+        accessor: 'branchName',
+      },
+      {
+        header: 'Last Sync',
+        className: 'w-44 text-muted-foreground tabular-nums',
+        render: (store) => (
+          <div>
+            <div>{store.lastSyncAt ? formatTime(store.lastSyncAt) : '-'}</div>
+            <div className="text-xs">{formatDuration(store.lastSyncAgoSec)}</div>
+          </div>
+        ),
+      },
+      {
+        header: 'Status',
+        className: 'w-28 text-center',
+        render: (store) => (
+          <StatusBadge
+            variant={
+              store.isProblem || store.status === 'problem'
+                ? 'destructive'
+                : store.isStale || store.status === 'stale'
+                  ? 'warning'
+                  : 'success'
+            }
+          >
+            {store.isProblem || store.status === 'problem'
+              ? 'Late'
+              : store.isStale || store.status === 'stale'
+                ? 'Warning'
+                : 'On-time'}
+          </StatusBadge>
+        ),
+      },
+      {
+        header: '',
+        className: 'w-16 text-center',
+        render: (store) => (
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={(event) => {
+              event.stopPropagation();
+              openHistory(store.storeCode, store.storeName);
+            }}
+            title="View sync history"
+          >
+            <History className="size-4" />
+          </button>
+        ),
+      },
+    ],
+    []
+  );
+
+  const getRowClassName = useCallback((store) => {
+    if (store.isProblem || store.status === 'problem') {
+      return 'bg-status-error/10 even:bg-status-error/10 hover:bg-status-error/15';
+    }
+    if (store.isStale || store.status === 'stale') {
+      return 'bg-status-warning/5 even:bg-status-warning/5 hover:bg-status-warning/10';
+    }
+    return 'even:bg-muted/20 hover:bg-muted/30';
+  }, []);
+
   const historyEmptyLabel =
     historyMode === 'recent'
       ? 'No history records found in the last 30 minutes.'
@@ -558,7 +628,7 @@ const StoreSync = () => {
           icon={<Clock className="size-5" />}
           value={summary?.oldest?.ageSec != null ? formatDuration(summary.oldest.ageSec) : '-'}
           subtext={
-              <span className="block break-words" title={summary?.oldest?.namaToko}>
+            <span className="block break-words" title={summary?.oldest?.namaToko}>
               {summary?.oldest?.namaToko || '-'}
             </span>
           }
@@ -722,127 +792,37 @@ const StoreSync = () => {
           }
         />
 
-        <Card className="p-0 overflow-hidden flex flex-col">
-          <CardContent className="p-0">
-            <Table className="table-fixed whitespace-nowrap">
-              <TableHeader>
-                <TableRow className="border-b bg-muted/50">
-                  <TableHead className="w-28">Store Code</TableHead>
-                  <TableHead className="w-64">Store Name</TableHead>
-                  <TableHead className="w-40">Branch</TableHead>
-                  <TableHead className="w-44">Last Sync</TableHead>
-                  <TableHead className="w-28 text-center">Status</TableHead>
-                  <TableHead className="w-16 text-center"></TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loadingStores && stores.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                      Loading stores...
-                    </TableCell>
-                  </TableRow>
-                ) : storesError && stores.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                      <div className="flex flex-col items-center gap-2">
-                        <div>Failed to load stores: {storesError}</div>
-                        <Button variant="secondary" onClick={fetchStores}>
-                          <RefreshCw className="mr-2 size-4" />
-                          Retry
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : stores.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center text-muted-foreground py-8">
-                      No stores match the current filters.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  stores.map((store) => (
-                    <TableRow
-                      key={store.storeCode}
-                      className={`group even:bg-muted/20 hover:bg-muted/30 ${store.isProblem || store.status === 'problem' ? 'bg-status-error/10 even:bg-status-error/10 hover:bg-status-error/15' : store.isStale || store.status === 'stale' ? 'bg-status-warning/5 even:bg-status-warning/5 hover:bg-status-warning/10' : ''}`}
-                      onClick={() => openHistory(store.storeCode, store.storeName)}
-                    >
-                      <TableCell className="tabular-nums">{store.storeCode}</TableCell>
-                      <TableCell className="text-foreground">{store.storeName || '-'}</TableCell>
-                      <TableCell className="text-muted-foreground">{store.branchName}</TableCell>
-                      <TableCell className="text-muted-foreground tabular-nums">
-                        <div>{store.lastSyncAt ? formatTime(store.lastSyncAt) : '-'}</div>
-                        <div className="text-xs">{formatDuration(store.lastSyncAgoSec)}</div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <StatusBadge
-                          variant={
-                            store.isProblem || store.status === 'problem'
-                              ? 'destructive'
-                              : store.isStale || store.status === 'stale'
-                                ? 'warning'
-                                : 'success'
-                          }
-                        >
-                          {store.isProblem || store.status === 'problem'
-                            ? 'Late'
-                            : store.isStale || store.status === 'stale'
-                              ? 'Warning'
-                              : 'On-time'}
-                        </StatusBadge>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <button
-                          type="button"
-                          className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                          onClick={(event) => {
-                            event.stopPropagation();
-                            openHistory(store.storeCode, store.storeName);
-                          }}
-                          title="View sync history"
-                        >
-                          <History className="size-4" />
-                        </button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-            <div className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-              <span className="text-xs text-muted-foreground">
-                Page {pagination.page} of {totalPages || 1} ({pagination.total} stores)
-              </span>
-              <div className="flex gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() =>
-                    setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
-                  }
-                  disabled={pagination.page <= 1}
-                >
-                  <ChevronLeft className="size-4" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() =>
-                    setPagination((prev) => ({
-                      ...prev,
-                      page: Math.min(prev.page + 1, totalPages),
-                    }))
-                  }
-                  disabled={pagination.page >= totalPages}
-                >
-                  <ChevronRight className="size-4" />
+        <DataTable
+          columns={storeColumns}
+          data={stores}
+          loading={loadingStores && stores.length === 0}
+          pagination={{
+            page: pagination.page,
+            pageSize: pagination.pageSize,
+            total: pagination.total || stores.length || 0,
+          }}
+          onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
+          onPageSizeChange={(pageSize) => setPagination((prev) => ({ ...prev, pageSize, page: 1 }))}
+          onRowClick={(store) => openHistory(store.storeCode, store.storeName)}
+          rowClassName={getRowClassName}
+          keyExtractor={(row) => row.storeCode}
+          tableFixed
+          emptyState={
+            storesError ? (
+              <div className="flex flex-col items-center justify-center gap-2 py-4">
+                <span className="text-sm text-muted-foreground">
+                  Failed to load stores: {storesError}
+                </span>
+                <Button variant="secondary" onClick={fetchStores} size="sm">
+                  <RefreshCw className="mr-2 size-4" />
+                  Retry
                 </Button>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            ) : (
+              'No stores match the current filters.'
+            )
+          }
+        />
       </div>
 
       <Modal

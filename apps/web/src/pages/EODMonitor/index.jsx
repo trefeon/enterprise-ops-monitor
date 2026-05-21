@@ -3,9 +3,9 @@ import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { Guard } from '../../components/auth/Guard';
 import { EmptyState } from '@/components/shared/EmptyState';
-import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { useToast } from '../../components/ui/ToastContext';
-import Toolbar from '../../components/ui/Toolbar';
+import { Toolbar } from '@/components/shared/Toolbar';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -14,18 +14,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import ProgressBar from '../../components/ui/ProgressBar';
+import { ProgressBar } from '@/components/shared/ProgressBar';
 import { Button } from '@/components/ui/button';
-import IconButton from '../../components/ui/IconButton';
-import PageShell from '../../components/ui/PageShell';
-import PageHeader from '../../components/ui/PageHeader';
+import { IconButton } from '@/components/shared/IconButton';
+import { PageShell } from '@/components/shared/PageShell';
+import { PageHeader } from '@/components/shared/PageHeader';
 import { StatCard } from '@/components/shared/StatCard';
-import Modal from '../../components/ui/Modal';
+import { Modal } from '@/components/shared/Modal';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { AlertTriangle } from 'lucide-react';
-import { SearchBar } from '../../components/shared/SearchBar';
-import { DatePicker } from '../../components/shared/DatePicker';
+import { SearchBar } from '@/components/shared/SearchBar';
+import { DatePicker } from '@/components/shared/DatePicker';
+import { DataTable } from '@/components/shared/DataTable';
 import {
   Table,
   TableHeader,
@@ -307,11 +308,6 @@ const EODMonitor = () => {
     setSearchParams({});
   };
 
-  const handlePageSizeChange = (event) => {
-    const value = Number(event.target.value) || 20;
-    setPagination((prev) => ({ ...prev, page: 1, pageSize: value }));
-  };
-
   const handleSync = useCallback(async () => {
     if (isDemoUser) {
       push({
@@ -516,15 +512,106 @@ const EODMonitor = () => {
   const completionRate = stats.total > 0 ? Math.round((stats.done / stats.total) * 100) : 0;
   const pendingRate = stats.total > 0 ? Math.round((stats.pending / stats.total) * 100) : 0;
 
-  const total = pagination.total || 0;
-  const rangeStart = total === 0 ? 0 : (pagination.page - 1) * pagination.pageSize + 1;
-  const rangeEnd = total === 0 ? 0 : Math.min(pagination.page * pagination.pageSize, total);
-
   const lastUpdatedLabel = lastUpdatedAt ? formatTime(lastUpdatedAt) : '--';
   const autoRefreshSeconds = Math.round(AUTO_REFRESH_INTERVAL / 1000);
   const exportButtonLabel = formatDate(filters.date)
     ? `Export ${formatDate(filters.date)}`
     : 'Export Excel';
+
+  const mainTableColumns = [
+    {
+      header: 'Store Code',
+      accessor: 'storeCode',
+      className: 'text-right font-mono font-medium text-foreground w-28',
+    },
+    {
+      header: 'Store Name',
+      accessor: 'storeName',
+      className: 'font-medium text-foreground min-w-48',
+    },
+    {
+      header: 'Branch',
+      accessor: 'areaName',
+      render: (row) => row.areaName || row.areaId || '-',
+      className: 'text-muted-foreground w-32',
+    },
+    {
+      header: 'Status',
+      accessor: 'status',
+      render: (row) => {
+        const statusConfig = getStatusConfig(row.status);
+        return <StatusBadge variant={statusConfig.variant}>{statusConfig.label}</StatusBadge>;
+      },
+      className: 'text-center w-24',
+    },
+    {
+      header: 'Last EOD',
+      accessor: 'lastEodAt',
+      render: (row) => formatTime(row.lastEodAt),
+      className: 'font-mono text-muted-foreground text-center w-36',
+    },
+    {
+      header: 'Source',
+      accessor: 'source',
+      render: (row) => formatSourceLabel(row.source),
+      className: 'text-muted-foreground text-center w-20',
+    },
+    {
+      header: 'Error Message',
+      accessor: 'errorMessage',
+      render: (row) => (
+        <span
+          className={row.errorMessage ? 'text-status-error font-medium' : 'text-muted-foreground'}
+          title={row.errorMessage || '-'}
+        >
+          {row.errorMessage || '-'}
+        </span>
+      ),
+      className: 'max-w-xs break-words',
+    },
+  ];
+
+  const branchStoresColumns = [
+    {
+      header: 'Store Code',
+      accessor: 'storeCode',
+      className: 'font-mono text-sm text-right w-28',
+    },
+    {
+      header: 'Store Name',
+      accessor: 'storeName',
+      render: (row) => row.storeName || '-',
+      className: 'text-foreground',
+    },
+    {
+      header: 'Status',
+      accessor: 'status',
+      render: (row) => {
+        const statusConfig = getStatusConfig(row.status);
+        return <StatusBadge variant={statusConfig.variant}>{statusConfig.label}</StatusBadge>;
+      },
+      className: 'text-center w-24',
+    },
+    {
+      header: 'Last EOD',
+      accessor: 'lastEodAt',
+      render: (row) => formatTime(row.lastEodAt),
+      className: 'text-muted-foreground text-sm w-36',
+    },
+    {
+      header: 'Error Message',
+      accessor: 'errorMessage',
+      render: (row) => (
+        <span
+          className={
+            row.errorMessage ? 'text-status-error text-sm' : 'text-muted-foreground text-sm'
+          }
+        >
+          {row.errorMessage || '-'}
+        </span>
+      ),
+    },
+  ];
 
   return (
     <PageShell>
@@ -831,142 +918,25 @@ const EODMonitor = () => {
             </div>
           ) : (
             <>
-              <Table wrapperClassName="flex-1 overflow-auto">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-28 text-right">Store Code</TableHead>
-                    <TableHead className="min-w-48">Store Name</TableHead>
-                    <TableHead className="w-32">Branch</TableHead>
-                    <TableHead className="w-24 text-center">Status</TableHead>
-                    <TableHead className="w-36 text-center">Last EOD</TableHead>
-                    <TableHead className="w-20 text-center">Source</TableHead>
-                    <TableHead className="w-56">Error Message</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <tbody>
-                  {loading &&
-                    Array.from({ length: 6 }).map((_, idx) => (
-                      <TableRow key={`skeleton-${idx}`} className="animate-pulse">
-                        <TableCell>
-                          <div className="h-4 w-20 rounded bg-muted"></div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="h-4 w-40 rounded bg-muted"></div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="h-4 w-24 rounded bg-muted"></div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="h-4 w-20 rounded bg-muted"></div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="h-4 w-24 rounded bg-muted"></div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="h-4 w-24 rounded bg-muted"></div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="h-4 w-48 rounded bg-muted"></div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  {!loading && data.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
-                        No EOD results found. Adjust filters or try again.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {!loading &&
-                    data.length > 0 &&
-                    data.map((row) => {
-                      const statusConfig = getStatusConfig(row.status);
-                      return (
-                        <TableRow
-                          key={row.storeId}
-                          onClick={() => openDetail(row)}
-                          className="group"
-                        >
-                          <TableCell className="whitespace-nowrap font-mono font-medium text-foreground text-right">
-                            {row.storeCode}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap font-medium text-foreground">
-                            {row.storeName}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap text-muted-foreground">
-                            {row.areaName || row.areaId || '-'}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap text-center">
-                            <StatusBadge variant={statusConfig.variant}>
-                              {statusConfig.label}
-                            </StatusBadge>
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap font-mono text-muted-foreground text-center">
-                            {formatTime(row.lastEodAt)}
-                          </TableCell>
-                          <TableCell className="whitespace-nowrap text-muted-foreground text-center">
-                            {formatSourceLabel(row.source)}
-                          </TableCell>
-                          <TableCell
-                            className={`max-w-xs break-words ${
-                              row.errorMessage
-                                ? 'text-status-error font-medium'
-                                : 'text-muted-foreground'
-                            }`}
-                            title={row.errorMessage || '-'}
-                          >
-                            {row.errorMessage || '-'}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                </tbody>
-              </Table>
-              <div className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">
-                <div className="text-muted-foreground">
-                  Showing <span className="font-medium text-foreground">{rangeStart}</span> to{' '}
-                  <span className="font-medium text-foreground">{rangeEnd}</span> of{' '}
-                  <span className="font-medium text-foreground">{total}</span> results
-                </div>
-                <div className="flex items-center gap-2">
-                  <Select
-                    value={pagination.pageSize.toString()}
-                    onValueChange={(val) =>
-                      handlePageSizeChange({
-                        target: {
-                          value: parseInt(val, 10),
-                        },
-                      })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="10 rows" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="10">10 rows</SelectItem>
-                      <SelectItem value="20">20 rows</SelectItem>
-                      <SelectItem value="50">50 rows</SelectItem>
-                      <SelectItem value="100">100 rows</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  <div className="flex gap-1">
-                    <IconButton
-                      icon={<ChevronLeft className="size-4" />}
-                      label="Previous page"
-                      disabled={pagination.page <= 1}
-                      onClick={() =>
-                        setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
-                      }
-                    />
-                    <IconButton
-                      icon={<ChevronRight className="size-4" />}
-                      label="Next page"
-                      disabled={pagination.page * pagination.pageSize >= pagination.total}
-                      onClick={() => setPagination((prev) => ({ ...prev, page: prev.page + 1 }))}
-                    />
+              <DataTable
+                columns={mainTableColumns}
+                data={data}
+                loading={loading}
+                keyExtractor={(row) => row.storeId}
+                onRowClick={openDetail}
+                pagination={pagination}
+                onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
+                onPageSizeChange={(pageSize) =>
+                  setPagination((prev) => ({ ...prev, page: 1, pageSize }))
+                }
+                pageSizeOptions={[10, 20, 50, 100]}
+                emptyState={
+                  <div className="text-center text-muted-foreground py-8">
+                    No EOD results found. Adjust filters or try again.
                   </div>
-                </div>
-              </div>
+                }
+                noCard
+              />
             </>
           )}
         </CardContent>
@@ -1066,105 +1036,23 @@ const EODMonitor = () => {
                 {branchModal.failed || 0} failed
               </span>
             </p>
-            <div className="modal-scroll-65 overflow-y-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-28 text-right">Store Code</TableHead>
-                    <TableHead>Store Name</TableHead>
-                    <TableHead className="w-24 text-center">Status</TableHead>
-                    <TableHead className="w-36">Last EOD</TableHead>
-                    <TableHead>Error Message</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <tbody>
-                  {branchStoresLoading && (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                        Loading stores...
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {!branchStoresLoading && branchStores.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                        No stores found for this branch.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                  {!branchStoresLoading &&
-                    branchStores.map((store) => {
-                      const statusConfig = getStatusConfig(store.status);
-                      return (
-                        <TableRow
-                          key={store.storeCode}
-                          className={store.status === 'failed' ? 'bg-status-error/10' : ''}
-                        >
-                          <TableCell className="font-mono text-sm text-right">
-                            {store.storeCode}
-                          </TableCell>
-                          <TableCell className="text-foreground">
-                            {store.storeName || '-'}
-                          </TableCell>
-                          <TableCell className="text-center">
-                            <StatusBadge variant={statusConfig.variant}>
-                              {statusConfig.label}
-                            </StatusBadge>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground text-sm">
-                            {formatTime(store.lastEodAt)}
-                          </TableCell>
-                          <TableCell
-                            className={
-                              store.errorMessage
-                                ? 'text-status-error text-sm'
-                                : 'text-muted-foreground text-sm'
-                            }
-                          >
-                            {store.errorMessage || '-'}
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                </tbody>
-              </Table>
-            </div>
-            {branchStoresPagination.total > branchStoresPagination.pageSize && (
-              <div className="flex items-center justify-between p-4 border-t border-border">
-                <span className="text-xs text-muted-foreground">
-                  Page {branchStoresPagination.page} of{' '}
-                  {Math.ceil(branchStoresPagination.total / branchStoresPagination.pageSize)}
-                </span>
-                <div className="flex gap-2">
-                  <IconButton
-                    icon={<ChevronLeft className="size-4" />}
-                    label="Previous branch stores page"
-                    onClick={() => {
-                      const newPage = Math.max(branchStoresPagination.page - 1, 1);
-                      setBranchStoresPagination((prev) => ({ ...prev, page: newPage }));
-                      fetchBranchStores(branchModal, newPage);
-                    }}
-                    disabled={branchStoresPagination.page <= 1}
-                  />
-                  <IconButton
-                    icon={<ChevronRight className="size-4" />}
-                    label="Next branch stores page"
-                    onClick={() => {
-                      const totalPages = Math.ceil(
-                        branchStoresPagination.total / branchStoresPagination.pageSize
-                      );
-                      const newPage = Math.min(branchStoresPagination.page + 1, totalPages);
-                      setBranchStoresPagination((prev) => ({ ...prev, page: newPage }));
-                      fetchBranchStores(branchModal, newPage);
-                    }}
-                    disabled={
-                      branchStoresPagination.page >=
-                      Math.ceil(branchStoresPagination.total / branchStoresPagination.pageSize)
-                    }
-                  />
+            <DataTable
+              columns={branchStoresColumns}
+              data={branchStores}
+              loading={branchStoresLoading}
+              keyExtractor={(row) => row.storeCode}
+              pagination={branchStoresPagination}
+              onPageChange={(page) => {
+                setBranchStoresPagination((prev) => ({ ...prev, page }));
+                fetchBranchStores(branchModal, page);
+              }}
+              emptyState={
+                <div className="text-center text-muted-foreground py-8">
+                  No stores found for this branch.
                 </div>
-              </div>
-            )}
+              }
+              noCard
+            />
           </div>
         )}
       </Modal>

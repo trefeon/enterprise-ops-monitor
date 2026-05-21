@@ -1,5 +1,5 @@
 import React from 'react';
-import PageShell from './ui/PageShell';
+import PageShell from './shared/PageShell';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent } from '@/components/ui/card';
 

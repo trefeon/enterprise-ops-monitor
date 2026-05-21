@@ -7,6 +7,7 @@ const agentController = require("../controllers/agentController");
 const authMiddleware = require("../middleware/authMiddleware");
 const { requirePermission, requireNotDemo } = require("../middleware/rbac");
 const { Permissions } = require("../lib/permissions");
+const asyncHandler = require("../utils/asyncHandler");
 
 const DEFAULT_AGENT_UPDATE_DIR = path.resolve(__dirname, "../../../agent_updates");
 const configuredAgentUpdateDir = String(process.env.AGENT_UPDATE_DIR || "").trim();
@@ -72,19 +73,19 @@ router.get(
   "/monitoring/export",
   requirePermission(Permissions.AGENT_UPDATE),
   requireNotDemo(),
-  agentController.exportAgentReport
+  asyncHandler(agentController.exportAgentReport)
 );
 
 router.get(
   "/monitoring",
   requirePermission(Permissions.AGENT_UPDATE),
-  agentController.getMonitoringData
+  asyncHandler(agentController.getMonitoringData)
 );
 
 router.get(
   "/suggest-version",
   requirePermission(Permissions.AGENT_UPDATE),
-  agentController.suggestVersion
+  asyncHandler(agentController.suggestVersion)
 );
 
 router.post(
@@ -92,14 +93,14 @@ router.post(
   requirePermission(Permissions.AGENT_UPDATE),
   requireNotDemo(),
   upload.single("publisher"),
-  agentController.uploadPublisher
+  asyncHandler(agentController.uploadPublisher)
 );
 
 router.delete(
   "/monitoring/:store_id",
   requirePermission(Permissions.AGENT_UPDATE),
   requireNotDemo(),
-  agentController.deleteAgentData
+  asyncHandler(agentController.deleteAgentData)
 );
 
 module.exports = router;

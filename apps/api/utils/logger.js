@@ -7,7 +7,7 @@ function shouldLog(l) {
   return (levels[l] || 0) <= (levels[level] || 2);
 }
 
-function format(args) {
+function _format(args) {
   return args.map((a) => (typeof a === "object" ? JSON.stringify(a) : String(a))).join(" ");
 }
 

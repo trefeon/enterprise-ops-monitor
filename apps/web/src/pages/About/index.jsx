@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageShell from '../../components/ui/PageShell';
+import { PageShell } from '@/components/shared/PageShell';
 import { StatCard } from '@/components/shared/StatCard';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { featureStories, getFeatureStory, projectStory } from '../../data/stories';

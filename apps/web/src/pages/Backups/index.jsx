@@ -2,21 +2,14 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Guard } from '../../components/auth/Guard';
 import { useToast } from '../../components/ui/ToastContext';
-import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { Button } from '@/components/ui/button';
-import IconButton from '../../components/ui/IconButton';
+import { IconButton } from '@/components/shared/IconButton';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import ProgressBar from '../../components/ui/ProgressBar';
+import { ProgressBar } from '@/components/shared/ProgressBar';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/shared/DataTable';
 import { formatDate, formatDateTime, formatTime } from '../../lib/date';
 import { cn } from '@/lib/utils';
 import { getFeatureStory } from '../../data/stories';
@@ -36,7 +29,7 @@ import {
   HelpCircle,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import PageShell from '../../components/ui/PageShell';
+import { PageShell } from '@/components/shared/PageShell';
 
 const formatBytes = (value) => {
   if (!Number.isFinite(value)) return '-';
@@ -49,20 +42,6 @@ const formatBytes = (value) => {
   }
   const precision = size >= 10 || unitIndex === 0 ? 0 : 1;
   return `${size.toFixed(precision)} ${units[unitIndex]}`;
-};
-
-const cronToDailyTime = (cron) => {
-  const match = String(cron || '')
-    .trim()
-    .match(/^(\d{1,2})\s+(\d{1,2})\s+\*\s+\*\s+\*$/);
-  if (!match) return null;
-
-  const minute = Number(match[1]);
-  const hour = Number(match[2]);
-  if (Number.isNaN(minute) || Number.isNaN(hour)) return null;
-  if (minute < 0 || minute > 59 || hour < 0 || hour > 23) return null;
-
-  return `${String(hour).padStart(2, '0')}:${String(minute).padStart(2, '0')}`;
 };
 
 const getBackupType = (value) => {
@@ -261,40 +240,96 @@ const Backups = () => {
     [api, isDemoUser, push]
   );
 
+  const backupColumns = useMemo(
+    () => [
+      {
+        header: 'File Name',
+        className: 'w-2/5 min-w-48 break-words',
+        render: (file) => (
+          <div className="flex items-center gap-3">
+            <div className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-xl bg-muted/50 text-foreground border border-border/60 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
+              {file.typeIcon && <file.typeIcon className="size-5" />}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="font-bold text-foreground text-sm break-all" title={file.fileName}>
+                {file.fileName}
+              </span>
+              <span className="text-3xs text-muted-foreground uppercase font-black tracking-widest">
+                {file.typeLabel}
+              </span>
+            </div>
+          </div>
+        ),
+      },
+      {
+        header: 'Size',
+        className: 'w-1/5 min-w-20 text-right text-muted-foreground tabular-nums font-medium',
+        render: (file) => formatBytes(file.sizeBytes),
+      },
+      {
+        header: 'Date Created',
+        className: 'w-1/5 min-w-28 text-muted-foreground text-center',
+        render: (file) => (
+          <div className="flex flex-col gap-0.5">
+            <span className="font-bold text-foreground/90">{formatDate(file.modifiedAt)}</span>
+            <span className="text-3xs uppercase font-medium">{formatTime(file.modifiedAt)}</span>
+          </div>
+        ),
+      },
+      {
+        header: 'Actions',
+        className: 'w-1/5 min-w-44 text-center',
+        render: (file) => (
+          <div className="flex items-center justify-center gap-2">
+            <Guard user={user} permission="BACKUPS_RESTORE">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="h-8 rounded-lg"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setRestoreConfirm('');
+                  setRestoreTarget(file);
+                }}
+              >
+                Restore
+              </Button>
+            </Guard>
+            <IconButton
+              icon={<Download />}
+              label="Download"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleDownload(file);
+              }}
+              className="size-8"
+            />
+            <Guard user={user} permission="BACKUPS_DELETE">
+              <IconButton
+                icon={<Trash2 />}
+                label="Delete backup"
+                intent="danger"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setDeleteConfirm('');
+                  setDeleteTarget(file);
+                }}
+                className="size-8"
+              />
+            </Guard>
+          </div>
+        ),
+      },
+    ],
+    [user, handleDownload]
+  );
+
   const disk = summary?.disk;
   const diskUsed = Number.isFinite(disk?.usedBytes) ? disk.usedBytes : null;
   const diskTotal = Number.isFinite(disk?.totalBytes) ? disk.totalBytes : null;
   const diskFree = Number.isFinite(disk?.freeBytes) ? disk.freeBytes : null;
   const diskPercent = Number.isFinite(disk?.usedPercent) ? disk.usedPercent : null;
   const storageStatus = getStorageStatus(diskPercent);
-  const backupCount = summary?.count;
-  const scheduleEnabled = summary?.schedule?.enabled;
-  const scheduleStatusLabel =
-    scheduleEnabled == null ? 'Unknown' : scheduleEnabled ? 'Active' : 'Paused';
-  const scheduleStatusIcon =
-    scheduleEnabled == null ? (
-      <HelpCircle className="size-4" />
-    ) : scheduleEnabled ? (
-      <CheckCircle2 className="size-4" />
-    ) : (
-      <PauseCircle className="size-4" />
-    );
-  const scheduleStatusText =
-    scheduleEnabled == null
-      ? 'Schedule status unavailable'
-      : scheduleEnabled
-        ? 'Scheduler ready'
-        : 'Scheduler paused';
-  const scheduleStatusVariant =
-    scheduleEnabled == null ? 'outline' : scheduleEnabled ? 'success' : 'warning';
-
-  const scheduleCron = summary?.schedule?.cron;
-  const scheduleTime = cronToDailyTime(scheduleCron);
-  const scheduleTz = summary?.schedule?.tz || 'Asia/Jakarta';
-
-  const totalItems = pagination.total || files.length || 0;
-  const rangeStart = totalItems === 0 ? 0 : (pagination.page - 1) * pagination.pageSize + 1;
-  const rangeEnd = Math.min(pagination.page * pagination.pageSize, totalItems);
 
   const isLoading = loadingSummary || loadingFiles;
   const hasNoData = !summary && files.length === 0;
@@ -435,146 +470,20 @@ const Backups = () => {
             disabled={isLoading}
           />
         </div>
-        <Card className="p-0 overflow-hidden border-border/60">
-          <div className="overflow-x-auto">
-            <Table className="table-fixed">
-              <TableHeader>
-                <TableRow className="bg-muted/30">
-                  <TableHead className="min-w-48 w-2/5">File Name</TableHead>
-                  <TableHead className="min-w-20 w-1/5 text-right">Size</TableHead>
-                  <TableHead className="min-w-28 w-1/5 text-center">Date Created</TableHead>
-                  <TableHead className="min-w-44 w-1/5 text-center">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loadingFiles && files.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-12">
-                      <div className="flex items-center justify-center gap-2">
-                        <Loader2 className="size-4 animate-spin" />
-                        Loading backups...
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : filesWithMeta.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center text-muted-foreground py-12">
-                      No backup files available.
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filesWithMeta.map((file) => (
-                    <TableRow
-                      key={file.fileName}
-                      className="group hover:bg-muted/30 transition-colors"
-                    >
-                      <TableCell className="break-words">
-                        <div className="flex items-center gap-3">
-                          <div className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-xl bg-muted/50 text-foreground border border-border/60 group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                            {file.typeIcon && <file.typeIcon className="size-5" />}
-                          </div>
-                          <div className="flex flex-col min-w-0">
-                            <span
-                              className="font-bold text-foreground text-sm break-all"
-                              title={file.fileName}
-                            >
-                              {file.fileName}
-                            </span>
-                            <span className="text-3xs text-muted-foreground uppercase font-black tracking-widest">
-                              {file.typeLabel}
-                            </span>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right text-muted-foreground tabular-nums font-medium">
-                        {formatBytes(file.sizeBytes)}
-                      </TableCell>
-                      <TableCell className="text-muted-foreground text-center">
-                        <div className="flex flex-col gap-0.5">
-                          <span className="font-bold text-foreground/90">
-                            {formatDate(file.modifiedAt)}
-                          </span>
-                          <span className="text-3xs uppercase font-medium">
-                            {formatTime(file.modifiedAt)}
-                          </span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-center">
-                        <div className="flex items-center justify-center gap-2">
-                          <Guard user={user} permission="BACKUPS_RESTORE">
-                            <Button
-                              size="sm"
-                              variant="secondary"
-                              className="h-8 rounded-lg"
-                              onClick={() => {
-                                setRestoreConfirm('');
-                                setRestoreTarget(file);
-                              }}
-                            >
-                              Restore
-                            </Button>
-                          </Guard>
-                          <IconButton
-                            icon={<Download />}
-                            label="Download"
-                            onClick={() => handleDownload(file)}
-                            className="size-8"
-                          />
-                          <Guard user={user} permission="BACKUPS_DELETE">
-                            <IconButton
-                              icon={<Trash2 />}
-                              label="Delete backup"
-                              intent="danger"
-                              onClick={() => {
-                                setDeleteConfirm('');
-                                setDeleteTarget(file);
-                              }}
-                              className="size-8"
-                            />
-                          </Guard>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-            <div className="flex flex-col gap-3 border-t border-border/40 bg-muted/10 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs text-muted-foreground">
-                Showing <span className="font-bold text-foreground">{rangeStart}</span> to{' '}
-                <span className="font-bold text-foreground">{rangeEnd}</span> of{' '}
-                <span className="font-bold text-foreground">{totalItems}</span> results
-              </p>
-              <div className="flex w-full gap-2 sm:w-auto">
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  disabled={pagination.page <= 1}
-                  onClick={() =>
-                    setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
-                  }
-                  className="flex-1 sm:flex-none h-8"
-                >
-                  Previous
-                </Button>
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  disabled={pagination.page * pagination.pageSize >= totalItems}
-                  onClick={() =>
-                    setPagination((prev) => ({
-                      ...prev,
-                      page: prev.page * prev.pageSize < totalItems ? prev.page + 1 : prev.page,
-                    }))
-                  }
-                  className="flex-1 sm:flex-none h-8"
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          </div>
-        </Card>
+        <DataTable
+          columns={backupColumns}
+          data={filesWithMeta}
+          loading={loadingFiles && files.length === 0}
+          pagination={{
+            page: pagination.page,
+            pageSize: pagination.pageSize,
+            total: pagination.total || files.length || 0,
+          }}
+          onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
+          onPageSizeChange={(pageSize) => setPagination((prev) => ({ ...prev, pageSize, page: 1 }))}
+          keyExtractor={(row) => row.fileName}
+          tableFixed
+        />
       </section>
 
       <ConfirmDialog

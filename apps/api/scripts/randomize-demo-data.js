@@ -198,7 +198,7 @@ let globalEmployeeIndex = 1;
 
 function buildEmployeesForStore(store, employeeCount) {
   const employees = [];
-  
+
   const now = new Date();
   const yy = String(now.getFullYear()).slice(-2);
   const mm = String(now.getMonth() + 1).padStart(2, "0");
@@ -207,7 +207,7 @@ function buildEmployeesForStore(store, employeeCount) {
 
   for (let index = 0; index < employeeCount; index += 1) {
     const fullName = `Demo Employee ${store.storeCode}-${String(index + 1).padStart(2, "0")}`;
-    
+
     // NIK Format: YYMMDD + global sequential ID
     const nik = `${datePrefix}${String(globalEmployeeIndex).padStart(4, "0")}`;
     globalEmployeeIndex++;

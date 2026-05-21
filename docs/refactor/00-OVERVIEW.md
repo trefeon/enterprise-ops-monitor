@@ -17,47 +17,31 @@
 
 ```
 apps/web/src/components/
-├── ui/             ← shadcn primitives (KEEP) + legacy wrappers (MIGRATE & DELETE)
+├── ui/             ← shadcn primitives (KEEP) + global toast components (KEEP)
 │   ├── button.tsx  ← shadcn primitive — DO NOT TOUCH
 │   ├── card.tsx    ← shadcn primitive — DO NOT TOUCH
 │   ├── table.tsx   ← shadcn primitive — DO NOT TOUCH
 │   ├── dialog.tsx  ← shadcn primitive — DO NOT TOUCH
 │   ├── ...         ← other shadcn primitives
-│   ├── PageShell.jsx    ← LEGACY — migrate to shared/
-│   ├── PageHeader.jsx   ← LEGACY — delete (shared/ version exists)
-│   ├── Modal.jsx        ← LEGACY — migrate to shared/
-│   ├── ConfirmDialog.jsx ← LEGACY — migrate to shared/
-│   ├── Toolbar.jsx      ← LEGACY — migrate to shared/
-│   ├── IconButton.jsx   ← LEGACY — migrate to shared/
-│   ├── ProgressBar.jsx  ← LEGACY — migrate to shared/
-│   ├── SectionCard.jsx  ← LEGACY — migrate to shared/
-│   ├── DataTable.jsx    ← LEGACY — delete (shared/ version exists)
-│   ├── StatCard.jsx     ← LEGACY — delete (shared/ version exists)
-│   ├── StatusBadge.jsx  ← LEGACY — delete (shared/ version exists)
-│   ├── EmptyState.jsx   ← LEGACY — delete (shared/ version exists)
-│   ├── IconLink.jsx     ← LEGACY — unused, DELETE
-│   ├── Divider.jsx      ← LEGACY — unused, DELETE
 │   ├── Toast.jsx        ← KEEP — global context provider
 │   └── ToastContext.jsx ← KEEP — global context provider
 │
-├── shared/         ← Target: ALL reusable components live here as TSX
-│   ├── DataTable.tsx     ← EXISTS — enhance
-│   ├── StatCard.tsx      ← EXISTS — enhance
-│   ├── StatusBadge.tsx   ← EXISTS — enhance
-│   ├── EmptyState.tsx    ← EXISTS — enhance
-│   ├── PageHeader.tsx    ← EXISTS — enhance
-│   ├── SearchBar.tsx     ← EXISTS — minor enhance
-│   ├── DatePicker.tsx    ← EXISTS — minor enhance
-│   ├── PageShell.tsx     ← CREATED — ready (see note below)
-│   ├── SectionCard.tsx   ← NEEDS CREATION
-│   ├── Modal.tsx         ← NEEDS CREATION
-│   ├── ConfirmDialog.tsx ← NEEDS CREATION
-│   ├── Toolbar.tsx       ← NEEDS CREATION
-│   ├── IconButton.tsx    ← NEEDS CREATION
-│   └── ProgressBar.tsx   ← NEEDS CREATION
+├── shared/         ← Consolidated: ALL reusable components live here as TSX
+│   ├── DataTable.tsx     ← CONSOLIDATED & ENHANCED
+│   ├── StatCard.tsx      ← CONSOLIDATED & ENHANCED
+│   ├── StatusBadge.tsx   ← CONSOLIDATED & ENHANCED
+│   ├── EmptyState.tsx    ← CONSOLIDATED & ENHANCED
+│   ├── PageHeader.tsx    ← CONSOLIDATED & ENHANCED
+│   ├── SearchBar.tsx     ← CONSOLIDATED & ENHANCED
+│   ├── DatePicker.tsx    ← CONSOLIDATED & ENHANCED
+│   ├── PageShell.tsx     ← CONSOLIDATED & ENHANCED
+│   ├── SectionCard.tsx   ← CONSOLIDATED & ENHANCED
+│   ├── Modal.tsx         ← CONSOLIDATED & ENHANCED
+│   ├── ConfirmDialog.tsx ← CONSOLIDATED & ENHANCED
+│   ├── Toolbar.tsx       ← CONSOLIDATED & ENHANCED
+│   ├── IconButton.tsx    ← CONSOLIDATED & ENHANCED
+│   └── ProgressBar.tsx   ← CONSOLIDATED & ENHANCED
 ```
-
-> **Note**: `shared/PageShell.tsx` was already created during a prior session with content: named export `PageShell` + default export, typed `{ children, className }`, uses `cn()` with `page-container` CSS class. **Verify it exists before recreating.**
 
 ## Key Constraints
 
@@ -69,12 +53,16 @@ apps/web/src/components/
 - **Always** provide both named export AND default export for components that had default exports (PageShell, Modal, Toolbar, IconButton, ProgressBar) — this prevents breaking legacy imports during migration
 - **Always** run `pnpm check:all` before considering work complete
 
-## Execution Order
+## Execution Status
 
-1. Create/enhance shared TSX components (Phase 1-2 in 02-COMPONENT-SPECS.md)
-2. Update page imports file by file (Phase 3 in 03-MIGRATION-GUIDE.md)
-3. Delete legacy files (Phase 4 in 03-MIGRATION-GUIDE.md)
-4. Run verification (05-VERIFICATION.md)
+All phases of the refactoring plan have been successfully executed and verified:
+
+1. Created/enhanced all shared TSX components (Phases 1 & 2)
+2. Updated all consumer page imports to reference `@/components/shared/*` (Phase 3)
+3. Replaced inline table structures with `<DataTable>` across `EODMonitor`, `Backups`, `SystemHealth`, and `StoreSync` (Phase 5)
+4. Deleted all 14 legacy JSX files from `components/ui/` (Phase 4)
+5. Optimized build outputs via `vite.config.js` code splitting to resolve large bundle warnings (Phase 6)
+6. Verified with zero errors on typechecking, linting, and production builds.
 
 ## Design System Reference
 

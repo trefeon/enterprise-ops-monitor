@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../components/ui/ToastContext';
 import { Button } from '@/components/ui/button';
-import Modal from '../../components/ui/Modal';
+import { Modal } from '@/components/shared/Modal';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -23,7 +23,7 @@ import {
 import { formatDateTime } from '../../lib/date';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
-import PageShell from '../../components/ui/PageShell';
+import { PageShell } from '@/components/shared/PageShell';
 import { StatCard } from '@/components/shared/StatCard';
 import { SearchBar } from '@/components/shared/SearchBar';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';

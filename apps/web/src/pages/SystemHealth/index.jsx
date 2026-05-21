@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { Guard } from '../../components/auth/Guard';
-import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { useToast } from '../../components/ui/ToastContext';
 import { Button } from '@/components/ui/button';
@@ -13,18 +13,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import ProgressBar from '../../components/ui/ProgressBar';
-import PageShell from '../../components/ui/PageShell';
-import PageHeader from '../../components/ui/PageHeader';
+import { ProgressBar } from '@/components/shared/ProgressBar';
+import { PageShell } from '@/components/shared/PageShell';
+import { PageHeader } from '@/components/shared/PageHeader';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/shared/DataTable';
 import { formatDateTime, formatTime } from '../../lib/date';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { getFeatureStory } from '../../data/stories';
@@ -46,8 +39,6 @@ import {
   Activity,
   Download,
   Copy,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -290,19 +281,22 @@ const SystemHealth = () => {
     }
   };
 
-  const handleCopyLog = async (log) => {
-    const payload = `${log.createdAt} [${log.level}] ${log.component}: ${log.message}`;
-    try {
-      await navigator.clipboard.writeText(payload);
-      push({ variant: 'success', title: 'Copied', message: 'Log entry copied.' });
-    } catch (err) {
-      push({
-        variant: 'error',
-        title: 'Copy failed',
-        message: err?.message || 'Clipboard unavailable.',
-      });
-    }
-  };
+  const handleCopyLog = useCallback(
+    async (log) => {
+      const payload = `${log.createdAt} [${log.level}] ${log.component}: ${log.message}`;
+      try {
+        await navigator.clipboard.writeText(payload);
+        push({ variant: 'success', title: 'Copied', message: 'Log entry copied.' });
+      } catch (err) {
+        push({
+          variant: 'error',
+          title: 'Copy failed',
+          message: err?.message || 'Clipboard unavailable.',
+        });
+      }
+    },
+    [push]
+  );
 
   const filteredLogs = useMemo(() => {
     const query = logQuery.trim().toLowerCase();
@@ -374,9 +368,50 @@ const SystemHealth = () => {
 
   const disk = overview?.disk;
   const diskUsedPercent = Number.isFinite(disk?.usedPercent) ? disk.usedPercent : null;
-  const totalLogs = pagination.total || logs.length || 0;
-  const rangeStart = totalLogs === 0 ? 0 : (pagination.page - 1) * pagination.pageSize + 1;
-  const rangeEnd = Math.min(pagination.page * pagination.pageSize, totalLogs);
+
+  const logColumns = useMemo(
+    () => [
+      {
+        header: 'Timestamp',
+        className: 'w-48 tabular-nums text-xs text-muted-foreground',
+        render: (log) => formatDateTime(log.createdAt),
+      },
+      {
+        header: 'Level',
+        className: 'w-28 text-center',
+        render: (log) => (
+          <StatusBadge variant={LEVEL_STYLES[log.level] || 'neutral'}>{log.level}</StatusBadge>
+        ),
+      },
+      {
+        header: 'Source',
+        className: 'w-40 text-center text-foreground',
+        render: (log) => log.component || '-',
+      },
+      {
+        header: 'Message',
+        className: 'min-w-80 max-w-2xl whitespace-normal text-sm leading-5 text-foreground',
+        render: (log) => log.message,
+      },
+      {
+        header: '',
+        className: 'w-16 text-center',
+        render: (log) => (
+          <button
+            type="button"
+            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleCopyLog(log);
+            }}
+          >
+            <Copy className="size-4" />
+          </button>
+        ),
+      },
+    ],
+    [handleCopyLog]
+  );
 
   if (
     error &&
@@ -452,11 +487,15 @@ const SystemHealth = () => {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <p className="text-muted-foreground text-sm font-medium mb-1">Operating System</p>
-                  <h3 className="text-foreground text-xl font-bold break-words">{overview?.platform || '-'}</h3>
+                  <h3 className="text-foreground text-xl font-bold break-words">
+                    {overview?.platform || '-'}
+                  </h3>
                 </div>
                 <Monitor className="size-8 text-muted-foreground" />
               </div>
-              <div className="text-xs text-muted-foreground break-words">Host {overview?.hostname || '-'}</div>
+              <div className="text-xs text-muted-foreground break-words">
+                Host {overview?.hostname || '-'}
+              </div>
             </CardContent>
           </Card>
 
@@ -674,92 +713,21 @@ const SystemHealth = () => {
             </div>
           </div>
 
-          <Card className="p-0 overflow-hidden flex flex-col">
-            <CardContent className="p-0">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-48 tabular-nums">Timestamp</TableHead>
-                    <TableHead className="w-28 text-center">Level</TableHead>
-                    <TableHead className="w-40 text-center">Source</TableHead>
-                    <TableHead>Message</TableHead>
-                    <TableHead className="w-16 text-center"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <tbody>
-                  {loadingLogs && logs.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                        Loading logs...
-                      </TableCell>
-                    </TableRow>
-                  ) : filteredLogs.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={5} className="text-center text-muted-foreground py-8">
-                        No logs match the current filters.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredLogs.map((log) => (
-                      <TableRow key={log.id} className="group">
-                        <TableCell className="text-xs text-muted-foreground tabular-nums">
-                          {formatDateTime(log.createdAt)}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <StatusBadge variant={LEVEL_STYLES[log.level] || 'neutral'}>
-                            {log.level}
-                          </StatusBadge>
-                        </TableCell>
-                        <TableCell className="text-foreground text-center">
-                          {log.component || '-'}
-                        </TableCell>
-                        <TableCell className="min-w-80 max-w-2xl whitespace-normal text-sm leading-5 text-foreground">
-                          {log.message}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <button
-                            type="button"
-                            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
-                            onClick={() => handleCopyLog(log)}
-                          >
-                            <Copy className="size-4" />
-                          </button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </tbody>
-              </Table>
-              <div className="flex flex-col gap-3 border-t border-border bg-card px-cell-x py-cell-y text-xs sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-xs text-muted-foreground">
-                  Showing {rangeStart} to {rangeEnd} of {totalLogs} logs
-                </span>
-                <div className="flex w-full justify-end gap-2 sm:w-auto">
-                  <button
-                    className="rounded-md border border-transparent p-1 text-muted-foreground transition-all hover:border-border hover:bg-secondary hover:text-foreground disabled:opacity-50"
-                    onClick={() =>
-                      setPagination((prev) => ({ ...prev, page: Math.max(prev.page - 1, 1) }))
-                    }
-                    disabled={pagination.page <= 1}
-                  >
-                    <ChevronLeft className="size-4" />
-                  </button>
-                  <button
-                    className="rounded-md border border-transparent p-1 text-muted-foreground transition-all hover:border-border hover:bg-secondary hover:text-foreground disabled:opacity-50"
-                    onClick={() =>
-                      setPagination((prev) => ({
-                        ...prev,
-                        page: prev.page * prev.pageSize < totalLogs ? prev.page + 1 : prev.page,
-                      }))
-                    }
-                    disabled={pagination.page * pagination.pageSize >= totalLogs}
-                  >
-                    <ChevronRight className="size-4" />
-                  </button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <DataTable
+            columns={logColumns}
+            data={filteredLogs}
+            loading={loadingLogs && logs.length === 0}
+            pagination={{
+              page: pagination.page,
+              pageSize: pagination.pageSize,
+              total: pagination.total || logs.length || 0,
+            }}
+            onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
+            onPageSizeChange={(pageSize) =>
+              setPagination((prev) => ({ ...prev, pageSize, page: 1 }))
+            }
+            keyExtractor={(row) => row.id}
+          />
         </div>
       </PageShell>
       <ConfirmDialog

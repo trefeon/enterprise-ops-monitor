@@ -56,10 +56,7 @@ function toSystemLogRow(log) {
   };
 }
 
-function formatExportDateTime(value) {
-  const iso = toWibIso(value);
-  return iso ? iso.replace("T", " ").replace("+07:00", " WIB") : "—";
-}
+const excel = require("../utils/excel");
 
 function formatLogTimestamp(value) {
   const raw = String(value ?? "").trim();
@@ -74,56 +71,6 @@ function formatLogMetadata(value) {
   } catch {
     return String(value);
   }
-}
-
-function setThinBorder(cell) {
-  cell.border = {
-    top: { style: "thin", color: { argb: "D1D5DB" } },
-    left: { style: "thin", color: { argb: "D1D5DB" } },
-    bottom: { style: "thin", color: { argb: "D1D5DB" } },
-    right: { style: "thin", color: { argb: "D1D5DB" } },
-  };
-}
-
-function styleTitleCell(cell) {
-  cell.font = { name: "Arial", size: 16, bold: true, color: { argb: "FFFFFF" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1E293B" } };
-  cell.alignment = { horizontal: "center", vertical: "middle" };
-}
-
-function styleSubtitleCell(cell) {
-  cell.font = { name: "Arial", size: 11, italic: true, color: { argb: "475569" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "E2E8F0" } };
-  cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-}
-
-function styleSummaryLabel(cell) {
-  cell.font = { name: "Arial", bold: true, color: { argb: "334155" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
-  cell.alignment = { vertical: "middle" };
-  setThinBorder(cell);
-}
-
-function styleSummaryValue(cell) {
-  cell.font = { name: "Arial", color: { argb: "0F172A" } };
-  cell.alignment = { vertical: "middle", wrapText: true };
-  setThinBorder(cell);
-}
-
-function styleTableHeader(cell) {
-  cell.font = { name: "Arial", bold: true, color: { argb: "FFFFFF" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "111827" } };
-  cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-  setThinBorder(cell);
-}
-
-function styleTableCell(cell, { center = false, wrap = false, alt = false } = {}) {
-  cell.font = { name: "Arial", size: 10, color: { argb: "0F172A" } };
-  cell.alignment = { vertical: "top", horizontal: center ? "center" : "left", wrapText: wrap };
-  cell.fill = alt
-    ? { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } }
-    : { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFF" } };
-  setThinBorder(cell);
 }
 
 function buildSystemLogWorkbook({ generatedAt, levelLabel, searchLabel, logs, truncated }) {
@@ -141,17 +88,17 @@ function buildSystemLogWorkbook({ generatedAt, levelLabel, searchLabel, logs, tr
 
   summarySheet.mergeCells("A1:D1");
   summarySheet.getCell("A1").value = "System Logs Report";
-  styleTitleCell(summarySheet.getCell("A1"));
+  excel.styleTitleCell(summarySheet.getCell("A1"));
   summarySheet.getRow(1).height = 26;
 
   summarySheet.mergeCells("A2:D2");
   summarySheet.getCell("A2").value = `Level: ${levelLabel} | Search: ${searchLabel}`;
-  styleSubtitleCell(summarySheet.getCell("A2"));
+  excel.styleSubtitleCell(summarySheet.getCell("A2"));
   summarySheet.getRow(2).height = 24;
 
   summarySheet.mergeCells("A3:D3");
   summarySheet.getCell("A3").value = `Generated at ${generatedAt} | Export format: XLSX`;
-  styleSubtitleCell(summarySheet.getCell("A3"));
+  excel.styleSubtitleCell(summarySheet.getCell("A3"));
   summarySheet.getRow(3).height = 22;
 
   const summaryPairs = [
@@ -167,10 +114,10 @@ function buildSystemLogWorkbook({ generatedAt, levelLabel, searchLabel, logs, tr
     summarySheet.getCell(`B${rowNumber}`).value = pair[1];
     summarySheet.getCell(`C${rowNumber}`).value = pair[2];
     summarySheet.getCell(`D${rowNumber}`).value = pair[3];
-    styleSummaryLabel(summarySheet.getCell(`A${rowNumber}`));
-    styleSummaryValue(summarySheet.getCell(`B${rowNumber}`));
-    styleSummaryLabel(summarySheet.getCell(`C${rowNumber}`));
-    styleSummaryValue(summarySheet.getCell(`D${rowNumber}`));
+    excel.styleSummaryLabel(summarySheet.getCell(`A${rowNumber}`));
+    excel.styleSummaryValue(summarySheet.getCell(`B${rowNumber}`));
+    excel.styleSummaryLabel(summarySheet.getCell(`C${rowNumber}`));
+    excel.styleSummaryValue(summarySheet.getCell(`D${rowNumber}`));
     summarySheet.getRow(rowNumber).height = 22;
   });
 
@@ -191,25 +138,25 @@ function buildSystemLogWorkbook({ generatedAt, levelLabel, searchLabel, logs, tr
 
   logsSheet.mergeCells("A1:F1");
   logsSheet.getCell("A1").value = "System Logs";
-  styleTitleCell(logsSheet.getCell("A1"));
+  excel.styleTitleCell(logsSheet.getCell("A1"));
   logsSheet.getRow(1).height = 26;
 
   logsSheet.mergeCells("A2:F2");
   logsSheet.getCell("A2").value = `Level: ${levelLabel} | Search: ${searchLabel}`;
-  styleSubtitleCell(logsSheet.getCell("A2"));
+  excel.styleSubtitleCell(logsSheet.getCell("A2"));
   logsSheet.getRow(2).height = 22;
 
   logsSheet.mergeCells("A3:F3");
   logsSheet.getCell("A3").value =
     "Columns: Rank, Timestamp (WIB), Level, Source, Message, Metadata.";
-  styleSubtitleCell(logsSheet.getCell("A3"));
+  excel.styleSubtitleCell(logsSheet.getCell("A3"));
   logsSheet.getRow(3).height = 24;
 
   const headers = ["Rank", "Timestamp", "Level", "Source", "Message", "Metadata"];
   const headerRow = logsSheet.getRow(4);
   headerRow.values = headers;
   headerRow.height = 22;
-  headerRow.eachCell((cell) => styleTableHeader(cell));
+  headerRow.eachCell((cell) => excel.styleTableHeader(cell));
   logsSheet.autoFilter = "A4:F4";
 
   if (logs.length === 0) {
@@ -219,7 +166,7 @@ function buildSystemLogWorkbook({ generatedAt, levelLabel, searchLabel, logs, tr
     emptyCell.alignment = { horizontal: "center", vertical: "middle" };
     emptyCell.font = { name: "Arial", italic: true, color: { argb: "64748B" } };
     emptyCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
-    setThinBorder(emptyCell);
+    excel.setThinBorder(emptyCell);
     logsSheet.getRow(5).height = 24;
     return workbook;
   }
@@ -239,7 +186,7 @@ function buildSystemLogWorkbook({ generatedAt, levelLabel, searchLabel, logs, tr
     row.eachCell((cell, colNumber) => {
       const center = colNumber === 1 || colNumber === 3;
       const wrap = colNumber >= 4;
-      styleTableCell(cell, { center, wrap, alt: isAlt });
+      excel.styleTableCell(cell, { center, wrap, alt: isAlt });
     });
   });
 
@@ -385,7 +332,7 @@ async function checkBackupService(maxAgeSeconds) {
   return { status: result.status, lastSeenAt: latest };
 }
 
-exports.getSystemOverview = async (req, res) => {
+exports.getSystemOverview = async (req, res, next) => {
   try {
     const disk = getDiskStats(process.env.BACKUP_DIR || "/");
     const overview = {
@@ -406,25 +353,23 @@ exports.getSystemOverview = async (req, res) => {
 
     return ok(res, overview, { timezone: "Asia/Jakarta" });
   } catch (err) {
-    console.error(`[systemController] getSystemOverview error:`, err);
-    return fail(res, 500, "INTERNAL_ERROR", "Server Error");
+    next(err);
   }
 };
 
-exports.getSystemHealth = async (req, res) => {
-  return exports.getSystemOverview(req, res);
+exports.getSystemHealth = async (req, res, next) => {
+  return exports.getSystemOverview(req, res, next);
 };
 
-exports.getSystemBranches = async (req, res) => {
+exports.getSystemBranches = async (req, res, next) => {
   try {
     return ok(res, BRANCHES);
   } catch (err) {
-    console.error(`[systemController] getSystemBranches error:`, err);
-    return fail(res, 500, "INTERNAL_ERROR", "Server Error");
+    next(err);
   }
 };
 
-exports.getSystemServices = async (req, res) => {
+exports.getSystemServices = async (req, res, next) => {
   try {
     // Record API liveness whenever this endpoint is hit.
     await upsertServiceHeartbeat(db.sequelize, "api");
@@ -443,12 +388,11 @@ exports.getSystemServices = async (req, res) => {
 
     return ok(res, services, { timezone: "Asia/Jakarta" });
   } catch (err) {
-    console.error(`[systemController] getSystemServices error:`, err);
-    return fail(res, 500, "INTERNAL_ERROR", "Server Error");
+    next(err);
   }
 };
 
-exports.getSystemLogs = async (req, res) => {
+exports.getSystemLogs = async (req, res, next) => {
   try {
     const where = buildLogWhereFilters(req.query);
     const { page, pageSize, offset, limit } = getPagination(req.query, {
@@ -471,12 +415,11 @@ exports.getSystemLogs = async (req, res) => {
       timezone: "Asia/Jakarta",
     });
   } catch (err) {
-    console.error(`[systemController] getSystemLogs error:`, err);
-    return fail(res, 500, "INTERNAL_ERROR", "Server Error");
+    next(err);
   }
 };
 
-exports.exportSystemLogs = async (req, res) => {
+exports.exportSystemLogs = async (req, res, next) => {
   try {
     const where = buildLogWhereFilters(req.query);
     const levelLabel = normalizeLogLevel(req.query?.level) || "ALL";
@@ -495,7 +438,7 @@ exports.exportSystemLogs = async (req, res) => {
     const data = logs.map((row) => toSystemLogRow(row));
     const truncated = data.length >= exportLimit;
     const workbook = buildSystemLogWorkbook({
-      generatedAt: formatExportDateTime(new Date()),
+      generatedAt: excel.formatExportDateTime(new Date()),
       levelLabel,
       searchLabel,
       logs: data,
@@ -518,12 +461,11 @@ exports.exportSystemLogs = async (req, res) => {
       }
     );
   } catch (err) {
-    console.error(`[systemController] exportSystemLogs error:`, err);
-    return fail(res, 500, "INTERNAL_ERROR", "Failed to export logs");
+    next(err);
   }
 };
 
-exports.runHealthcheck = async (req, res) => {
+exports.runHealthcheck = async (req, res, next) => {
   try {
     await upsertServiceHeartbeat(db.sequelize, "api");
 
@@ -548,12 +490,11 @@ exports.runHealthcheck = async (req, res) => {
 
     return ok(res, result, { timezone: "Asia/Jakarta" });
   } catch (err) {
-    console.error(`[systemController] runHealthcheck error:`, err);
-    return fail(res, 500, "INTERNAL_ERROR", "Healthcheck failed");
+    next(err);
   }
 };
 
-exports.restartService = async (req, res) => {
+exports.restartService = async (req, res, next) => {
   try {
     const { service } = req.params;
     const { confirm } = req.body || {};
@@ -570,7 +511,6 @@ exports.restartService = async (req, res) => {
 
     return ok(res, { service, status: "RESTARTING" });
   } catch (err) {
-    console.error(`[systemController] restartService error:`, err);
-    return fail(res, 500, "INTERNAL_ERROR", "Restart failed");
+    next(err);
   }
 };

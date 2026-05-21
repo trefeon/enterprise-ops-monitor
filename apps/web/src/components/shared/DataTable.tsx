@@ -54,6 +54,7 @@ export interface DataTableProps<T> {
   sortBy?: string;
   sortDesc?: boolean;
   onSort?: (key: string, desc: boolean) => void;
+  rowClassName?: (row: T) => string;
 }
 
 const getResponsiveClass = (hiddenBelow?: 'sm' | 'md' | 'lg') => {
@@ -82,6 +83,7 @@ export function DataTable<T>({
   sortBy,
   sortDesc = false,
   onSort,
+  rowClassName,
 }: DataTableProps<T>) {
   const handleSort = (col: Column<T>) => {
     if (!col.sortable || !onSort) return;
@@ -150,7 +152,10 @@ export function DataTable<T>({
               <TableRow
                 key={keyExtractor(row)}
                 onClick={onRowClick ? () => onRowClick(row) : undefined}
-                className={cn(onRowClick && 'cursor-pointer hover:bg-muted/40 transition-colors')}
+                className={cn(
+                  onRowClick && 'cursor-pointer hover:bg-muted/40 transition-colors',
+                  rowClassName?.(row)
+                )}
               >
                 {columns.map((col, idx) => (
                   <TableCell key={idx} className={cn(col.className, getResponsiveClass(col.hiddenBelow))}>
@@ -196,7 +201,11 @@ export function DataTable<T>({
           <Card
             key={keyExtractor(row)}
             onClick={onRowClick ? () => onRowClick(row) : undefined}
-            className={cn('bg-card', onRowClick && 'cursor-pointer active:scale-[0.98] transition-transform')}
+            className={cn(
+              'bg-card',
+              onRowClick && 'cursor-pointer active:scale-[0.98] transition-transform',
+              rowClassName?.(row)
+            )}
           >
             <CardContent className="p-4 space-y-3">
               {columns.map((col, cIdx) => {

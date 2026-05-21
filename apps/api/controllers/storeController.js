@@ -1,11 +1,12 @@
 const { ok, fail } = require("../utils/response");
 const { getPagination, buildPaginationMeta } = require("../utils/pagination");
-const { toWibDate, toWibIso } = require("../utils/time");
+const { toWibDate } = require("../utils/time");
 const ExcelJS = require("exceljs");
 const dataDb = require("../services/dataDb");
 const { getBranchNameById } = require("../services/dataSource");
 const { buildExternalMeta } = require("../services/dataGateway/meta");
 const { getRequestAllowedBranches, ensureBranchAccessForBranchId } = require("../middleware/rbac");
+const excel = require("../utils/excel");
 
 function toStoreRowFromDb(row, employeeIndex) {
   const branchId = row.branchId || "UNKNOWN";
@@ -68,66 +69,6 @@ function applyStoreFilters(stores, { areaId, region, q, status }) {
   return filtered;
 }
 
-function formatExportDateTime(value) {
-  const iso = toWibIso(value);
-  return iso ? iso.replace("T", " ").replace("+07:00", " WIB") : "—";
-}
-
-function formatLabel(value, fallback = "All") {
-  const raw = String(value ?? "").trim();
-  return raw || fallback;
-}
-
-function setThinBorder(cell) {
-  cell.border = {
-    top: { style: "thin", color: { argb: "D1D5DB" } },
-    left: { style: "thin", color: { argb: "D1D5DB" } },
-    bottom: { style: "thin", color: { argb: "D1D5DB" } },
-    right: { style: "thin", color: { argb: "D1D5DB" } },
-  };
-}
-
-function styleTitleCell(cell) {
-  cell.font = { name: "Arial", size: 16, bold: true, color: { argb: "FFFFFF" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1E293B" } };
-  cell.alignment = { horizontal: "center", vertical: "middle" };
-}
-
-function styleSubtitleCell(cell) {
-  cell.font = { name: "Arial", size: 11, italic: true, color: { argb: "475569" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "E2E8F0" } };
-  cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-}
-
-function styleSummaryLabel(cell) {
-  cell.font = { name: "Arial", bold: true, color: { argb: "334155" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
-  cell.alignment = { vertical: "middle" };
-  setThinBorder(cell);
-}
-
-function styleSummaryValue(cell) {
-  cell.font = { name: "Arial", color: { argb: "0F172A" } };
-  cell.alignment = { vertical: "middle", wrapText: true };
-  setThinBorder(cell);
-}
-
-function styleTableHeader(cell) {
-  cell.font = { name: "Arial", bold: true, color: { argb: "FFFFFF" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "111827" } };
-  cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-  setThinBorder(cell);
-}
-
-function styleTableCell(cell, { center = false, wrap = false, alt = false } = {}) {
-  cell.font = { name: "Arial", size: 10, color: { argb: "0F172A" } };
-  cell.alignment = { vertical: "top", horizontal: center ? "center" : "left", wrapText: wrap };
-  cell.fill = alt
-    ? { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } }
-    : { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFF" } };
-  setThinBorder(cell);
-}
-
 function buildStoresWorkbook({ scopeLabel, regionLabel, searchLabel, generatedAt, stores }) {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "Enterprise Ops Monitor";
@@ -142,18 +83,18 @@ function buildStoresWorkbook({ scopeLabel, regionLabel, searchLabel, generatedAt
   summarySheet.columns = [{ width: 24 }, { width: 42 }, { width: 24 }, { width: 42 }];
   summarySheet.mergeCells("A1:D1");
   summarySheet.getCell("A1").value = "Store Directory Report";
-  styleTitleCell(summarySheet.getCell("A1"));
+  excel.styleTitleCell(summarySheet.getCell("A1"));
   summarySheet.getRow(1).height = 26;
 
   summarySheet.mergeCells("A2:D2");
   summarySheet.getCell("A2").value =
     `Branch: ${scopeLabel} | Regional Head: ${regionLabel} | Search: ${searchLabel}`;
-  styleSubtitleCell(summarySheet.getCell("A2"));
+  excel.styleSubtitleCell(summarySheet.getCell("A2"));
   summarySheet.getRow(2).height = 24;
 
   summarySheet.mergeCells("A3:D3");
   summarySheet.getCell("A3").value = `Generated at ${generatedAt} | Export format: XLSX`;
-  styleSubtitleCell(summarySheet.getCell("A3"));
+  excel.styleSubtitleCell(summarySheet.getCell("A3"));
   summarySheet.getRow(3).height = 22;
 
   const summaryPairs = [
@@ -169,10 +110,10 @@ function buildStoresWorkbook({ scopeLabel, regionLabel, searchLabel, generatedAt
     summarySheet.getCell(`B${rowNumber}`).value = pair[1];
     summarySheet.getCell(`C${rowNumber}`).value = pair[2];
     summarySheet.getCell(`D${rowNumber}`).value = pair[3];
-    styleSummaryLabel(summarySheet.getCell(`A${rowNumber}`));
-    styleSummaryValue(summarySheet.getCell(`B${rowNumber}`));
-    styleSummaryLabel(summarySheet.getCell(`C${rowNumber}`));
-    styleSummaryValue(summarySheet.getCell(`D${rowNumber}`));
+    excel.styleSummaryLabel(summarySheet.getCell(`A${rowNumber}`));
+    excel.styleSummaryValue(summarySheet.getCell(`B${rowNumber}`));
+    excel.styleSummaryLabel(summarySheet.getCell(`C${rowNumber}`));
+    excel.styleSummaryValue(summarySheet.getCell(`D${rowNumber}`));
     summarySheet.getRow(rowNumber).height = 22;
   });
 
@@ -196,25 +137,25 @@ function buildStoresWorkbook({ scopeLabel, regionLabel, searchLabel, generatedAt
 
   storesSheet.mergeCells("A1:I1");
   storesSheet.getCell("A1").value = "Store Directory";
-  styleTitleCell(storesSheet.getCell("A1"));
+  excel.styleTitleCell(storesSheet.getCell("A1"));
   storesSheet.getRow(1).height = 26;
 
   storesSheet.mergeCells("A2:I2");
   storesSheet.getCell("A2").value =
     `Branch: ${scopeLabel} | Regional Head: ${regionLabel} | Search: ${searchLabel}`;
-  styleSubtitleCell(storesSheet.getCell("A2"));
+  excel.styleSubtitleCell(storesSheet.getCell("A2"));
   storesSheet.getRow(2).height = 22;
 
   storesSheet.mergeCells("A3:I3");
   storesSheet.getCell("A3").value =
     "Columns: Rank, Store Code, Store Name, Branch, Regional Head, Address, PIC Name, Contact Number, Status.";
-  styleSubtitleCell(storesSheet.getCell("A3"));
+  excel.styleSubtitleCell(storesSheet.getCell("A3"));
   storesSheet.getRow(3).height = 24;
 
   const headerRow = storesSheet.getRow(4);
   headerRow.values = STORE_EXPORT_HEADERS;
   headerRow.height = 22;
-  headerRow.eachCell((cell) => styleTableHeader(cell));
+  headerRow.eachCell((cell) => excel.styleTableHeader(cell));
   storesSheet.autoFilter = "A4:I4";
 
   if (stores.length === 0) {
@@ -224,7 +165,7 @@ function buildStoresWorkbook({ scopeLabel, regionLabel, searchLabel, generatedAt
     emptyCell.alignment = { horizontal: "center", vertical: "middle" };
     emptyCell.font = { name: "Arial", italic: true, color: { argb: "64748B" } };
     emptyCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
-    setThinBorder(emptyCell);
+    excel.setThinBorder(emptyCell);
     storesSheet.getRow(5).height = 24;
     return workbook;
   }
@@ -250,7 +191,7 @@ function buildStoresWorkbook({ scopeLabel, regionLabel, searchLabel, generatedAt
     dataRow.eachCell((cell, colNumber) => {
       const center = colNumber === 1 || colNumber === 2 || colNumber === 8 || colNumber === 9;
       const wrap = colNumber >= 3 && colNumber <= 7;
-      styleTableCell(cell, { center, wrap, alt: isAlt });
+      excel.styleTableCell(cell, { center, wrap, alt: isAlt });
     });
   });
 
@@ -263,7 +204,7 @@ function buildStoreExportBase64(buffer) {
     : Buffer.from(buffer).toString("base64");
 }
 
-exports.getAllStores = async (req, res) => {
+exports.getAllStores = async (req, res, next) => {
   try {
     const { q, status, region } = req.query;
     let areaId = req.query.areaId || req.query.branchId || null;
@@ -343,12 +284,11 @@ exports.getAllStores = async (req, res) => {
       timezone: "Asia/Jakarta",
     });
   } catch (err) {
-    console.error(`[storeController] getAllStores error:`, err);
-    return fail(res, 500, "INTERNAL_ERROR", "Internal Server Error");
+    next(err);
   }
 };
 
-exports.getRegions = async (req, res) => {
+exports.getRegions = async (req, res, next) => {
   try {
     const storeRows = await dataDb.fetchStoresAll();
     const allowedBranches = getRequestAllowedBranches(req);
@@ -366,12 +306,11 @@ exports.getRegions = async (req, res) => {
     const sortedRegions = Array.from(regions).sort();
     return ok(res, sortedRegions);
   } catch (err) {
-    console.error(`[storeController] getRegions error:`, err);
-    return fail(res, 500, "INTERNAL_ERROR", "Failed to fetch regions");
+    next(err);
   }
 };
 
-exports.getStoreById = async (req, res) => {
+exports.getStoreById = async (req, res, next) => {
   try {
     const storeCode = String(req.params.id);
     const [storeRows, employeeRows] = await Promise.all([
@@ -401,8 +340,7 @@ exports.getStoreById = async (req, res) => {
       timezone: "Asia/Jakarta",
     });
   } catch (err) {
-    console.error(`[storeController] getStoreById error:`, err);
-    return fail(res, 500, "INTERNAL_ERROR", "Server Error");
+    next(err);
   }
 };
 
@@ -410,16 +348,16 @@ exports.updateStore = async (req, res) => {
   return fail(res, 403, "READ_ONLY", "Store data is read-only (internal data source)");
 };
 
-exports.exportStores = async (req, res) => {
+exports.exportStores = async (req, res, next) => {
   try {
     const { q, status, region } = req.query;
     const areaId = req.query.areaId || req.query.branchId || null;
     const scopeLabel = areaId
       ? getBranchNameById(String(areaId)) || String(areaId)
       : "All Branches";
-    const regionLabel = formatLabel(region, "All Regional Heads");
-    const searchLabel = formatLabel(q, "All");
-    const generatedAt = formatExportDateTime(new Date());
+    const regionLabel = excel.formatLabel(region, "All Regional Heads");
+    const searchLabel = excel.formatLabel(q, "All");
+    const generatedAt = excel.formatExportDateTime(new Date());
 
     if (status === "inactive") {
       const workbook = buildStoresWorkbook({
@@ -484,7 +422,6 @@ exports.exportStores = async (req, res) => {
       contentBase64: buildStoreExportBase64(buffer),
     });
   } catch (err) {
-    console.error(`[storeController] exportStores error:`, err);
-    return fail(res, 500, "INTERNAL_ERROR", "Failed to export stores");
+    next(err);
   }
 };

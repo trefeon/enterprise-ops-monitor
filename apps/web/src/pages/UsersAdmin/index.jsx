@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PageShell from '../../components/ui/PageShell';
-import PageHeader from '../../components/ui/PageHeader';
+import PageShell from '@/components/shared/PageShell';
+import PageHeader from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -11,8 +11,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { DataTable } from '@/components/shared/DataTable';
-import { ConfirmDialog } from '../../components/ui/ConfirmDialog';
-import Modal from '../../components/ui/Modal';
+import ConfirmDialog from '@/components/shared/ConfirmDialog';
+import Modal from '@/components/shared/Modal';
 import { useToast } from '../../components/ui/ToastContext';
 import { useAuth } from '../../context/AuthContext';
 import { hasPermission, Permissions } from '../../lib/auth/permissions';

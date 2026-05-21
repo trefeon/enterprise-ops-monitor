@@ -20,7 +20,7 @@ import {
 import { PageHeader } from '@/components/shared/PageHeader';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { StatCard } from '@/components/shared/StatCard';
-import PageShell from '@/components/ui/PageShell';
+import { PageShell } from '@/components/shared/PageShell';
 import FeatureStoryBanner from '@/components/FeatureStoryBanner';
 import { getFeatureStory } from '@/data/stories';
 import { useOfficeAgents } from './hooks/useOfficeAgents';

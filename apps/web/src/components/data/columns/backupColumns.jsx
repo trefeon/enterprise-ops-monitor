@@ -1,7 +1,7 @@
 import React from 'react';
 import { Download, RotateCcw, Trash2 } from 'lucide-react';
-import StatusBadge from '../../ui/StatusBadge';
-import IconButton from '../../ui/IconButton';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { IconButton } from '@/components/shared/IconButton';
 import { formatDate, formatDateTime } from '../../../lib/date';
 
 export const getBackupColumns = ({ onDownload, onDelete, onRestore, canDelete, canRestore }) => [

@@ -1,7 +1,7 @@
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
-import StatusBadge from '../../ui/StatusBadge';
-import IconButton from '../../ui/IconButton';
+import { StatusBadge } from '@/components/shared/StatusBadge';
+import { IconButton } from '@/components/shared/IconButton';
 
 export const getStoreColumns = ({ onView }) => [
   { header: 'Code', accessor: 'storeCode', width: '110px' },

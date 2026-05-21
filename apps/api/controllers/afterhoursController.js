@@ -14,6 +14,7 @@ const { toWibDate } = require("../utils/time");
 const { getRequestAllowedBranches } = require("../middleware/rbac");
 const { getDefaultWarningScheduleTimes } = require("../config/afterhoursDefaults");
 const ExcelJS = require("exceljs");
+const excel = require("../utils/excel");
 
 const CONFIG_KEYS = [
   "notify_enabled",
@@ -237,7 +238,7 @@ function normalizeViolationTimestamps(value) {
     } else {
       const parsed = new Date(rawValue);
       if (!Number.isNaN(parsed.getTime())) {
-        normalizedValue = formatExportDateTime(parsed.toISOString());
+        normalizedValue = excel.formatExportDateTime(parsed.toISOString());
       }
     }
 
@@ -270,35 +271,6 @@ function formatReportMonthLabel(reportMonth) {
     }).format(new Date(`${normalized}-01T00:00:00Z`));
   } catch {
     return normalized;
-  }
-}
-
-function formatExportDateTime(value) {
-  if (!value) return "—";
-  const raw = String(value || "").trim();
-  const date = new Date(raw);
-  if (Number.isNaN(date.getTime())) return raw || "—";
-
-  try {
-    const parts = new Intl.DateTimeFormat("id-ID", {
-      timeZone: "Asia/Jakarta",
-      year: "numeric",
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    }).formatToParts(date);
-
-    const map = {};
-    for (const part of parts) {
-      map[part.type] = part.value;
-    }
-
-    const hour = map.hour === "24" ? "00" : map.hour;
-    return `${map.day} ${map.month} ${map.year} ${hour}:${map.minute} WIB`;
-  } catch {
-    return raw || "—";
   }
 }
 
@@ -399,56 +371,6 @@ async function ensureMonthlyReportExists(reportMonth) {
   return generateMonthlyReport(db.sequelize, { targetMonth });
 }
 
-function setThinBorder(cell) {
-  cell.border = {
-    top: { style: "thin", color: { argb: "D1D5DB" } },
-    left: { style: "thin", color: { argb: "D1D5DB" } },
-    bottom: { style: "thin", color: { argb: "D1D5DB" } },
-    right: { style: "thin", color: { argb: "D1D5DB" } },
-  };
-}
-
-function styleSummaryLabel(cell) {
-  cell.font = { name: "Arial", bold: true, color: { argb: "334155" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
-  cell.alignment = { vertical: "middle" };
-  setThinBorder(cell);
-}
-
-function styleSummaryValue(cell) {
-  cell.font = { name: "Arial", color: { argb: "0F172A" } };
-  cell.alignment = { vertical: "middle", wrapText: true };
-  setThinBorder(cell);
-}
-
-function styleTitleCell(cell) {
-  cell.font = { name: "Arial", size: 16, bold: true, color: { argb: "FFFFFF" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "1E293B" } };
-  cell.alignment = { horizontal: "center", vertical: "middle" };
-}
-
-function styleSubtitleCell(cell) {
-  cell.font = { name: "Arial", size: 11, italic: true, color: { argb: "475569" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "E2E8F0" } };
-  cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-}
-
-function styleTableHeader(cell) {
-  cell.font = { name: "Arial", bold: true, color: { argb: "FFFFFF" } };
-  cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "111827" } };
-  cell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
-  setThinBorder(cell);
-}
-
-function styleTableCell(cell, { center = false, wrap = false, alt = false } = {}) {
-  cell.font = { name: "Arial", size: 10, color: { argb: "0F172A" } };
-  cell.alignment = { vertical: "top", horizontal: center ? "center" : "left", wrapText: wrap };
-  cell.fill = alt
-    ? { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } }
-    : { type: "pattern", pattern: "solid", fgColor: { argb: "FFFFFF" } };
-  setThinBorder(cell);
-}
-
 function buildMonthlyReportWorkbook({ reportMonth, branch, search, summary, rows }) {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = "Enterprise Ops Monitor";
@@ -459,7 +381,9 @@ function buildMonthlyReportWorkbook({ reportMonth, branch, search, summary, rows
   const monthLabel = formatReportMonthLabel(reportMonth);
   const branchLabel = branch ? `Branch ${branch}` : "All Branches";
   const searchLabel = search ? search : "All";
-  const generatedAt = formatExportDateTime(summary?.generated_at || rows[0]?.generated_at || null);
+  const generatedAt = excel.formatExportDateTime(
+    summary?.generated_at || rows[0]?.generated_at || null
+  );
   const reportWindowLabel = formatReportWindowLabel(
     summary?.report_window_start || rows[0]?.report_window_start || null,
     summary?.report_window_end_exclusive || rows[0]?.report_window_end_exclusive || null
@@ -472,18 +396,18 @@ function buildMonthlyReportWorkbook({ reportMonth, branch, search, summary, rows
   summarySheet.columns = [{ width: 24 }, { width: 42 }, { width: 24 }, { width: 42 }];
   summarySheet.mergeCells("A1:D1");
   summarySheet.getCell("A1").value = "After-Hours Monthly Report";
-  styleTitleCell(summarySheet.getCell("A1"));
+  excel.styleTitleCell(summarySheet.getCell("A1"));
   summarySheet.getRow(1).height = 26;
 
   summarySheet.mergeCells("A2:D2");
   summarySheet.getCell("A2").value =
     `Month: ${monthLabel} | Branch: ${branchLabel} | Search: ${searchLabel}`;
-  styleSubtitleCell(summarySheet.getCell("A2"));
+  excel.styleSubtitleCell(summarySheet.getCell("A2"));
   summarySheet.getRow(2).height = 24;
 
   summarySheet.mergeCells("A3:D3");
   summarySheet.getCell("A3").value = `Generated at ${generatedAt} | Export format: XLSX`;
-  styleSubtitleCell(summarySheet.getCell("A3"));
+  excel.styleSubtitleCell(summarySheet.getCell("A3"));
   summarySheet.getRow(3).height = 22;
 
   const summaryPairs = [
@@ -515,10 +439,10 @@ function buildMonthlyReportWorkbook({ reportMonth, branch, search, summary, rows
     summarySheet.getCell(`B${rowNumber}`).value = pair[1];
     summarySheet.getCell(`C${rowNumber}`).value = pair[2];
     summarySheet.getCell(`D${rowNumber}`).value = pair[3];
-    styleSummaryLabel(summarySheet.getCell(`A${rowNumber}`));
-    styleSummaryValue(summarySheet.getCell(`B${rowNumber}`));
-    styleSummaryLabel(summarySheet.getCell(`C${rowNumber}`));
-    styleSummaryValue(summarySheet.getCell(`D${rowNumber}`));
+    excel.styleSummaryLabel(summarySheet.getCell(`A${rowNumber}`));
+    excel.styleSummaryValue(summarySheet.getCell(`B${rowNumber}`));
+    excel.styleSummaryLabel(summarySheet.getCell(`C${rowNumber}`));
+    excel.styleSummaryValue(summarySheet.getCell(`D${rowNumber}`));
     summarySheet.getRow(rowNumber).height = 22;
   });
 
@@ -540,19 +464,19 @@ function buildMonthlyReportWorkbook({ reportMonth, branch, search, summary, rows
 
   rankingSheet.mergeCells("A1:G1");
   rankingSheet.getCell("A1").value = "Monthly Violation Ranking";
-  styleTitleCell(rankingSheet.getCell("A1"));
+  excel.styleTitleCell(rankingSheet.getCell("A1"));
   rankingSheet.getRow(1).height = 26;
 
   rankingSheet.mergeCells("A2:G2");
   rankingSheet.getCell("A2").value =
     `Month: ${monthLabel} | Branch: ${branchLabel} | Search: ${searchLabel} | Window: ${reportWindowLabel}`;
-  styleSubtitleCell(rankingSheet.getCell("A2"));
+  excel.styleSubtitleCell(rankingSheet.getCell("A2"));
   rankingSheet.getRow(2).height = 22;
 
   rankingSheet.mergeCells("A3:G3");
   rankingSheet.getCell("A3").value =
     "Columns: Rank, Store Code, Store Name, Branch, Violation Days, Violation Dates, Violation Timestamps (WIB).";
-  styleSubtitleCell(rankingSheet.getCell("A3"));
+  excel.styleSubtitleCell(rankingSheet.getCell("A3"));
   rankingSheet.getRow(3).height = 28;
 
   const headerRow = rankingSheet.getRow(4);
@@ -566,7 +490,7 @@ function buildMonthlyReportWorkbook({ reportMonth, branch, search, summary, rows
     "Violation Timestamps (WIB)",
   ];
   headerRow.height = 22;
-  headerRow.eachCell((cell) => styleTableHeader(cell));
+  headerRow.eachCell((cell) => excel.styleTableHeader(cell));
   rankingSheet.autoFilter = "A4:G4";
 
   if (rows.length === 0) {
@@ -577,7 +501,7 @@ function buildMonthlyReportWorkbook({ reportMonth, branch, search, summary, rows
     emptyCell.alignment = { horizontal: "center", vertical: "middle" };
     emptyCell.font = { name: "Arial", italic: true, color: { argb: "64748B" } };
     emptyCell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "F8FAFC" } };
-    setThinBorder(emptyCell);
+    excel.setThinBorder(emptyCell);
   } else {
     rows.forEach((row, index) => {
       const rankNumber = Number.isFinite(Number(row.rank)) ? Number(row.rank) : index + 1;
@@ -606,7 +530,7 @@ function buildMonthlyReportWorkbook({ reportMonth, branch, search, summary, rows
       dataRow.eachCell((cell, colNumber) => {
         const center = colNumber === 1 || colNumber === 5;
         const wrap = colNumber === 3 || colNumber === 4 || colNumber === 6 || colNumber === 7;
-        styleTableCell(cell, { center, wrap, alt: isAlt });
+        excel.styleTableCell(cell, { center, wrap, alt: isAlt });
       });
     });
   }
@@ -652,75 +576,79 @@ async function loadWarningStageTimes(sequelize) {
  * List after-hours violations with optional filters.
  * Query params: date (YYYY-MM-DD), branch, search, page, pageSize
  */
-async function listViolations(req, res) {
-  const date = req.query.date || toWibDate();
-  const branch = req.query.branch || null;
-  const search = req.query.search || null;
-  const page = Math.max(1, parseInt(req.query.page || "1", 10));
-  const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize || "50", 10)));
-  const offset = (page - 1) * pageSize;
-  const allowedBranches = normalizeAllowedBranches(getRequestAllowedBranches(req));
+async function listViolations(req, res, next) {
+  try {
+    const date = req.query.date || toWibDate();
+    const branch = req.query.branch || null;
+    const search = req.query.search || null;
+    const page = Math.max(1, parseInt(req.query.page || "1", 10));
+    const pageSize = Math.min(100, Math.max(1, parseInt(req.query.pageSize || "50", 10)));
+    const offset = (page - 1) * pageSize;
+    const allowedBranches = normalizeAllowedBranches(getRequestAllowedBranches(req));
 
-  if (allowedBranches !== null) {
-    if (allowedBranches.length === 0) {
-      return ok(res, {
-        violations: [],
-        pagination: { page, pageSize, total: 0, totalPages: 0 },
-        filters: { date, branch, search },
-      });
+    if (allowedBranches !== null) {
+      if (allowedBranches.length === 0) {
+        return ok(res, {
+          violations: [],
+          pagination: { page, pageSize, total: 0, totalPages: 0 },
+          filters: { date, branch, search },
+        });
+      }
+      if (branch && !allowedBranches.includes(String(branch))) {
+        return ok(res, {
+          violations: [],
+          pagination: { page, pageSize, total: 0, totalPages: 0 },
+          filters: { date, branch, search },
+        });
+      }
     }
-    if (branch && !allowedBranches.includes(String(branch))) {
-      return ok(res, {
-        violations: [],
-        pagination: { page, pageSize, total: 0, totalPages: 0 },
-        filters: { date, branch, search },
-      });
+
+    let where = "WHERE check_date = $1";
+    const bind = [date];
+    let paramIdx = 2;
+
+    if (allowedBranches !== null) {
+      where += ` AND branch_id::text = ANY($${paramIdx}::text[])`;
+      bind.push(allowedBranches);
+      paramIdx += 1;
     }
+
+    if (branch) {
+      where += ` AND branch_id = $${paramIdx}`;
+      bind.push(branch);
+      paramIdx += 1;
+    }
+
+    if (search) {
+      where += ` AND (store_code ILIKE $${paramIdx} OR store_name ILIKE $${paramIdx})`;
+      bind.push(`%${search}%`);
+      paramIdx += 1;
+    }
+
+    const [countRows] = await db.sequelize.query(
+      `SELECT COUNT(*)::int AS total FROM afterhours_pc_log ${where}`,
+      { bind }
+    );
+    const total = countRows[0]?.total || 0;
+
+    const [rows] = await db.sequelize.query(
+      `SELECT id, check_date, store_code, store_name, branch_id, branch_name,
+              last_sync_at, detected_at, notified
+       FROM afterhours_pc_log
+       ${where}
+       ORDER BY last_sync_at DESC
+       LIMIT ${pageSize} OFFSET ${offset}`,
+      { bind }
+    );
+
+    return ok(res, {
+      violations: rows,
+      pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },
+      filters: { date, branch, search },
+    });
+  } catch (err) {
+    next(err);
   }
-
-  let where = "WHERE check_date = $1";
-  const bind = [date];
-  let paramIdx = 2;
-
-  if (allowedBranches !== null) {
-    where += ` AND branch_id::text = ANY($${paramIdx}::text[])`;
-    bind.push(allowedBranches);
-    paramIdx += 1;
-  }
-
-  if (branch) {
-    where += ` AND branch_id = $${paramIdx}`;
-    bind.push(branch);
-    paramIdx += 1;
-  }
-
-  if (search) {
-    where += ` AND (store_code ILIKE $${paramIdx} OR store_name ILIKE $${paramIdx})`;
-    bind.push(`%${search}%`);
-    paramIdx += 1;
-  }
-
-  const [countRows] = await db.sequelize.query(
-    `SELECT COUNT(*)::int AS total FROM afterhours_pc_log ${where}`,
-    { bind }
-  );
-  const total = countRows[0]?.total || 0;
-
-  const [rows] = await db.sequelize.query(
-    `SELECT id, check_date, store_code, store_name, branch_id, branch_name,
-            last_sync_at, detected_at, notified
-     FROM afterhours_pc_log
-     ${where}
-     ORDER BY last_sync_at DESC
-     LIMIT ${pageSize} OFFSET ${offset}`,
-    { bind }
-  );
-
-  return ok(res, {
-    violations: rows,
-    pagination: { page, pageSize, total, totalPages: Math.ceil(total / pageSize) },
-    filters: { date, branch, search },
-  });
 }
 
 /**
@@ -728,56 +656,60 @@ async function listViolations(req, res) {
  * Aggregated stats per branch for a given date.
  * Query params: date (YYYY-MM-DD)
  */
-async function getSummary(req, res) {
-  const date = req.query.date || toWibDate();
-  const branch = req.query.branch || null;
-  const allowedBranches = normalizeAllowedBranches(getRequestAllowedBranches(req));
+async function getSummary(req, res, next) {
+  try {
+    const date = req.query.date || toWibDate();
+    const branch = req.query.branch || null;
+    const allowedBranches = normalizeAllowedBranches(getRequestAllowedBranches(req));
 
-  if (allowedBranches !== null) {
-    if (allowedBranches.length === 0) {
-      return ok(res, { date, totalViolations: 0, byBranch: [] });
+    if (allowedBranches !== null) {
+      if (allowedBranches.length === 0) {
+        return ok(res, { date, totalViolations: 0, byBranch: [] });
+      }
+      if (branch && !allowedBranches.includes(String(branch))) {
+        return ok(res, { date, totalViolations: 0, byBranch: [] });
+      }
     }
-    if (branch && !allowedBranches.includes(String(branch))) {
-      return ok(res, { date, totalViolations: 0, byBranch: [] });
+
+    let where = "WHERE check_date = $1";
+    const bind = [date];
+    let paramIdx = 2;
+
+    if (allowedBranches !== null) {
+      where += ` AND branch_id::text = ANY($${paramIdx}::text[])`;
+      bind.push(allowedBranches);
+      paramIdx += 1;
     }
+
+    if (branch) {
+      where += ` AND branch_id = $${paramIdx}`;
+      bind.push(branch);
+      paramIdx += 1;
+    }
+
+    const [rows] = await db.sequelize.query(
+      `SELECT branch_id, branch_name, COUNT(*)::int AS violation_count,
+              MIN(last_sync_at) AS earliest_sync, MAX(last_sync_at) AS latest_sync
+       FROM afterhours_pc_log
+       ${where}
+       GROUP BY branch_id, branch_name
+       ORDER BY violation_count DESC`,
+      { bind }
+    );
+
+    const [totalRow] = await db.sequelize.query(
+      `SELECT COUNT(*)::int AS total FROM afterhours_pc_log ${where}`,
+      { bind }
+    );
+
+    return ok(res, {
+      date,
+      totalViolations: totalRow[0]?.total || 0,
+      byBranch: rows,
+    });
+  } catch (err) {
+    next(err);
   }
-
-  let where = "WHERE check_date = $1";
-  const bind = [date];
-  let paramIdx = 2;
-
-  if (allowedBranches !== null) {
-    where += ` AND branch_id::text = ANY($${paramIdx}::text[])`;
-    bind.push(allowedBranches);
-    paramIdx += 1;
-  }
-
-  if (branch) {
-    where += ` AND branch_id = $${paramIdx}`;
-    bind.push(branch);
-    paramIdx += 1;
-  }
-
-  const [rows] = await db.sequelize.query(
-    `SELECT branch_id, branch_name, COUNT(*)::int AS violation_count,
-            MIN(last_sync_at) AS earliest_sync, MAX(last_sync_at) AS latest_sync
-     FROM afterhours_pc_log
-     ${where}
-     GROUP BY branch_id, branch_name
-     ORDER BY violation_count DESC`,
-    { bind }
-  );
-
-  const [totalRow] = await db.sequelize.query(
-    `SELECT COUNT(*)::int AS total FROM afterhours_pc_log ${where}`,
-    { bind }
-  );
-
-  return ok(res, {
-    date,
-    totalViolations: totalRow[0]?.total || 0,
-    byBranch: rows,
-  });
 }
 
 /**
@@ -785,44 +717,48 @@ async function getSummary(req, res) {
  * List available check dates for the date picker.
  * Query params: limit (default 30)
  */
-async function getAvailableDates(req, res) {
-  const limit = Math.min(90, Math.max(1, parseInt(req.query.limit || "30", 10)));
-  const allowedBranches = normalizeAllowedBranches(getRequestAllowedBranches(req));
+async function getAvailableDates(req, res, next) {
+  try {
+    const limit = Math.min(90, Math.max(1, parseInt(req.query.limit || "30", 10)));
+    const allowedBranches = normalizeAllowedBranches(getRequestAllowedBranches(req));
 
-  if (allowedBranches !== null && allowedBranches.length === 0) {
-    return ok(res, { dates: [] });
+    if (allowedBranches !== null && allowedBranches.length === 0) {
+      return ok(res, { dates: [] });
+    }
+
+    const bind = [];
+    let where = "";
+    let limitParam = 1;
+
+    if (allowedBranches !== null) {
+      where = "WHERE branch_id::text = ANY($1::text[])";
+      bind.push(allowedBranches);
+      limitParam = 2;
+    }
+
+    bind.push(limit);
+
+    const [rows] = await db.sequelize.query(
+      `SELECT DISTINCT check_date, COUNT(*)::int AS violation_count
+       FROM afterhours_pc_log
+       ${where}
+       GROUP BY check_date
+       ORDER BY check_date DESC
+       LIMIT $${limitParam}`,
+      { bind }
+    );
+
+    return ok(res, { dates: rows });
+  } catch (err) {
+    next(err);
   }
-
-  const bind = [];
-  let where = "";
-  let limitParam = 1;
-
-  if (allowedBranches !== null) {
-    where = "WHERE branch_id::text = ANY($1::text[])";
-    bind.push(allowedBranches);
-    limitParam = 2;
-  }
-
-  bind.push(limit);
-
-  const [rows] = await db.sequelize.query(
-    `SELECT DISTINCT check_date, COUNT(*)::int AS violation_count
-     FROM afterhours_pc_log
-     ${where}
-     GROUP BY check_date
-     ORDER BY check_date DESC
-     LIMIT $${limitParam}`,
-    { bind }
-  );
-
-  return ok(res, { dates: rows });
 }
 
 /**
  * POST /api/afterhours/check
  * Manually trigger an after-hours check (admin only).
  */
-async function triggerCheck(req, res) {
+async function triggerCheck(req, res, next) {
   try {
     const runAllStages = toBool(req.body?.runAllStages, false);
     if (runAllStages) {
@@ -916,7 +852,7 @@ async function triggerCheck(req, res) {
     });
     return ok(res, result);
   } catch (err) {
-    return fail(res, 500, "AFTERHOURS_CHECK_FAILED", err?.message || "Check failed");
+    next(err);
   }
 }
 
@@ -924,43 +860,51 @@ async function triggerCheck(req, res) {
  * GET /api/afterhours/settings
  * Load notification settings from DB.
  */
-async function getSettings(req, res) {
-  const [rows] = await db.sequelize.query(
-    `SELECT key, value FROM afterhours_config WHERE key = ANY($1)`,
-    { bind: [CONFIG_KEYS] }
-  );
+async function getSettings(req, res, next) {
+  try {
+    const [rows] = await db.sequelize.query(
+      `SELECT key, value FROM afterhours_config WHERE key = ANY($1)`,
+      { bind: [CONFIG_KEYS] }
+    );
 
-  const settings = {};
-  for (const row of rows) {
-    settings[row.key] = row.value;
+    const settings = {};
+    for (const row of rows) {
+      settings[row.key] = row.value;
+    }
+
+    return ok(res, { settings });
+  } catch (err) {
+    next(err);
   }
-
-  return ok(res, { settings });
 }
 
 /**
  * PUT /api/afterhours/settings
  * Save notification settings to DB.
  */
-async function saveSettings(req, res) {
-  const { settings } = req.body || {};
-  if (!settings || typeof settings !== "object") {
-    return fail(res, 400, "INVALID_BODY", "Expected { settings: { key: value } }");
-  }
+async function saveSettings(req, res, next) {
+  try {
+    const { settings } = req.body || {};
+    if (!settings || typeof settings !== "object") {
+      return fail(res, 400, "INVALID_BODY", "Expected { settings: { key: value } }");
+    }
 
-  const saved = [];
-  for (const [key, value] of Object.entries(settings)) {
-    if (!CONFIG_KEYS.includes(key)) continue;
-    await db.sequelize.query(
-      `INSERT INTO afterhours_config (key, value, updated_at)
-       VALUES ($1, $2, NOW())
-       ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
-      { bind: [key, String(value ?? "")] }
-    );
-    saved.push(key);
-  }
+    const saved = [];
+    for (const [key, value] of Object.entries(settings)) {
+      if (!CONFIG_KEYS.includes(key)) continue;
+      await db.sequelize.query(
+        `INSERT INTO afterhours_config (key, value, updated_at)
+         VALUES ($1, $2, NOW())
+         ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+        { bind: [key, String(value ?? "")] }
+      );
+      saved.push(key);
+    }
 
-  return ok(res, { saved });
+    return ok(res, { saved });
+  } catch (err) {
+    next(err);
+  }
 }
 
 /**
@@ -968,88 +912,92 @@ async function saveSettings(req, res) {
  * Top-N monthly ranking of after-hours violations.
  * Query params: month (YYYY-MM), branch, search, limit (default 20)
  */
-async function getMonthlyReport(req, res) {
-  const rawMonth = req.query.month || null;
-  const branch = req.query.branch || null;
-  const search = String(req.query.search || "").trim() || null;
-  const limit = Math.min(100, Math.max(1, parseInt(req.query.limit || "20", 10)));
-  const reportMonth = resolveReportMonth(rawMonth);
-  const allowedBranches = normalizeAllowedBranches(getRequestAllowedBranches(req));
+async function getMonthlyReport(req, res, next) {
+  try {
+    const rawMonth = req.query.month || null;
+    const branch = req.query.branch || null;
+    const search = String(req.query.search || "").trim() || null;
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit || "20", 10)));
+    const reportMonth = resolveReportMonth(rawMonth);
+    const allowedBranches = normalizeAllowedBranches(getRequestAllowedBranches(req));
 
-  if (allowedBranches !== null && allowedBranches.length === 0) {
+    if (allowedBranches !== null && allowedBranches.length === 0) {
+      return ok(res, {
+        reportMonth,
+        ranking: [],
+        summary: {
+          totalStores: 0,
+          totalViolationDays: 0,
+          reportWindowStart: null,
+          reportWindowEndExclusive: null,
+          generatedAt: null,
+        },
+        filters: {
+          month: reportMonth.slice(0, 7),
+          branch,
+          search,
+          limit,
+          windowStart: null,
+        },
+      });
+    }
+
+    let rows = await loadMonthlyReportRows({
+      reportMonth,
+      branch,
+      search,
+      limit,
+      allowedBranches,
+    });
+
+    if (rows.length === 0 && allowedBranches === null) {
+      const regenerated = await ensureMonthlyReportExists(reportMonth);
+      if (regenerated) {
+        rows = await loadMonthlyReportRows({
+          reportMonth,
+          branch,
+          search,
+          limit,
+          allowedBranches,
+        });
+      }
+    }
+
+    const ranking = rows.map((row, idx) => ({
+      rank: idx + 1,
+      ...row,
+    }));
+
+    const summaryRow = await resolveMonthlyReportWindowSummary(
+      await loadMonthlyReportSummary({
+        reportMonth,
+        branch,
+        search,
+        allowedBranches,
+      })
+    );
+
     return ok(res, {
       reportMonth,
-      ranking: [],
+      ranking,
       summary: {
-        totalStores: 0,
-        totalViolationDays: 0,
-        reportWindowStart: null,
-        reportWindowEndExclusive: null,
-        generatedAt: null,
+        totalStores: summaryRow.total_stores || 0,
+        totalViolationDays: summaryRow.total_violation_days || 0,
+        reportWindowStart: summaryRow.report_window_start || null,
+        reportWindowEndExclusive: summaryRow.report_window_end_exclusive || null,
+        generatedAt: summaryRow.generated_at || null,
       },
       filters: {
         month: reportMonth.slice(0, 7),
         branch,
         search,
         limit,
-        windowStart: null,
+        windowStart: summaryRow.report_window_start || null,
       },
     });
+  } catch (err) {
+    next(err);
   }
-
-  let rows = await loadMonthlyReportRows({
-    reportMonth,
-    branch,
-    search,
-    limit,
-    allowedBranches,
-  });
-
-  if (rows.length === 0 && allowedBranches === null) {
-    const regenerated = await ensureMonthlyReportExists(reportMonth);
-    if (regenerated) {
-      rows = await loadMonthlyReportRows({
-        reportMonth,
-        branch,
-        search,
-        limit,
-        allowedBranches,
-      });
-    }
-  }
-
-  const ranking = rows.map((row, idx) => ({
-    rank: idx + 1,
-    ...row,
-  }));
-
-  const summaryRow = await resolveMonthlyReportWindowSummary(
-    await loadMonthlyReportSummary({
-      reportMonth,
-      branch,
-      search,
-      allowedBranches,
-    })
-  );
-
-  return ok(res, {
-    reportMonth,
-    ranking,
-    summary: {
-      totalStores: summaryRow.total_stores || 0,
-      totalViolationDays: summaryRow.total_violation_days || 0,
-      reportWindowStart: summaryRow.report_window_start || null,
-      reportWindowEndExclusive: summaryRow.report_window_end_exclusive || null,
-      generatedAt: summaryRow.generated_at || null,
-    },
-    filters: {
-      month: reportMonth.slice(0, 7),
-      branch,
-      search,
-      limit,
-      windowStart: summaryRow.report_window_start || null,
-    },
-  });
 }
 
 /**
@@ -1057,7 +1005,7 @@ async function getMonthlyReport(req, res) {
  * Download Excel/WPS-friendly monthly report export.
  * Query params: month (YYYY-MM), branch, search
  */
-async function exportMonthlyReport(req, res) {
+async function exportMonthlyReport(req, res, next) {
   try {
     const rawMonth = req.query.month || null;
     const branch = req.query.branch || null;
@@ -1107,7 +1055,7 @@ async function exportMonthlyReport(req, res) {
       contentBase64: buildMonthlyReportExportBase64(buffer),
     });
   } catch (err) {
-    return fail(res, 500, "REPORT_EXPORT_FAILED", err?.message || "Report export failed");
+    next(err);
   }
 }
 
@@ -1116,40 +1064,44 @@ async function exportMonthlyReport(req, res) {
  * List available report months.
  * Query params: limit (default 12)
  */
-async function getReportMonths(req, res) {
-  const limit = Math.min(36, Math.max(1, parseInt(req.query.limit || "12", 10)));
-  const allowedBranches = normalizeAllowedBranches(getRequestAllowedBranches(req));
+async function getReportMonths(req, res, next) {
+  try {
+    const limit = Math.min(36, Math.max(1, parseInt(req.query.limit || "12", 10)));
+    const allowedBranches = normalizeAllowedBranches(getRequestAllowedBranches(req));
 
-  if (allowedBranches !== null && allowedBranches.length === 0) {
-    return ok(res, { months: [] });
+    if (allowedBranches !== null && allowedBranches.length === 0) {
+      return ok(res, { months: [] });
+    }
+
+    const bind = [];
+    let where = "";
+    let limitParam = 1;
+
+    if (allowedBranches !== null) {
+      where = "WHERE branch_id::text = ANY($1::text[])";
+      bind.push(allowedBranches);
+      limitParam = 2;
+    }
+
+    bind.push(limit);
+
+    const [rows] = await db.sequelize.query(
+      `SELECT DISTINCT report_month,
+              COUNT(*)::int AS store_count,
+              COALESCE(SUM(violation_count), 0)::int AS total_violation_days,
+              MAX(generated_at) AS generated_at
+       FROM afterhours_monthly_report
+       ${where}
+       GROUP BY report_month
+       ORDER BY report_month DESC
+       LIMIT $${limitParam}`,
+      { bind }
+    );
+
+    return ok(res, { months: rows });
+  } catch (err) {
+    next(err);
   }
-
-  const bind = [];
-  let where = "";
-  let limitParam = 1;
-
-  if (allowedBranches !== null) {
-    where = "WHERE branch_id::text = ANY($1::text[])";
-    bind.push(allowedBranches);
-    limitParam = 2;
-  }
-
-  bind.push(limit);
-
-  const [rows] = await db.sequelize.query(
-    `SELECT DISTINCT report_month,
-            COUNT(*)::int AS store_count,
-            COALESCE(SUM(violation_count), 0)::int AS total_violation_days,
-            MAX(generated_at) AS generated_at
-     FROM afterhours_monthly_report
-     ${where}
-     GROUP BY report_month
-     ORDER BY report_month DESC
-     LIMIT $${limitParam}`,
-    { bind }
-  );
-
-  return ok(res, { months: rows });
 }
 
 /**
@@ -1157,7 +1109,7 @@ async function getReportMonths(req, res) {
  * Manually trigger monthly report generation (admin).
  * Body: { month: "YYYY-MM" } (optional, defaults to previous month)
  */
-async function triggerReportGenerate(req, res) {
+async function triggerReportGenerate(req, res, next) {
   try {
     const requestedMonth = String(req.body?.month || "").trim();
     const targetMonth = /^\d{4}-\d{2}$/.test(requestedMonth) ? requestedMonth : undefined;
@@ -1173,7 +1125,7 @@ async function triggerReportGenerate(req, res) {
     const result = await generateMonthlyReport(db.sequelize, options);
     return ok(res, result);
   } catch (err) {
-    return fail(res, 500, "REPORT_GENERATE_FAILED", err?.message || "Report generation failed");
+    next(err);
   }
 }
 

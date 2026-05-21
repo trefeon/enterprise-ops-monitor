@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, lazy, Suspense } from 'react';
 import { apiGet, apiPost, apiPut } from '../../lib/api/client';
-import PageShell from '../../components/ui/PageShell';
-import PageHeader from '../../components/ui/PageHeader';
-import Toolbar from '../../components/ui/Toolbar';
+import PageShell from '@/components/shared/PageShell';
+import PageHeader from '@/components/shared/PageHeader';
+import Toolbar from '@/components/shared/Toolbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -16,8 +16,8 @@ import { StatCard } from '@/components/shared/StatCard';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
-import { DatePicker } from '../../components/shared/DatePicker';
-import { SearchBar } from '../../components/shared/SearchBar';
+import { DatePicker } from '@/components/shared/DatePicker';
+import { SearchBar } from '@/components/shared/SearchBar';
 import {
   Table,
   TableHeader,

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { apiGet, apiPost, apiPut } from '../../lib/api/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import Toolbar from '../../components/ui/Toolbar';
+import { Toolbar } from '@/components/shared/Toolbar';
 import {
   Select,
   SelectContent,
