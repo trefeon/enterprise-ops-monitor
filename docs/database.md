@@ -23,7 +23,7 @@ Configurable via `DATABASE_URL` (full connection string) or individual `DB_HOST`
 | `createdAt`     | DATE                        |                                    |
 | `updatedAt`     | DATE                        |                                    |
 
-Method: `comparePassword(password)` — validates against bcrypt or SHA256 hash.
+Password verification is handled inline in `authController.js` via `verifyPassword()` with auto-migration from SHA256 to bcrypt.
 
 #### `Role` — `roles` table
 
@@ -150,51 +150,61 @@ Unique index: `(store_code, date)`
 
 #### `SyncLog` — `SyncLogs` table
 
-| Column       | Type                               | Notes          |
-| ------------ | ---------------------------------- | -------------- |
-| `id`         | INTEGER (PK)                       |                |
-| `store_code` | STRING                             |                |
-| `branch_id`  | INTEGER                            |                |
-| `polled_at`  | DATE                               |                |
-| `status`     | ENUM("synced", "stale", "problem") |                |
-| `age_sec`    | INTEGER                            | Age in seconds |
-| `nama_toko`  | STRING                             | Store name     |
-| `createdAt`  | DATE                               |                |
-| `updatedAt`  | DATE                               |                |
+| Column           | Type                               | Notes            |
+| ---------------- | ---------------------------------- | ---------------- |
+| `id`             | INTEGER (PK)                       |                  |
+| `store_code`     | STRING                             |                  |
+| `store_name`     | STRING                             | Nullable         |
+| `branch_id`      | STRING                             |                  |
+| `branch_name`    | STRING                             | Nullable         |
+| `last_sync_at`   | DATE                               | Nullable         |
+| `is_stale`       | BOOLEAN                            | Default false    |
+| `is_problem`     | BOOLEAN                            | Default false    |
+| `is_missing_today` | BOOLEAN                          | Default false    |
+| `polled_at`      | DATE                               | Default NOW()    |
+| `createdAt`      | DATE                               |                  |
+| `updatedAt`      | DATE                               |                  |
 
-Unique index: `(store_code, polled_at)`
+Indexes on: `store_code`, `(store_code, polled_at)`, `branch_id`, `(branch_id, polled_at)`, `polled_at`, `is_stale`, `is_problem`, `is_missing_today`
 
 #### `SyncSummary` — `SyncSummaries` table
 
 | Column           | Type         | Notes                  |
 | ---------------- | ------------ | ---------------------- |
 | `id`             | INTEGER (PK) |                        |
-| `bucket_minutes` | INTEGER      | Bucket size in minutes |
-| `bucket_start`   | DATE         | Bucket start time      |
-| `branch_id`      | INTEGER      |                        |
-| `synced_count`   | INTEGER      |                        |
-| `stale_count`    | INTEGER      |                        |
-| `problem_count`  | INTEGER      |                        |
-| `total_count`    | INTEGER      |                        |
+| `store_code`     | STRING       |                        |
+| `store_name`     | STRING       | Nullable               |
+| `branch_id`      | STRING       | Nullable               |
+| `branch_name`    | STRING       | Nullable               |
+| `bucket_start`   | DATE         |                        |
+| `bucket_minutes` | INTEGER      | Default 10             |
+| `last_sync_at`   | DATE         | Nullable               |
+| `is_stale`       | BOOLEAN      | Default false          |
+| `is_problem`     | BOOLEAN      | Default false          |
+| `is_missing_today` | BOOLEAN    | Default false          |
+| `polled_at`      | DATE         |                        |
 | `createdAt`      | DATE         |                        |
 | `updatedAt`      | DATE         |                        |
 
-Unique index: `(bucket_minutes, bucket_start, branch_id)`
+Unique index: `(store_code, bucket_start, bucket_minutes)`
 
 #### `SyncAlertState` — `SyncAlertStates` table
 
-| Column         | Type         | Notes    |
-| -------------- | ------------ | -------- |
-| `id`           | INTEGER (PK) |          |
-| `branch_id`    | INTEGER      |          |
-| `kodetoko`     | BIGINT       |          |
-| `alert_type`   | STRING       |          |
-| `triggered_at` | DATE         |          |
-| `resolved_at`  | DATE         | Nullable |
-| `createdAt`    | DATE         |          |
-| `updatedAt`    | DATE         |          |
+| Column           | Type         | Notes               |
+| ---------------- | ------------ | ------------------- |
+| `store_code`     | STRING (PK)  | Primary key         |
+| `store_name`     | STRING       | Nullable            |
+| `branch_id`      | STRING       | Nullable            |
+| `branch_name`    | STRING       | Nullable            |
+| `is_stale`       | BOOLEAN      | Default false       |
+| `is_problem`     | BOOLEAN      | Default false       |
+| `is_missing_today` | BOOLEAN    | Default false       |
+| `stale_since`    | DATE         | Nullable            |
+| `last_seen_at`   | DATE         | Default NOW()       |
+| `last_alerted_at`| DATE         | Nullable            |
+| `last_recovered_at` | DATE      | Nullable            |
 
-Unique index: `(branch_id, kodetoko, alert_type, triggered_at)`
+Indexes on: `is_stale`, `is_problem`, `last_alerted_at`, `last_seen_at`
 
 #### `AgentMonitoring` — `agent_monitoring` table
 

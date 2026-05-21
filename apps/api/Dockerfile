@@ -1,17 +1,17 @@
-FROM node:18-alpine
+FROM node:22-alpine
 
 WORKDIR /app
 
-# Install pg_dump for database backups
 RUN apk add --no-cache postgresql-client
 
-COPY package*.json ./
-RUN npm install
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY apps/api/package.json ./apps/api/package.json
+RUN corepack enable && pnpm install --filter api
 
-COPY . .
+COPY apps/api/ ./apps/api/
 
-# agent_updates is now mounted via docker-compose volumes
+WORKDIR /app/apps/api
 
 EXPOSE 3000
 
-CMD ["npm", "start"]
+CMD ["pnpm", "start"]

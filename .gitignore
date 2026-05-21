@@ -39,3 +39,6 @@ coverage/
 # Agent config — local/personal overrides (DO NOT ignore .agent/ — Antigravity needs it)
 .opencode/local/
 **/.opencode/**/*.local.*
+
+# npm lockfiles (pnpm workspace uses pnpm-lock.yaml only)
+**/package-lock.json

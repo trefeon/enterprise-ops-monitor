@@ -2,8 +2,8 @@ services:
   # enterprise-ops API
   api:
     build:
-      context: apps/api
-      dockerfile: Dockerfile
+      context: .
+      dockerfile: apps/api/Dockerfile
     image: eom-api:latest
     container_name: eom-api
     restart: always

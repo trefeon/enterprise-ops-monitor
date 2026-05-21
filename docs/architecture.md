@@ -40,15 +40,17 @@ Express 5 REST API with Sequelize 6 ORM against PostgreSQL 15. CommonJS modules.
 
 Middleware stack (in order):
 
-1. `requestId` — UUID per request (`X-Request-Id` header)
-2. `helmet` — security headers
-3. `cors` — configured from env
-4. `express.json({ limit: "10mb" })` — body parsing
+1. `helmet` — security headers
+2. `requestId` — UUID per request (`X-Request-Id` header)
+3. Cache-control headers for `/api/` routes
+4. `cors` — configured from env
 5. `morgan` — HTTP logging
-6. `express-rate-limit` — 100 req/15min global
-7. 15 route files mounted under `/api/...`
-8. `notFound` — 404 handler
-9. `errorHandler` — global error handler
+6. `express-rate-limit` — 300 req/min global
+7. `syncRoutes` — mounted BEFORE JSON parsing (allows primitive bodies)
+8. `express.json({ limit: "1mb", strict: false })` — body parsing
+9. 14 route files mounted under `/api/...`
+10. `notFound` — 404 handler
+11. `errorHandler` — global error handler
 
 ### Database
 

@@ -20,6 +20,7 @@ const errorHandler = require("./middleware/errorHandler");
 const ensureDb = require("./utils/ensureDb");
 const ensureDefaultUsers = require("./utils/ensureDefaultUsers");
 const { startDataScheduler } = require("./services/dataScheduler");
+const logger = require("./utils/logger");
 
 const app = express();
 const port = env.PORT;
@@ -70,7 +71,7 @@ app.use(
 );
 
 morgan.token("reqId", (req) => req.id);
-app.use(morgan(":method :url :status :response-time ms - reqId=:reqId"));
+app.use(logger.http);
 
 app.use(
   rateLimit({
@@ -140,8 +141,8 @@ if (require.main === module) {
       // Keep internal data-derived DB tables fresh (optional; controlled by env).
       try {
         startDataScheduler();
-      } catch {
-        // Silent
+      } catch (e) {
+        logger.warn("[startup] startDataScheduler failed (non-fatal):", e?.message || e);
       }
 
       try {
@@ -158,16 +159,16 @@ if (require.main === module) {
                     : "ok"
             )
             .join(", ");
-          console.log(`[startup] Default users ensured: ${summary}`);
+          logger.info(`[startup] Default users ensured: ${summary}`);
         }
       } catch (e) {
-        console.warn("[startup] ensureDefaultUsers failed (non-fatal):", e?.message || e);
+        logger.warn("[startup] ensureDefaultUsers failed (non-fatal):", e?.message || e);
       }
 
       // Sync models (careful in production)
       // await db.sequelize.sync({ alter: true });
     } catch (error) {
-      console.error("Unable to connect to the database:", error);
+      logger.error("Unable to connect to the database:", error);
     }
   });
 }

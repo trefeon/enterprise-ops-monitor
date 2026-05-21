@@ -123,8 +123,10 @@ Defined in `apps/api/middleware/rbac.js`:
 | Function                         | Description                                                                |
 | -------------------------------- | -------------------------------------------------------------------------- |
 | `requirePermission(perm, opts?)` | Require specific permission; optionally validate branch scope from request |
-| `requireAnyPermission(perms)`    | Require at least one of listed permissions                                 |
-| `requireAllPermissions(perms)`   | Require all listed permissions                                             |
+| `requireNotDemo()`               | Reject demo accounts from write operations                                 |
+| `requireAllBranchScope()`        | Require user to have all-branch scope (global operations)                  |
+| `attachBranchScope()`            | Attach `req.allowedBranches` for use in controllers                        |
+| `canAccessStore(authz, storeCode)` | Check if authz context can access a specific store                       |
 
 ## Adding New Permissions
 
