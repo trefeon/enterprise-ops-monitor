@@ -3,8 +3,9 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { InputHTMLAttributes } from 'react';
 
-interface DatePickerProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface DatePickerProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   onValueChange?: (value: string) => void;
+  size?: 'sm' | 'default';
 }
 
 export function DatePicker({
@@ -12,12 +13,13 @@ export function DatePicker({
   onValueChange,
   onChange,
   className,
+  size = 'default',
   ...props
 }: DatePickerProps) {
   return (
     <div className="relative w-full">
       <div className="pointer-events-none absolute left-3 inset-y-0 flex items-center text-muted-foreground z-10">
-        <Calendar className="size-5" />
+        <Calendar className={cn(size === 'sm' ? 'size-3.5' : 'size-4')} />
       </div>
       <Input
         type="date"
@@ -32,9 +34,15 @@ export function DatePicker({
             e.currentTarget.showPicker();
           }
         }}
-        className={cn('date-input-no-indicator pl-11 tabular-nums', className)}
+        className={cn(
+          'date-input-no-indicator pl-9 tabular-nums border-border bg-card hover:border-border/80 focus-visible:border-primary/50 focus-visible:ring-primary/10',
+          size === 'sm' && 'min-h-0 h-9 py-1 text-xs pl-8',
+          className
+        )}
         {...props}
       />
     </div>
   );
 }
+
+export default DatePicker;

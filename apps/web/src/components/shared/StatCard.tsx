@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
+import { TrendingUp, TrendingDown, MoveRight } from 'lucide-react';
 
-type StatStatus = 'default' | 'success' | 'warning' | 'error' | 'info';
+export type StatStatus = 'default' | 'success' | 'warning' | 'error' | 'info';
 
-interface StatCardProps {
+export interface StatCardProps {
   title: string;
   value: ReactNode;
   icon?: ReactNode;
@@ -14,6 +16,13 @@ interface StatCardProps {
   accent?: string;
   status?: StatStatus;
   onClick?: () => void;
+  size?: 'sm' | 'default' | 'lg';
+  loading?: boolean;
+  trend?: {
+    value: number;
+    direction: 'up' | 'down' | 'flat';
+    label?: string;
+  };
 }
 
 const statusStyles: Record<StatStatus, { value: string; rail: string; icon: string }> = {
@@ -44,6 +53,24 @@ const statusStyles: Record<StatStatus, { value: string; rail: string; icon: stri
   },
 };
 
+const paddingSizes = {
+  sm: 'pt-3.5 px-3.5 pb-3.5',
+  default: 'pt-5 px-5 pb-5',
+  lg: 'pt-6 px-6 pb-6',
+};
+
+const titleSizes = {
+  sm: 'text-[10px]',
+  default: 'text-xs',
+  lg: 'text-sm',
+};
+
+const valueSizes = {
+  sm: 'text-xl',
+  default: 'text-[1.75rem]',
+  lg: 'text-3xl',
+};
+
 export function StatCard({
   title,
   value,
@@ -54,26 +81,91 @@ export function StatCard({
   accent: accentProp,
   status = 'default',
   onClick,
+  size = 'default',
+  loading = false,
+  trend,
 }: StatCardProps) {
   const styles = statusStyles[status] || statusStyles.default;
   const accent = accentProp || styles.value;
+
+  const renderTrend = () => {
+    if (!trend) return null;
+
+    const trendColors = {
+      up: 'text-status-success bg-status-success/10 border-status-success/15',
+      down: 'text-status-error bg-status-error/10 border-status-error/15',
+      flat: 'text-muted-foreground bg-muted border-border',
+    };
+
+    const TrendIcon = {
+      up: TrendingUp,
+      down: TrendingDown,
+      flat: MoveRight,
+    }[trend.direction];
+
+    return (
+      <div className="flex items-center gap-1.5 mt-2">
+        <span
+          className={cn(
+            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold border',
+            trendColors[trend.direction]
+          )}
+        >
+          <TrendIcon className="size-3" />
+          {trend.direction !== 'flat' && (trend.value > 0 ? '+' : '')}
+          {trend.value}%
+        </span>
+        {trend.label && (
+          <span className="text-[10px] text-muted-foreground font-medium">
+            {trend.label}
+          </span>
+        )}
+      </div>
+    );
+  };
+
+  if (loading) {
+    return (
+      <Card className={cn('relative flex h-full flex-col overflow-hidden', className)}>
+        <CardContent className={cn('flex flex-1 flex-col', paddingSizes[size])}>
+          <div className={cn('absolute inset-x-0 top-0 h-0.5', styles.rail)} />
+          <div className="flex justify-between items-start">
+            <Skeleton className="h-4 w-24 bg-muted/60" />
+            <Skeleton className="size-10 rounded-lg bg-muted/60" />
+          </div>
+          <div className="mt-4 mb-2">
+            <Skeleton className="h-8 w-32 bg-muted/60" />
+          </div>
+          <div className="mt-auto space-y-2">
+            <Skeleton className="h-3 w-40 bg-muted/60" />
+            <Skeleton className="h-3 w-28 bg-muted/60" />
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card
       onClick={onClick}
       className={cn(
-        'group relative flex h-full flex-col overflow-hidden transition-colors',
+        'group relative flex h-full flex-col overflow-hidden transition-all duration-200 border-border',
         onClick && 'cursor-pointer hover:border-primary/50 active:scale-[0.98]',
         className
       )}
     >
-      <CardContent className="flex flex-1 flex-col pt-5">
+      <CardContent className={cn('flex flex-1 flex-col', paddingSizes[size])}>
         {/* Top semantic rail */}
         <div className={cn('absolute inset-x-0 top-0 h-0.5', styles.rail)} />
 
         <div className="relative flex flex-1 flex-col">
           <div className="flex min-w-0 items-start justify-between gap-3">
-            <span className="min-w-0 text-xs font-medium text-muted-foreground uppercase tracking-wider break-words">
+            <span
+              className={cn(
+                'min-w-0 font-semibold text-muted-foreground uppercase tracking-wider break-words',
+                titleSizes[size]
+              )}
+            >
               {title}
             </span>
             {icon ? (
@@ -91,15 +183,26 @@ export function StatCard({
             )}
           </div>
 
-          <div className="mt-2">
-            <div className={cn('font-mono text-[1.75rem] font-bold leading-tight tracking-normal break-words', accent)}>
+          <div className="mt-2 flex flex-col justify-start">
+            <div
+              className={cn(
+                'font-mono font-bold leading-tight tracking-normal break-words',
+                valueSizes[size],
+                accent
+              )}
+            >
               {value}
             </div>
+            {renderTrend()}
           </div>
 
           <div className="mt-auto pt-2">
             {footer && <div className="mb-2">{footer}</div>}
-            {subtext && <p className="text-xs text-muted-foreground leading-relaxed break-words">{subtext}</p>}
+            {subtext && (
+              <p className="text-xs text-muted-foreground leading-relaxed break-words">
+                {subtext}
+              </p>
+            )}
           </div>
         </div>
       </CardContent>

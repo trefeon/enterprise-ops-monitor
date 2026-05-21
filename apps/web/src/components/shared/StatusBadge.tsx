@@ -2,24 +2,34 @@ import { Badge } from '@/components/ui/badge';
 import type { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
-interface StatusBadgeProps {
-  variant:
-    | 'success'
-    | 'warning'
-    | 'error'
-    | 'destructive'
-    | 'info'
-    | 'neutral'
-    | 'default'
-    | 'secondary'
-    | 'outline';
+export type BadgeVariant =
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'destructive'
+  | 'info'
+  | 'neutral'
+  | 'default'
+  | 'secondary'
+  | 'outline';
+
+export interface StatusBadgeProps {
+  variant: BadgeVariant;
   children: ReactNode;
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   live?: boolean;
+  dot?: boolean;
 }
 
-export function StatusBadge({ variant, children, className, size = 'md', live }: StatusBadgeProps) {
+export function StatusBadge({
+  variant,
+  children,
+  className,
+  size = 'md',
+  live,
+  dot = true,
+}: StatusBadgeProps) {
   const normalizedVariant = variant === 'error' ? 'destructive' : variant;
   const badgeVariant =
     normalizedVariant === 'destructive'
@@ -57,16 +67,19 @@ export function StatusBadge({ variant, children, className, size = 'md', live }:
       variant={badgeVariant}
       className={cn('font-semibold uppercase tracking-wider', sizes[size], className)}
     >
-      <span
-        className={cn(
-          'relative shrink-0 rounded-full',
-          dotColor[normalizedVariant] || dotColor.default,
-          live &&
-            "after:absolute after:inset-[-2px] after:rounded-full after:bg-current after:content-[''] after:animate-ping",
-          dotSizes[size]
-        )}
-      />
+      {dot && (
+        <span
+          className={cn(
+            'relative shrink-0 rounded-full',
+            dotColor[normalizedVariant] || dotColor.default,
+            live &&
+              "after:absolute after:inset-[-2px] after:rounded-full after:bg-current after:content-[''] after:animate-ping",
+            dotSizes[size]
+          )}
+        />
+      )}
       {children}
     </Badge>
   );
 }
+export default StatusBadge;

@@ -3,8 +3,9 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { InputHTMLAttributes, ChangeEvent } from 'react';
 
-interface SearchBarProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   onValueChange?: (value: string) => void;
+  size?: 'sm' | 'default';
 }
 
 export function SearchBar({
@@ -13,6 +14,7 @@ export function SearchBar({
   onChange,
   placeholder = 'Search...',
   className,
+  size = 'default',
   ...props
 }: SearchBarProps) {
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -23,15 +25,21 @@ export function SearchBar({
   return (
     <div className="relative w-full">
       <div className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-muted-foreground">
-        <Search className="size-3.5" />
+        <Search className={cn(size === 'sm' ? 'size-3' : 'size-3.5')} />
       </div>
       <Input
         value={value}
         onChange={handleChange}
         placeholder={placeholder}
-        className={cn('pl-11', className)}
+        className={cn(
+          'pl-9 border-border bg-card hover:border-border/80 focus-visible:border-primary/50 focus-visible:ring-primary/10',
+          size === 'sm' && 'min-h-0 h-9 py-1 text-xs pl-8',
+          className
+        )}
         {...props}
       />
     </div>
   );
 }
+
+export default SearchBar;
