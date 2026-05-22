@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -96,26 +97,28 @@ export function DataTableToolbar<TData>({
             }
           />
           <DropdownMenuContent align="end" className="min-w-40">
-            <DropdownMenuLabel className="text-[11px] font-semibold uppercase tracking-wider">
-              Toggle columns
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            {allColumns.map((column) => {
-              const headerText =
-                typeof column.columnDef.header === 'string'
-                  ? column.columnDef.header
-                  : column.id;
+            <DropdownMenuGroup>
+              <DropdownMenuLabel className="text-[11px] font-semibold uppercase tracking-wider">
+                Toggle columns
+              </DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {allColumns.map((column) => {
+                const headerText =
+                  typeof column.columnDef.header === 'string'
+                    ? column.columnDef.header
+                    : column.id;
 
-              return (
-                <DropdownMenuCheckboxItem
-                  key={column.id}
-                  checked={column.getIsVisible()}
-                  onCheckedChange={(checked) => column.toggleVisibility(checked)}
-                >
-                  {headerText}
-                </DropdownMenuCheckboxItem>
-              );
-            })}
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(checked) => column.toggleVisibility(checked)}
+                  >
+                    {headerText}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuGroup>
           </DropdownMenuContent>
         </DropdownMenu>
       )}

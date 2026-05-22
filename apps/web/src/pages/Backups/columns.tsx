@@ -59,7 +59,7 @@ export const getBackupColumns = ({
     id: 'sizeBytes',
     header: 'Size',
     cell: ({ row }) => (
-      <span className="text-right text-muted-foreground tabular-nums font-medium block w-full">
+      <span className="text-muted-foreground tabular-nums font-medium">
         {formatBytes(row.original.sizeBytes)}
       </span>
     ),
