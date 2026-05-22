@@ -645,6 +645,33 @@ app.get("/api/eod/status", (req, res) => {
   return ok(res, data, { summary: { total: data.length, done: data.filter((s) => s.status === "done").length, pending: data.filter((s) => s.status === "pending").length, failed: data.filter((s) => s.status === "failed").length }, timezone: "Asia/Jakarta" });
 });
 
+// ─── Store Management Regions & Export ──────────────────────────────────────────
+app.get("/api/stores/regions", (req, res) => {
+  const regions = [...new Set(BRANCHES.map(b => b.region))].map((name) => ({
+    id: name.toLowerCase(),
+    name,
+    regionalHead: `${faker.person.firstName()} ${faker.person.lastName()}`,
+    branches: BRANCHES.filter(b => b.region === name).map(b => b.id),
+  }));
+  return ok(res, regions);
+});
+
+app.get("/api/stores/export", (req, res) => {
+  const { areaId, region, q } = req.query;
+  let stores = [...STORES];
+  if (areaId) stores = stores.filter(s => String(s.branchId) === String(areaId));
+  if (region) stores = stores.filter(s => s.region === region);
+  if (q) {
+    const needle = q.toLowerCase();
+    stores = stores.filter(s => s.storeCode.toLowerCase().includes(needle) || s.storeName.toLowerCase().includes(needle));
+  }
+  return ok(res, {
+    fileName: `store_list_${toWibDate()}.xlsx`,
+    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    contentBase64: Buffer.from(JSON.stringify({ exportedAt: toWibIso(new Date()), storeCount: stores.length, stores })).toString("base64"),
+  });
+});
+
 // ─── Stores ────────────────────────────────────────────────────────────────────
 app.get("/api/stores", (req, res) => {
   const data = STORES.map((store) => ({
@@ -1519,15 +1546,8 @@ app.post("/api/auth/login", (req, res) => {
     return fail(res, 401, "AUTH_FAILED", "Username and password are required");
   }
 
-  let account = MOCK_USERS.find(
-    (u) => u.username === username && password === `${username}-password`
-  );
-
-  if (!account && username === "demo" && password === "demo-password") {
-    account = MOCK_USERS.find(u => u.username === "demo");
-  } else if (!account && username === "superadmin" && password === "superadmin-password") {
-    account = MOCK_USERS.find(u => u.username === "superadmin");
-  }
+  // Accept any password for known mock users (flexible for testing)
+  let account = MOCK_USERS.find((u) => u.username === username);
 
   if (!account) {
     return fail(res, 401, "INVALID_CREDENTIALS", "Invalid username or password");
@@ -1714,6 +1734,112 @@ app.get("/api/system/branches", (req, res) => {
   return ok(res, BRANCHES);
 });
 
+
+// ─── Auth ──────────────────────────────────────────────────────────────────────
+app.post("/api/auth/logout", (req, res) => {
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    const token = authHeader.split(" ")[1];
+    sessions.delete(token);
+  }
+  return ok(res, { loggedOut: true });
+});
+
+app.patch("/api/auth/me/password", (req, res) => {
+  const { currentPassword, newPassword } = req.body || {};
+  if (!currentPassword || !newPassword) {
+    return fail(res, 400, "BAD_REQUEST", "Current password and new password are required");
+  }
+  if (newPassword.length < 8) {
+    return fail(res, 400, "BAD_REQUEST", "New password must be at least 8 characters");
+  }
+  return ok(res, { changed: true, message: "Password updated successfully" });
+});
+
+// ─── NIK / Identity Check ──────────────────────────────────────────────────────
+const NIK_ROLES = ["Store Manager", "Assistant Manager", "Supervisor", "Cashier", "Sales Associate", "Warehouse Staff"];
+
+app.get("/api/nik/roles", (req, res) => {
+  return ok(res, NIK_ROLES.map((name, i) => ({ id: i + 1, name, label: name })));
+});
+
+app.get("/api/nik/list", (req, res) => {
+  const { query, branchId, role } = req.query;
+  let localIdx = 1;
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(-2);
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  const datePrefix = `${yy}${mm}${dd}`;
+
+  let employees = [];
+  STORES.forEach((store) => {
+    if (branchId && String(store.branchId) !== String(branchId)) return;
+    const hash = store.storeCode.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
+    const count = 10 + (hash % 8);
+    for (let i = 0; i < count; i++) {
+      const pIdx = String(localIdx).padStart(4, "0");
+      localIdx++;
+      const empRole = pickRandom(NIK_ROLES);
+      if (role && empRole !== role) continue;
+
+      const emp = {
+        id: `nik-${pIdx}`,
+        nik: `${datePrefix}${pIdx}`,
+        fullName: `${faker.person.firstName()} ${faker.person.lastName()}`,
+        role: empRole,
+        storeCode: store.storeCode,
+        storeName: store.storeName,
+        branchId: store.branchId,
+        branchName: store.branchName,
+        status: pickRandom(["ACTIVE", "ACTIVE", "ACTIVE", "INACTIVE"]),
+        lastActivity: randomPastMinutes(1440),
+      };
+
+      if (query) {
+        const needle = query.toLowerCase();
+        if (!emp.nik.includes(needle) && !emp.fullName.toLowerCase().includes(needle)) return;
+      }
+
+      employees.push(emp);
+    }
+  });
+
+  const result = paginate(employees, req.query);
+  return ok(res, result.data, result.meta);
+});
+
+// ─── System: Service Restart (frontend path) ────────────────────────────────────
+app.post("/api/system/services/:name/restart", (req, res) => {
+  const name = req.params.name;
+  return ok(res, {
+    queued: true,
+    service: name,
+    requestedAt: new Date().toISOString(),
+    estimatedRestartSec: randomInt(5, 30),
+  });
+});
+
+// ─── Agent Setup Script ─────────────────────────────────────────────────────────
+app.get("/api/agent/setup-script", (req, res) => {
+  const scriptContent = `@echo off
+echo Enterprise Ops Monitor - Agent Setup Script
+echo ============================================
+echo.
+echo Installing agent version 4.2.1...
+echo [OK] Agent installed successfully
+echo.
+echo Downloading configuration...
+echo [OK] Configuration applied
+echo.
+echo Starting agent service...
+echo [OK] Agent service started
+echo.
+echo Setup complete.`;
+  res.setHeader("Content-Type", "application/octet-stream");
+  res.setHeader("Content-Disposition", "attachment; filename=\"Setup_Agent_Update.bat\"");
+  res.send(scriptContent);
+});
 
 // ─── Root ──────────────────────────────────────────────────────────────────────
 app.get("/", (req, res) => {
