@@ -5,15 +5,14 @@ import { PageShell } from '@/components/shared/PageShell';
 import { SectionCard } from '@/components/shared/SectionCard';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../components/ui/ToastContext';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
 
 const Logout = () => {
   const { logout, api } = useAuth();
   const navigate = useNavigate();
-  const { push } = useToast();
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -22,11 +21,7 @@ const Logout = () => {
     try {
       await api.post('/auth/logout');
     } catch (error) {
-      push({
-        variant: 'warning',
-        title: 'Logout failed',
-        message: error.message || 'Continuing with local logout.',
-      });
+      toast.warning('Logout failed', { description: error.message || 'Continuing with local logout.' });
     } finally {
       logout();
       navigate('/login');
@@ -50,7 +45,7 @@ const Logout = () => {
               <Button variant="secondary" onClick={() => navigate('/')}>
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={() => setOpen(true)} loading={loading}>
+              <Button variant="destructive" onClick={() => setOpen(true)} disabled={loading}>
                 Confirm Logout
               </Button>
             </div>

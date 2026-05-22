@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../components/ui/ToastContext';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -58,7 +58,6 @@ const formatDuration = (seconds) => {
 
 const StoreSync = () => {
   const { api, user } = useAuth();
-  const { push } = useToast();
 
   const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo';
 
@@ -164,10 +163,8 @@ const StoreSync = () => {
 
   const handleRefresh = async () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
+      toast.warning('Demo Account', {
+        description: 'This action is not available in the demo account.',
       });
       return;
     }
@@ -176,18 +173,16 @@ const StoreSync = () => {
     setStoresError(null);
     try {
       // Express' JSON parser defaults to strict mode and rejects primitive JSON like `null`.
-      // Send an object body to avoid 400 "Unexpected token n in JSON".
+      // Send an object body to avoid 400 'Unexpected token n in JSON'.
       const res = await api.post('/sync/refresh', {}, { timeout: 120000 });
       if (!res.ok) throw new Error(res.error?.message || 'Refresh failed');
-      push({
-        variant: 'success',
-        title: 'Sync data refreshed',
-        message: `${res.data.total} stores loaded`,
+      toast.success('Sync data refreshed', {
+        description: `${res.data.total} stores loaded`,
       });
       await Promise.all([fetchSummary(), fetchStatus(), fetchStores()]);
       nextRefreshAtRef.current = getNextRefreshAtMs();
     } catch (err) {
-      push({ variant: 'error', title: 'Refresh failed', message: err.message });
+      toast.error('Refresh failed', { description: err.message });
     } finally {
       setRefreshing(false);
     }
@@ -217,12 +212,12 @@ const StoreSync = () => {
         setHistoryRecords(res.data?.buckets || []);
         setHistorySummary(res.data?.summary || null);
       } catch (err) {
-        push({ variant: 'error', title: 'History load failed', message: err.message });
+        toast.error('History load failed', { description: err.message });
       } finally {
         setHistoryLoading(false);
       }
     },
-    [api, push]
+    [api]
   );
 
   const openHistory = (storeCode, storeName) => {

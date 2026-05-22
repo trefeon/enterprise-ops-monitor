@@ -6,6 +6,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const { requirePermission } = require("../middleware/rbac");
 const validate = require("../middleware/validate");
 const asyncHandler = require("../utils/asyncHandler");
+const { setPrivateCache } = require("../middleware/cacheHeaders");
 
 const paginationQuery = z
   .object({
@@ -54,6 +55,7 @@ router.get(
   "/summary",
   authMiddleware,
   requirePermission("BACKUPS_VIEW"),
+  setPrivateCache(30, 60),
   asyncHandler(backupController.getBackupSummary)
 );
 router.get(
@@ -61,6 +63,7 @@ router.get(
   authMiddleware,
   requirePermission("BACKUPS_VIEW"),
   validate({ query: paginationQuery }),
+  setPrivateCache(30, 60),
   asyncHandler(backupController.getBackupFiles)
 );
 router.post(

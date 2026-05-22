@@ -1,6 +1,6 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../components/ui/ToastContext';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { PageShell } from '@/components/shared/PageShell';
@@ -54,7 +54,6 @@ function normalizeStoreExportFileName(fileName, contentType) {
 
 const StoreManagement = () => {
   const { api, user } = useAuth();
-  const { push } = useToast();
 
   const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo';
   const [data, setData] = useState([]);
@@ -137,10 +136,8 @@ const StoreManagement = () => {
 
   const handleExport = async () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
+      toast.warning('Demo Account', {
+        description: 'This action is not available in the demo account.',
       });
       return;
     }
@@ -169,9 +166,9 @@ const StoreManagement = () => {
       a.download = normalizeStoreExportFileName(exportData.fileName, contentType);
       a.click();
       window.URL.revokeObjectURL(url);
-      push({ variant: 'success', title: 'Export ready', message: 'Stores Excel downloaded.' });
+      toast.success('Export ready', { description: 'Stores Excel downloaded.' });
     } catch (err) {
-      push({ variant: 'error', title: 'Export failed', message: err.message });
+      toast.error('Export failed', { description: err.message });
     }
   };
 

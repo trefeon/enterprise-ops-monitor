@@ -3,7 +3,7 @@ import { useAuth } from '../../context/AuthContext';
 import { Guard } from '../../components/auth/Guard';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { EmptyState } from '@/components/shared/EmptyState';
-import { useToast } from '../../components/ui/ToastContext';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -130,7 +130,6 @@ function normalizeSystemLogsExportFileName(fileName, contentType) {
 
 const SystemHealth = () => {
   const { api, user } = useAuth();
-  const { push } = useToast();
 
   const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo';
   const [overview, setOverview] = useState(null);
@@ -197,16 +196,12 @@ const SystemHealth = () => {
 
   const refreshAll = useCallback(async () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     setError(null);
     await Promise.all([fetchOverview(), fetchServices(), fetchLogs()]);
-  }, [fetchLogs, fetchOverview, fetchServices, isDemoUser, push]);
+  }, [fetchLogs, fetchOverview, fetchServices, isDemoUser]);
 
   useEffect(() => {
     fetchOverview();
@@ -219,11 +214,7 @@ const SystemHealth = () => {
 
   const handleHealthCheck = async () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     setHealthLoading(true);
@@ -237,11 +228,11 @@ const SystemHealth = () => {
         `Scheduler ${result.scheduler || '-'}`,
         `Backup ${result.backup || '-'}`,
       ].join(' | ');
-      push({ variant: 'success', title: 'Health check complete', message: summary });
+      toast.success('Health check complete', { description: summary });
       fetchServices();
       fetchLogs();
     } catch (err) {
-      push({ variant: 'error', title: 'Health check failed', message: err.message });
+      toast.error('Health check failed', { description: err.message });
     } finally {
       setHealthLoading(false);
     }
@@ -250,11 +241,7 @@ const SystemHealth = () => {
   const handleRestart = async () => {
     if (!restartTarget) return;
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       setRestartTarget(null);
       setRestartConfirm('');
       return;
@@ -266,16 +253,12 @@ const SystemHealth = () => {
         { confirm: true }
       );
       if (!res.ok) throw new Error(res.error?.message || 'Restart failed');
-      push({
-        variant: 'warning',
-        title: 'Restart requested',
-        message: `${restartTarget.name} is restarting.`,
-      });
+      toast.warning('Restart requested', { description: `${restartTarget.name} is restarting.` });
       setRestartTarget(null);
       setRestartConfirm('');
       fetchLogs();
     } catch (err) {
-      push({ variant: 'error', title: 'Restart failed', message: err.message });
+      toast.error('Restart failed', { description: err.message });
     } finally {
       setRestartLoading(false);
     }
@@ -286,16 +269,12 @@ const SystemHealth = () => {
       const payload = `${log.createdAt} [${log.level}] ${log.component}: ${log.message}`;
       try {
         await navigator.clipboard.writeText(payload);
-        push({ variant: 'success', title: 'Copied', message: 'Log entry copied.' });
+        toast.success('Copied', { description: 'Log entry copied.' });
       } catch (err) {
-        push({
-          variant: 'error',
-          title: 'Copy failed',
-          message: err?.message || 'Clipboard unavailable.',
-        });
+        toast.error('Copy failed', { description: err?.message || 'Clipboard unavailable.' });
       }
     },
-    [push]
+    []
   );
 
   const filteredLogs = useMemo(() => {
@@ -311,11 +290,7 @@ const SystemHealth = () => {
 
   const handleExportLogs = async () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     try {
@@ -340,9 +315,9 @@ const SystemHealth = () => {
       a.click();
       window.URL.revokeObjectURL(url);
 
-      push({ variant: 'success', title: 'Export ready', message: 'Logs Excel downloaded.' });
+      toast.success('Export ready', { description: 'Logs Excel downloaded.' });
     } catch (err) {
-      push({ variant: 'error', title: 'Export failed', message: err.message });
+      toast.error('Export failed', { description: err.message });
     }
   };
 

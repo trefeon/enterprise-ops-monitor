@@ -65,6 +65,13 @@ const getResponsiveClass = (hiddenBelow?: 'sm' | 'md' | 'lg') => {
   return '';
 };
 
+const getHeaderAlignmentClass = (className?: string) => {
+  if (!className) return 'justify-start text-left';
+  if (className.includes('text-right')) return 'justify-end text-right';
+  if (className.includes('text-center')) return 'justify-center text-center';
+  return 'justify-start text-left';
+};
+
 export function DataTable<T>({
   columns,
   data,
@@ -96,7 +103,8 @@ export function DataTable<T>({
   const renderSortIcon = (col: Column<T>) => {
     if (!col.sortable) return null;
     const key = col.sortKey || String(col.accessor || '');
-    if (sortBy !== key) return <ArrowUpDown className="ml-1.5 size-3.5 text-muted-foreground shrink-0" />;
+    if (sortBy !== key)
+      return <ArrowUpDown className="ml-1.5 size-3.5 text-muted-foreground shrink-0" />;
     return sortDesc ? (
       <ArrowDown className="ml-1.5 size-3.5 text-foreground shrink-0" />
     ) : (
@@ -105,7 +113,13 @@ export function DataTable<T>({
   };
 
   const tableContent = (
-    <div className={cn('hidden sm:block relative overflow-x-auto border-border bg-card', noCard ? 'rounded-lg border' : '', className)}>
+    <div
+      className={cn(
+        'hidden sm:block relative overflow-x-auto border-border bg-card',
+        noCard ? 'rounded-lg border' : '',
+        className
+      )}
+    >
       <Table className={tableFixed ? 'table-fixed' : ''}>
         <TableHeader className={stickyHeader ? 'sticky top-0 bg-card z-10 shadow-sm' : ''}>
           <TableRow>
@@ -115,11 +129,17 @@ export function DataTable<T>({
                 className={cn(
                   col.className,
                   getResponsiveClass(col.hiddenBelow),
-                  col.sortable && 'cursor-pointer select-none hover:bg-muted/50 hover:text-foreground'
+                  col.sortable &&
+                    'cursor-pointer select-none hover:bg-muted/50 hover:text-foreground'
                 )}
                 onClick={() => handleSort(col)}
               >
-                <div className="flex items-center font-semibold">
+                <div
+                  className={cn(
+                    'flex items-center font-semibold',
+                    getHeaderAlignmentClass(col.className)
+                  )}
+                >
                   {col.header}
                   {renderSortIcon(col)}
                 </div>
@@ -132,7 +152,10 @@ export function DataTable<T>({
             Array.from({ length: 5 }).map((_, rIdx) => (
               <TableRow key={rIdx}>
                 {columns.map((col, cIdx) => (
-                  <TableCell key={cIdx} className={cn(col.className, getResponsiveClass(col.hiddenBelow))}>
+                  <TableCell
+                    key={cIdx}
+                    className={cn(col.className, getResponsiveClass(col.hiddenBelow))}
+                  >
                     <Skeleton className="h-4 w-3/4 bg-muted/60" />
                   </TableCell>
                 ))}
@@ -158,7 +181,10 @@ export function DataTable<T>({
                 )}
               >
                 {columns.map((col, idx) => (
-                  <TableCell key={idx} className={cn(col.className, getResponsiveClass(col.hiddenBelow))}>
+                  <TableCell
+                    key={idx}
+                    className={cn(col.className, getResponsiveClass(col.hiddenBelow))}
+                  >
                     {col.render
                       ? col.render(row)
                       : col.accessor
@@ -183,7 +209,10 @@ export function DataTable<T>({
               {columns.map((col, cIdx) => {
                 if (col.hiddenBelow) return null;
                 return (
-                  <div key={cIdx} className="flex flex-col gap-1 border-b border-border/50 pb-2 last:border-0 last:pb-0">
+                  <div
+                    key={cIdx}
+                    className="flex flex-col gap-1 border-b border-border/50 pb-2 last:border-0 last:pb-0"
+                  >
                     <Skeleton className="h-3.5 w-1/4 bg-muted/60" />
                     <Skeleton className="h-4.5 w-3/4 bg-muted/60" />
                   </div>
@@ -211,7 +240,10 @@ export function DataTable<T>({
               {columns.map((col, cIdx) => {
                 if (col.hiddenBelow) return null;
                 return (
-                  <div key={cIdx} className="flex flex-col gap-1 border-b border-border/50 pb-2 last:border-0 last:pb-0">
+                  <div
+                    key={cIdx}
+                    className="flex flex-col gap-1 border-b border-border/50 pb-2 last:border-0 last:pb-0"
+                  >
                     <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
                       {col.header}
                     </span>
@@ -268,7 +300,10 @@ export function DataTable<T>({
                 value={String(pagination.pageSize)}
                 onValueChange={(val) => onPageSizeChange(Number(val))}
               >
-                <SelectTrigger size="sm" className="h-7 w-[70px] border-border bg-card font-mono text-xs">
+                <SelectTrigger
+                  size="sm"
+                  className="h-7 w-[70px] border-border bg-card font-mono text-xs"
+                >
                   <SelectValue placeholder={String(pagination.pageSize)} />
                 </SelectTrigger>
                 <SelectContent align="start">

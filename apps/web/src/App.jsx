@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthProvider';
 import AppShell from './components/AppShell';
 import ErrorBoundary from './components/ErrorBoundary';
-import { ToastProvider } from './components/ui/Toast';
+import { Toaster } from './components/ui/sonner';
 import PrivateRoute from './components/PrivateRoute';
 import { Permissions } from './lib/auth/permissions';
 import PageTransition from './components/PageTransition';
@@ -30,8 +30,8 @@ function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <ToastProvider>
-          <BrowserRouter>
+        <Toaster />
+        <BrowserRouter>
             <Suspense
               fallback={<div className="flex h-screen items-center justify-center">Loading...</div>}
             >
@@ -170,7 +170,6 @@ function App() {
               </Routes>
             </Suspense>
           </BrowserRouter>
-        </ToastProvider>
       </AuthProvider>
     </ErrorBoundary>
   );

@@ -16,9 +16,9 @@ import {
   LineChart,
   AlertCircle,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useToast } from '../../components/ui/ToastContext';
 import { Button } from '@/components/ui/button';
 
 const DEMO_ACCOUNTS = [
@@ -40,7 +40,6 @@ const Login = () => {
   const [error, setError] = useState('');
   const { login } = useAuth();
   const navigate = useNavigate();
-  const { showToast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const [helpOpen, setHelpOpen] = useState(false);
@@ -87,7 +86,7 @@ const Login = () => {
       window.location.href = `mailto:${encodeURIComponent(supportEmail)}`;
       return;
     }
-    showToast('IT support contact is not configured.', 'info');
+    toast.info('IT support contact is not configured.');
   };
 
   const normalizeLoginError = (message) => {

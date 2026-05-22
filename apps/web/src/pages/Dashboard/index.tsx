@@ -21,7 +21,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/components/ui/ToastContext';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -95,7 +95,6 @@ function getHealthConfig(systemHealth: string) {
 
 export default function DashboardPage() {
   const { api, user } = useAuth();
-  const { push } = useToast();
   const navigate = useNavigate();
   const {
     summary,
@@ -148,54 +147,34 @@ export default function DashboardPage() {
     autoSyncAttempted.current = true;
     handleManualSync().then((res) => {
       if (res.ok) {
-        push({
-          variant: 'info' as const,
-          title: 'No data detected',
-          message: 'Fetching latest data from API...',
-        });
+        toast.info('No data detected', { description: 'Fetching latest data from API...' });
       }
     });
-  }, [summary, autoSyncAttempted, handleManualSync, push]);
+  }, [summary, autoSyncAttempted, handleManualSync]);
 
   const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo');
 
   const handleRefresh = useCallback(() => {
     if (isDemoUser) {
-      push({
-        variant: 'warning' as const,
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     fetchData();
-  }, [isDemoUser, push, fetchData]);
+  }, [isDemoUser, fetchData]);
 
   const handleBackup = useCallback(async () => {
     if (user?.isDemo) {
-      push({
-        variant: 'warning' as const,
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     try {
       const res = await api.post('/backups/run', { type: 'manual' });
       if (!res.ok) throw new Error(res.error?.message || 'Backup failed');
-      push({
-        variant: 'success' as const,
-        title: 'Backup queued',
-        message: (res.data as { fileName?: string }).fileName,
-      });
+      toast.success('Backup queued', { description: (res.data as { fileName?: string }).fileName });
     } catch (err) {
-      push({
-        variant: 'error' as const,
-        title: 'Backup failed',
-        message: err instanceof Error ? err.message : 'Unknown error',
-      });
+      toast.error('Backup failed', { description: err instanceof Error ? err.message : 'Unknown error' });
     }
-  }, [api, push, user]);
+  }, [api, user]);
 
   if (loading) {
     return (
@@ -493,31 +472,15 @@ export default function DashboardPage() {
                 label="Run Audit"
                 onClick={async () => {
                   if (user?.isDemo) {
-                    push({
-                      variant: 'warning',
-                      title: 'Demo Account',
-                      message: 'This action is not available in the demo account.',
-                    });
+                    toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
                     return;
                   }
-                  push({
-                    variant: 'info',
-                    title: 'Running Store Audit',
-                    message: 'Polling store synchronization clocks...',
-                  });
+                  toast.info('Running Store Audit', { description: 'Polling store synchronization clocks...' });
                   const res = await handleManualSync();
                   if (res.ok) {
-                    push({
-                      variant: 'success',
-                      title: 'Audit Complete',
-                      message: 'Successfully polled all active store endpoints.',
-                    });
+                    toast.success('Audit Complete', { description: 'Successfully polled all active store endpoints.' });
                   } else {
-                    push({
-                      variant: 'error',
-                      title: 'Audit Failed',
-                      message: res.error || 'Failed to poll store status.',
-                    });
+                    toast.error('Audit Failed', { description: res.error || 'Failed to poll store status.' });
                   }
                 }}
               />

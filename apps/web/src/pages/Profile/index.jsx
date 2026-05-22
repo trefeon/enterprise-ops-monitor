@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import Modal from '@/components/shared/Modal';
 import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../components/ui/ToastContext';
 import { hasPermission, Permissions } from '../../lib/auth/permissions';
 import { apiPatch } from '../../lib/api/client';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
 import { AlertCircle, Key, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 function getInitials(username, role) {
   const source = (username || role || '').trim();
@@ -29,7 +29,6 @@ function getInitials(username, role) {
 
 const Profile = () => {
   const { user, logout } = useAuth();
-  const { push } = useToast();
   const navigate = useNavigate();
 
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -83,11 +82,7 @@ const Profile = () => {
       });
 
       if (res.ok) {
-        push({
-          variant: 'success',
-          title: 'Password Changed',
-          message: 'Your password has been updated successfully. Please log in again.',
-        });
+        toast.success('Password Changed', { description: 'Your password has been updated successfully. Please log in again.' });
         setShowPasswordModal(false);
         setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
         // Log out user after password change

@@ -5,6 +5,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const { requirePermission, requireNotDemo } = require("../middleware/rbac");
 const validate = require("../middleware/validate");
 const asyncHandler = require("../utils/asyncHandler");
+const { setPrivateCache } = require("../middleware/cacheHeaders");
 const {
   getSyncStatus,
   getSyncSummary,
@@ -58,6 +59,7 @@ router.use(authMiddleware);
 router.get(
   "/status",
   requirePermission("SYNC_VIEW", { scope: "branch", branchFrom: "query" }),
+  setPrivateCache(10, 30),
   asyncHandler(getSyncStatus)
 );
 
@@ -65,6 +67,7 @@ router.get(
 router.get(
   "/summary",
   requirePermission("SYNC_VIEW", { scope: "branch", branchFrom: "query" }),
+  setPrivateCache(10, 30),
   asyncHandler(getSyncSummary)
 );
 
@@ -73,6 +76,7 @@ router.get(
   "/stores",
   requirePermission("SYNC_VIEW", { scope: "branch", branchFrom: "query" }),
   validate({ query: storesQuery }),
+  setPrivateCache(15, 30),
   asyncHandler(getSyncStores)
 );
 

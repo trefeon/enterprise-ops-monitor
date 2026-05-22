@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../components/ui/ToastContext';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { PageShell } from '@/components/shared/PageShell';
@@ -40,7 +40,6 @@ const toCsvValue = (value) => {
 
 const IdentityCheck = () => {
   const { api, user } = useAuth();
-  const { push } = useToast();
 
   const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo';
   const [results, setResults] = useState([]);
@@ -128,18 +127,14 @@ const IdentityCheck = () => {
 
   const handleExport = () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
+      toast.warning('Demo Account', {
+        description: 'This action is not available in the demo account.',
       });
       return;
     }
     if (results.length === 0) {
-      push({
-        variant: 'warning',
-        title: 'No data to export',
-        message: 'No employee records available to export.',
+      toast.warning('No data to export', {
+        description: 'No employee records available to export.',
       });
       return;
     }
@@ -168,7 +163,7 @@ const IdentityCheck = () => {
     a.click();
     window.URL.revokeObjectURL(url);
 
-    push({ variant: 'success', title: 'Export ready', message: 'CSV downloaded.' });
+    toast.success('Export ready', { description: 'CSV downloaded.' });
   };
 
   return (

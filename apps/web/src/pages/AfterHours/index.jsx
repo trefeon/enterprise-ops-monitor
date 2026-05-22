@@ -26,7 +26,7 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table';
-import { useToast } from '../../components/ui/ToastContext';
+import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { getFeatureStory } from '../../data/stories';
 import {
@@ -525,7 +525,6 @@ export default function AfterHours() {
   const [whatsappStageTemplates, setWhatsappStageTemplates] = useState(
     DEFAULT_WHATSAPP_STAGE_TEMPLATES
   );
-  const { push } = useToast();
   const { user } = useAuth();
   const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo';
   const [activeTab, setActiveTab] = useState('monitor');
@@ -550,11 +549,11 @@ export default function AfterHours() {
         setSummary(summaryRes.data);
       }
     } catch {
-      push({ variant: 'error', title: 'Error', message: 'Failed to load after-hours data' });
+      toast.error('Error', { description: 'Failed to load after-hours data' });
     } finally {
       setLoading(false);
     }
-  }, [date, branch, search, page, push]);
+  }, [date, branch, search, page]);
 
   const loadDates = useCallback(async () => {
     try {
@@ -722,22 +721,14 @@ export default function AfterHours() {
 
   const handleSaveSettings = async () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     setSavingSettings(true);
     try {
       const scheduleValidation = validateWarningScheduleTimes(warningScheduleTimes);
       if (!scheduleValidation.ok) {
-        push({
-          variant: 'error',
-          title: 'Error',
-          message: scheduleValidation.message,
-        });
+        toast.error('Error', { description: scheduleValidation.message });
         return;
       }
 
@@ -752,11 +743,7 @@ export default function AfterHours() {
       const whatsappTargetsValue = serializeNotificationTargetMap(whatsappTargetMap);
 
       if (notificationEditorMode === 'advanced' && (telegramTargetsError || whatsappTargetsError)) {
-        push({
-          variant: 'error',
-          title: 'Error',
-          message: 'Fix the JSON mapping error before saving notification settings',
-        });
+        toast.error('Error', { description: 'Fix the JSON mapping error before saving notification settings' });
         return;
       }
 
@@ -793,12 +780,12 @@ export default function AfterHours() {
         setWarningScheduleTimes(normalizedSchedule);
         setTelegramStageTemplates(normalizedTelegramTemplates);
         setWhatsappStageTemplates(normalizedWhatsappTemplates);
-        push({ variant: 'success', title: 'Saved', message: 'Notification settings saved' });
+        toast.success('Saved', { description: 'Notification settings saved' });
       } else {
-        push({ variant: 'error', title: 'Error', message: res.error?.message || 'Failed to save' });
+        toast.error('Error', { description: res.error?.message || 'Failed to save' });
       }
     } catch {
-      push({ variant: 'error', title: 'Error', message: 'Failed to save settings' });
+      toast.error('Error', { description: 'Failed to save settings' });
     } finally {
       setSavingSettings(false);
     }
@@ -807,21 +794,13 @@ export default function AfterHours() {
   const handleDiscardSettings = async () => {
     const restored = await loadSettings();
     if (restored) {
-      push({
-        variant: 'success',
-        title: 'Restored',
-        message: 'Settings restored from server values',
-      });
+      toast.success('Restored', { description: 'Settings restored from server values' });
     }
   };
 
   const handleRunCheck = async () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     setChecking(true);
@@ -842,24 +821,18 @@ export default function AfterHours() {
                 .join(' | ')
             : null;
 
-        push({
-          variant: 'success',
-          title: 'Check Complete',
-          message: stageSummary
+        toast.success('Check Complete', {
+          description: stageSummary
             ? `Run test 4 tahap selesai. ${stageSummary}`
             : `Found ${res.data.totalViolations || 0} violation(s) across ${res.data.branchCount || 0} branch(es)`,
         });
         loadData();
         loadDates();
       } else {
-        push({
-          variant: 'error',
-          title: 'Check Failed',
-          message: res.error?.message || 'Failed to run after-hours check',
-        });
+        toast.error('Check Failed', { description: res.error?.message || 'Failed to run after-hours check' });
       }
     } catch {
-      push({ variant: 'error', title: 'Error', message: 'Failed to run check' });
+      toast.error('Error', { description: 'Failed to run check' });
     } finally {
       setChecking(false);
     }

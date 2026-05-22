@@ -142,4 +142,100 @@ describe("Sync Query Optimization", () => {
       "Should NOT use complex CASE sort"
     );
   });
+
+  it("should map optimized snapshot rows without undefined branch lookup crash", async () => {
+    capturedSql = [];
+    db.sequelize.query.mock.mockImplementation(async (sql) => {
+      capturedSql.push(sql);
+      if (sql.includes("SELECT MAX(updated_at)")) {
+        return [[{ updated_at: new Date().toISOString() }]];
+      }
+      if (sql.includes("COUNT(*)")) {
+        return [[{ total: 1 }]];
+      }
+      return [
+        [
+          {
+            branch_id: "2",
+            kodetoko: "302001",
+            nama_toko: "Demo Store",
+            last_sync_epoch: Math.floor(Date.now() / 1000) - 700,
+            updated_at: new Date().toISOString(),
+            status: "problem",
+            age_sec: 700,
+          },
+        ],
+        { rowCount: 1 },
+      ];
+    });
+
+    const req = {
+      query: { page: "1", pageSize: "50", sort: "ageDesc", excludeBazar: "1", status: "problem" },
+      authz: { isAllBranches: true },
+    };
+    const res = {
+      statusCode: 200,
+      body: null,
+      status(code) {
+        this.statusCode = code;
+        return this;
+      },
+      json(payload) {
+        this.body = payload;
+        return this;
+      },
+    };
+
+    let nextError = null;
+    await syncController.getSyncStores(req, res, (err) => {
+      nextError = err;
+    });
+
+    assert.equal(nextError, null);
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.ok, true);
+    assert.equal(res.body.data[0].branchName, "NORTH HUB");
+  });
+
+  it("should not return 500 when optimized snapshot table is unavailable", async () => {
+    capturedSql = [];
+    db.sequelize.query.mock.mockImplementation(async () => {
+      const err = new Error('relation "store_sync_snapshot" does not exist');
+      err.code = "42P01";
+      throw err;
+    });
+
+    const req = {
+      query: {
+        page: "1",
+        pageSize: "50",
+        sort: "ageDesc",
+        excludeBazar: "1",
+        status: "problem",
+      },
+      authz: { isAllBranches: true },
+    };
+    const res = {
+      statusCode: 200,
+      body: null,
+      status(code) {
+        this.statusCode = code;
+        return this;
+      },
+      json(payload) {
+        this.body = payload;
+        return this;
+      },
+    };
+
+    let nextError = null;
+    await syncController.getSyncStores(req, res, (err) => {
+      nextError = err;
+    });
+
+    assert.equal(nextError, null);
+    assert.equal(res.statusCode, 503);
+    assert.equal(res.body.ok, false);
+    assert.equal(res.body.error.code, "SYNC_SNAPSHOT_EMPTY");
+  });
 });

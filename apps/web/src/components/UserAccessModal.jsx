@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
-import { useToast } from './ui/ToastContext';
+import { toast } from 'sonner';
 import { apiGet, apiPatch } from '../lib/api/client';
 import { PermissionGroups } from '../lib/auth/permissions';
 import { Loader2, X, Check } from 'lucide-react';
@@ -30,7 +30,6 @@ export default function UserAccessModal({
   const [loading, setLoading] = useState(false);
   const [roles, setRoles] = useState([]);
   const [branches, setBranches] = useState([]);
-  const { push } = useToast();
 
   const availableTabs = useMemo(() => {
     const tabs = [];
@@ -96,11 +95,11 @@ export default function UserAccessModal({
         setOverrides(ovMap);
       }
     } catch {
-      push({ variant: 'error', title: 'Error', message: 'Failed to load user data' });
+      toast.error('Error', { description: 'Failed to load user data' });
     } finally {
       setLoading(false);
     }
-  }, [user?.id, canEditRoles, push]);
+  }, [user?.id, canEditRoles]);
 
   useEffect(() => {
     if (open && user) {
@@ -120,17 +119,15 @@ export default function UserAccessModal({
     try {
       const res = await apiPatch(`/users/${user.id}/roles`, { role_ids: selectedRoleIds });
       if (res.ok) {
-        push({ variant: 'success', title: 'Success', message: 'Roles updated' });
+        toast.success('Success', { description: 'Roles updated' });
         onSave?.();
       } else {
-        push({
-          variant: 'error',
-          title: 'Error',
-          message: res.error?.message || 'Failed to update roles',
+        toast.error('Error', {
+          description: res.error?.message || 'Failed to update roles',
         });
       }
     } catch {
-      push({ variant: 'error', title: 'Error', message: 'Failed to update roles' });
+      toast.error('Error', { description: 'Failed to update roles' });
     } finally {
       setLoading(false);
     }
@@ -142,17 +139,15 @@ export default function UserAccessModal({
       const branchIds = allBranches ? [] : selectedBranches;
       const res = await apiPatch(`/users/${user.id}/branch-scope`, { branch_ids: branchIds });
       if (res.ok) {
-        push({ variant: 'success', title: 'Success', message: 'Branch scope updated' });
+        toast.success('Success', { description: 'Branch scope updated' });
         onSave?.();
       } else {
-        push({
-          variant: 'error',
-          title: 'Error',
-          message: res.error?.message || 'Failed to update branch scope',
+        toast.error('Error', {
+          description: res.error?.message || 'Failed to update branch scope',
         });
       }
     } catch {
-      push({ variant: 'error', title: 'Error', message: 'Failed to update branch scope' });
+      toast.error('Error', { description: 'Failed to update branch scope' });
     } finally {
       setLoading(false);
     }
@@ -169,17 +164,15 @@ export default function UserAccessModal({
         .map(([k]) => k);
       const res = await apiPatch(`/users/${user.id}/permissions`, { allow, deny });
       if (res.ok) {
-        push({ variant: 'success', title: 'Success', message: 'Permission overrides updated' });
+        toast.success('Success', { description: 'Permission overrides updated' });
         onSave?.();
       } else {
-        push({
-          variant: 'error',
-          title: 'Error',
-          message: res.error?.message || 'Failed to update overrides',
+        toast.error('Error', {
+          description: res.error?.message || 'Failed to update overrides',
         });
       }
     } catch {
-      push({ variant: 'error', title: 'Error', message: 'Failed to update overrides' });
+      toast.error('Error', { description: 'Failed to update overrides' });
     } finally {
       setLoading(false);
     }

@@ -4,7 +4,7 @@ import { PageShell } from '@/components/shared/PageShell';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
 import { Guard } from '../../components/auth/Guard';
-import { useToast } from '../../components/ui/ToastContext';
+import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { PermissionGroups } from '../../lib/auth/permissions';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
@@ -14,8 +14,6 @@ import { Edit3, Loader2, Plus, Trash2 } from 'lucide-react';
 
 export default function RolesAdmin() {
   const { user } = useAuth();
-  const { push } = useToast();
-
   const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo';
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -35,18 +33,16 @@ export default function RolesAdmin() {
       if (res.ok) {
         setRoles(res.data.roles || []);
       } else {
-        push({
-          variant: 'error',
-          title: 'Error',
-          message: res.error?.message || 'Failed to load roles',
+        toast.error('Error', {
+          description: res.error?.message || 'Failed to load roles',
         });
       }
     } catch {
-      push({ variant: 'error', title: 'Error', message: 'Failed to load roles' });
+      toast.error('Error', { description: 'Failed to load roles' });
     } finally {
       setLoading(false);
     }
-  }, [push]);
+  }, []);
 
   useEffect(() => {
     loadRoles();
@@ -54,10 +50,8 @@ export default function RolesAdmin() {
 
   const handleCreate = () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
+      toast.warning('Demo Account', {
+        description: 'This action is not available in the demo account.',
       });
       return;
     }
@@ -68,10 +62,8 @@ export default function RolesAdmin() {
 
   const handleEdit = (role) => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
+      toast.warning('Demo Account', {
+        description: 'This action is not available in the demo account.',
       });
       return;
     }
@@ -87,15 +79,13 @@ export default function RolesAdmin() {
 
   const handleDelete = async (role) => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
+      toast.warning('Demo Account', {
+        description: 'This action is not available in the demo account.',
       });
       return;
     }
     if (role.is_system) {
-      push({ variant: 'error', title: 'Error', message: 'Cannot delete system role' });
+      toast.error('Error', { description: 'Cannot delete system role' });
       return;
     }
     if (!confirm(`Delete role "${role.label}"? This cannot be undone.`)) return;
@@ -103,26 +93,22 @@ export default function RolesAdmin() {
     try {
       const res = await apiDelete(`/roles/${role.id}`);
       if (res.ok) {
-        push({ variant: 'success', title: 'Success', message: 'Role deleted' });
+        toast.success('Success', { description: 'Role deleted' });
         loadRoles();
       } else {
-        push({
-          variant: 'error',
-          title: 'Error',
-          message: res.error?.message || 'Failed to delete',
+        toast.error('Error', {
+          description: res.error?.message || 'Failed to delete',
         });
       }
     } catch {
-      push({ variant: 'error', title: 'Error', message: 'Failed to delete role' });
+      toast.error('Error', { description: 'Failed to delete role' });
     }
   };
 
   const handleSave = async () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
+      toast.warning('Demo Account', {
+        description: 'This action is not available in the demo account.',
       });
       return;
     }
@@ -141,18 +127,16 @@ export default function RolesAdmin() {
       }
 
       if (res.ok) {
-        push({
-          variant: 'success',
-          title: 'Success',
-          message: selectedRole ? 'Role updated' : 'Role created',
+        toast.success('Success', {
+          description: selectedRole ? 'Role updated' : 'Role created',
         });
         setIsEditing(false);
         loadRoles();
       } else {
-        push({ variant: 'error', title: 'Error', message: res.error?.message || 'Failed to save' });
+        toast.error('Error', { description: res.error?.message || 'Failed to save' });
       }
     } catch {
-      push({ variant: 'error', title: 'Error', message: 'Failed to save role' });
+      toast.error('Error', { description: 'Failed to save role' });
     }
   };
 

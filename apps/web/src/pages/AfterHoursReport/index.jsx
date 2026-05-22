@@ -21,7 +21,7 @@ import {
   TableHead,
   TableCell,
 } from '@/components/ui/table';
-import { useToast } from '../../components/ui/ToastContext';
+import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { SearchBar } from '@/components/shared/SearchBar';
 import {
@@ -244,7 +244,6 @@ export default function AfterHoursReport() {
   const [monthlyReportWhatsappTargets, setMonthlyReportWhatsappTargets] = useState('');
   const [loadingMonthlyReportSettings, setLoadingMonthlyReportSettings] = useState(false);
   const [savingMonthlyReportSettings, setSavingMonthlyReportSettings] = useState(false);
-  const { push } = useToast();
   const { user } = useAuth();
   const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo';
   const currentMonth = getDefaultMonth();
@@ -287,13 +286,13 @@ export default function AfterHoursReport() {
       }
     } catch {
       if (requestId !== reportRequestIdRef.current) return;
-      push({ variant: 'error', title: 'Error', message: 'Failed to load monthly report' });
+      toast.error('Error', { description: 'Failed to load monthly report' });
     } finally {
       if (requestId === reportRequestIdRef.current) {
         setLoading(false);
       }
     }
-  }, [month, branch, search, limit, push]);
+  }, [month, branch, search, limit]);
 
   const loadMonths = useCallback(async () => {
     try {
@@ -336,11 +335,7 @@ export default function AfterHoursReport() {
 
   const handleSaveMonthlyReportSettings = async () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     setSavingMonthlyReportSettings(true);
@@ -354,22 +349,15 @@ export default function AfterHoursReport() {
 
       if (res.ok) {
         setMonthlyReportWhatsappTargets(normalizedTargets);
-        push({
-          variant: 'success',
-          title: 'Saved',
-          message: normalizedTargets
+        toast.success('Saved', { description: normalizedTargets
             ? 'Monthly report WhatsApp target updated'
             : 'Monthly report WhatsApp target cleared',
         });
       } else {
-        push({
-          variant: 'error',
-          title: 'Save Failed',
-          message: res.error?.message || 'Failed to save monthly report target',
-        });
+        toast.error('Save Failed', { description: res.error?.message || 'Failed to save monthly report target' });
       }
     } catch {
-      push({ variant: 'error', title: 'Error', message: 'Failed to save monthly report target' });
+      toast.error('Error', { description: 'Failed to save monthly report target' });
     } finally {
       setSavingMonthlyReportSettings(false);
     }
@@ -377,11 +365,7 @@ export default function AfterHoursReport() {
 
   const handleGenerate = async () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     setGenerating(true);
@@ -391,22 +375,14 @@ export default function AfterHoursReport() {
         windowStart,
       });
       if (res.ok) {
-        push({
-          variant: 'success',
-          title: 'Report Generated',
-          message: `Generated report for ${formatMonthLabel(res.data.reportMonth)} (${formatWindowLabel(res.data.reportWindowStart || windowStart)}): ${res.data.totalStores} store(s), ${res.data.totalViolationDays} violation day(s)`,
-        });
+        toast.success('Report Generated', { description: `Generated report for ${formatMonthLabel(res.data.reportMonth)} (${formatWindowLabel(res.data.reportWindowStart || windowStart)}): ${res.data.totalStores} store(s), ${res.data.totalViolationDays} violation day(s)` });
         loadReport();
         loadMonths();
       } else {
-        push({
-          variant: 'error',
-          title: 'Generation Failed',
-          message: res.error?.message || 'Failed to generate report',
-        });
+        toast.error('Generation Failed', { description: res.error?.message || 'Failed to generate report' });
       }
     } catch {
-      push({ variant: 'error', title: 'Error', message: 'Failed to generate report' });
+      toast.error('Error', { description: 'Failed to generate report' });
     } finally {
       setGenerating(false);
     }
@@ -414,11 +390,7 @@ export default function AfterHoursReport() {
 
   const handleDownloadReport = async () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     setDownloading(true);
@@ -455,19 +427,11 @@ export default function AfterHoursReport() {
       a.click();
       window.URL.revokeObjectURL(url);
 
-      push({
-        variant: 'success',
-        title: 'Download Ready',
-        message: `Monthly report exported for ${formatMonthLabel(month + '-01')}`,
-      });
+      toast.success('Download Ready', { description: `Monthly report exported for ${formatMonthLabel(month + '-01')}` });
       loadReport();
       loadMonths();
     } catch (error) {
-      push({
-        variant: 'error',
-        title: 'Download Failed',
-        message: error?.message || 'Failed to download report',
-      });
+      toast.error('Download Failed', { description: error?.message || 'Failed to download report' });
     } finally {
       setDownloading(false);
     }

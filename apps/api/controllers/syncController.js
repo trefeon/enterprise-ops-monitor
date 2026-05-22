@@ -1,7 +1,7 @@
 const { Op } = require("sequelize");
 const db = require("../models");
 const { ok, fail } = require("../utils/response");
-const { invalidateSyncCache, BRANCHES } = require("../services/dataClient");
+const { invalidateSyncCache, BRANCHES, getBranchNameById } = require("../services/dataClient");
 const { toWibDate, toWibIso } = require("../utils/time");
 const { getAllowedBranches } = require("../services/authzService");
 const { ensureBranchAccessForBranchId, ensureStoreBranchAccess } = require("../middleware/rbac");
@@ -17,7 +17,6 @@ const {
   ALLOWED_SUMMARY_BUCKETS,
   LIVE_SYNC_FETCH_ENABLED,
   SOURCE_MAX_ERRORS,
-  BRANCH_BY_ID,
 
   isSyncTestMode,
   buildBranchStats,
@@ -31,6 +30,23 @@ const {
   mapSummaryRow,
   aggregateSummaryBuckets,
 } = syncSnapshotService;
+
+function isOptimizedSnapshotSchemaError(err) {
+  const code = String(err?.original?.code || err?.parent?.code || err?.code || "");
+  if (code === "42P01" || code === "42703") return true;
+
+  const message = String(err?.message || err?.original?.message || err?.parent?.message || "")
+    .toLowerCase()
+    .trim();
+
+  return (
+    message.includes("store_sync_snapshot") &&
+    (message.includes("does not exist") ||
+      message.includes("relation") ||
+      message.includes("column") ||
+      message.includes("undefined"))
+  );
+}
 
 /**
  * GET /api/sync/summary
@@ -382,7 +398,9 @@ async function getSyncStoresOptimized(req, res, next) {
     );
 
     if (excludeBazarEnabled) {
-      whereClauses.push(`(nama_toko NOT ILIKE '%bazar%' AND nama_toko NOT ILIKE '%bazaar%')`);
+      whereClauses.push(
+        `(nama_toko IS NULL OR (nama_toko NOT ILIKE '%bazar%' AND nama_toko NOT ILIKE '%bazaar%'))`
+      );
     }
 
     if (allowedBranches !== null) {
@@ -490,7 +508,7 @@ async function getSyncStoresOptimized(req, res, next) {
     const [rows] = await db.sequelize.query(query, { replacements });
 
     const enriched = rows.map((r) => {
-      const branchName = BRANCH_BY_ID.get(String(r.branch_id))?.name || r.branch_id;
+      const branchName = getBranchNameById(r.branch_id) || r.branch_id;
       const ageSec = r.age_sec;
       const status = r.status;
       const reason =
@@ -542,6 +560,13 @@ async function getSyncStoresOptimized(req, res, next) {
       mode: "baseline",
     });
   } catch (err) {
+    if (isOptimizedSnapshotSchemaError(err)) {
+      console.warn(
+        "[syncController] Optimized store snapshot query unavailable; falling back to legacy snapshot path:",
+        err?.message || err
+      );
+      return getSyncStoresLegacy(req, res, next);
+    }
     next(err);
   }
 }

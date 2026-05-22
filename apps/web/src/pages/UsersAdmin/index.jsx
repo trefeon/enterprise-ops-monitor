@@ -13,7 +13,7 @@ import {
 import { DataTable } from '@/components/shared/DataTable';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
 import Modal from '@/components/shared/Modal';
-import { useToast } from '../../components/ui/ToastContext';
+import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { hasPermission, Permissions } from '../../lib/auth/permissions';
 import { apiGet, apiPatch, apiPost, apiDelete } from '../../lib/api/client';
@@ -26,7 +26,6 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export default function UsersAdmin() {
   const { user } = useAuth();
-  const { push } = useToast();
 
   const canView = hasPermission(user, Permissions.USERS_VIEW);
   const canCreate = hasPermission(user, Permissions.USERS_CREATE);
@@ -78,15 +77,13 @@ export default function UsersAdmin() {
       setUsers(res.data?.users || []);
       setPagination(res.meta?.pagination || null);
     } catch (error) {
-      push({
-        variant: 'error',
-        title: 'Failed to load users',
-        message: error?.message || 'Unexpected error',
+      toast.error('Failed to load users', {
+        description: error?.message || 'Unexpected error',
       });
     } finally {
       setLoading(false);
     }
-  }, [canView, page, pageSize, q, push]);
+  }, [canView, page, pageSize, q]);
 
   // Fetch roles for the dropdown
   useEffect(() => {
@@ -187,10 +184,8 @@ export default function UsersAdmin() {
           const withDemoCheck = (action) => (e) => {
             e.stopPropagation();
             if (isDemoUser) {
-              push({
-                variant: 'warning',
-                title: 'Demo Account',
-                message: 'This action is restricted in the demo environment.',
+              toast.warning('Demo Account', {
+                description: 'This action is restricted in the demo environment.',
               });
               return;
             }
@@ -258,7 +253,7 @@ export default function UsersAdmin() {
         },
       },
     ],
-    [canReset, canChangePassword, canEditRoles, canEditScope, canEditPerms, canDelete, user, push]
+    [canReset, canChangePassword, canEditRoles, canEditScope, canEditPerms, canDelete, user]
   );
 
   const handleCreate = async () => {
@@ -272,20 +267,16 @@ export default function UsersAdmin() {
     setLoading(true);
     try {
       const res = await apiPost('/users', payload);
-      push({
-        variant: 'success',
-        title: 'User created',
-        message: res.data?.user?.username || 'Created',
+      toast.success('User created', {
+        description: res.data?.user?.username || 'Created',
       });
       setCreateForm({ username: '', password: '', role: 'viewer' });
       setCreateOpen(false);
       setPage(1);
       await load();
     } catch (error) {
-      push({
-        variant: 'error',
-        title: 'Create failed',
-        message: error?.message || 'Unexpected error',
+      toast.error('Create failed', {
+        description: error?.message || 'Unexpected error',
       });
     } finally {
       setLoading(false);
@@ -300,10 +291,8 @@ export default function UsersAdmin() {
       const pwd = res.data?.tempPassword;
       setTempPassword(pwd || null);
     } catch (error) {
-      push({
-        variant: 'error',
-        title: 'Reset failed',
-        message: error?.message || 'Unexpected error',
+      toast.error('Reset failed', {
+        description: error?.message || 'Unexpected error',
       });
       setResetOpen(false);
       setResetUser(null);
@@ -315,29 +304,23 @@ export default function UsersAdmin() {
   const handleChangePassword = async () => {
     if (!canChangePassword || !changePassUser || !changePassForm) return;
     if (changePassForm.length < 8) {
-      push({
-        variant: 'warning',
-        title: 'Password too short',
-        message: 'Password must be at least 8 characters',
+      toast.warning('Password too short', {
+        description: 'Password must be at least 8 characters',
       });
       return;
     }
     setChangePassLoading(true);
     try {
       await apiPatch(`/users/${changePassUser.id}/password`, { newPassword: changePassForm });
-      push({
-        variant: 'success',
-        title: 'Password changed',
-        message: `Password updated for ${changePassUser.username}`,
+      toast.success('Password changed', {
+        description: `Password updated for ${changePassUser.username}`,
       });
       setChangePassOpen(false);
       setChangePassUser(null);
       setChangePassForm('');
     } catch (error) {
-      push({
-        variant: 'error',
-        title: 'Change failed',
-        message: error?.message || 'Unexpected error',
+      toast.error('Change failed', {
+        description: error?.message || 'Unexpected error',
       });
     } finally {
       setChangePassLoading(false);
@@ -355,19 +338,15 @@ export default function UsersAdmin() {
     setDeleteLoading(true);
     try {
       await apiDelete(`/users/${deleteUser.id}`);
-      push({
-        variant: 'success',
-        title: 'User deleted',
-        message: `User ${deleteUser.username} has been deleted`,
+      toast.success('User deleted', {
+        description: `User ${deleteUser.username} has been deleted`,
       });
       setDeleteOpen(false);
       setDeleteUser(null);
       await load();
     } catch (error) {
-      push({
-        variant: 'error',
-        title: 'Delete failed',
-        message: error?.message || 'Unexpected error',
+      toast.error('Delete failed', {
+        description: error?.message || 'Unexpected error',
       });
     } finally {
       setDeleteLoading(false);
@@ -544,16 +523,12 @@ export default function UsersAdmin() {
                   onClick={async () => {
                     try {
                       await navigator.clipboard.writeText(String(tempPassword));
-                      push({
-                        variant: 'success',
-                        title: 'Copied',
-                        message: 'Password copied to clipboard',
+                      toast.success('Copied', {
+                        description: 'Password copied to clipboard',
                       });
                     } catch {
-                      push({
-                        variant: 'warning',
-                        title: 'Copy failed',
-                        message: 'Clipboard not available',
+                      toast.warning('Copy failed', {
+                        description: 'Clipboard not available',
                       });
                     }
                   }}

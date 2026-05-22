@@ -36,6 +36,16 @@ agent_updates/
 coverage/
 .eslintcache
 
+# Python cache (unused in this project)
+.mypy_cache/
+
+# Local debugging / testing artifacts
+.playwright-mcp/
+*.log
+
+# Screenshot artifacts
+*.png
+
 # Agent config — local/personal overrides (DO NOT ignore .agent/ — Antigravity needs it)
 .opencode/local/
 **/.opencode/**/*.local.*

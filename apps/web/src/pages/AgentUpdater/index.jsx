@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useToast } from '../../components/ui/ToastContext';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Modal } from '@/components/shared/Modal';
 import { Input } from '@/components/ui/input';
@@ -118,7 +118,6 @@ function getStatusBadge(status) {
 
 const AgentUpdater = () => {
   const { api, user } = useAuth();
-  const { push } = useToast();
 
   const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo';
 
@@ -144,11 +143,7 @@ const AgentUpdater = () => {
 
   const handleRefresh = () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     fetchData();
@@ -214,11 +209,7 @@ const AgentUpdater = () => {
 
   const handleDeleteAgent = async (storeId) => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     if (
@@ -231,32 +222,20 @@ const AgentUpdater = () => {
     try {
       const res = await api.delete(`/agent/monitoring/${storeId}`);
       if (res.ok) {
-        push({
-          variant: 'success',
-          title: 'Deleted',
-          message: `Agent record for ${storeId} reset.`,
-        });
+        toast.success('Deleted', { description: `Agent record for ${storeId} reset.` });
         fetchData();
       } else {
-        push({
-          variant: 'error',
-          title: 'Delete Failed',
-          message: res.error?.message || 'Unknown error',
-        });
+        toast.error('Delete Failed', { description: res.error?.message || 'Unknown error' });
       }
     } catch (err) {
       console.error(err);
-      push({ variant: 'error', title: 'Delete Failed', message: err.message });
+      toast.error('Delete Failed', { description: err.message });
     }
   };
 
   const handleDownloadSetup = async () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     try {
@@ -276,23 +255,15 @@ const AgentUpdater = () => {
       link.remove();
       window.URL.revokeObjectURL(url);
 
-      push({ variant: 'success', title: 'Downloaded', message: 'Setup script downloaded.' });
+      toast.success('Downloaded', { description: 'Setup script downloaded.' });
     } catch {
-      push({
-        variant: 'error',
-        title: 'Download Failed',
-        message: 'Could not download setup script.',
-      });
+      toast.error('Download Failed', { description: 'Could not download setup script.' });
     }
   };
 
   const handleExportExcel = async () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     setExporting(true);
@@ -316,17 +287,9 @@ const AgentUpdater = () => {
       anchor.click();
       window.URL.revokeObjectURL(url);
 
-      push({
-        variant: 'success',
-        title: 'Export ready',
-        message: 'Agent report exported to Excel.',
-      });
+      toast.success('Export ready', { description: 'Agent report exported to Excel.' });
     } catch (err) {
-      push({
-        variant: 'error',
-        title: 'Export failed',
-        message: err?.message || 'Failed to export report',
-      });
+      toast.error('Export failed', { description: err?.message || 'Failed to export report' });
     } finally {
       setExporting(false);
     }
@@ -340,11 +303,7 @@ const AgentUpdater = () => {
 
   const handleOpenDeployModal = () => {
     if (isDemoUser) {
-      push({
-        variant: 'warning',
-        title: 'Demo Account',
-        message: 'This action is not available in the demo account.',
-      });
+      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
       return;
     }
     setVersion(suggestedVersion || currentVersion || '');
@@ -355,11 +314,7 @@ const AgentUpdater = () => {
     e.preventDefault();
 
     if (!file || !version) {
-      push({
-        variant: 'warning',
-        title: 'Validation Error',
-        message: 'Please select a file and provide a version.',
-      });
+      toast.warning('Validation Error', { description: 'Please select a file and provide a version.' });
       return;
     }
 
@@ -376,18 +331,14 @@ const AgentUpdater = () => {
 
       if (!res.ok) throw new Error(res.error?.message || 'Deployment failed');
 
-      push({
-        variant: 'success',
-        title: 'Version Deployed',
-        message: `Successfully updated to ${version}`,
-      });
+      toast.success('Version Deployed', { description: `Successfully updated to ${version}` });
 
       setDeployModalOpen(false);
       setFile(null);
       setVersion('');
       fetchData();
     } catch (err) {
-      push({ variant: 'error', title: 'Deployment Failed', message: err.message });
+      toast.error('Deployment Failed', { description: err.message });
     } finally {
       setIsDeploying(false);
     }
