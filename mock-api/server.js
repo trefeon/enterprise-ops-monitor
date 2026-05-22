@@ -1497,7 +1497,7 @@ app.get("/api/afterhours/report/export", (req, res) => {
 // ─── Users & Roles mock database ───────────────────────────────────────────────
 const MOCK_ACCOUNTS = {
   demo: {
-    id: 1, username: "demo", password: "demo-password", role: "demo",
+    id: 1, username: "demo", password: "demo123", role: "demo",
     name: "Demo (Read-Only)",
     effectivePerms: [
       "DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "STORES_VIEW", "EMPLOYEES_VIEW",
