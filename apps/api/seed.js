@@ -79,7 +79,7 @@ async function seed() {
       source: "API",
     });
 
-    await db.EODLog.bulkCreate(eodLogs);
+    await db.EODLog.bulkCreate(eodLogs, { ignoreDuplicates: true });
     console.log("EOD Logs created");
 
     const now = new Date();
@@ -89,53 +89,62 @@ async function seed() {
     const datePrefix = `${yy}${mm}${dd}`;
 
     // 4. Create Employees
-    await db.Employee.bulkCreate([
-      {
-        nik: `${datePrefix}0001`,
-        full_name: "Demo Employee 100001-01",
-        role: "Manager",
-        store_code: "100001",
-        status: "ACTIVE",
-      },
-      {
-        nik: `${datePrefix}0002`,
-        full_name: "Demo Employee 100001-02",
-        role: "Staff",
-        store_code: "100001",
-        status: "ACTIVE",
-      },
-      {
-        nik: `${datePrefix}0003`,
-        full_name: "Demo Employee 100002-01",
-        role: "Staff",
-        store_code: "100002",
-        status: "INACTIVE",
-      },
-    ]);
+    await db.Employee.bulkCreate(
+      [
+        {
+          nik: `${datePrefix}0001`,
+          full_name: "Demo Employee 100001-01",
+          role: "Manager",
+          store_code: "100001",
+          status: "ACTIVE",
+        },
+        {
+          nik: `${datePrefix}0002`,
+          full_name: "Demo Employee 100001-02",
+          role: "Staff",
+          store_code: "100001",
+          status: "ACTIVE",
+        },
+        {
+          nik: `${datePrefix}0003`,
+          full_name: "Demo Employee 100002-01",
+          role: "Staff",
+          store_code: "100002",
+          status: "INACTIVE",
+        },
+      ],
+      { ignoreDuplicates: true }
+    );
     console.log("Employees created");
 
     // 5. Create Backups
-    await db.BackupLog.bulkCreate([
-      {
-        filename: "backup_20240101.sql",
-        type: "SCHEDULED",
-        size_bytes: 1024000,
-        status: "SUCCESS",
-      },
-      {
-        filename: "backup_20240102.sql",
-        type: "SCHEDULED",
-        size_bytes: 1025000,
-        status: "SUCCESS",
-      },
-    ]);
+    await db.BackupLog.bulkCreate(
+      [
+        {
+          filename: "backup_20240101.sql",
+          type: "SCHEDULED",
+          size_bytes: 1024000,
+          status: "SUCCESS",
+        },
+        {
+          filename: "backup_20240102.sql",
+          type: "SCHEDULED",
+          size_bytes: 1025000,
+          status: "SUCCESS",
+        },
+      ],
+      { ignoreDuplicates: true }
+    );
     console.log("Backups created");
 
     // 6. Create System Logs
-    await db.SystemLog.bulkCreate([
-      { level: "INFO", component: "API", message: "Server started" },
-      { level: "WARNING", component: "BOT", message: "Bot latency high" },
-    ]);
+    await db.SystemLog.bulkCreate(
+      [
+        { level: "INFO", component: "API", message: "Server started" },
+        { level: "WARNING", component: "BOT", message: "Bot latency high" },
+      ],
+      { ignoreDuplicates: true }
+    );
     console.log("System logs created");
 
     console.log("Seeding completed successfully.");

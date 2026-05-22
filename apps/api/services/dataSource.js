@@ -11,6 +11,7 @@ function truthy(value) {
 function shouldTryDb() {
   // Default: try DB first (auto). Set DATA_USE_DB=false to force live.
   if (valueIsExplicitFalse(process.env.DATA_USE_DB)) return false;
+  if (process.env.SEED_DEMO_DATA === "true") return false;
   return true;
 }
 

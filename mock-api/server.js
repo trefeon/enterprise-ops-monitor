@@ -110,22 +110,11 @@ const BRANCHES = [
   { id: "9", code: "H09", name: "SOUTH HUB", region: "Delta" },
 ];
 
-// Generate unique random store codes (alphanumeric, e.g. ST-A7K2M)
-const USED_STORE_CODES = new Set();
-
-function buildDemoStoreCode() {
-  let code;
-  do {
-    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-    code = 'ST-' +
-      letters[randomInt(0, letters.length - 1)] +
-      String(randomInt(0, 9)) +
-      letters[randomInt(0, letters.length - 1)] +
-      String(randomInt(0, 9)) +
-      letters[randomInt(0, letters.length - 1)];
-  } while (USED_STORE_CODES.has(code));
-  USED_STORE_CODES.add(code);
-  return code;
+// Generate unique random store codes (numeric, e.g. 302001) mapped to branch IDs
+function buildDemoStoreCode(branchId, index) {
+  const branchNum = 300 + parseInt(branchId, 10);
+  const suffix = String(index).padStart(3, "0");
+  return `${branchNum}${suffix}`;
 }
 
 function buildStores() {
@@ -134,7 +123,7 @@ function buildStores() {
   for (const branch of BRANCHES) {
     const storeCount = randomInt(3, 6);
     for (let s = 0; s < storeCount; s++) {
-      const storeCode = buildDemoStoreCode();
+      const storeCode = buildDemoStoreCode(branch.id, s + 1);
       stores.push({
         id: storeCode,
         storeCode,
@@ -160,6 +149,83 @@ function buildStores() {
 }
 
 const STORES = buildStores();
+
+// Stateful EOD tracking for demo sync
+const eodState = {
+  stores: {}, // storeCode -> { status, statusSales, uploadPercent, eodAt, uploadAt, maxUploadAt, lastSync }
+  lastReset: Date.now(),
+  completedTime: null
+};
+
+function initEodState() {
+  const today = toWibDate();
+  eodState.stores = {};
+  for (const store of STORES) {
+    const maxUpload = new Date(today + "T23:59:59+07:00");
+    eodState.stores[store.storeCode] = {
+      status: "pending",
+      statusSales: "pending",
+      uploadPercent: 0,
+      eodAt: null,
+      uploadAt: null,
+      maxUploadAt: maxUpload.toISOString(),
+      lastSync: new Date(Date.now() - 30 * 1000).toISOString()
+    };
+  }
+  eodState.lastReset = Date.now();
+  eodState.completedTime = null;
+}
+
+initEodState();
+
+// Run tick loop to progress EOD status every second
+setInterval(() => {
+  if (Object.keys(eodState.stores).length === 0) return;
+
+  const now = new Date();
+  let allFinished = true;
+
+  for (const store of STORES) {
+    const sState = eodState.stores[store.storeCode];
+    if (!sState) continue;
+
+    if (sState.status === "pending") {
+      allFinished = false;
+
+      // 15% chance to progress the upload percent or status
+      if (Math.random() < 0.15) {
+        sState.lastSync = now.toISOString();
+        if (sState.uploadPercent === 0) {
+          sState.uploadPercent = randomInt(5, 35);
+          sState.uploadAt = now.toISOString();
+        } else if (sState.uploadPercent < 100) {
+          sState.uploadPercent += randomInt(15, 45);
+          if (sState.uploadPercent >= 100) {
+            sState.uploadPercent = 100;
+            // 90% chance it succeeds (done), 10% chance it fails (failed)
+            if (Math.random() < 0.90) {
+              sState.status = "done";
+              sState.statusSales = "OK";
+              sState.eodAt = now.toISOString();
+            } else {
+              sState.status = "failed";
+              sState.statusSales = "ERR";
+            }
+          }
+        }
+      }
+    }
+  }
+
+  if (allFinished) {
+    // If everything is done or failed, reset it after 15 seconds so the demo loop restarts!
+    if (!eodState.completedTime) {
+      eodState.completedTime = Date.now();
+    } else if (Date.now() - eodState.completedTime > 15000) {
+      initEodState();
+    }
+  }
+}, 1000);
 
 // ─── Time-aware EOD Status Generator ──────────────────────────────────────────
 const EOD_STATUSES = ["done", "pending", "failed"];
@@ -196,16 +262,19 @@ function generateHistoricalStatus(daysAgo) {
 // ─── Dashboard ─────────────────────────────────────────────────────────────────
 function buildDashboardSummary() {
   const today = toWibDate();
-  const eodRows = STORES.map((s) => ({
-    storeCode: s.storeCode,
-    storeName: s.storeName,
-    branchId: s.branchId,
-    branchName: s.branchName,
-    status: generateEodStatus(),
-    lastSyncAt: randomPastMinutes(15),
-    uploadAt: randomPastMinutes(60),
-    eodAt: randomPastMinutes(120),
-  }));
+  const eodRows = STORES.map((s) => {
+    const sState = eodState.stores[s.storeCode];
+    return {
+      storeCode: s.storeCode,
+      storeName: s.storeName,
+      branchId: s.branchId,
+      branchName: s.branchName,
+      status: sState ? sState.status : "pending",
+      lastSyncAt: sState && sState.lastSync ? sState.lastSync : new Date(Date.now() - 30 * 1000).toISOString(),
+      uploadAt: sState && sState.uploadAt ? sState.uploadAt : null,
+      eodAt: sState && sState.eodAt ? sState.eodAt : null,
+    };
+  });
 
   let completed = 0;
   let failed = 0;
@@ -326,14 +395,18 @@ function buildEodStoreRows(filterDate) {
     : 0;
 
   return STORES.map((store) => {
-    const status = isToday ? generateEodStatus() : generateHistoricalStatus(daysAgoDiff);
-    const isDone = status === "done";
-    const eodAt = isDone
-      ? randomTimeInWindow(19, 23, new Date(targetDate))
-      : null;
-    const syncAt = isDone
-      ? eodAt
-      : randomTimeInWindow(6, 23, new Date(targetDate));
+    let status, eodAt, syncAt;
+    if (isToday) {
+      const sState = eodState.stores[store.storeCode];
+      status = sState ? sState.status : "pending";
+      eodAt = sState && sState.eodAt ? new Date(sState.eodAt) : null;
+      syncAt = sState && sState.lastSync ? new Date(sState.lastSync) : new Date(Date.now() - 30 * 1000);
+    } else {
+      status = generateHistoricalStatus(daysAgoDiff);
+      const isDone = status === "done";
+      eodAt = isDone ? randomTimeInWindow(19, 23, new Date(targetDate)) : null;
+      syncAt = isDone ? eodAt : randomTimeInWindow(6, 23, new Date(targetDate));
+    }
 
     return {
       storeId: Number(store.storeCode),
@@ -1842,6 +1915,86 @@ echo Setup complete.`;
   res.setHeader("Content-Type", "application/octet-stream");
   res.setHeader("Content-Disposition", "attachment; filename=\"Setup_Agent_Update.bat\"");
   res.send(scriptContent);
+});
+
+// ─── External Sync POST Endpoints for Demo ──────────────────────────────────────
+app.post("/api/external/notif_eod", (req, res) => {
+  const branchId = String(req.body.branch || "");
+  const branchStores = STORES.filter((s) => String(s.branchId) === branchId);
+  const data = branchStores.map((store) => {
+    const sState = eodState.stores[store.storeCode];
+    return {
+      kodetoko: store.storeCode,
+      namatoko: store.storeName,
+      idcabang: store.branchId,
+      namacabang: store.branchName,
+      statussales: sState ? sState.statusSales : "pending",
+      persentaseuploadstok: sState ? sState.uploadPercent : 0,
+      tglbisnis: toWibDate(),
+      tgleod: sState && sState.eodAt ? toWibIso(new Date(sState.eodAt)) : null,
+      tglupload: sState && sState.uploadAt ? toWibIso(new Date(sState.uploadAt)) : null,
+      maxupload: sState && sState.maxUploadAt ? toWibIso(new Date(sState.maxUploadAt)) : null,
+      lastSync: sState && sState.lastSync ? toWibIso(new Date(sState.lastSync)) : null,
+      nikac: "AC" + store.storeCode,
+      NikRH: "RH" + store.storeCode,
+      area: store.area,
+      regional: store.regional,
+    };
+  });
+  return ok(res, data);
+});
+
+app.post("/api/external/nik_toko", (req, res) => {
+  const branchId = String(req.body.branch || "");
+  let localMockEmployeeIndex = 1;
+  const employees = [];
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(-2);
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  const datePrefix = `${yy}${mm}${dd}`;
+
+  STORES.forEach((store) => {
+    if (String(store.branchId) !== branchId) return;
+    const hash = store.storeCode.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+    const count = 15 + (hash % 10);
+    for (let i = 0; i < count; i++) {
+      const pIdx = String(localMockEmployeeIndex).padStart(4, "0");
+      localMockEmployeeIndex++;
+      const newNik = `${datePrefix}${pIdx}`;
+      employees.push({
+        empid: newNik,
+        name: `${faker.person.firstName()} ${faker.person.lastName()}`,
+        jobName: pickRandom([
+          "Store Manager",
+          "Assistant Manager",
+          "Supervisor",
+          "Cashier",
+          "Sales Associate",
+          "Warehouse Staff",
+        ]),
+        storeCode: store.storeCode,
+        branchId: store.branchId,
+        branchName: store.branchName,
+        storeName: store.storeName,
+      });
+    }
+  });
+  return ok(res, employees);
+});
+
+app.post("/api/external/sync_aud", (req, res) => {
+  const branchId = String(req.body.branch || "");
+  const branchStores = STORES.filter((s) => String(s.branchId) === branchId);
+  const data = branchStores.map((store) => {
+    const sState = eodState.stores[store.storeCode];
+    return {
+      kodetoko: store.storeCode,
+      namaToko: store.storeName,
+      lastSync: sState ? sState.lastSync : new Date(Date.now() - 30 * 1000).toISOString(),
+    };
+  });
+  return ok(res, data);
 });
 
 // ─── Root ──────────────────────────────────────────────────────────────────────

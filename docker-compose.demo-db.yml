@@ -1,0 +1,132 @@
+services:
+  demo-api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: eom-api:latest
+    container_name: eom-demo-api
+    restart: always
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - ./backups:/backups
+      - ./agent_updates:/agent_updates
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: development
+      PORT: "3000"
+      HOSTNAME: 0.0.0.0
+      TZ: Asia/Jakarta
+      DATABASE_URL: postgresql://${DB_USER:-eom_user}:${DB_PASS:?DB_PASS is required}@eom-demo-db:5432/${DB_NAME:-eom_demo_db}
+      DB_HOST: eom-demo-db
+      DB_PORT: "5432"
+      DB_NAME: ${DB_NAME:-eom_demo_db}
+      DB_USER: ${DB_USER:-eom_user}
+      DB_PASS: ${DB_PASS:?DB_PASS is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      BACKUP_DIR: /backups
+      AGENT_UPDATE_DIR: /agent_updates
+      DATA_SCHEDULER_ENABLED: "true"
+      DATA_PERSIST_ENABLED: "true"
+      SEED_DEMO_DATA: "true"
+      DATA_SYNC_ALLOW_LIVE_FETCH: "true"
+      DATA_EOD_API_URL: http://eom-mock-api:3000/api/external/notif_eod
+      DATA_EMPLOYEE_API_URL: http://eom-mock-api:3000/api/external/nik_toko
+      DATA_SYNC_AUD_API_URL: http://eom-mock-api:3000/api/external/sync_aud
+      DATA_EOD_POLL_MS: "1000"
+      DATA_REGULAR_POLL_MS: "1000"
+      DATA_SYNC_POLL_MS: "1000"
+    depends_on:
+      eom-demo-db:
+        condition: service_healthy
+      eom-mock-api:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          'node -e "require(''http'').get(''http://localhost:3000/'', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on(''error'', () => process.exit(1));"',
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    networks:
+      demo-db-network:
+        aliases:
+          - api
+
+  eom-web-demo:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: /api
+        VITE_IT_SUPPORT_URL: ${VITE_IT_SUPPORT_URL:-}
+        VITE_IT_SUPPORT_EMAIL: ${VITE_IT_SUPPORT_EMAIL:-}
+    image: eom-web-demo:latest
+    container_name: eom-web-demo
+    restart: always
+    ports:
+      - "127.0.0.1:5173:5173"
+    depends_on:
+      demo-api:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:5173/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    networks:
+      - demo-db-network
+
+  eom-demo-db:
+    image: postgres:15-alpine
+    container_name: eom-demo-db
+    restart: always
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+    volumes:
+      - eom_postgres_demo_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DB_USER:-eom_user}
+      POSTGRES_PASSWORD: ${DB_PASS:?DB_PASS is required}
+      POSTGRES_DB: ${DB_NAME:-eom_demo_db}
+      TZ: Asia/Jakarta
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-eom_user} -d ${DB_NAME:-eom_demo_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    ports:
+      - "127.0.0.1:5434:5432"
+    networks:
+      - demo-db-network
+
+  eom-mock-api:
+    build:
+      context: ./mock-api
+      dockerfile: Dockerfile
+    image: eom-mock-api:latest
+    container_name: eom-mock-api
+    restart: always
+    ports:
+      - "127.0.0.1:4000:3000"
+    environment:
+      MOCK_API_PORT: "3000"
+      TZ: Asia/Jakarta
+    networks:
+      demo-db-network:
+        aliases:
+          - eom-mock-api
+
+volumes:
+  eom_postgres_demo_data:
+    external: true
+
+networks:
+  demo-db-network:
+    driver: bridge

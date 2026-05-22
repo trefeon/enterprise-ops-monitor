@@ -73,7 +73,8 @@ function parseDailyTime(value, fallback = "00:10") {
 
 function parsePollMs(value, fallback = 120000) {
   const n = Number.parseInt(String(value ?? ""), 10);
-  if (!Number.isFinite(n) || n < 15_000) return fallback;
+  const minLimit = process.env.SEED_DEMO_DATA === "true" ? 1000 : 15_000;
+  if (!Number.isFinite(n) || n < minLimit) return fallback;
   return n;
 }
 
@@ -460,6 +461,7 @@ function startDataScheduler() {
   let lastEodSyncTime = 0;
 
   // Unified EOD polling with adaptive interval
+  const checkTickMs = process.env.SEED_DEMO_DATA === "true" ? 1000 : 60_000;
   setInterval(() => {
     const now = Date.now();
     const isEodWindow = isWithinEodWindowNow();
@@ -471,7 +473,7 @@ function startDataScheduler() {
       const reason = isEodWindow ? "eod_window_poll" : "regular_hourly_poll";
       runEodSync(reason);
     }
-  }, 60_000); // Check every minute, but only sync based on interval
+  }, checkTickMs); // Check every minute (or second in demo mode), but only sync based on interval
 
   // Minute-tick for final sync + employee daily + backup.
   setInterval(() => {
@@ -565,6 +567,7 @@ function startDataScheduler() {
   }
 
   // Do one quick warm-up shortly after boot.
+  const warmupDelay = process.env.SEED_DEMO_DATA === "true" ? 1000 : 10_000;
   setTimeout(() => {
     runEodSync("startup_warmup");
     runEmployeeSync("startup_warmup");
@@ -573,7 +576,7 @@ function startDataScheduler() {
       reason: "startup_mtd",
       targetMonth: String(toWibDate() || "").slice(0, 7),
     });
-  }, 10_000);
+  }, warmupDelay);
 }
 
 module.exports = {
