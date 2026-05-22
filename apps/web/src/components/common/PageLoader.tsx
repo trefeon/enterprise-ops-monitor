@@ -1,9 +1,8 @@
-import React from 'react';
-import PageShell from './shared/PageShell';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent } from '@/components/ui/card';
+import { Skeleton } from "../ui/skeleton";
+import { Card, CardContent } from "../ui/card";
+import PageShell from "../shared/PageShell";
 
-const PageLoader = () => {
+export default function PageLoader() {
   return (
     <PageShell>
       <div className="flex flex-col gap-1 mb-8">
@@ -19,6 +18,4 @@ const PageLoader = () => {
       </Card>
     </PageShell>
   );
-};
-
-export default PageLoader;
+}
