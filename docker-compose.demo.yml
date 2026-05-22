@@ -1,5 +1,4 @@
 services:
-  # Mock API - standalone dummy data server (no database required)
   mock-api:
     build:
       context: ./mock-api
@@ -10,22 +9,25 @@ services:
     ports:
       - "4000:4000"
     environment:
-      - MOCK_API_PORT=4000
+      MOCK_API_PORT: "4000"
+      TZ: Asia/Jakarta
     networks:
       - demo-network
 
-  # Enterprise Ops Monitor Web
   web:
     build:
-      context: apps/web
-      dockerfile: Dockerfile
-    image: eom-web:latest
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        # Vite bakes this into the static bundle at build time.
+        VITE_API_URL: http://localhost:4000
+        VITE_IT_SUPPORT_URL: ${VITE_IT_SUPPORT_URL:-}
+        VITE_IT_SUPPORT_EMAIL: ${VITE_IT_SUPPORT_EMAIL:-}
+    image: eom-web-demo:latest
     container_name: eom-web-demo
     restart: always
     ports:
       - "5173:5173"
-    environment:
-      - VITE_API_URL=http://localhost:4000
     depends_on:
       - mock-api
     networks:

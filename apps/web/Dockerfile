@@ -1,21 +1,35 @@
-FROM node:20.19-alpine AS build
+FROM node:22-alpine AS build
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm install
+RUN corepack enable
 
-COPY . .
-RUN npm run build
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
+COPY apps/web/package.json ./apps/web/package.json
+RUN pnpm install --frozen-lockfile --filter web
 
-FROM nginx:alpine
+COPY apps/web ./apps/web
 
-# Provide a tiny HTTP client for healthchecks
+ARG VITE_API_URL=/api
+ARG VITE_IT_SUPPORT_URL=
+ARG VITE_IT_SUPPORT_EMAIL=
+ENV VITE_API_URL=${VITE_API_URL}
+ENV VITE_IT_SUPPORT_URL=${VITE_IT_SUPPORT_URL}
+ENV VITE_IT_SUPPORT_EMAIL=${VITE_IT_SUPPORT_EMAIL}
+
+WORKDIR /app/apps/web
+RUN pnpm build
+
+FROM nginx:1.27-alpine
+
 RUN apk add --no-cache wget
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /app/apps/web/dist /usr/share/nginx/html
 
 EXPOSE 5173
+
+HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+  CMD wget -q -O /dev/null http://localhost:5173/ || exit 1
 
 CMD ["nginx", "-g", "daemon off;"]
