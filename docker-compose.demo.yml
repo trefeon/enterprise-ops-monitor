@@ -7,12 +7,14 @@ services:
     container_name: eom-mock-api
     restart: always
     ports:
-      - "4000:4000"
+      - "4000:3000"
     environment:
-      MOCK_API_PORT: "4000"
+      MOCK_API_PORT: "3000"
       TZ: Asia/Jakarta
     networks:
-      - demo-network
+      demo-network:
+        aliases:
+          - api
 
   web:
     build:
