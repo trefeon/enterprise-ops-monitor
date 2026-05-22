@@ -29,6 +29,7 @@ const envSchema = z
 
     ADMIN_USERNAME: z.string().optional(),
     ADMIN_PASSWORD_HASH: z.string().optional(),
+    SEED_DEMO_DATA: z.string().optional(),
   })
   .superRefine((val, ctx) => {
     const hasDatabaseUrl = Boolean(val.DATABASE_URL);
