@@ -28,27 +28,26 @@ pnpm-debug.log*
 .idea/
 *.swp
 *.swo
+*.sublime-*
 
-# Project specific
+# Runtime directories
 backups/
 agent_updates/
-.qoder/
+
+# Coverage & cache
 coverage/
 .eslintcache
-
-# Python cache (unused in this project)
 .mypy_cache/
+.tsbuildinfo
 
 # Local debugging / testing artifacts
 .playwright-mcp/
-*.log
-
-# Screenshot artifacts
 *.png
 
-# Agent config — local/personal overrides (DO NOT ignore .agent/ — Antigravity needs it)
+# Agent config — personal overrides
 .opencode/local/
 **/.opencode/**/*.local.*
 
 # npm lockfiles (pnpm workspace uses pnpm-lock.yaml only)
 **/package-lock.json
+**/yarn.lock
