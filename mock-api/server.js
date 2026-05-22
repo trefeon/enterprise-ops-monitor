@@ -1546,19 +1546,19 @@ app.post("/api/auth/login", (req, res) => {
     return fail(res, 401, "AUTH_FAILED", "Username and password are required");
   }
 
-  // Accept any password for known mock users (flexible for testing)
-  let account = MOCK_USERS.find((u) => u.username === username);
+  const demoAccount = MOCK_USERS.find((u) => u.username === "demo");
+  const isDemoLogin = username === "demo" && password === MOCK_ACCOUNTS.demo.password;
 
-  if (!account) {
-    return fail(res, 401, "INVALID_CREDENTIALS", "Invalid username or password");
+  if (!demoAccount || !isDemoLogin) {
+    return fail(res, 401, "INVALID_CREDENTIALS", "Demo mode only allows the demo account");
   }
 
   const token = "mock-jwt-token-" + faker.string.alphanumeric(32);
-  sessions.set(token, account);
+  sessions.set(token, demoAccount);
 
   return ok(res, {
     token,
-    user: account,
+    user: demoAccount,
   });
 });
 
@@ -1568,7 +1568,10 @@ app.get("/api/auth/me", (req, res) => {
     return fail(res, 401, "UNAUTHORIZED", "Not authenticated");
   }
   const token = authHeader.split(" ")[1];
-  const account = sessions.get(token) || MOCK_USERS.find(u => u.username === "superadmin");
+  const account = sessions.get(token);
+  if (!account) {
+    return fail(res, 401, "UNAUTHORIZED", "Invalid or expired session");
+  }
   return ok(res, {
     user: account,
   });

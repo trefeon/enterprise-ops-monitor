@@ -5,7 +5,11 @@
  */
 const db = require("../models");
 const { ok, fail } = require("../utils/response");
-const { runAfterhoursCheck, loadSettings: loadSettingsService, saveSettings: saveSettingsService } = require("../services/afterhoursService");
+const {
+  runAfterhoursCheck,
+  loadSettings: loadSettingsService,
+  saveSettings: saveSettingsService,
+} = require("../services/afterhoursService");
 const {
   generateMonthlyReport,
   resolveMonthlyReportWindow,

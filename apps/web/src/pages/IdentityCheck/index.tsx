@@ -248,7 +248,7 @@ const IdentityCheck = () => {
                   handleFilterChange({
                     target: {
                       name: 'branchId',
-                      value: val,
+                      value: String(val ?? ''),
                     },
                   })
                 }
@@ -275,7 +275,7 @@ const IdentityCheck = () => {
                   handleFilterChange({
                     target: {
                       name: 'role',
-                      value: val,
+                      value: String(val ?? ''),
                     },
                   })
                 }

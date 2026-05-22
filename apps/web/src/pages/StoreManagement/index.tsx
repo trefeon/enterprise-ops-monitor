@@ -266,7 +266,7 @@ const StoreManagement = () => {
                   handleFilterChange({
                     target: {
                       name: 'areaId',
-                      value: val,
+                      value: String(val ?? ''),
                     },
                   })
                 }
@@ -293,7 +293,7 @@ const StoreManagement = () => {
                   handleFilterChange({
                     target: {
                       name: 'region',
-                      value: val,
+                      value: String(val ?? ''),
                     },
                   })
                 }

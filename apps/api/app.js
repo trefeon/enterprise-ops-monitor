@@ -11,7 +11,6 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
-const db = require("./models");
 const { ok } = require("./utils/response");
 const env = require("./config/env");
 const requestId = require("./middleware/requestId");

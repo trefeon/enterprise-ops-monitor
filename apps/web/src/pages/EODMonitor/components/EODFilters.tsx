@@ -28,7 +28,7 @@ export function EODFilters({ filters, onFilterChange }: EODFiltersProps) {
       <Select
         value={filters.areaId ? String(filters.areaId) : ''}
         onValueChange={(val) =>
-          onFilterChange({ target: { name: 'areaId', value: val } })
+          onFilterChange({ target: { name: 'areaId', value: String(val ?? '') } })
         }
       >
         <SelectTrigger className="w-full md:w-44">
@@ -50,7 +50,7 @@ export function EODFilters({ filters, onFilterChange }: EODFiltersProps) {
       <Select
         value={filters.status}
         onValueChange={(val) =>
-          onFilterChange({ target: { name: 'status', value: val } })
+          onFilterChange({ target: { name: 'status', value: String(val ?? '') } })
         }
       >
         <SelectTrigger className="w-full md:w-40">

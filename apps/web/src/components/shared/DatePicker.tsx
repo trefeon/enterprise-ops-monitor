@@ -3,7 +3,8 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { InputHTMLAttributes } from 'react';
 
-export interface DatePickerProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
+export interface DatePickerProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size' | 'value'> {
+  value?: string | null;
   onValueChange?: (value: string) => void;
   size?: 'sm' | 'default';
 }
@@ -23,7 +24,7 @@ export function DatePicker({
       </div>
       <Input
         type="date"
-        value={value}
+        value={value ?? ''}
         onChange={(event) => {
           onChange?.(event);
           onValueChange?.(event.target.value);

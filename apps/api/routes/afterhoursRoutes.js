@@ -54,7 +54,10 @@ const settingsBody = z.object({}).passthrough();
 
 const reportQuery = z
   .object({
-    month: z.string().regex(/^\d{4}-\d{2}$/, "month must be YYYY-MM").optional(),
+    month: z
+      .string()
+      .regex(/^\d{4}-\d{2}$/, "month must be YYYY-MM")
+      .optional(),
     branch: z.string().optional(),
     search: z.string().optional(),
     limit: z.coerce.number().int().positive().max(1000).optional(),
@@ -63,7 +66,10 @@ const reportQuery = z
 
 const exportReportQuery = z
   .object({
-    month: z.string().regex(/^\d{4}-\d{2}$/, "month must be YYYY-MM").optional(),
+    month: z
+      .string()
+      .regex(/^\d{4}-\d{2}$/, "month must be YYYY-MM")
+      .optional(),
     branch: z.string().optional(),
     search: z.string().optional(),
   })
@@ -71,7 +77,10 @@ const exportReportQuery = z
 
 const generateBody = z
   .object({
-    month: z.string().regex(/^\d{4}-\d{2}$/, "month must be YYYY-MM").optional(),
+    month: z
+      .string()
+      .regex(/^\d{4}-\d{2}$/, "month must be YYYY-MM")
+      .optional(),
   })
   .passthrough();
 
@@ -149,11 +158,7 @@ router.get(
 );
 
 // GET /api/afterhours/report/months - Available report months
-router.get(
-  "/report/months",
-  requirePermission("AFTERHOURS_VIEW"),
-  asyncHandler(getReportMonths)
-);
+router.get("/report/months", requirePermission("AFTERHOURS_VIEW"), asyncHandler(getReportMonths));
 
 // POST /api/afterhours/report/generate - Manual trigger report generation
 router.post(

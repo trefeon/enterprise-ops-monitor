@@ -538,7 +538,7 @@ const LiveSync = () => {
           value={kpi?.stale}
           subtitle={`Window: ${syncedMaxLabel}–${staleMaxLabel}`}
           color="warning"
-          pulse={kpi?.stale > 0}
+          pulse={(kpi?.stale ?? 0) > 0}
         />
         <KpiCard
           icon={RefreshCw}
@@ -546,7 +546,7 @@ const LiveSync = () => {
           value={kpi?.problem}
           subtitle={`Threshold: ${staleMaxLabel}+`}
           color="error"
-          pulse={kpi?.problem > 0}
+          pulse={(kpi?.problem ?? 0) > 0}
         />
         <KpiCard
           icon={Clock}
