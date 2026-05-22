@@ -3,10 +3,12 @@ const router = express.Router();
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
+const { z } = require("zod");
 const agentController = require("../controllers/agentController");
 const authMiddleware = require("../middleware/authMiddleware");
 const { requirePermission, requireNotDemo } = require("../middleware/rbac");
 const { Permissions } = require("../lib/permissions");
+const validate = require("../middleware/validate");
 const asyncHandler = require("../utils/asyncHandler");
 
 const DEFAULT_AGENT_UPDATE_DIR = path.resolve(__dirname, "../../../agent_updates");
@@ -59,11 +61,53 @@ const upload = multer({
   },
 });
 
+const versionQuery = z
+  .object({
+    id: z.string().optional(),
+    host: z.string().optional(),
+    ver: z.string().optional(),
+    status: z.enum(["ok", "error"]).optional(),
+    msg: z.string().optional(),
+    worker_ver: z.string().optional(),
+    agent_status: z
+      .enum([
+        "unknown",
+        "checking",
+        "online",
+        "downloading",
+        "updating",
+        "up_to_date",
+        "error",
+        "waiting",
+        "need_update",
+      ])
+      .optional(),
+  })
+  .passthrough();
+
+const monitoringQuery = z
+  .object({
+    areaId: z.string().optional(),
+    region: z.string().optional(),
+    q: z.string().optional(),
+  })
+  .passthrough();
+
+const uploadBody = z
+  .object({
+    version: z.string().min(1, "Version string is required"),
+  })
+  .passthrough();
+
+const deleteParams = z.object({
+  store_id: z.string().min(1),
+});
+
 // Public endpoints (for agents / .bat scripts)
-router.get("/version", agentController.getAgentVersion);
-router.get("/version.txt", agentController.getAgentVersion); // Alias for compatibility
+router.get("/version", validate({ query: versionQuery }), agentController.getAgentVersion);
+router.get("/version.txt", validate({ query: versionQuery }), agentController.getAgentVersion);
 router.get("/publisher", agentController.downloadPublisher);
-router.get("/DemoAgentPublisher.exe", agentController.downloadPublisher); // Alias
+router.get("/DemoAgentPublisher.exe", agentController.downloadPublisher);
 router.get("/setup-script", agentController.downloadSetupScript);
 
 // Secure endpoints (for admin dashboard)
@@ -79,6 +123,7 @@ router.get(
 router.get(
   "/monitoring",
   requirePermission(Permissions.AGENT_UPDATE),
+  validate({ query: monitoringQuery }),
   asyncHandler(agentController.getMonitoringData)
 );
 
@@ -93,6 +138,7 @@ router.post(
   requirePermission(Permissions.AGENT_UPDATE),
   requireNotDemo(),
   upload.single("publisher"),
+  validate({ body: uploadBody }),
   asyncHandler(agentController.uploadPublisher)
 );
 
@@ -100,6 +146,7 @@ router.delete(
   "/monitoring/:store_id",
   requirePermission(Permissions.AGENT_UPDATE),
   requireNotDemo(),
+  validate({ params: deleteParams }),
   asyncHandler(agentController.deleteAgentData)
 );
 

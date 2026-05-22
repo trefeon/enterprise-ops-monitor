@@ -5,7 +5,7 @@
  */
 const db = require("../models");
 const { ok, fail } = require("../utils/response");
-const { runAfterhoursCheck } = require("../services/afterhoursService");
+const { runAfterhoursCheck, loadSettings: loadSettingsService, saveSettings: saveSettingsService } = require("../services/afterhoursService");
 const {
   generateMonthlyReport,
   resolveMonthlyReportWindow,
@@ -16,34 +16,7 @@ const { getDefaultWarningScheduleTimes } = require("../config/afterhoursDefaults
 const ExcelJS = require("exceljs");
 const excel = require("../utils/excel");
 
-const CONFIG_KEYS = [
-  "notify_enabled",
-  "telegram_bot_token",
-  "telegram_chat_ids",
-  "telegram_template",
-  "telegram_template_initial",
-  "telegram_template_final",
-  "telegram_template_stage_1",
-  "telegram_template_stage_2",
-  "telegram_template_stage_3",
-  "telegram_template_stage_4",
-  "whatsapp_api_url",
-  "whatsapp_api_key",
-  "whatsapp_api_secret",
-  "whatsapp_targets",
-  "whatsapp_template",
-  "whatsapp_template_initial",
-  "whatsapp_template_final",
-  "whatsapp_template_stage_1",
-  "whatsapp_template_stage_2",
-  "whatsapp_template_stage_3",
-  "whatsapp_template_stage_4",
-  "monthly_report_whatsapp_targets",
-  "first_warning_time",
-  "final_warning_time",
-  "warning_schedule_times",
-  "check_time",
-];
+// CONFIG_KEYS is now managed in services/afterhoursService.js
 
 const MONTHLY_REPORT_EXPORT_MIME =
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
@@ -862,16 +835,7 @@ async function triggerCheck(req, res, next) {
  */
 async function getSettings(req, res, next) {
   try {
-    const [rows] = await db.sequelize.query(
-      `SELECT key, value FROM afterhours_config WHERE key = ANY($1)`,
-      { bind: [CONFIG_KEYS] }
-    );
-
-    const settings = {};
-    for (const row of rows) {
-      settings[row.key] = row.value;
-    }
-
+    const settings = await loadSettingsService(db.sequelize);
     return ok(res, { settings });
   } catch (err) {
     next(err);
@@ -889,17 +853,7 @@ async function saveSettings(req, res, next) {
       return fail(res, 400, "INVALID_BODY", "Expected { settings: { key: value } }");
     }
 
-    const saved = [];
-    for (const [key, value] of Object.entries(settings)) {
-      if (!CONFIG_KEYS.includes(key)) continue;
-      await db.sequelize.query(
-        `INSERT INTO afterhours_config (key, value, updated_at)
-         VALUES ($1, $2, NOW())
-         ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
-        { bind: [key, String(value ?? "")] }
-      );
-      saved.push(key);
-    }
+    const saved = await saveSettingsService(db.sequelize, settings);
 
     return ok(res, { saved });
   } catch (err) {

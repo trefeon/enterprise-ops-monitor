@@ -327,11 +327,49 @@ async function runAfterhoursCheck(sequelize, options = {}) {
   };
 }
 
+/**
+ * Load all settings from afterhours_config.
+ * @param {import('sequelize').Sequelize} sequelize
+ * @returns {Promise<Object>} settings key-value map
+ */
+async function loadSettings(sequelize) {
+  const [rows] = await sequelize.query(
+    `SELECT key, value FROM afterhours_config WHERE key = ANY($1)`,
+    { bind: [CONFIG_KEYS] }
+  );
+  const settings = {};
+  for (const row of rows) settings[row.key] = row.value;
+  return settings;
+}
+
+/**
+ * Save settings to afterhours_config (upsert).
+ * @param {import('sequelize').Sequelize} sequelize
+ * @param {Object} settings - key-value map of settings
+ * @returns {Promise<string[]>} list of saved keys
+ */
+async function saveSettings(sequelize, settings) {
+  const saved = [];
+  for (const [key, value] of Object.entries(settings)) {
+    if (!CONFIG_KEYS.includes(key)) continue;
+    await sequelize.query(
+      `INSERT INTO afterhours_config (key, value, updated_at)
+       VALUES ($1, $2, NOW())
+       ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+      { bind: [key, String(value ?? "")] }
+    );
+    saved.push(key);
+  }
+  return saved;
+}
+
 module.exports = {
   runAfterhoursCheck,
   isActiveNearCheckTime,
   resolveThresholdMs,
   isFinalViolationStage,
   loadAfterhoursRuntimeConfig,
+  loadSettings,
+  saveSettings,
   buildNotifyConfig,
 };
