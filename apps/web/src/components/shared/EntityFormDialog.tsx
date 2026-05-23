@@ -1,5 +1,4 @@
 import type { FormEvent, ReactNode } from 'react';
-import { motion, useReducedMotion } from 'framer-motion';
 import { Loader2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { BaseAnimatedForm } from '@/components/base';
 import { cn } from '@/lib/utils';
 
 interface EntityFormDialogProps {
@@ -49,16 +49,11 @@ export function EntityFormDialog({
   onSubmit,
   onOpenChange,
 }: EntityFormDialogProps) {
-  const reduceMotion = useReducedMotion();
-
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !submitting && onOpenChange(nextOpen)}>
       <DialogContent className="max-h-[calc(100vh-2rem)] overflow-hidden p-0 sm:max-w-3xl">
-        <motion.form
+        <BaseAnimatedForm
           onSubmit={onSubmit}
-          initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-          animate={reduceMotion ? undefined : { opacity: 1, y: 0 }}
-          transition={{ duration: 0.16, ease: 'easeOut' }}
           className="flex max-h-[calc(100vh-2rem)] min-w-0 flex-col"
         >
           <DialogHeader className="border-b border-border px-5 py-4">
@@ -82,7 +77,7 @@ export function EntityFormDialog({
               <span className="truncate">{submitLabel}</span>
             </Button>
           </DialogFooter>
-        </motion.form>
+        </BaseAnimatedForm>
       </DialogContent>
     </Dialog>
   );

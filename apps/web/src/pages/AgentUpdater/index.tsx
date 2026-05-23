@@ -13,14 +13,8 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/shared/DataTable';
+import { BaseFileUploadControl } from '@/components/base';
 import { formatDateTime } from '../../lib/date';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
@@ -572,116 +566,86 @@ const AgentUpdater = () => {
           )}
         </div>
 
-        <Card className="p-0 overflow-hidden border-border/60 shadow-sm">
-          <CardContent className="p-0">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/30">
-                  <TableHead>Store Code</TableHead>
-                  <TableHead>Store Name</TableHead>
-                  <TableHead>Branch</TableHead>
-                  <TableHead className="text-center">Publisher</TableHead>
-                  <TableHead className="text-center">Worker</TableHead>
-                  <TableHead className="text-center">Status</TableHead>
-                  <TableHead className="text-right">Last Check-in</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {loading && monitoring.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
-                      <div className="flex items-center justify-center gap-2">
-                        <Loader2 className="size-4 animate-spin" />
-                        Loading nodes...
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : monitoring.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
-                      No nodes registered yet.
-                    </TableCell>
-                  </TableRow>
+        <DataTable
+          columns={[
+            { header: 'Store Code', className: 'text-xs font-bold tabular-nums', render: (node) => node.store_id || 'Unknown' },
+            { header: 'Store Name', className: 'text-foreground/90 font-medium', render: (node) => node.store_name || node.hostname || '-' },
+            { header: 'Branch', className: 'live-text-3xs uppercase font-black text-muted-foreground tracking-widest', render: (node) => node.branch_name || '-' },
+            {
+              header: 'Publisher',
+              className: 'text-center',
+              render: (node) => (
+                <code className="bg-muted px-1.5 py-0.5 rounded-md border border-border/40 text-xs font-mono">
+                  {node.version || '-'}
+                </code>
+              ),
+            },
+            {
+              header: 'Worker',
+              className: 'text-center',
+              render: (node) => {
+                const workerVersionNum = Number.parseInt(node.worker_version, 10);
+                const isLegacyWorker =
+                  !node.worker_version || Number.isNaN(workerVersionNum) || workerVersionNum < 4;
+                return isLegacyWorker ? (
+                  <span className="px-1.5 py-0.5 rounded bg-status-warning/10 text-status-warning text-4xs font-black uppercase tracking-widest">
+                    legacy
+                  </span>
                 ) : (
-                  monitoring.map((node) => {
-                    const status = getNodeStatus(node, currentVersion);
-                    const workerVersionNum = Number.parseInt(node.worker_version, 10);
-                    const isLegacyWorker =
-                      !node.worker_version ||
-                      Number.isNaN(workerVersionNum) ||
-                      workerVersionNum < 4;
-
-                    return (
-                      <TableRow
-                        key={node.store_id}
-                        className={cn(
-                          'group hover:bg-muted/30 transition-colors',
-                          isLegacyWorker ? 'bg-status-warning/5' : ''
-                        )}
-                      >
-                        <TableCell className="text-xs font-bold tabular-nums">
-                          {node.store_id || 'Unknown'}
-                        </TableCell>
-                        <TableCell className="text-foreground/90 font-medium">
-                          {node.store_name || node.hostname || '-'}
-                        </TableCell>
-                        <TableCell className="live-text-3xs uppercase font-black text-muted-foreground tracking-widest">
-                          {node.branch_name || '-'}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <code className="bg-muted px-1.5 py-0.5 rounded-md border border-border/40 text-xs font-mono">
-                            {node.version || '-'}
-                          </code>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-1">
-                            {isLegacyWorker ? (
-                              <span className="px-1.5 py-0.5 rounded bg-status-warning/10 text-status-warning text-4xs font-black uppercase tracking-widest">
-                                legacy
-                              </span>
-                            ) : (
-                              <code className="bg-muted px-1.5 py-0.5 rounded-md border border-border/40 text-xs font-mono">
-                                v{node.worker_version}
-                              </code>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <div className="flex items-center justify-center gap-1.5">
-                            {getStatusBadge(status)}
-                            {node.last_error && (
-                              <span title={node.last_error}>
-                                <AlertCircle className="size-3.5 text-status-error cursor-help" />
-                              </span>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right text-muted-foreground tabular-nums text-xs">
-                          <div className="flex items-center justify-end gap-3">
-                            <span className="font-medium">
-                              {node.last_check_at ? formatDateTime(node.last_check_at) : '-'}
-                            </span>
-                            {node.last_check_at && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleDeleteAgent(node.store_id)}
-                                className="size-8 text-muted-foreground hover:text-status-error hover:bg-status-error/10 opacity-0 group-hover:opacity-100 transition-all"
-                                title="Delete Agent Record"
-                              >
-                                <Trash2 className="size-4" />
-                              </Button>
-                            )}
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
+                  <code className="bg-muted px-1.5 py-0.5 rounded-md border border-border/40 text-xs font-mono">
+                    v{node.worker_version}
+                  </code>
+                );
+              },
+            },
+            {
+              header: 'Status',
+              className: 'text-center',
+              render: (node) => (
+                <div className="flex items-center justify-center gap-1.5">
+                  {getStatusBadge(getNodeStatus(node, currentVersion))}
+                  {node.last_error && (
+                    <span title={node.last_error}>
+                      <AlertCircle className="size-3.5 text-status-error cursor-help" />
+                    </span>
+                  )}
+                </div>
+              ),
+            },
+            {
+              header: 'Last Check-in',
+              className: 'text-right text-muted-foreground tabular-nums text-xs',
+              render: (node) => (
+                <div className="flex items-center justify-end gap-3">
+                  <span className="font-medium">
+                    {node.last_check_at ? formatDateTime(node.last_check_at) : '-'}
+                  </span>
+                  {node.last_check_at && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleDeleteAgent(node.store_id)}
+                      className="size-8 text-muted-foreground hover:text-status-error hover:bg-status-error/10 transition-all"
+                      title="Delete Agent Record"
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                  )}
+                </div>
+              ),
+            },
+          ]}
+          data={monitoring}
+          loading={loading && monitoring.length === 0}
+          emptyState="No nodes registered yet."
+          keyExtractor={(node) => node.store_id}
+          rowClassName={(node) => {
+            const workerVersionNum = Number.parseInt(node.worker_version, 10);
+            return !node.worker_version || Number.isNaN(workerVersionNum) || workerVersionNum < 4
+              ? 'bg-status-warning/5'
+              : '';
+          }}
+        />
       </section>
 
       <Modal
@@ -696,7 +660,7 @@ const AgentUpdater = () => {
                 Publisher Binary (.exe)
               </label>
               <div className="flex items-center justify-center w-full">
-                <label className="group/upload flex h-40 w-full cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/20 transition-all hover:border-primary/40 hover:bg-muted">
+                <div className="group/upload flex h-40 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/20 transition-all hover:border-primary/40 hover:bg-muted">
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <div className="mb-4 flex size-12 items-center justify-center rounded-lg border border-border bg-muted transition-colors group-hover/upload:bg-primary/10 group-hover/upload:text-primary">
                       <FileUp className="size-6" />
@@ -708,12 +672,16 @@ const AgentUpdater = () => {
                         'Select DemoAgentPublisher.exe'
                       )}
                     </p>
-                    <p className="text-xs text-muted-foreground mt-2 font-medium">
-                      Click or drag and drop to upload
-                    </p>
+                    <div className="mt-3">
+                      <BaseFileUploadControl
+                        id="publisher-binary"
+                        accept=".exe"
+                        label="Select publisher binary"
+                        onChange={handleFileChange}
+                      />
+                    </div>
                   </div>
-                  <input type="file" className="hidden" accept=".exe" onChange={handleFileChange} />
-                </label>
+                </div>
               </div>
             </div>
 

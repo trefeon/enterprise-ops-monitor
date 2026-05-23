@@ -373,16 +373,18 @@ const SystemHealth = () => {
         header: '',
         className: 'w-16 text-center',
         render: (log) => (
-          <button
+          <Button
             type="button"
-            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+            variant="ghost"
+            size="icon"
+            className="size-8 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
             onClick={(e) => {
               e.stopPropagation();
               handleCopyLog(log);
             }}
           >
             <Copy className="size-4" />
-          </button>
+          </Button>
         ),
       },
     ],
@@ -625,9 +627,11 @@ const SystemHealth = () => {
                       </div>
 
                       <Guard user={user} permission="SYSTEM_RESTART">
-                        <button
+                        <Button
                           type="button"
-                          className="absolute bottom-2 right-2 flex size-8 items-center justify-center rounded-md text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100 focus:opacity-100"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute bottom-2 right-2 size-8 text-muted-foreground opacity-0 transition-all hover:bg-muted hover:text-foreground group-hover:opacity-100 focus:opacity-100"
                           onClick={() => {
                             setRestartTarget(service);
                             setRestartConfirm('');
@@ -635,7 +639,7 @@ const SystemHealth = () => {
                           aria-label={`Restart ${service.name}`}
                         >
                           <RotateCw className="size-4" />
-                        </button>
+                        </Button>
                       </Guard>
                     </CardContent>
                   </Card>

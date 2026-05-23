@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
+import { DataTable } from '@/components/shared/DataTable';
 
 // ── Data types ────────────────────────────────────────────────────────────────
 
@@ -263,101 +264,6 @@ const BranchCard = ({ name, synced, stale, problem, total }: BranchCardProps) =>
         <span>{problem} ERR</span>
       </div>
     </div>
-  );
-};
-
-// ─── Late Store Row ───────────────────────────────────────────────────────────
-
-interface LateStoreRowProps {
-  store: SyncStore;
-  idx: number;
-}
-
-const LateStoreRow = ({ store, idx }: LateStoreRowProps) => {
-  const ageSec = store.lastSyncAgoSec;
-  const isCritical = ageSec != null && ageSec > 3600;
-  return (
-    <tr
-      className={cn(
-        'border-b border-border/40 transition-colors hover:bg-muted/30',
-        isCritical ? 'bg-status-error/5' : ''
-      )}
-    >
-      <td className="py-2.5 px-3 text-muted-foreground/40 text-3xs font-black w-8 text-right tabular-nums">
-        {idx + 1}
-      </td>
-      <td className="py-2.5 px-3 font-mono text-xs font-bold text-muted-foreground w-24 text-right">
-        {store.storeCode}
-      </td>
-      <td className="py-2.5 px-3 text-sm font-bold text-foreground truncate max-w-cell-md">
-        {store.storeName || '-'}
-      </td>
-      <td className="py-2.5 px-3 text-3xs font-black uppercase tracking-widest text-muted-foreground/60">
-        {store.branchName}
-      </td>
-      <td className="py-2.5 px-3 text-right">
-        <span
-          className={cn(
-            'text-sm font-black tabular-nums tracking-tighter',
-            isCritical ? 'text-status-error' : 'text-status-warning'
-          )}
-        >
-          {formatDuration(ageSec)}
-        </span>
-      </td>
-      <td className="py-2.5 px-3 text-3xs font-bold text-muted-foreground/40 text-right tabular-nums">
-        {store.lastSyncAt ? formatTime(store.lastSyncAt) : 'Never'}
-      </td>
-    </tr>
-  );
-};
-
-// ─── EOD Ranking Row ──────────────────────────────────────────────────────────
-
-interface EodRankRowProps {
-  store: EodRankingStore;
-  idx: number;
-}
-
-const EodRankRow = ({ store, idx }: EodRankRowProps) => {
-  const isBad = store.failRate > 30;
-  return (
-    <tr
-      className={cn(
-        'border-b border-border/40 transition-colors hover:bg-muted/30',
-        isBad ? 'bg-status-error/5' : ''
-      )}
-    >
-      <td className="py-2 px-3 text-muted-foreground/40 text-3xs font-black w-8 text-right tabular-nums">
-        {idx + 1}
-      </td>
-      <td className="py-2 px-3 font-mono text-xs font-bold text-muted-foreground w-24 text-right">
-        {store.storeCode}
-      </td>
-      <td className="py-2 px-3 text-sm font-bold text-foreground truncate max-w-cell-sm">
-        {store.storeName || '-'}
-      </td>
-      <td className="py-2 px-3 text-3xs font-black uppercase tracking-widest text-muted-foreground/60">
-        {store.branchName}
-      </td>
-      <td className="py-2 px-3 text-center">
-        <span className="text-status-error font-black text-xs tabular-nums">
-          {store.failedDays}
-        </span>
-        <span className="text-muted-foreground/20 mx-1">/</span>
-        <span className="text-status-success font-bold text-xs tabular-nums">{store.okDays}</span>
-      </td>
-      <td className="py-2 px-3 text-right">
-        <span
-          className={cn(
-            'text-sm font-black tabular-nums tracking-tighter',
-            isBad ? 'text-status-error' : 'text-status-warning'
-          )}
-        >
-          {store.failRate}%
-        </span>
-      </td>
-    </tr>
   );
 };
 
@@ -620,23 +526,31 @@ const LiveSync = () => {
                 </span>
               </div>
             ) : (
-              <table className="w-full text-left">
-                <thead className="sticky top-0 bg-muted/80 backdrop-blur-md z-20">
-                  <tr className="border-b border-border/40 text-4xs font-black uppercase text-muted-foreground/50 tracking-widest-lg">
-                    <th className="py-4 px-4 w-8">#</th>
-                    <th className="py-4 px-4 w-24 text-right">Code</th>
-                    <th className="py-4 px-4">Endpoint Name</th>
-                    <th className="py-4 px-4">Branch</th>
-                    <th className="py-4 px-4 text-right">Latency</th>
-                    <th className="py-4 px-4 text-right">Last Sync</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/20">
-                  {lateStores.map((store: SyncStore, idx: number) => (
-                    <LateStoreRow key={store.storeCode} store={store} idx={idx} />
-                  ))}
-                </tbody>
-              </table>
+              <DataTable
+                columns={[
+                  { header: '#', className: 'w-8 text-right text-muted-foreground/40', render: (_store, idx) => idx + 1 },
+                  { header: 'Code', className: 'w-24 text-right font-mono text-xs font-bold text-muted-foreground', render: (store) => store.storeCode },
+                  { header: 'Endpoint Name', className: 'max-w-cell-md truncate text-sm font-bold text-foreground', render: (store) => store.storeName || '-' },
+                  { header: 'Branch', className: 'text-3xs font-black uppercase tracking-widest text-muted-foreground/60', render: (store) => store.branchName },
+                  {
+                    header: 'Latency',
+                    className: 'text-right',
+                    render: (store) => {
+                      const isCritical = store.lastSyncAgoSec != null && store.lastSyncAgoSec > 3600;
+                      return (
+                        <span className={cn('text-sm font-black tabular-nums tracking-tighter', isCritical ? 'text-status-error' : 'text-status-warning')}>
+                          {formatDuration(store.lastSyncAgoSec)}
+                        </span>
+                      );
+                    },
+                  },
+                  { header: 'Last Sync', className: 'text-right text-3xs font-bold text-muted-foreground/40 tabular-nums', render: (store) => store.lastSyncAt ? formatTime(store.lastSyncAt) : 'Never' },
+                ]}
+                data={lateStores}
+                keyExtractor={(store) => store.storeCode}
+                noCard
+                rowClassName={(store) => (store.lastSyncAgoSec != null && store.lastSyncAgoSec > 3600 ? 'bg-status-error/5' : '')}
+              />
             )}
           </div>
         </div>
@@ -672,23 +586,38 @@ const LiveSync = () => {
                 </span>
               </div>
             ) : (
-              <table className="w-full text-left">
-                <thead className="sticky top-0 bg-muted/80 backdrop-blur-md z-20">
-                  <tr className="border-b border-border/40 text-4xs font-black uppercase text-muted-foreground/50 tracking-widest-lg">
-                    <th className="py-4 px-4 w-8">#</th>
-                    <th className="py-4 px-4 w-24 text-right">Code</th>
-                    <th className="py-4 px-4">Endpoint Name</th>
-                    <th className="py-4 px-4">Branch</th>
-                    <th className="py-4 px-4 text-center">Failure / Success</th>
-                    <th className="py-4 px-4 text-right">Fail Rate</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/20">
-                  {eodRanking.map((store: EodRankingStore, idx: number) => (
-                    <EodRankRow key={store.storeCode} store={store} idx={idx} />
-                  ))}
-                </tbody>
-              </table>
+              <DataTable
+                columns={[
+                  { header: '#', className: 'w-8 text-right text-muted-foreground/40', render: (_store, idx) => idx + 1 },
+                  { header: 'Code', className: 'w-24 text-right font-mono text-xs font-bold text-muted-foreground', render: (store) => store.storeCode },
+                  { header: 'Endpoint Name', className: 'max-w-cell-sm truncate text-sm font-bold text-foreground', render: (store) => store.storeName || '-' },
+                  { header: 'Branch', className: 'text-3xs font-black uppercase tracking-widest text-muted-foreground/60', render: (store) => store.branchName },
+                  {
+                    header: 'Failure / Success',
+                    className: 'text-center',
+                    render: (store) => (
+                      <>
+                        <span className="text-status-error font-black text-xs tabular-nums">{store.failedDays}</span>
+                        <span className="text-muted-foreground/20 mx-1">/</span>
+                        <span className="text-status-success font-bold text-xs tabular-nums">{store.okDays}</span>
+                      </>
+                    ),
+                  },
+                  {
+                    header: 'Fail Rate',
+                    className: 'text-right',
+                    render: (store) => (
+                      <span className={cn('text-sm font-black tabular-nums tracking-tighter', store.failRate > 30 ? 'text-status-error' : 'text-status-warning')}>
+                        {store.failRate}%
+                      </span>
+                    ),
+                  },
+                ]}
+                data={eodRanking}
+                keyExtractor={(store) => store.storeCode}
+                noCard
+                rowClassName={(store) => (store.failRate > 30 ? 'bg-status-error/5' : '')}
+              />
             )}
           </div>
         </div>

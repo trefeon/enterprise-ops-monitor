@@ -1,6 +1,8 @@
-export { DataTable } from './DataTable';
-export { DataTableColumnHeader } from './DataTableColumnHeader';
-export { DataTablePagination } from './DataTablePagination';
-export { DataTableToolbar } from './DataTableToolbar';
-
-export type { DataTableProps } from './DataTable';
+export {
+  BaseDataTable as DataTable,
+  BaseDataTableColumnHeader as DataTableColumnHeader,
+  BaseDataTablePagination as DataTablePagination,
+  BaseDataTableToolbar as DataTableToolbar,
+  BaseDataTableViewOptions as DataTableViewOptions,
+  type BaseDataTableProps as DataTableProps,
+} from "@/components/base";

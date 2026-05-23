@@ -3,6 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import {
   Select,
@@ -15,6 +16,7 @@ import { PageShell } from '@/components/shared/PageShell';
 import { StatCard } from '@/components/shared/StatCard';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { DataTable } from '@/components/shared/DataTable';
+import { DatePicker } from '@/components/shared/DatePicker';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -462,9 +464,11 @@ const StoreSync = () => {
         header: '',
         className: 'w-16 text-center',
         render: (store) => (
-          <button
+          <Button
             type="button"
-            className="text-muted-foreground hover:text-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+            variant="ghost"
+            size="icon"
+            className="size-8 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
             onClick={(event) => {
               event.stopPropagation();
               openHistory(store.storeCode, store.storeName);
@@ -472,7 +476,7 @@ const StoreSync = () => {
             title="View sync history"
           >
             <History className="size-4" />
-          </button>
+          </Button>
         ),
       },
     ],
@@ -716,18 +720,20 @@ const StoreSync = () => {
           className="mb-0"
           actions={
             <div className="flex flex-col sm:flex-row items-center gap-3">
-              <label className="flex h-11 w-full sm:w-auto items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground cursor-pointer transition-colors hover:bg-muted/30">
-                <input
-                  type="checkbox"
+              <div className="flex h-11 w-full cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/30 sm:w-auto">
+                <Checkbox
+                  id="exclude-bazar"
                   checked={excludeBazar}
-                  onChange={(e) => {
-                    setExcludeBazar(e.target.checked);
+                  onCheckedChange={(checked) => {
+                    setExcludeBazar(checked === true);
                     setPagination((p) => ({ ...p, page: 1 }));
                   }}
                   className="shrink-0 rounded border-border bg-transparent text-primary focus:ring-primary/50"
                 />
-                Exclude &gt; 7 days
-              </label>
+                <label htmlFor="exclude-bazar" className="cursor-pointer">
+                  Exclude &gt; 7 days
+                </label>
+              </div>
 
               <SearchBar
                 placeholder="Search store..."
@@ -847,10 +853,9 @@ const StoreSync = () => {
                       ))}
                     </SelectContent>
                   </Select>
-                  <Input
-                    type="date"
+                  <DatePicker
                     value={historyDate}
-                    onChange={(e) => setHistoryDate(e.target.value)}
+                    onValueChange={setHistoryDate}
                     disabled={historyMode === 'recent'}
                     className="w-44"
                   />

@@ -14,14 +14,7 @@ import {
 import { StatCard } from '@/components/shared/StatCard';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/shared/DataTable';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { SearchBar } from '@/components/shared/SearchBar';
@@ -778,107 +771,98 @@ export default function AfterHoursReport() {
               icon={<Save className="size-8" />}
             />
           ) : (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Rank</TableHead>
-                  <TableHead>Store</TableHead>
-                  <TableHead>Branch</TableHead>
-                  <TableHead>Violation Days</TableHead>
-                  <TableHead>Detail</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {ranking.map((item) => {
-                  const isExpanded = expandedRow === item.store_code;
-                  const dates = Array.isArray(item.violation_dates) ? item.violation_dates : [];
-                  const timestamps = Array.isArray(item.violation_timestamps)
-                    ? item.violation_timestamps
-                    : [];
-                  const detailItems = timestamps.length > 0 ? timestamps : dates;
-                  const detailLabel = timestamps.length > 0 ? 'times' : 'dates';
-                  return (
-                    <React.Fragment key={item.store_code}>
-                      <TableRow className={item.rank <= 3 ? 'bg-destructive/5' : ''}>
-                        <TableCell>
-                          <span className="flex items-center gap-1.5">
-                            {item.rank <= 3 ? (
-                              <Trophy className={cn('size-4', medalClasses[item.rank - 1])} />
-                            ) : (
-                              <span className="inline-flex h-6 w-6 items-center justify-center rounded-sm bg-secondary text-xs font-bold text-secondary-foreground">
-                                {item.rank}
+            <DataTable
+              columns={[
+                {
+                  header: 'Rank',
+                  render: (item) =>
+                    item.rank <= 3 ? (
+                      <Trophy className={cn('size-4', medalClasses[item.rank - 1])} />
+                    ) : (
+                      <span className="inline-flex h-6 w-6 items-center justify-center rounded-sm bg-secondary text-xs font-bold text-secondary-foreground">
+                        {item.rank}
+                      </span>
+                    ),
+                },
+                {
+                  header: 'Store',
+                  render: (item) => (
+                    <div className="flex flex-col">
+                      <span className="font-mono text-xs text-foreground">{item.store_code}</span>
+                      <span className="text-xs text-muted-foreground">{item.store_name || '—'}</span>
+                    </div>
+                  ),
+                },
+                {
+                  header: 'Branch',
+                  render: (item) => (
+                    <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
+                      {item.branch_name || item.branch_id}
+                    </span>
+                  ),
+                },
+                {
+                  header: 'Violation Days',
+                  render: (item) => (
+                    <span className="flex items-center gap-1.5">
+                      <span
+                        className={cn(
+                          'text-sm font-bold',
+                          item.violation_count >= 20
+                            ? 'text-destructive'
+                            : item.violation_count >= 10
+                              ? 'text-status-warning'
+                              : 'text-foreground'
+                        )}
+                      >
+                        {item.violation_count}
+                      </span>
+                      <span className="text-xs text-muted-foreground">day(s)</span>
+                    </span>
+                  ),
+                },
+                {
+                  header: 'Detail',
+                  render: (item) => {
+                    const isExpanded = expandedRow === item.store_code;
+                    const dates = Array.isArray(item.violation_dates) ? item.violation_dates : [];
+                    const timestamps = Array.isArray(item.violation_timestamps)
+                      ? item.violation_timestamps
+                      : [];
+                    const detailItems = timestamps.length > 0 ? timestamps : dates;
+                    const detailLabel = timestamps.length > 0 ? 'times' : 'dates';
+                    return (
+                      <div className="flex flex-col gap-2">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setExpandedRow(isExpanded ? null : item.store_code)}
+                        >
+                          {isExpanded ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+                          {detailItems.length} {detailLabel}
+                        </Button>
+                        {isExpanded && detailItems.length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 py-1">
+                            {detailItems.map((timestampStr) => (
+                              <span
+                                key={timestampStr}
+                                className="inline-flex items-center rounded-sm border border-border/60 bg-background px-2.5 py-1 text-xs text-foreground"
+                              >
+                                {formatReportTimelineItem(timestampStr)}
                               </span>
-                            )}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-mono text-xs text-foreground">
-                              {item.store_code}
-                            </span>
-                            <span className="text-xs text-muted-foreground">
-                              {item.store_name || '—'}
-                            </span>
+                            ))}
                           </div>
-                        </TableCell>
-                        <TableCell>
-                          <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
-                            {item.branch_name || item.branch_id}
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <span className="flex items-center gap-1.5">
-                            <span
-                              className={`text-sm font-bold ${
-                                item.violation_count >= 20
-                                  ? 'text-destructive'
-                                  : item.violation_count >= 10
-                                    ? 'text-status-warning'
-                                    : 'text-foreground'
-                              }`}
-                            >
-                              {item.violation_count}
-                            </span>
-                            <span className="text-xs text-muted-foreground">day(s)</span>
-                          </span>
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => setExpandedRow(isExpanded ? null : item.store_code)}
-                          >
-                            {isExpanded ? (
-                              <ChevronUp className="size-4" />
-                            ) : (
-                              <ChevronDown className="size-4" />
-                            )}
-                            {detailItems.length} {detailLabel}
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                      {isExpanded && detailItems.length > 0 && (
-                        <TableRow>
-                          <TableCell />
-                          <TableCell colSpan={4}>
-                            <div className="flex flex-wrap gap-1.5 py-1">
-                              {detailItems.map((timestampStr) => (
-                                <span
-                                  key={timestampStr}
-                                  className="inline-flex items-center rounded-sm border border-border/60 bg-background px-2.5 py-1 text-xs text-foreground"
-                                >
-                                  {formatReportTimelineItem(timestampStr)}
-                                </span>
-                              ))}
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </React.Fragment>
-                  );
-                })}
-              </TableBody>
-            </Table>
+                        )}
+                      </div>
+                    );
+                  },
+                },
+              ]}
+              data={ranking}
+              keyExtractor={(item) => item.store_code}
+              noCard
+              rowClassName={(item) => (item.rank <= 3 ? 'bg-destructive/5' : '')}
+            />
           )}
           {!loading && ranking.length > 0 && (
             <div className="border-t border-border bg-card px-cell-x py-cell-y flex flex-col md:flex-row items-center justify-between gap-4 text-xs">

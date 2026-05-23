@@ -1,4 +1,5 @@
 import type { ReactNode, ButtonHTMLAttributes } from 'react';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 export type IconButtonIntent = 'neutral' | 'primary' | 'danger' | 'ghost';
@@ -33,8 +34,10 @@ export function IconButton({
   }
 
   return (
-    <button
+    <Button
       type={type}
+      variant="ghost"
+      size="icon"
       onClick={onClick}
       disabled={disabled}
       title={label}
@@ -51,7 +54,7 @@ export function IconButton({
       {showDot && (
         <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-status-error ring-2 ring-background animate-pulse" />
       )}
-    </button>
+    </Button>
   );
 }
 

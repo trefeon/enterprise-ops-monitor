@@ -1,10 +1,11 @@
 import { useCallback } from 'react';
+import type { PaginationState } from '@tanstack/react-table';
 import { RefreshCw, Play, Loader2, Database, Clock, HardDrive, AlertCircle, CheckCircle2, PauseCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { PageShell } from '@/components/shared/PageShell';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { DataTable } from '@/components/ui/data-table/DataTable';
+import { BaseDataTable } from '@/components/base';
 import { StatCard } from '@/components/shared/StatCard';
 import { SectionCard } from '@/components/shared/SectionCard';
 import { EmptyState } from '@/components/shared/EmptyState';
@@ -96,6 +97,25 @@ export default function Backups() {
     onDelete: handleDeleteTarget,
     user: user as Record<string, unknown>,
   });
+  const tablePagination: PaginationState = {
+    pageIndex: Math.max(b.pagination.page - 1, 0),
+    pageSize: b.pagination.pageSize,
+  };
+
+  const handleTablePaginationChange = useCallback(
+    (updaterOrValue: PaginationState | ((old: PaginationState) => PaginationState)) => {
+      const next =
+        typeof updaterOrValue === 'function'
+          ? updaterOrValue(tablePagination)
+          : updaterOrValue;
+      b.setPagination((prev) => ({
+        ...prev,
+        page: next.pageIndex + 1,
+        pageSize: next.pageSize,
+      }));
+    },
+    [b, tablePagination],
+  );
 
   // -----------------------------------------------------------------------
   // Error state – no data at all
@@ -277,18 +297,18 @@ export default function Backups() {
       {/* Snapshots table */}
       <section className="pt-2">
         <SectionCard title={<span className="text-lg font-bold tracking-tight uppercase">Recent Snapshots</span>}>
-          <DataTable
+          <BaseDataTable
             columns={columns}
             data={b.files}
             loading={b.loadingFiles && b.files.length === 0}
-            serverSide
-            pageIndex={b.pagination.page - 1}
-            totalRows={b.pagination.total}
-            pageSize={b.pagination.pageSize}
-            onPageChange={(pageIndex) => b.setPagination((prev) => ({ ...prev, page: pageIndex + 1 }))}
-            onPageSizeChange={(size) => b.setPagination((prev) => ({ ...prev, pageSize: size, page: 1 }))}
-            keyExtractor={(row) => row.fileName}
-            noCard
+            manualPagination
+            pageCount={Math.ceil(b.pagination.total / b.pagination.pageSize)}
+            rowCount={b.pagination.total}
+            pagination={tablePagination}
+            onPaginationChange={handleTablePaginationChange}
+            getRowId={(row) => row.fileName}
+            frame="plain"
+            enableSearch={false}
           />
         </SectionCard>
       </section>

@@ -199,9 +199,9 @@ export function StatCard({
           <div className="mt-auto pt-2">
             {footer && <div className="mb-2">{footer}</div>}
             {subtext && (
-              <p className="text-xs text-muted-foreground leading-relaxed break-words">
+              <div className="text-xs text-muted-foreground leading-relaxed break-words">
                 {subtext}
-              </p>
+              </div>
             )}
           </div>
         </div>

@@ -1,4 +1,5 @@
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import type { EODArea } from '../types';
 
@@ -23,9 +24,10 @@ export function EODSummaryCard({ branch, onBranchClick }: EODSummaryCardProps) {
         : 'bg-status-error';
 
   return (
-    <button
+    <Button
       type="button"
-      className="block w-full text-left border-0 bg-transparent p-0 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+      variant="ghost"
+      className="block h-auto w-full rounded-xl border-0 bg-transparent p-0 text-left hover:bg-transparent"
       onClick={() => onBranchClick(branch)}
     >
       <Card className="transition-all hover:shadow-md hover:ring-1 hover:ring-ring cursor-pointer min-h-36 justify-between border border-border/50">
@@ -66,6 +68,6 @@ export function EODSummaryCard({ branch, onBranchClick }: EODSummaryCardProps) {
           </div>
         </CardContent>
       </Card>
-    </button>
+    </Button>
   );
 }

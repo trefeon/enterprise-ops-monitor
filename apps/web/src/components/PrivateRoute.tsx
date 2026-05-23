@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
 import { ArrowLeft, Loader2, Lock } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useAuth } from '../context/AuthContext';
 import { hasPermission } from '../lib/auth/permissions';
 
@@ -44,14 +45,15 @@ export default function PrivateRoute({ requiredPerm, children }: PrivateRoutePro
           <p className="mb-4 text-muted-foreground">
             You don't have permission to access this page.
           </p>
-          <button
+          <Button
             type="button"
             onClick={() => window.history.back()}
-            className="inline-flex items-center gap-2 rounded-lg bg-secondary px-4 py-2 text-secondary-foreground transition-colors hover:bg-secondary/80"
+            variant="secondary"
+            className="gap-2 rounded-lg"
           >
             <ArrowLeft className="size-4" />
             Go Back
-          </button>
+          </Button>
         </div>
       </div>
     );

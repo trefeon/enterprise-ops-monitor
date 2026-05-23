@@ -1,11 +1,6 @@
-import type { ReactNode } from 'react';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
-import { cn } from '@/lib/utils';
+import type { ReactNode } from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
 
 export interface ModalProps {
   open: boolean;
@@ -23,7 +18,7 @@ export function Modal({
   title,
   children,
   className,
-  maxWidth = 'sm:max-w-md',
+  maxWidth = "sm:max-w-md",
   showClose = true,
 }: ModalProps) {
   return (
@@ -37,7 +32,7 @@ export function Modal({
         showCloseButton={showClose}
         className={cn(
           maxWidth,
-          'max-h-[90vh] overflow-hidden flex flex-col border-border bg-popover text-popover-foreground',
+          "max-h-[90vh] overflow-hidden flex flex-col border-border bg-popover text-popover-foreground",
           className
         )}
       >
@@ -46,7 +41,7 @@ export function Modal({
             <DialogTitle className="text-lg font-semibold tracking-tight text-foreground">{title}</DialogTitle>
           </DialogHeader>
         )}
-        <div className="flex-1 overflow-y-auto pr-1 -mr-1 py-1 text-sm text-muted-foreground leading-relaxed">
+        <div className="-mr-1 flex-1 overflow-y-auto py-1 pr-1 text-sm leading-relaxed text-muted-foreground">
           {children}
         </div>
       </DialogContent>

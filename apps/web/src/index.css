@@ -73,6 +73,14 @@
     --warning: 45 96% 64%;
     --info: 217 91% 67%;
     --brand: 142 76% 73%;
+    --sidebar: 216 13% 8%;
+    --sidebar-foreground: 210 14% 95%;
+    --sidebar-primary: 142 76% 73%;
+    --sidebar-primary-foreground: 220 12% 5%;
+    --sidebar-accent: 218 12% 13%;
+    --sidebar-accent-foreground: 210 14% 95%;
+    --sidebar-border: 220 6% 17%;
+    --sidebar-ring: 142 76% 73%;
 
     /* Spacing, shape, and motion */
     --radius-xs: 4px;

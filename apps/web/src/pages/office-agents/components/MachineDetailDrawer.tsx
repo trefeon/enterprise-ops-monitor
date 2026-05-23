@@ -7,14 +7,7 @@ import {
 } from '@/components/ui/sheet';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/shared/DataTable';
 import { getHealthColor } from '../types';
 import type { AgentMachine } from '../types';
 
@@ -136,26 +129,16 @@ export function MachineDetailDrawer({ machine, onClose }: Props) {
           {/* Top Processes */}
           <div>
             <h4 className="text-sm font-semibold mb-3">Top Processes (by CPU)</h4>
-            <div className="overflow-x-auto rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Process</TableHead>
-                    <TableHead className="text-right">CPU</TableHead>
-                    <TableHead className="text-right">RAM</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {top_processes.slice(0, 5).map((proc) => (
-                    <TableRow key={proc.name}>
-                      <TableCell className="font-mono text-xs">{proc.name}</TableCell>
-                      <TableCell className="text-right">{proc.cpu_percent}%</TableCell>
-                      <TableCell className="text-right">{proc.ram_mb} MB</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <DataTable
+              columns={[
+                { header: 'Process', className: 'font-mono text-xs', render: (proc) => proc.name },
+                { header: 'CPU', className: 'text-right', render: (proc) => `${proc.cpu_percent}%` },
+                { header: 'RAM', className: 'text-right', render: (proc) => `${proc.ram_mb} MB` },
+              ]}
+              data={top_processes.slice(0, 5)}
+              keyExtractor={(proc) => proc.name}
+              noCard
+            />
           </div>
 
           <Separator />

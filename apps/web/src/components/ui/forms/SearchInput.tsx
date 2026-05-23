@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Search, X } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
@@ -92,14 +93,16 @@ export function SearchInput({
         aria-label={placeholder}
       />
       {localValue && (
-        <button
+        <Button
           type="button"
+          variant="ghost"
+          size="icon-xs"
           onClick={handleClear}
-          className="absolute inset-y-0 right-2 z-10 flex items-center text-muted-foreground hover:text-foreground transition-colors"
+          className="absolute inset-y-0 right-2 z-10 h-full w-6 rounded-none text-muted-foreground transition-colors hover:bg-transparent hover:text-foreground"
           aria-label="Clear search"
         >
           <X className={cn(size === "sm" ? "size-3" : "size-3.5")} />
-        </button>
+        </Button>
       )}
     </div>
   );

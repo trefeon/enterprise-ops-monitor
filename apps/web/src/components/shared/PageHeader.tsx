@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { BaseSlideIn } from '@/components/base';
 
 export interface BreadcrumbItem {
   label: string;
@@ -30,10 +30,10 @@ export function PageHeader({
   const displayDescription = description || subtitle;
 
   return (
-    <motion.div
+    <BaseSlideIn
       className={cn('page-header flex flex-col gap-3 pb-6 border-b border-border/10', className)}
-      initial={{ opacity: 0, y: -6 }}
-      animate={{ opacity: 1, y: 0 }}
+      direction="down"
+      offset={6}
       transition={{ duration: 0.3, ease: 'easeOut' }}
     >
       {breadcrumbs && breadcrumbs.length > 0 && (
@@ -82,7 +82,7 @@ export function PageHeader({
           </div>
         )}
       </div>
-    </motion.div>
+    </BaseSlideIn>
   );
 }
 export default PageHeader;

@@ -4,6 +4,8 @@ import { apiGet, apiPost, apiPut, apiDelete } from '../../lib/api/client';
 import { PageShell } from '@/components/shared/PageShell';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Guard } from '../../components/auth/Guard';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
@@ -193,7 +195,7 @@ export default function RolesAdmin() {
                       <label className="block text-sm font-medium mb-1">
                         Name (lowercase, underscores)
                       </label>
-                      <input
+                      <Input
                         type="text"
                         value={editForm.name}
                         onChange={(e) =>
@@ -202,7 +204,7 @@ export default function RolesAdmin() {
                             name: e.target.value.toLowerCase().replace(/[^a-z_]/g, ''),
                           })
                         }
-                        className="login-input px-3"
+                        className="px-3"
                         placeholder="custom_role"
                       />
                     </div>
@@ -210,21 +212,21 @@ export default function RolesAdmin() {
 
                   <div>
                     <label className="block text-sm font-medium mb-1">Label</label>
-                    <input
+                    <Input
                       type="text"
                       value={editForm.label}
                       onChange={(e) => setEditForm({ ...editForm, label: e.target.value })}
-                      className="login-input px-3"
+                      className="px-3"
                       placeholder="Custom Role"
                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-1">Description</label>
-                    <textarea
+                    <Textarea
                       value={editForm.description}
                       onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                      className="w-full resize-none rounded-sm border border-input bg-input px-3 py-2 text-foreground outline-none transition-colors hover:border-border focus:border-primary focus:ring-2 focus:ring-primary/20"
+                      className="resize-none"
                       rows={2}
                       placeholder="Role description..."
                     />
@@ -240,22 +242,20 @@ export default function RolesAdmin() {
                           </div>
                           <div className="flex flex-wrap gap-2">
                             {perms.map((perm) => (
-                              <label
+                              <Button
                                 key={perm}
-                                className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs cursor-pointer transition-colors ${
+                                type="button"
+                                size="sm"
+                                variant={editForm.permissions.includes(perm) ? 'default' : 'secondary'}
+                                onClick={() => togglePermission(perm)}
+                                className={`h-7 rounded px-2 py-1 text-xs ${
                                   editForm.permissions.includes(perm)
-                                    ? 'bg-primary text-primary-foreground'
+                                    ? ''
                                     : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                                 }`}
                               >
-                                <input
-                                  type="checkbox"
-                                  checked={editForm.permissions.includes(perm)}
-                                  onChange={() => togglePermission(perm)}
-                                  className="sr-only"
-                                />
                                 {perm}
-                              </label>
+                              </Button>
                             ))}
                           </div>
                         </div>

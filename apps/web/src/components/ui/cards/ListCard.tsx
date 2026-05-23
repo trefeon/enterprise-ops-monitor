@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -65,12 +66,13 @@ export function ListCard({
             <ul className="divide-y divide-border">
               {items.map((item) => (
                 <li key={item.id}>
-                  <button
+                  <Button
                     type="button"
+                    variant="ghost"
                     onClick={item.onClick}
                     disabled={!item.onClick}
                     className={cn(
-                      'flex w-full items-center justify-between gap-3 px-5 py-3 text-left text-sm transition-colors',
+                      'flex h-auto w-full items-center justify-between gap-3 rounded-none px-5 py-3 text-left text-sm transition-colors',
                       item.onClick
                         ? 'cursor-pointer hover:bg-muted/50'
                         : 'cursor-default'
@@ -91,7 +93,7 @@ export function ListCard({
                         {item.value}
                       </span>
                     )}
-                  </button>
+                  </Button>
                 </li>
               ))}
             </ul>

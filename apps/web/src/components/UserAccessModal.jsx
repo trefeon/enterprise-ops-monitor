@@ -5,6 +5,7 @@ import { apiGet, apiPatch } from '../lib/api/client';
 import { PermissionGroups } from '../lib/auth/permissions';
 import { Loader2, X, Check } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 
 /**
  * UserAccessModal - Modal for managing user roles, branch scope, and permission overrides
@@ -221,24 +222,32 @@ export default function UserAccessModal({
         <CardContent className="p-0">
           <div className="p-4 border-b border-border flex items-center justify-between">
             <h2 className="text-lg font-semibold">Edit Access: {user?.username}</h2>
-            <button onClick={onClose} className="p-1 hover:bg-secondary rounded transition-colors">
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="size-8 rounded"
+            >
               <X className="size-5" />
-            </button>
+            </Button>
           </div>
           {/* Tabs */}
           <div className="flex border-b border-border">
             {availableTabs.map((tab) => (
-              <button
+              <Button
                 key={tab}
+                type="button"
+                variant="ghost"
                 onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-sm font-medium capitalize ${
+                className={`h-10 rounded-none px-4 py-2 text-sm font-medium capitalize ${
                   activeTab === tab
                     ? 'border-b-2 border-primary text-primary'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 {tabLabel[tab] || tab}
-              </button>
+              </Button>
             ))}
           </div>
           <div className="flex-1 overflow-y-auto p-4">
@@ -262,10 +271,9 @@ export default function UserAccessModal({
                               : 'border-border hover:bg-secondary/50'
                           }`}
                         >
-                          <input
-                            type="checkbox"
+                          <Checkbox
                             checked={selectedRoleIds.includes(role.id)}
-                            onChange={() => toggleRole(role.id)}
+                            onCheckedChange={() => toggleRole(role.id)}
                             className="rounded"
                           />
                           <div>
@@ -291,12 +299,12 @@ export default function UserAccessModal({
                       Restrict user to specific branches. Empty selection = all branches.
                     </p>
                     <label className="flex items-center gap-2 p-2 rounded border border-border">
-                      <input
-                        type="checkbox"
+                      <Checkbox
                         checked={allBranches}
-                        onChange={(e) => {
-                          setAllBranches(e.target.checked);
-                          if (e.target.checked) setSelectedBranches([]);
+                        onCheckedChange={(checked) => {
+                          const isChecked = checked === true;
+                          setAllBranches(isChecked);
+                          if (isChecked) setSelectedBranches([]);
                         }}
                         className="rounded"
                       />
@@ -313,10 +321,9 @@ export default function UserAccessModal({
                                 : 'border-border hover:bg-secondary/50'
                             }`}
                           >
-                            <input
-                              type="checkbox"
+                            <Checkbox
                               checked={selectedBranches.includes(String(branch.id))}
-                              onChange={() => toggleBranch(branch.id)}
+                              onCheckedChange={() => toggleBranch(branch.id)}
                               className="rounded"
                             />
                             <span className="text-sm">{branch.name}</span>
@@ -361,14 +368,16 @@ export default function UserAccessModal({
                                 icon = <X className="size-3" />;
                               }
                               return (
-                                <button
+                                <Button
                                   key={perm}
+                                  type="button"
+                                  variant="ghost"
                                   onClick={() => cycleOverride(perm)}
-                                  className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium border transition-all active:scale-95 ${bgClass}`}
+                                  className={`h-7 gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-all active:scale-95 ${bgClass}`}
                                 >
                                   {icon}
                                   {perm}
-                                </button>
+                                </Button>
                               );
                             })}
                           </div>

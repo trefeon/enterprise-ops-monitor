@@ -1,5 +1,4 @@
 import { type ReactNode, useState } from 'react';
-import { motion } from 'framer-motion';
 import {
   Activity,
   AlertCircle,
@@ -24,6 +23,8 @@ import {
   Zap,
   type LucideIcon,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { BaseAnimatedSection } from '@/components/base';
 import { cn } from '@/lib/utils';
 
 interface FeatureMetric {
@@ -81,15 +82,16 @@ export default function FeatureStoryBanner({ story }: FeatureStoryBannerProps) {
   const Icon = ICON_MAP[story.materialIcon || 'info'] || ICON_MAP.info;
 
   return (
-    <motion.section
+    <BaseAnimatedSection
       className="group rounded-lg border border-primary/20 bg-primary/[0.03] transition-colors hover:border-primary/30"
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
+      direction="down"
+      offset={10}
       transition={{ duration: 0.35, ease: 'easeOut' }}
     >
-      <button
+      <Button
         type="button"
-        className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
+        variant="ghost"
+        className="flex h-auto w-full items-center justify-between gap-4 rounded-none px-5 py-4 text-left hover:bg-transparent"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
       >
@@ -109,7 +111,7 @@ export default function FeatureStoryBanner({ story }: FeatureStoryBannerProps) {
         <div className="flex size-8 items-center justify-center rounded-md border bg-secondary text-muted-foreground transition-colors group-hover:text-primary">
           {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
         </div>
-      </button>
+      </Button>
 
       {open && (
         <div className="animate-in slide-in-from-top-2 fade-in border-t border-primary/10 px-5 pb-5 pt-5 duration-200">
@@ -174,7 +176,7 @@ export default function FeatureStoryBanner({ story }: FeatureStoryBannerProps) {
           )}
         </div>
       )}
-    </motion.section>
+    </BaseAnimatedSection>
   );
 }
 

@@ -6,6 +6,7 @@ import PageHeader from '@/components/shared/PageHeader';
 import Toolbar from '@/components/shared/Toolbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -19,14 +20,7 @@ import { StatusBadge } from '@/components/shared/StatusBadge';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { DatePicker } from '@/components/shared/DatePicker';
 import { SearchBar } from '@/components/shared/SearchBar';
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from '@/components/ui/table';
+import { DataTable } from '@/components/shared/DataTable';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { getFeatureStory } from '../../data/stories';
@@ -444,7 +438,7 @@ function NotificationTargetEditor({
             </span>
           </div>
 
-          <textarea
+          <Textarea
             value={targetDraft}
             onChange={(e) => onDraftChange(e.target.value)}
             rows={12}
@@ -985,14 +979,14 @@ export default function AfterHours() {
                   <span className="text-3xs font-bold uppercase tracking-wider text-muted-foreground">
                     Status
                   </span>
-                  <button
+                  <Button
                     type="button"
                     role="switch"
                     aria-checked={notifyEnabled}
                     onClick={() =>
                       updateSetting('notify_enabled', notifyEnabled ? 'false' : 'true')
                     }
-                    className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer items-center rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 ${
+                    className={`relative inline-flex h-5 w-10 shrink-0 cursor-pointer items-center rounded-full p-0 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 ${
                       notifyEnabled ? 'bg-status-success' : 'bg-muted-foreground/30'
                     }`}
                   >
@@ -1001,7 +995,7 @@ export default function AfterHours() {
                         notifyEnabled ? 'translate-x-5' : 'translate-x-0.5'
                       }`}
                     />
-                  </button>
+                  </Button>
                   <span
                     className={`text-xs font-bold uppercase tracking-wider transition-colors ${
                       notifyEnabled ? 'text-status-success' : 'text-muted-foreground'
@@ -1125,7 +1119,7 @@ export default function AfterHours() {
                           <label className="mb-1.5 block text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                             {`Telegram Stage ${idx + 1} Template (${stageLabel} - ${timeValue})`}
                           </label>
-                          <textarea
+                          <Textarea
                             value={
                               telegramStageTemplates[idx] || DEFAULT_TELEGRAM_STAGE_TEMPLATES[idx]
                             }
@@ -1243,7 +1237,7 @@ export default function AfterHours() {
                           <label className="mb-1.5 block text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                             {`WhatsApp Stage ${idx + 1} Template (${stageLabel} - ${timeValue})`}
                           </label>
-                          <textarea
+                          <Textarea
                             value={
                               whatsappStageTemplates[idx] || DEFAULT_WHATSAPP_STAGE_TEMPLATES[idx]
                             }
@@ -1378,20 +1372,22 @@ export default function AfterHours() {
             <div className="flex flex-wrap items-center gap-2">
               <span className="text-xs font-medium text-muted-foreground">Recent Checks:</span>
               {availableDates.slice(0, 7).map((d) => (
-                <button
+                <Button
                   key={d.check_date}
                   onClick={() => {
                     setDate(d.check_date);
                     setPage(1);
                   }}
-                  className={`rounded-sm px-3 py-1 text-xs transition-colors ${
+                  size="sm"
+                  variant={d.check_date === date ? 'default' : 'secondary'}
+                  className={`h-7 rounded-sm px-3 text-xs ${
                     d.check_date === date
-                      ? 'bg-primary text-primary-foreground'
+                      ? ''
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
                 >
                   {d.check_date} ({d.violation_count})
-                </button>
+                </Button>
               ))}
             </div>
           )}
@@ -1405,38 +1401,42 @@ export default function AfterHours() {
                   </span>
                 </div>
                 <div className="mt-3 flex flex-wrap gap-2">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => {
                       setBranch('');
                       setPage(1);
                     }}
-                    className={`rounded-sm px-3 py-1 text-xs font-medium transition-colors ${
+                    size="sm"
+                    variant={!branch ? 'default' : 'secondary'}
+                    className={`h-7 rounded-sm px-3 text-xs font-medium ${
                       !branch
-                        ? 'bg-primary text-primary-foreground'
+                        ? ''
                         : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                     }`}
                   >
                     All Branches ({totalViolations})
-                  </button>
+                  </Button>
                   {branchSummaries.map((b) => {
                     const branchId = String(b.branch_id);
                     return (
-                      <button
+                      <Button
                         key={b.branch_id}
                         type="button"
                         onClick={() => {
                           setBranch(branch === branchId ? '' : branchId);
                           setPage(1);
                         }}
-                        className={`rounded-sm px-3 py-1 text-xs font-medium transition-colors ${
+                        size="sm"
+                        variant={branch === branchId ? 'default' : 'secondary'}
+                        className={`h-7 rounded-sm px-3 text-xs font-medium ${
                           branch === branchId
-                            ? 'bg-primary text-primary-foreground'
+                            ? ''
                             : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                         }`}
                       >
                         {b.branch_name || `Branch ${b.branch_id}`} ({b.violation_count})
-                      </button>
+                      </Button>
                     );
                   })}
                 </div>
@@ -1469,60 +1469,56 @@ export default function AfterHours() {
                 />
               ) : (
                 <>
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Status</TableHead>
-                        <TableHead>PC Identification</TableHead>
-                        <TableHead>Branch</TableHead>
-                        <TableHead>Last Active (WIB)</TableHead>
-                        <TableHead>Detected At</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {violations.map((v) => {
-                        const statusLabel = v.notified ? 'NOTIFIED' : 'PENDING';
-                        return (
-                          <TableRow key={v.id}>
-                            <TableCell>
-                              <StatusBadge
-                                variant={v.notified ? 'success' : 'warning'}
-                                size="sm"
-                                live={!v.notified}
-                              >
-                                {statusLabel}
-                              </StatusBadge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-col">
-                                <span className="text-xs text-foreground tabular-nums">
-                                  {v.store_code}
-                                </span>
-                                <span className="text-xs text-muted-foreground">
-                                  {v.store_name || '—'}
-                                </span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
-                                {v.branch_name || v.branch_id}
-                              </span>
-                            </TableCell>
-                            <TableCell
-                              className={`text-xs tabular-nums ${
-                                v.last_sync_at ? 'text-status-warning' : 'text-muted-foreground'
-                              }`}
-                            >
-                              {formatWibTime(v.last_sync_at)}
-                            </TableCell>
-                            <TableCell className="text-xs text-muted-foreground tabular-nums">
-                              {formatWibTime(v.detected_at)}
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
+                  <DataTable
+                    columns={[
+                      {
+                        header: 'Status',
+                        render: (v) => (
+                          <StatusBadge
+                            variant={v.notified ? 'success' : 'warning'}
+                            size="sm"
+                            live={!v.notified}
+                          >
+                            {v.notified ? 'NOTIFIED' : 'PENDING'}
+                          </StatusBadge>
+                        ),
+                      },
+                      {
+                        header: 'PC Identification',
+                        render: (v) => (
+                          <div className="flex flex-col">
+                            <span className="text-xs text-foreground tabular-nums">{v.store_code}</span>
+                            <span className="text-xs text-muted-foreground">{v.store_name || '—'}</span>
+                          </div>
+                        ),
+                      },
+                      {
+                        header: 'Branch',
+                        render: (v) => (
+                          <span className="rounded bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">
+                            {v.branch_name || v.branch_id}
+                          </span>
+                        ),
+                      },
+                      {
+                        header: 'Last Active (WIB)',
+                        className: 'text-xs tabular-nums',
+                        render: (v) => (
+                          <span className={v.last_sync_at ? 'text-status-warning' : 'text-muted-foreground'}>
+                            {formatWibTime(v.last_sync_at)}
+                          </span>
+                        ),
+                      },
+                      {
+                        header: 'Detected At',
+                        className: 'text-xs text-muted-foreground tabular-nums',
+                        render: (v) => formatWibTime(v.detected_at),
+                      },
+                    ]}
+                    data={violations}
+                    keyExtractor={(v) => v.id}
+                    noCard
+                  />
 
                   {/* Pagination */}
                   {pagination && totalPages > 1 && (
