@@ -1,5 +1,4 @@
-import React from 'react';
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import PrivateRoute from './PrivateRoute';
@@ -8,7 +7,7 @@ import { AuthContext } from '../context/AuthContext';
 describe('PrivateRoute', () => {
   it('redirects to /login when unauthenticated', () => {
     render(
-      <AuthContext.Provider value={{ user: null, loading: false }}>
+      <AuthContext.Provider value={{ user: null, loading: false } as any}>
         <MemoryRouter initialEntries={['/']}>
           <Routes>
             <Route element={<PrivateRoute />}>
@@ -25,7 +24,7 @@ describe('PrivateRoute', () => {
 
   it('renders child route when authenticated', () => {
     render(
-      <AuthContext.Provider value={{ user: { id: '1' }, loading: false }}>
+      <AuthContext.Provider value={{ user: { id: '1' }, loading: false } as any}>
         <MemoryRouter initialEntries={['/']}>
           <Routes>
             <Route element={<PrivateRoute />}>
@@ -42,7 +41,7 @@ describe('PrivateRoute', () => {
 
   it('renders children when used as an element wrapper', () => {
     render(
-      <AuthContext.Provider value={{ user: { id: '1' }, loading: false }}>
+      <AuthContext.Provider value={{ user: { id: '1' }, loading: false } as any}>
         <MemoryRouter initialEntries={['/']}>
           <Routes>
             <Route

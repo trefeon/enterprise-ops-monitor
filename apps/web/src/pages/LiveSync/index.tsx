@@ -82,7 +82,12 @@ interface EodData {
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const API_BASE = (import.meta as Record<string, any>).env?.VITE_API_URL || '/api';
+const RAW_API_BASE = (import.meta as Record<string, any>).env?.VITE_API_URL;
+const API_BASE = RAW_API_BASE
+  ? String(RAW_API_BASE).replace(/\/+$/, '').endsWith('/api')
+    ? String(RAW_API_BASE).replace(/\/+$/, '')
+    : `${String(RAW_API_BASE).replace(/\/+$/, '')}/api`
+  : '/api';
 const REFRESH_INTERVAL = 10_000; // 10 seconds
 
 const formatDuration = (seconds: number | null | undefined): string => {

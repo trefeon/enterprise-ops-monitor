@@ -25,6 +25,8 @@ const exportLogsQuery = z
   .passthrough();
 
 const restartParams = z.object({ service: z.string().min(1).max(64) });
+const emptyQuery = z.object({}).passthrough();
+const emptyBody = z.object({}).passthrough().optional().default({});
 
 const confirmBody = z
   .object({
@@ -36,18 +38,21 @@ router.get(
   "/overview",
   authMiddleware,
   requirePermission("SYSTEM_VIEW"),
+  validate({ query: emptyQuery }),
   asyncHandler(systemController.getSystemOverview)
 );
 router.get(
   "/branches",
   authMiddleware,
   requirePermission("SYSTEM_VIEW"),
+  validate({ query: emptyQuery }),
   asyncHandler(systemController.getSystemBranches)
 );
 router.get(
   "/services",
   authMiddleware,
   requirePermission("SYSTEM_VIEW"),
+  validate({ query: emptyQuery }),
   asyncHandler(systemController.getSystemServices)
 );
 router.get(
@@ -69,6 +74,7 @@ router.get(
   "/health",
   authMiddleware,
   requirePermission("SYSTEM_VIEW"),
+  validate({ query: emptyQuery }),
   asyncHandler(systemController.getSystemHealth)
 );
 router.post(
@@ -76,6 +82,7 @@ router.post(
   authMiddleware,
   requirePermission("SYSTEM_HEALTHCHECK"),
   requireNotDemo(),
+  validate({ body: emptyBody }),
   asyncHandler(systemController.runHealthcheck)
 );
 router.post(

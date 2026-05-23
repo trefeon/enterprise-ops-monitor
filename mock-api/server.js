@@ -1,6 +1,7 @@
-const express = require("express");
-const cors = require("cors");
-const { faker } = require("@faker-js/faker");
+const express = require('express');
+const cors = require('cors');
+const { faker } = require('@faker-js/faker');
+const ExcelJS = require('exceljs');
 
 const app = express();
 app.use(cors());
@@ -8,6 +9,15 @@ app.use(express.json());
 
 const PORT = process.env.MOCK_API_PORT || 4000;
 const WIB_OFFSET = 7 * 60 * 60 * 1000; // +07:00
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+const EMPLOYEE_ROLES = [
+  'Store Manager',
+  'Assistant Manager',
+  'Supervisor',
+  'Cashier',
+  'Sales Associate',
+  'Warehouse Staff',
+];
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 function randomInt(min, max) {
@@ -37,7 +47,7 @@ function toWibDate(date) {
 function toWibIso(date) {
   const d = date || new Date();
   const wib = new Date(d.getTime() + WIB_OFFSET);
-  return wib.toISOString().replace("Z", "+07:00");
+  return wib.toISOString().replace('Z', '+07:00');
 }
 
 function nowWib() {
@@ -71,7 +81,7 @@ function randomTimeInWindow(hourStart, hourEnd, date) {
 }
 
 function ok(res, data, meta) {
-  res.json({ ok: true, data, meta: meta || null });
+  res.json({ ok: true, data, meta: meta || null, error: null });
 }
 
 function fail(res, status, code, message) {
@@ -93,27 +103,102 @@ function paginate(items, query) {
     data: paged,
     meta: {
       pagination: { page, pageSize, total },
-      timezone: "Asia/Jakarta",
+      timezone: 'Asia/Jakarta',
     },
+  };
+}
+
+function fitSheetColumns(sheet) {
+  sheet.columns.forEach((column) => {
+    let maxLength = 10;
+    column.eachCell({ includeEmpty: true }, (cell) => {
+      const text = cell.value == null ? '' : String(cell.value);
+      maxLength = Math.max(maxLength, Math.min(text.length + 2, 42));
+    });
+    column.width = Math.max(column.width || 10, maxLength);
+  });
+}
+
+function addWorkbookSheet(workbook, name, columns, rows) {
+  const sheet = workbook.addWorksheet(name, {
+    views: [{ state: 'frozen', ySplit: 1 }],
+  });
+  sheet.columns = columns;
+  sheet.getRow(1).font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  sheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF111827' } };
+  sheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+
+  if (rows.length === 0) {
+    const row = sheet.addRow({});
+    row.getCell(1).value = 'No demo data for this filter.';
+    row.getCell(1).font = { italic: true, color: { argb: 'FF64748B' } };
+  } else {
+    rows.forEach((row) => sheet.addRow(row));
+  }
+
+  sheet.autoFilter = {
+    from: { row: 1, column: 1 },
+    to: { row: 1, column: columns.length },
+  };
+  sheet.eachRow((row, rowNumber) => {
+    row.eachCell((cell) => {
+      cell.border = {
+        top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+        left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+        bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+        right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+      };
+      cell.alignment = {
+        vertical: 'top',
+        horizontal: rowNumber === 1 ? 'center' : 'left',
+        wrapText: true,
+      };
+    });
+  });
+  fitSheetColumns(sheet);
+}
+
+async function buildWorkbookPayload(fileName, sheets, summary = {}) {
+  const workbook = new ExcelJS.Workbook();
+  workbook.creator = 'Enterprise Ops Monitor Demo';
+  workbook.lastModifiedBy = 'Enterprise Ops Monitor Demo';
+  workbook.created = new Date();
+  workbook.modified = new Date();
+
+  const summarySheet = workbook.addWorksheet('Summary');
+  summarySheet.columns = [{ width: 24 }, { width: 48 }];
+  summarySheet.addRow(['Report', fileName]);
+  summarySheet.addRow(['Generated At', toWibIso(new Date())]);
+  summarySheet.addRow(['Mode', 'Demo']);
+  Object.entries(summary).forEach(([key, value]) => summarySheet.addRow([key, value]));
+  summarySheet.getRow(1).font = { bold: true };
+  fitSheetColumns(summarySheet);
+
+  sheets.forEach((sheet) => addWorkbookSheet(workbook, sheet.name, sheet.columns, sheet.rows));
+  const buffer = await workbook.xlsx.writeBuffer();
+  return {
+    fileName,
+    contentType: XLSX_MIME,
+    contentBase64: Buffer.from(buffer).toString('base64'),
   };
 }
 
 // ─── Branch & Store Data (synthetic portfolio demo IDs) ─────────────────────────
 const BRANCHES = [
-  { id: "2", code: "H02", name: "NORTH HUB", region: "Alpha" },
-  { id: "3", code: "H03", name: "EAST HUB", region: "Alpha" },
-  { id: "4", code: "H04", name: "CENTRAL HUB", region: "Beta" },
-  { id: "5", code: "H05", name: "COASTAL HUB", region: "Beta" },
-  { id: "6", code: "H06", name: "HIGHLAND HUB", region: "Gamma" },
-  { id: "7", code: "H07", name: "WEST HUB", region: "Gamma" },
-  { id: "8", code: "H08", name: "RIVER HUB", region: "Delta" },
-  { id: "9", code: "H09", name: "SOUTH HUB", region: "Delta" },
+  { id: '2', code: 'H02', name: 'NORTH HUB', region: 'Alpha' },
+  { id: '3', code: 'H03', name: 'EAST HUB', region: 'Alpha' },
+  { id: '4', code: 'H04', name: 'CENTRAL HUB', region: 'Beta' },
+  { id: '5', code: 'H05', name: 'COASTAL HUB', region: 'Beta' },
+  { id: '6', code: 'H06', name: 'HIGHLAND HUB', region: 'Gamma' },
+  { id: '7', code: 'H07', name: 'WEST HUB', region: 'Gamma' },
+  { id: '8', code: 'H08', name: 'RIVER HUB', region: 'Delta' },
+  { id: '9', code: 'H09', name: 'SOUTH HUB', region: 'Delta' },
 ];
 
 // Generate unique random store codes (numeric, e.g. 302001) mapped to branch IDs
 function buildDemoStoreCode(branchId, index) {
   const branchNum = 300 + parseInt(branchId, 10);
-  const suffix = String(index).padStart(3, "0");
+  const suffix = String(index).padStart(3, '0');
   return `${branchNum}${suffix}`;
 }
 
@@ -137,7 +222,7 @@ function buildStores() {
         address: `${faker.location.streetAddress()}`,
         phone: `+62-812-${String(randomInt(1000, 9999))}-${String(randomInt(1000, 9999))}`,
         picName: `${faker.person.firstName()} ${faker.person.lastName()}`,
-        status: "active",
+        status: 'active',
         employeeCount: randomInt(15, 40),
         openingDate: faker.date.past({ years: 5 }).toISOString().slice(0, 10),
         isActive: true,
@@ -150,26 +235,98 @@ function buildStores() {
 
 const STORES = buildStores();
 
+function buildEmployees() {
+  let localIdx = 1;
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(-2);
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const datePrefix = `${yy}${mm}${dd}`;
+  const employees = [];
+
+  STORES.forEach((store) => {
+    const hash = store.storeCode.split('').reduce((sum, char) => sum + char.charCodeAt(0), 0);
+    const count = 12 + (hash % 10);
+    for (let i = 0; i < count; i += 1) {
+      const pIdx = String(localIdx).padStart(4, '0');
+      localIdx += 1;
+      const nik = `${datePrefix}${pIdx}`;
+      const role = pickRandom(EMPLOYEE_ROLES);
+      employees.push({
+        id: `demo-employee-${pIdx}`,
+        nik,
+        empid: nik,
+        fullName: `${faker.person.firstName()} ${faker.person.lastName()}`,
+        name: null,
+        role,
+        jobName: role,
+        storeCode: store.storeCode,
+        storeName: store.storeName,
+        branchId: store.branchId,
+        branchName: store.branchName,
+        status: pickRandom(['ACTIVE', 'ACTIVE', 'ACTIVE', 'INACTIVE']),
+        source: 'demo',
+        lastActivity: randomPastMinutes(1440),
+      });
+    }
+  });
+
+  return employees.map((employee) => ({
+    ...employee,
+    name: employee.fullName,
+  }));
+}
+
+function filterEmployeesForRequest(query) {
+  const { q, query: search, storeCode, branchId, branch, role, status } = query;
+  const needle = String(q || search || '')
+    .trim()
+    .toLowerCase();
+  let employees = buildEmployees();
+
+  if (needle) {
+    employees = employees.filter(
+      (employee) =>
+        employee.nik.includes(needle) ||
+        employee.fullName.toLowerCase().includes(needle) ||
+        employee.storeCode.toLowerCase().includes(needle) ||
+        employee.storeName.toLowerCase().includes(needle),
+    );
+  }
+
+  if (storeCode)
+    employees = employees.filter((employee) => String(employee.storeCode) === String(storeCode));
+  if (branchId || branch) {
+    const branchFilter = branchId || branch;
+    employees = employees.filter((employee) => String(employee.branchId) === String(branchFilter));
+  }
+  if (role)
+    employees = employees.filter((employee) => employee.role === role || employee.jobName === role);
+  if (status) employees = employees.filter((employee) => employee.status === status);
+
+  return employees;
+}
+
 // Stateful EOD tracking for demo sync
 const eodState = {
   stores: {}, // storeCode -> { status, statusSales, uploadPercent, eodAt, uploadAt, maxUploadAt, lastSync }
   lastReset: Date.now(),
-  completedTime: null
+  completedTime: null,
 };
 
 function initEodState() {
   const today = toWibDate();
   eodState.stores = {};
   for (const store of STORES) {
-    const maxUpload = new Date(today + "T23:59:59+07:00");
+    const maxUpload = new Date(today + 'T23:59:59+07:00');
     eodState.stores[store.storeCode] = {
-      status: "pending",
-      statusSales: "pending",
+      status: 'pending',
+      statusSales: 'pending',
       uploadPercent: 0,
       eodAt: null,
       uploadAt: null,
       maxUploadAt: maxUpload.toISOString(),
-      lastSync: new Date(Date.now() - 30 * 1000).toISOString()
+      lastSync: new Date(Date.now() - 30 * 1000).toISOString(),
     };
   }
   eodState.lastReset = Date.now();
@@ -189,7 +346,7 @@ setInterval(() => {
     const sState = eodState.stores[store.storeCode];
     if (!sState) continue;
 
-    if (sState.status === "pending") {
+    if (sState.status === 'pending') {
       allFinished = false;
 
       // 15% chance to progress the upload percent or status
@@ -203,13 +360,13 @@ setInterval(() => {
           if (sState.uploadPercent >= 100) {
             sState.uploadPercent = 100;
             // 90% chance it succeeds (done), 10% chance it fails (failed)
-            if (Math.random() < 0.90) {
-              sState.status = "done";
-              sState.statusSales = "OK";
+            if (Math.random() < 0.9) {
+              sState.status = 'done';
+              sState.statusSales = 'OK';
               sState.eodAt = now.toISOString();
             } else {
-              sState.status = "failed";
-              sState.statusSales = "ERR";
+              sState.status = 'failed';
+              sState.statusSales = 'ERR';
             }
           }
         }
@@ -228,7 +385,7 @@ setInterval(() => {
 }, 1000);
 
 // ─── Time-aware EOD Status Generator ──────────────────────────────────────────
-const EOD_STATUSES = ["done", "pending", "failed"];
+const EOD_STATUSES = ['done', 'pending', 'failed'];
 
 function generateEodStatus() {
   const hour = wibHour();
@@ -269,8 +426,11 @@ function buildDashboardSummary() {
       storeName: s.storeName,
       branchId: s.branchId,
       branchName: s.branchName,
-      status: sState ? sState.status : "pending",
-      lastSyncAt: sState && sState.lastSync ? sState.lastSync : new Date(Date.now() - 30 * 1000).toISOString(),
+      status: sState ? sState.status : 'pending',
+      lastSyncAt:
+        sState && sState.lastSync
+          ? sState.lastSync
+          : new Date(Date.now() - 30 * 1000).toISOString(),
       uploadAt: sState && sState.uploadAt ? sState.uploadAt : null,
       eodAt: sState && sState.eodAt ? sState.eodAt : null,
     };
@@ -280,8 +440,8 @@ function buildDashboardSummary() {
   let failed = 0;
   let lastSyncAt = null;
   for (const row of eodRows) {
-    if (row.status === "done") completed++;
-    else if (row.status === "failed") failed++;
+    if (row.status === 'done') completed++;
+    else if (row.status === 'failed') failed++;
     if (!lastSyncAt || row.lastSyncAt > lastSyncAt) lastSyncAt = row.lastSyncAt;
   }
   const pending = STORES.length - completed - failed;
@@ -291,10 +451,15 @@ function buildDashboardSummary() {
   const latestBackup = new Date(Date.now() - randomInt(0, 3600000));
   const failedEodCount = failed;
   const criticalErrors = failedEodCount > 0 ? randomInt(1, 3) : 0;
+  const syncStaleCount = randomInt(1, Math.min(5, STORES.length));
+  const syncProblemCount = randomInt(0, Math.min(3, STORES.length - syncStaleCount));
+  const syncHealthyCount = Math.max(0, STORES.length - syncStaleCount - syncProblemCount);
+  const activeAgentCount = Math.max(8, Math.min(STORES.length, randomInt(18, STORES.length)));
+  const onlineAgentCount = Math.max(1, activeAgentCount - randomInt(0, 4));
 
-  let systemHealth = "OK";
-  if (criticalErrors > 2) systemHealth = "CRITICAL";
-  else if (criticalErrors > 0 || failedEodCount > 3) systemHealth = "WARNING";
+  let systemHealth = 'OK';
+  if (criticalErrors > 2) systemHealth = 'CRITICAL';
+  else if (criticalErrors > 0 || failedEodCount > 3) systemHealth = 'WARNING';
 
   return {
     storesTotal: STORES.length,
@@ -309,11 +474,27 @@ function buildDashboardSummary() {
     backups: {
       available: backupCount,
       latestAt: toWibIso(latestBackup),
+      failedCount: randomInt(0, 1),
     },
     employees: {
       total: employeeCount,
       branches: BRANCHES.length,
       syncedAt: toWibIso(new Date(Date.now() - randomInt(0, 600000))),
+    },
+    agents: {
+      activeCount: activeAgentCount,
+      onlineCount: onlineAgentCount,
+      updatePending: randomInt(1, 4),
+    },
+    violations: {
+      activeCount: failedEodCount + syncProblemCount,
+      afterHoursCount: randomInt(1, 6),
+    },
+    sync: {
+      healthyPercentage: Math.round((syncHealthyCount / STORES.length) * 100),
+      healthyCount: syncHealthyCount,
+      staleCount: syncStaleCount,
+      problemCount: syncProblemCount,
     },
     systemHealth,
   };
@@ -325,14 +506,14 @@ function buildDashboardAlerts() {
 
   // EOD failure alerts (derived from current state)
   const failedCount = STORES.filter(() => {
-    return generateEodStatus() === "failed";
+    return generateEodStatus() === 'failed';
   }).length;
 
   if (failedCount > 0) {
     alerts.push({
       id: `eod_failed_${Date.now()}`,
-      type: "EOD_FAILED",
-      severity: failedCount > 3 ? "HIGH" : "MEDIUM",
+      type: 'EOD_FAILED',
+      severity: failedCount > 3 ? 'HIGH' : 'MEDIUM',
       title: `${failedCount} stores failed EOD`,
       createdAt: toWibIso(new Date()),
     });
@@ -340,12 +521,12 @@ function buildDashboardAlerts() {
 
   // Late EOD (during window hours)
   if (hour >= 21) {
-    const lateCount = STORES.filter(() => generateEodStatus() === "pending").length;
+    const lateCount = STORES.filter(() => generateEodStatus() === 'pending').length;
     if (lateCount > 0) {
       alerts.push({
         id: `eod_late_${Date.now()}`,
-        type: "EOD_MISSED",
-        severity: lateCount > 3 ? "MEDIUM" : "LOW",
+        type: 'EOD_MISSED',
+        severity: lateCount > 3 ? 'MEDIUM' : 'LOW',
         title: `${lateCount} stores have not submitted EOD`,
         createdAt: toWibIso(new Date()),
       });
@@ -356,9 +537,9 @@ function buildDashboardAlerts() {
   if (Math.random() > 0.6) {
     alerts.push({
       id: `backup_${Date.now()}`,
-      type: "BACKUP_FAILED",
-      severity: "HIGH",
-      title: "Scheduled backup did not complete",
+      type: 'BACKUP_FAILED',
+      severity: 'HIGH',
+      title: 'Scheduled backup did not complete',
       createdAt: toWibIso(new Date(Date.now() - randomInt(0, 86400000))),
     });
   }
@@ -366,9 +547,9 @@ function buildDashboardAlerts() {
   if (Math.random() > 0.8) {
     alerts.push({
       id: `disk_${Date.now()}`,
-      type: "DISK_LOW",
-      severity: "MEDIUM",
-      title: "Disk usage above 85% on eom-db",
+      type: 'DISK_LOW',
+      severity: 'MEDIUM',
+      title: 'Disk usage above 85% on eom-db',
       createdAt: toWibIso(new Date(Date.now() - randomInt(0, 3600000))),
     });
   }
@@ -376,9 +557,9 @@ function buildDashboardAlerts() {
   if (Math.random() > 0.85) {
     alerts.push({
       id: `service_${Date.now()}`,
-      type: "SERVICE_DOWN",
-      severity: "HIGH",
-      title: "Notification service unreachable",
+      type: 'SERVICE_DOWN',
+      severity: 'HIGH',
+      title: 'Notification service unreachable',
       createdAt: toWibIso(new Date(Date.now() - randomInt(0, 600000))),
     });
   }
@@ -398,12 +579,13 @@ function buildEodStoreRows(filterDate) {
     let status, eodAt, syncAt;
     if (isToday) {
       const sState = eodState.stores[store.storeCode];
-      status = sState ? sState.status : "pending";
+      status = sState ? sState.status : 'pending';
       eodAt = sState && sState.eodAt ? new Date(sState.eodAt) : null;
-      syncAt = sState && sState.lastSync ? new Date(sState.lastSync) : new Date(Date.now() - 30 * 1000);
+      syncAt =
+        sState && sState.lastSync ? new Date(sState.lastSync) : new Date(Date.now() - 30 * 1000);
     } else {
       status = generateHistoricalStatus(daysAgoDiff);
-      const isDone = status === "done";
+      const isDone = status === 'done';
       eodAt = isDone ? randomTimeInWindow(19, 23, new Date(targetDate)) : null;
       syncAt = isDone ? eodAt : randomTimeInWindow(6, 23, new Date(targetDate));
     }
@@ -417,8 +599,8 @@ function buildEodStoreRows(filterDate) {
       status,
       lastEodAt: eodAt ? toWibIso(eodAt) : null,
       lastSyncAt: syncAt ? toWibIso(syncAt) : null,
-      source: isToday ? (Math.random() > 0.3 ? "api" : "bot") : "db",
-      errorMessage: status === "failed" ? "EOD not completed by deadline" : null,
+      source: isToday ? (Math.random() > 0.3 ? 'api' : 'bot') : 'db',
+      errorMessage: status === 'failed' ? 'EOD not completed by deadline' : null,
     };
   });
 }
@@ -426,15 +608,15 @@ function buildEodStoreRows(filterDate) {
 function buildEodAreas(eodRows) {
   const stats = new Map();
   for (const row of eodRows) {
-    const areaId = row.areaId || "UNKNOWN";
+    const areaId = row.areaId || 'UNKNOWN';
     const areaName = row.areaName || areaId;
     if (!stats.has(areaId)) {
       stats.set(areaId, { areaId, areaName, storesTotal: 0, done: 0, pending: 0, failed: 0 });
     }
     const s = stats.get(areaId);
     s.storesTotal += 1;
-    if (row.status === "done") s.done += 1;
-    else if (row.status === "failed") s.failed += 1;
+    if (row.status === 'done') s.done += 1;
+    else if (row.status === 'failed') s.failed += 1;
     else s.pending += 1;
   }
   return Array.from(stats.values()).map((row) => ({
@@ -449,8 +631,8 @@ function buildEodTrend(days) {
     const date = daysAgo(i);
     const dateKey = toWibDate(date);
     const dayStatuses = STORES.map(() => generateHistoricalStatus(i));
-    const done = dayStatuses.filter((s) => s === "done").length;
-    const failed = dayStatuses.filter((s) => s === "failed").length;
+    const done = dayStatuses.filter((s) => s === 'done').length;
+    const failed = dayStatuses.filter((s) => s === 'failed').length;
     const pending = STORES.length - done - failed;
     data.push({ date: dateKey, done, failed, pending, total: STORES.length });
   }
@@ -504,12 +686,12 @@ function buildStoreEodHistory(storeCode) {
     const date = daysAgo(i);
     const dateKey = toWibDate(date);
     const status = generateHistoricalStatus(i);
-    const isDone = status === "done";
+    const isDone = status === 'done';
     records.push({
       date: dateKey,
       businessDate: dateKey,
       status,
-      statusSales: isDone ? "Ok" : "Not Ok",
+      statusSales: isDone ? 'Ok' : 'Not Ok',
       uploadPercent: isDone ? 100 : randomInt(0, 85),
       storeName: store.storeName,
       branchId: store.branchId,
@@ -522,25 +704,29 @@ function buildStoreEodHistory(storeCode) {
 }
 
 // ─── Dashboard ─────────────────────────────────────────────────────────────────
-app.get("/api/dashboard/summary", (req, res) => {
-  return ok(res, buildDashboardSummary(), { timezone: "Asia/Jakarta" });
+app.get('/api/dashboard/summary', (req, res) => {
+  return ok(res, buildDashboardSummary(), { timezone: 'Asia/Jakarta' });
 });
 
-app.get("/api/dashboard/alerts", (req, res) => {
-  const limit = Math.min(parseInt(req.query.limit || "10", 10), 50);
+app.get('/api/dashboard/alerts', (req, res) => {
+  const limit = Math.min(parseInt(req.query.limit || '10', 10), 50);
   const alerts = buildDashboardAlerts().slice(0, limit);
-  return ok(res, alerts, { timezone: "Asia/Jakarta" });
+  return ok(res, alerts, { timezone: 'Asia/Jakarta' });
 });
 
-app.post("/api/dashboard/sync", (req, res) => {
+app.post('/api/dashboard/sync', (req, res) => {
   // Simulate sync delay
   setTimeout(() => {
-    return ok(res, buildDashboardSummary(), { refreshedAt: toWibIso(new Date()), sync: { ok: true, reason: "manual_dashboard_sync" }, timezone: "Asia/Jakarta" });
+    return ok(res, buildDashboardSummary(), {
+      refreshedAt: toWibIso(new Date()),
+      sync: { ok: true, reason: 'manual_dashboard_sync' },
+      timezone: 'Asia/Jakarta',
+    });
   }, 300);
 });
 
 // ─── EOD ───────────────────────────────────────────────────────────────────────
-app.get("/api/eod/stores", (req, res) => {
+app.get('/api/eod/stores', (req, res) => {
   const { date, areaId, status, q } = req.query;
   let rows = buildEodStoreRows(date || undefined);
 
@@ -548,91 +734,112 @@ app.get("/api/eod/stores", (req, res) => {
   if (status) rows = rows.filter((r) => r.status === status);
   if (q) {
     const needle = q.toLowerCase();
-    rows = rows.filter((r) => r.storeCode.toLowerCase().includes(needle) || r.storeName.toLowerCase().includes(needle));
+    rows = rows.filter(
+      (r) =>
+        r.storeCode.toLowerCase().includes(needle) || r.storeName.toLowerCase().includes(needle),
+    );
   }
 
   const result = paginate(rows, req.query);
-  return ok(res, result.data, { ...result.meta, date: date || toWibDate(), snapshotMode: date && date < toWibDate() ? "history" : "current" });
+  return ok(res, result.data, {
+    ...result.meta,
+    date: date || toWibDate(),
+    snapshotMode: date && date < toWibDate() ? 'history' : 'current',
+  });
 });
 
-app.get("/api/eod/areas", (req, res) => {
+app.get('/api/eod/areas', (req, res) => {
   const { date } = req.query;
   const rows = buildEodStoreRows(date || undefined);
   const areas = buildEodAreas(rows);
-  return ok(res, areas, { date: date || toWibDate(), timezone: "Asia/Jakarta" });
+  return ok(res, areas, { date: date || toWibDate(), timezone: 'Asia/Jakarta' });
 });
 
-app.get("/api/eod/areas-summary", (req, res) => {
+app.get('/api/eod/areas-summary', (req, res) => {
   const rows = buildEodStoreRows();
   const areas = buildEodAreas(rows);
-  return ok(res, areas, { timezone: "Asia/Jakarta" });
+  return ok(res, areas, { timezone: 'Asia/Jakarta' });
 });
-app.get("/api/eod/summary-by-branch", (req, res) => {
+app.get('/api/eod/summary-by-branch', (req, res) => {
   const rows = buildEodStoreRows();
   const areas = buildEodAreas(rows);
-  return ok(res, areas, { timezone: "Asia/Jakarta" });
+  return ok(res, areas, { timezone: 'Asia/Jakarta' });
 });
 
-app.get("/api/eod/trend", (req, res) => {
+app.get('/api/eod/trend', (req, res) => {
   const days = Math.min(30, Math.max(1, parseInt(req.query.days, 10) || 7));
   const data = buildEodTrend(days);
-  return ok(res, data, { timezone: "Asia/Jakarta" });
+  return ok(res, data, { timezone: 'Asia/Jakarta' });
 });
 
-app.get("/api/eod/live", (req, res) => {
+app.get('/api/eod/live', (req, res) => {
   const result = buildEodRanking();
-  return ok(res, result, { cachedAt: new Date().toISOString(), cacheTtlMs: 300000, timezone: "Asia/Jakarta" });
+  return ok(res, result, {
+    cachedAt: new Date().toISOString(),
+    cacheTtlMs: 300000,
+    timezone: 'Asia/Jakarta',
+  });
 });
 
-app.get("/api/eod/history", (req, res) => {
+app.get('/api/eod/history', (req, res) => {
   const { storeCode, from, to } = req.query;
-  if (!storeCode) return fail(res, 400, "BAD_REQUEST", "storeCode is required");
+  if (!storeCode) return fail(res, 400, 'BAD_REQUEST', 'storeCode is required');
 
   let history = buildStoreEodHistory(storeCode);
   if (from) history = history.filter((r) => r.date >= from);
   if (to) history = history.filter((r) => r.date <= to);
 
-  return ok(res, history, { storeCode, from: from || history[0]?.date, to: to || history[history.length - 1]?.date, timezone: "Asia/Jakarta", source: "history" });
+  return ok(res, history, {
+    storeCode,
+    from: from || history[0]?.date,
+    to: to || history[history.length - 1]?.date,
+    timezone: 'Asia/Jakarta',
+    source: 'history',
+  });
 });
 
-app.get("/api/eod/detail/:storeCode", (req, res) => {
+app.get('/api/eod/detail/:storeCode', (req, res) => {
   const store = STORES.find((s) => s.storeCode === req.params.storeCode);
-  if (!store) return fail(res, 404, "NOT_FOUND", "Store not found");
+  if (!store) return fail(res, 404, 'NOT_FOUND', 'Store not found');
 
   const status = generateEodStatus();
-  const isDone = status === "done";
+  const isDone = status === 'done';
   const eodAt = isDone ? randomTimeInWindow(19, 23) : null;
 
-  return ok(res, {
-    store: {
-      storeId: Number(store.storeCode),
-      storeCode: store.storeCode,
-      storeName: store.storeName,
-      areaId: store.branchId,
-      areaName: store.branchName,
-      region: store.region,
-      address: store.address,
-      picName: store.picName,
-      phone: store.phone,
-      status: "active",
+  return ok(
+    res,
+    {
+      store: {
+        storeId: Number(store.storeCode),
+        storeCode: store.storeCode,
+        storeName: store.storeName,
+        areaId: store.branchId,
+        areaName: store.branchName,
+        region: store.region,
+        address: store.address,
+        picName: store.picName,
+        phone: store.phone,
+        status: 'active',
+      },
+      eod: {
+        date: toWibDate(),
+        status,
+        lastEodAt: eodAt ? toWibIso(eodAt) : null,
+        lastSyncAt: randomPastMinutes(30),
+        source: 'internal-data',
+        errorMessage: status === 'failed' ? 'EOD not completed by deadline' : null,
+      },
     },
-    eod: {
-      date: toWibDate(),
-      status,
-      lastEodAt: eodAt ? toWibIso(eodAt) : null,
-      lastSyncAt: randomPastMinutes(30),
-      source: "internal-data",
-      errorMessage: status === "failed" ? "EOD not completed by deadline" : null,
-    },
-  }, { timezone: "Asia/Jakarta" });
+    { timezone: 'Asia/Jakarta' },
+  );
 });
 
-app.get("/api/eod/late-stores", (req, res) => {
+app.get('/api/eod/late-stores', (req, res) => {
   const rows = buildEodStoreRows();
   const { branchId } = req.query;
   const late = rows
     .filter((r) => {
-      if (r.status === "done") return false;
+      if (r.status === 'done') return false;
       if (branchId && String(r.areaId) !== String(branchId)) return false;
       return true;
     })
@@ -642,16 +849,16 @@ app.get("/api/eod/late-stores", (req, res) => {
       branchId: r.areaId,
       branchName: r.areaName,
       status: r.status,
-      statusSales: r.status === "failed" ? "Not Ok" : null,
-      uploadPercent: r.status === "done" ? 100 : randomInt(0, 85),
+      statusSales: r.status === 'failed' ? 'Not Ok' : null,
+      uploadPercent: r.status === 'done' ? 100 : randomInt(0, 85),
       maxUploadAt: r.lastSyncAt,
       lastUploadAt: r.lastSyncAt,
       lateByMinutes: randomInt(5, 120),
     }));
-  return ok(res, late, { timezone: "Asia/Jakarta" });
+  return ok(res, late, { timezone: 'Asia/Jakarta' });
 });
 
-app.get("/api/eod/export", (req, res) => {
+app.get('/api/eod/export', async (req, res) => {
   const date = req.query.date || toWibDate();
   const areaId = req.query.areaId || null;
   const rows = buildEodStoreRows(date);
@@ -660,93 +867,151 @@ app.get("/api/eod/export", (req, res) => {
   if (areaId) filtered = filtered.filter((r) => String(r.areaId) === String(areaId));
 
   const branchRows = buildEodAreas(filtered);
-  const doneCount = filtered.filter((r) => r.status === "done").length;
-  const pendingCount = filtered.filter((r) => r.status === "pending").length;
-  const failedCount = filtered.filter((r) => r.status === "failed").length;
+  const doneCount = filtered.filter((r) => r.status === 'done').length;
+  const pendingCount = filtered.filter((r) => r.status === 'pending').length;
+  const failedCount = filtered.filter((r) => r.status === 'failed').length;
 
-  // Return metadata about what the export would contain (actual XLSX not needed for mock)
-  return ok(res, {
-    fileName: `eod_monitor_${date}.xlsx`,
-    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    contentBase64: Buffer.from(
-      JSON.stringify({
-        reportDate: date,
-        generatedAt: toWibIso(new Date()),
-        scopeLabel: areaId || "All Branches",
-        scopeStoreCount: filtered.length,
-        doneCount,
-        pendingCount,
-        failedCount,
-        branches: branchRows,
-        stores: filtered,
-      })
-    ).toString("base64"),
-  });
+  return ok(
+    res,
+    await buildWorkbookPayload(
+      `eod_monitor_${date}.xlsx`,
+      [
+        {
+          name: 'Stores',
+          columns: [
+            { header: 'Store Code', key: 'storeCode', width: 14 },
+            { header: 'Store Name', key: 'storeName', width: 32 },
+            { header: 'Branch', key: 'areaName', width: 22 },
+            { header: 'Status', key: 'status', width: 14 },
+            { header: 'Upload Percent', key: 'uploadPercent', width: 16 },
+            { header: 'Last Sync', key: 'lastSyncAt', width: 24 },
+          ],
+          rows: filtered,
+        },
+        {
+          name: 'Branches',
+          columns: [
+            { header: 'Branch', key: 'areaName', width: 22 },
+            { header: 'Done', key: 'done', width: 10 },
+            { header: 'Pending', key: 'pending', width: 10 },
+            { header: 'Failed', key: 'failed', width: 10 },
+          ],
+          rows: branchRows,
+        },
+      ],
+      {
+        'Report Date': date,
+        'Scope Store Count': filtered.length,
+        Done: doneCount,
+        Pending: pendingCount,
+        Failed: failedCount,
+      },
+    ),
+  );
 });
 
-app.post("/api/eod/sync", (req, res) => {
+app.post('/api/eod/sync', (req, res) => {
   const { date, scope } = req.body || {};
   setTimeout(() => {
-    return ok(res, { queued: true, date: date || toWibDate(), scope: scope || 'all', storeCount: STORES.length });
+    return ok(res, {
+      queued: true,
+      date: date || toWibDate(),
+      scope: scope || 'all',
+      storeCount: STORES.length,
+    });
   }, 300);
 });
 
-app.post("/api/eod/retry", (req, res) => {
+app.post('/api/eod/retry', (req, res) => {
   const { storeCode, date } = req.body || {};
-  if (!storeCode) return fail(res, 400, "BAD_REQUEST", "storeCode is required");
+  if (!storeCode) return fail(res, 400, 'BAD_REQUEST', 'storeCode is required');
   return ok(res, { queued: true, storeCode, date: date || toWibDate() });
 });
 
-app.post("/api/eod/retry-batch", (req, res) => {
+app.post('/api/eod/retry-batch', (req, res) => {
   const { storeCodes } = req.body || {};
-  if (!storeCodes || storeCodes.length === 0) return fail(res, 400, "BAD_REQUEST", "storeCodes is required");
-  return ok(res, { queued: storeCodes.length, accepted: storeCodes.map((sc) => ({ storeCode: sc, date: toWibDate() })), rejected: [] });
+  if (!storeCodes || storeCodes.length === 0)
+    return fail(res, 400, 'BAD_REQUEST', 'storeCodes is required');
+  return ok(res, {
+    queued: storeCodes.length,
+    accepted: storeCodes.map((sc) => ({ storeCode: sc, date: toWibDate() })),
+    rejected: [],
+  });
 });
 
 // ─── Backward-compatible EOD routes ────────────────────────────────────────────
-app.get("/api/eod/status", (req, res) => {
+app.get('/api/eod/status', (req, res) => {
   const rows = buildEodStoreRows();
   const data = rows.map((r) => ({
     storeId: r.storeCode,
     storeName: r.storeName,
-    region: STORES.find((s) => s.storeCode === r.storeCode)?.region || "",
+    region: STORES.find((s) => s.storeCode === r.storeCode)?.region || '',
     status: r.status,
     lastUpdate: r.lastSyncAt,
     eodDate: toWibDate(),
-    isFinal: r.status === "done" && Math.random() > 0.2,
+    isFinal: r.status === 'done' && Math.random() > 0.2,
   }));
-  return ok(res, data, { summary: { total: data.length, done: data.filter((s) => s.status === "done").length, pending: data.filter((s) => s.status === "pending").length, failed: data.filter((s) => s.status === "failed").length }, timezone: "Asia/Jakarta" });
+  return ok(res, data, {
+    summary: {
+      total: data.length,
+      done: data.filter((s) => s.status === 'done').length,
+      pending: data.filter((s) => s.status === 'pending').length,
+      failed: data.filter((s) => s.status === 'failed').length,
+    },
+    timezone: 'Asia/Jakarta',
+  });
 });
 
 // ─── Store Management Regions & Export ──────────────────────────────────────────
-app.get("/api/stores/regions", (req, res) => {
-  const regions = [...new Set(BRANCHES.map(b => b.region))].map((name) => ({
+app.get('/api/stores/regions', (req, res) => {
+  const regions = [...new Set(BRANCHES.map((b) => b.region))].map((name) => ({
     id: name.toLowerCase(),
     name,
     regionalHead: `${faker.person.firstName()} ${faker.person.lastName()}`,
-    branches: BRANCHES.filter(b => b.region === name).map(b => b.id),
+    branches: BRANCHES.filter((b) => b.region === name).map((b) => b.id),
   }));
   return ok(res, regions);
 });
 
-app.get("/api/stores/export", (req, res) => {
+app.get('/api/stores/export', async (req, res) => {
   const { areaId, region, q } = req.query;
   let stores = [...STORES];
-  if (areaId) stores = stores.filter(s => String(s.branchId) === String(areaId));
-  if (region) stores = stores.filter(s => s.region === region);
+  if (areaId) stores = stores.filter((s) => String(s.branchId) === String(areaId));
+  if (region) stores = stores.filter((s) => s.region === region);
   if (q) {
     const needle = q.toLowerCase();
-    stores = stores.filter(s => s.storeCode.toLowerCase().includes(needle) || s.storeName.toLowerCase().includes(needle));
+    stores = stores.filter(
+      (s) =>
+        s.storeCode.toLowerCase().includes(needle) || s.storeName.toLowerCase().includes(needle),
+    );
   }
-  return ok(res, {
-    fileName: `store_list_${toWibDate()}.xlsx`,
-    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    contentBase64: Buffer.from(JSON.stringify({ exportedAt: toWibIso(new Date()), storeCount: stores.length, stores })).toString("base64"),
-  });
+  return ok(
+    res,
+    await buildWorkbookPayload(
+      `store_list_${toWibDate()}.xlsx`,
+      [
+        {
+          name: 'Stores',
+          columns: [
+            { header: 'Store Code', key: 'storeCode', width: 14 },
+            { header: 'Store Name', key: 'storeName', width: 34 },
+            { header: 'Branch', key: 'branchName', width: 22 },
+            { header: 'Regional Head', key: 'region', width: 18 },
+            { header: 'Address', key: 'address', width: 36 },
+            { header: 'PIC Name', key: 'picName', width: 22 },
+            { header: 'Phone', key: 'phone', width: 18 },
+            { header: 'Status', key: 'status', width: 12 },
+          ],
+          rows: stores,
+        },
+      ],
+      { 'Store Count': stores.length },
+    ),
+  );
 });
 
 // ─── Stores ────────────────────────────────────────────────────────────────────
-app.get("/api/stores", (req, res) => {
+app.get('/api/stores', (req, res) => {
   const data = STORES.map((store) => ({
     storeId: store.storeCode,
     storeCode: store.storeCode,
@@ -767,9 +1032,18 @@ app.get("/api/stores", (req, res) => {
   return ok(res, result.data, result.meta);
 });
 
-app.get("/api/stores/:storeCode", (req, res) => {
+app.post('/api/stores', (req, res) => {
+  return fail(
+    res,
+    403,
+    'DEMO_READ_ONLY',
+    'Demo mode uses generated store data and does not persist writes',
+  );
+});
+
+app.get('/api/stores/:storeCode', (req, res) => {
   const store = STORES.find((s) => s.storeCode === req.params.storeCode);
-  if (!store) return fail(res, 404, "NOT_FOUND", "Store not found");
+  if (!store) return fail(res, 404, 'NOT_FOUND', 'Store not found');
   return ok(res, {
     storeId: store.storeCode,
     storeCode: store.storeCode,
@@ -786,95 +1060,102 @@ app.get("/api/stores/:storeCode", (req, res) => {
   });
 });
 
+app.put('/api/stores/:storeCode', (req, res) => {
+  return fail(
+    res,
+    403,
+    'DEMO_READ_ONLY',
+    'Demo mode uses generated store data and does not persist writes',
+  );
+});
+
+app.delete('/api/stores/:storeCode', (req, res) => {
+  return fail(
+    res,
+    403,
+    'DEMO_READ_ONLY',
+    'Demo mode uses generated store data and does not persist writes',
+  );
+});
+
 // ─── Employees ─────────────────────────────────────────────────────────────────
 
-app.get("/api/employees", (req, res) => {
-  let localMockEmployeeIndex = 1;
-  const employees = [];
-  const now = new Date();
-  const yy = String(now.getFullYear()).slice(-2);
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
-  const datePrefix = `${yy}${mm}${dd}`;
-
-  STORES.forEach((store) => {
-    // Deterministic count based on store code hash
-    const hash = store.storeCode.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-    const count = 15 + (hash % 10);
-    for (let i = 0; i < count; i++) {
-      const pIdx = String(localMockEmployeeIndex).padStart(4, "0");
-      localMockEmployeeIndex++;
-
-      const newNik = `${datePrefix}${pIdx}`;
-
-      employees.push({
-        id: `demo-employee-${pIdx}`,
-        nik: newNik,
-        fullName: `${faker.person.firstName()} ${faker.person.lastName()}`,
-        role: pickRandom(["Store Manager", "Assistant Manager", "Supervisor", "Cashier", "Sales Associate", "Warehouse Staff"]),
-        storeCode: store.storeCode,
-        storeName: store.storeName,
-        branchId: store.branchId,
-        branchName: store.branchName,
-        status: pickRandom(["ACTIVE", "ACTIVE", "ACTIVE", "INACTIVE"]),
-        lastActivity: randomPastMinutes(1440),
-      });
-    }
-  });
-
-  const { q, storeCode, branchId } = req.query;
-  let filtered = employees;
-  if (q) {
-    const needle = q.toLowerCase();
-    filtered = filtered.filter((e) => e.nik.includes(needle) || e.fullName.toLowerCase().includes(needle));
-  }
-  if (storeCode) filtered = filtered.filter((e) => e.storeCode === storeCode);
-  if (branchId) filtered = filtered.filter((e) => e.branchId === branchId);
-
+app.get('/api/employees', (req, res) => {
+  const filtered = filterEmployeesForRequest(req.query);
   const result = paginate(filtered, req.query);
   return ok(res, result.data, result.meta);
 });
 
-app.get("/api/employees/:nik", (req, res) => {
-  let localMockEmployeeIndex = 1;
-  const employees = [];
-  const now = new Date();
-  const yy = String(now.getFullYear()).slice(-2);
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
-  const datePrefix = `${yy}${mm}${dd}`;
+app.post('/api/employees', (req, res) => {
+  return fail(
+    res,
+    403,
+    'DEMO_READ_ONLY',
+    'Demo mode uses generated employee data and does not persist writes',
+  );
+});
 
-  STORES.forEach((store) => {
-    const hash = store.storeCode.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-    const count = 15 + (hash % 10);
-    for (let i = 0; i < count; i++) {
-      const pIdx = String(localMockEmployeeIndex).padStart(4, "0");
-      localMockEmployeeIndex++;
-      const newNik = `${datePrefix}${pIdx}`;
+app.get('/api/employees/roles', (req, res) => {
+  return ok(res, EMPLOYEE_ROLES);
+});
 
-      employees.push({
-        id: `demo-employee-${pIdx}`,
-        nik: newNik,
-        fullName: `${faker.person.firstName()} ${faker.person.lastName()}`,
-        role: pickRandom(["Store Manager", "Assistant Manager", "Supervisor"]),
-        storeCode: store.storeCode,
-        storeName: store.storeName,
-        branchId: store.branchId,
-        branchName: store.branchName,
-        status: "ACTIVE",
-        lastActivity: randomPastMinutes(1440),
-      });
-    }
-  });
+app.get('/api/employees/export', async (req, res) => {
+  const employees = filterEmployeesForRequest(req.query);
+  return ok(
+    res,
+    await buildWorkbookPayload(
+      `employee_directory_${toWibDate()}.xlsx`,
+      [
+        {
+          name: 'Employees',
+          columns: [
+            { header: 'NIK', key: 'nik', width: 18 },
+            { header: 'Employee Name', key: 'fullName', width: 34 },
+            { header: 'Role', key: 'role', width: 24 },
+            { header: 'Store Code', key: 'storeCode', width: 14 },
+            { header: 'Store Name', key: 'storeName', width: 34 },
+            { header: 'Branch', key: 'branchName', width: 22 },
+            { header: 'Status', key: 'status', width: 12 },
+          ],
+          rows: employees,
+        },
+      ],
+      { 'Employee Count': employees.length },
+    ),
+  );
+});
+
+app.get('/api/employees/:nik', (req, res) => {
+  const employees = buildEmployees();
   const emp = employees.find((e) => e.nik === req.params.nik);
-  if (!emp) return fail(res, 404, "NOT_FOUND", "Employee not found");
+  if (!emp) return fail(res, 404, 'NOT_FOUND', 'Employee not found');
   return ok(res, emp);
 });
 
+app.put('/api/employees/:nik', (req, res) => {
+  return fail(
+    res,
+    403,
+    'DEMO_READ_ONLY',
+    'Demo mode uses generated employee data and does not persist writes',
+  );
+});
+
+app.delete('/api/employees/:nik', (req, res) => {
+  return fail(
+    res,
+    403,
+    'DEMO_READ_ONLY',
+    'Demo mode uses generated employee data and does not persist writes',
+  );
+});
+
 // ─── Sync ──────────────────────────────────────────────────────────────────────
-app.get("/api/sync/summary", (req, res) => {
+app.get('/api/sync/summary', (req, res) => {
   const excludeBazar = req.query.excludeBazar === '1';
-  const stores = excludeBazar ? STORES.filter(s => !s.storeName.toLowerCase().includes('bazar')) : STORES;
+  const stores = excludeBazar
+    ? STORES.filter((s) => !s.storeName.toLowerCase().includes('bazar'))
+    : STORES;
 
   const synced = stores.filter(() => Math.random() > 0.2).length;
   const stale = stores.filter(() => Math.random() > 0.7).length;
@@ -882,30 +1163,108 @@ app.get("/api/sync/summary", (req, res) => {
   const oldestIdx = randomInt(0, Math.max(0, stores.length - 1));
   const oldest = stores[oldestIdx];
 
-  return ok(res, {
-    totalStores: stores.length,
-    synced,
-    stale,
-    problem,
-    oldest: oldest ? {
-      storeCode: oldest.storeCode,
-      namaToko: oldest.storeName,
-      ageSec: randomInt(300, 3600),
-    } : null,
-    thresholdsSec: {
-      syncedMax: 300,
-      staleMax: 600,
+  return ok(
+    res,
+    {
+      totalStores: stores.length,
+      synced,
+      stale,
+      problem,
+      oldest: oldest
+        ? {
+            storeCode: oldest.storeCode,
+            namaToko: oldest.storeName,
+            ageSec: randomInt(300, 3600),
+          }
+        : null,
+      thresholdsSec: {
+        syncedMax: 300,
+        staleMax: 600,
+      },
     },
-  }, { timezone: "Asia/Jakarta", updatedAt: toWibIso(new Date()) });
+    { timezone: 'Asia/Jakarta', updatedAt: toWibIso(new Date()) },
+  );
 });
 
-app.get("/api/sync/stores", (req, res) => {
-  const { page, pageSize, sort, branch, status, search, excludeBazar } = req.query;
-  let stores = excludeBazar === '1' ? STORES.filter(s => !s.storeName.toLowerCase().includes('bazar')) : [...STORES];
+app.get('/api/sync/live', (req, res) => {
+  const rows = STORES.map((store) => {
+    const lastSyncAgoSec = randomInt(0, 1800);
+    const isProblem = lastSyncAgoSec > 600 || Math.random() > 0.85;
+    const isStale = !isProblem && lastSyncAgoSec > 300;
+    return {
+      storeCode: store.storeCode,
+      storeName: store.storeName,
+      branchId: store.branchId,
+      branchName: store.branchName,
+      lastSyncAt: new Date(Date.now() - lastSyncAgoSec * 1000).toISOString(),
+      lastSyncAgoSec,
+      status: isProblem ? 'problem' : isStale ? 'stale' : 'synced',
+    };
+  });
 
-  if (branch) stores = stores.filter(s => String(s.branchId) === String(branch));
+  const synced = rows.filter((store) => store.status === 'synced').length;
+  const stale = rows.filter((store) => store.status === 'stale').length;
+  const problem = rows.filter((store) => store.status === 'problem').length;
+  const oldest = rows.reduce(
+    (current, store) =>
+      !current || store.lastSyncAgoSec > current.ageSec
+        ? { storeCode: store.storeCode, storeName: store.storeName, ageSec: store.lastSyncAgoSec }
+        : current,
+    null,
+  );
+
+  return ok(res, {
+    kpi: {
+      total: rows.length,
+      synced,
+      stale,
+      problem,
+      late: problem,
+      noTimestamp: 0,
+    },
+    thresholds: {
+      syncedMaxSec: 300,
+      staleMaxSec: 600,
+    },
+    branches: BRANCHES.map((branch) => {
+      const branchRows = rows.filter((store) => store.branchId === branch.id);
+      return {
+        id: branch.id,
+        name: branch.name,
+        synced: branchRows.filter((store) => store.status === 'synced').length,
+        stale: branchRows.filter((store) => store.status === 'stale').length,
+        problem: branchRows.filter((store) => store.status === 'problem').length,
+        total: branchRows.length,
+      };
+    }),
+    oldest: oldest || { storeCode: null, storeName: '', ageSec: null },
+    lateStores: rows
+      .filter((store) => store.status === 'problem')
+      .sort((a, b) => b.lastSyncAgoSec - a.lastSyncAgoSec)
+      .slice(0, 20)
+      .map((store) => ({
+        storeCode: store.storeCode,
+        storeName: store.storeName,
+        branchName: store.branchName,
+        lastSyncAgoSec: store.lastSyncAgoSec,
+        lastSyncAt: store.lastSyncAt,
+        problemReason: 'Demo sync delay',
+      })),
+    fetchedAt: new Date().toISOString(),
+    serverNow: new Date().toISOString(),
+  });
+});
+
+app.get('/api/sync/stores', (req, res) => {
+  const { page, pageSize, sort, branch, status, search, excludeBazar } = req.query;
+  let stores =
+    excludeBazar === '1'
+      ? STORES.filter((s) => !s.storeName.toLowerCase().includes('bazar'))
+      : [...STORES];
+
+  if (branch) stores = stores.filter((s) => String(s.branchId) === String(branch));
   if (status) {
-    stores = stores.filter(s => {
+    stores = stores.filter((s) => {
       const ageSec = randomInt(0, 1800);
       if (status === 'problem') return ageSec > 600 || Math.random() > 0.85;
       if (status === 'stale') return ageSec > 300 && ageSec <= 600;
@@ -915,10 +1274,13 @@ app.get("/api/sync/stores", (req, res) => {
   }
   if (search) {
     const needle = search.toLowerCase();
-    stores = stores.filter(s => s.storeCode.toLowerCase().includes(needle) || s.storeName.toLowerCase().includes(needle));
+    stores = stores.filter(
+      (s) =>
+        s.storeCode.toLowerCase().includes(needle) || s.storeName.toLowerCase().includes(needle),
+    );
   }
 
-  const data = stores.map(store => {
+  const data = stores.map((store) => {
     const lastSyncAgoSec = randomInt(0, 1800);
     const isProblem = lastSyncAgoSec > 600 || Math.random() > 0.85;
     const isStale = !isProblem && lastSyncAgoSec > 300;
@@ -942,17 +1304,17 @@ app.get("/api/sync/stores", (req, res) => {
   return ok(res, result.data, result.meta);
 });
 
-app.post("/api/sync/refresh", (req, res) => {
+app.post('/api/sync/refresh', (req, res) => {
   setTimeout(() => {
     return ok(res, { total: STORES.length, refreshedAt: toWibIso(new Date()) });
   }, 300);
 });
 
-app.get("/api/sync/history/:storeCode", (req, res) => {
+app.get('/api/sync/history/:storeCode', (req, res) => {
   const { storeCode } = req.params;
   const minutes = parseInt(req.query.minutes || '30', 10);
-  const store = STORES.find(s => s.storeCode === storeCode);
-  if (!store) return fail(res, 404, "NOT_FOUND", "Store not found");
+  const store = STORES.find((s) => s.storeCode === storeCode);
+  if (!store) return fail(res, 404, 'NOT_FOUND', 'Store not found');
 
   const records = [];
   const now = new Date();
@@ -971,14 +1333,14 @@ app.get("/api/sync/history/:storeCode", (req, res) => {
       isStale,
     });
   }
-  return ok(res, { records, storeCode }, { timezone: "Asia/Jakarta" });
+  return ok(res, { records, storeCode }, { timezone: 'Asia/Jakarta' });
 });
 
-app.get("/api/sync/history/:storeCode/summary", (req, res) => {
+app.get('/api/sync/history/:storeCode/summary', (req, res) => {
   const { storeCode } = req.params;
   const { date, bucketMinutes } = req.query;
-  const store = STORES.find(s => s.storeCode === storeCode);
-  if (!store) return fail(res, 404, "NOT_FOUND", "Store not found");
+  const store = STORES.find((s) => s.storeCode === storeCode);
+  if (!store) return fail(res, 404, 'NOT_FOUND', 'Store not found');
 
   const bucketMin = parseInt(bucketMinutes || '10', 10);
   const buckets = [];
@@ -999,25 +1361,29 @@ app.get("/api/sync/history/:storeCode/summary", (req, res) => {
     });
   }
 
-  const syncedBuckets = buckets.filter(b => !b.isProblem && !b.isStale).length;
-  const staleBuckets = buckets.filter(b => b.isStale).length;
-  const problemBuckets = buckets.filter(b => b.isProblem).length;
+  const syncedBuckets = buckets.filter((b) => !b.isProblem && !b.isStale).length;
+  const staleBuckets = buckets.filter((b) => b.isStale).length;
+  const problemBuckets = buckets.filter((b) => b.isProblem).length;
 
-  return ok(res, {
-    buckets,
-    summary: {
-      totalBuckets: buckets.length,
-      syncedBuckets,
-      staleBuckets,
-      problemBuckets,
+  return ok(
+    res,
+    {
+      buckets,
+      summary: {
+        totalBuckets: buckets.length,
+        syncedBuckets,
+        staleBuckets,
+        problemBuckets,
+      },
     },
-  }, { timezone: "Asia/Jakarta" });
+    { timezone: 'Asia/Jakarta' },
+  );
 });
 
-app.get("/api/sync/status", (req, res) => {
+app.get('/api/sync/status', (req, res) => {
   const data = STORES.map((store) => {
-    const statusWeights = store.storeCode.endsWith("1") ? [60, 20, 10, 10] : [70, 15, 10, 5];
-    const statuses = ["synced", "synced", "delayed", "error"];
+    const statusWeights = store.storeCode.endsWith('1') ? [60, 20, 10, 10] : [70, 15, 10, 5];
+    const statuses = ['synced', 'synced', 'delayed', 'error'];
     return {
       storeId: store.storeCode,
       storeName: store.storeName,
@@ -1030,16 +1396,16 @@ app.get("/api/sync/status", (req, res) => {
       rowsUploaded: randomInt(100, 2500),
       rowsPending: randomInt(0, 50),
       status: pickRandom(statuses),
-      connection: pickRandom(["online", "online", "online", "offline"]),
+      connection: pickRandom(['online', 'online', 'online', 'offline']),
       isMissingToday: Math.random() > 0.85,
     };
   });
-  return ok(res, data, { timezone: "Asia/Jakarta" });
+  return ok(res, data, { timezone: 'Asia/Jakarta' });
 });
 
-app.get("/api/sync/audit", (req, res) => {
+app.get('/api/sync/audit', (req, res) => {
   const entries = [];
-  const count = Math.min(200, parseInt(req.query.limit || "50", 10));
+  const count = Math.min(200, parseInt(req.query.limit || '50', 10));
   for (let i = 0; i < count; i++) {
     const store = pickRandom(STORES);
     entries.push({
@@ -1048,7 +1414,14 @@ app.get("/api/sync/audit", (req, res) => {
       storeId: store.storeCode,
       storeName: store.storeName,
       storeCode: store.storeCode,
-      event: pickRandom(["sync_started", "sync_completed", "sync_failed", "connection_lost", "connection_restored", "data_validated"]),
+      event: pickRandom([
+        'sync_started',
+        'sync_completed',
+        'sync_failed',
+        'connection_lost',
+        'connection_restored',
+        'data_validated',
+      ]),
       details: faker.lorem.sentence({ min: 5, max: 15 }),
       rowsAffected: randomInt(0, 500),
     });
@@ -1059,15 +1432,15 @@ app.get("/api/sync/audit", (req, res) => {
   return ok(res, result.data, result.meta);
 });
 
-app.post("/api/sync/trigger", (req, res) => {
+app.post('/api/sync/trigger', (req, res) => {
   const { storeCode } = req.body || {};
   const store = storeCode ? STORES.find((s) => s.storeCode === storeCode) : pickRandom(STORES);
   setTimeout(() => {
     ok(res, {
       jobId: faker.string.uuid(),
-      storeId: store?.storeCode || "ALL",
-      storeName: store?.storeName || "All Stores",
-      status: "started",
+      storeId: store?.storeCode || 'ALL',
+      storeName: store?.storeName || 'All Stores',
+      status: 'started',
       triggeredAt: new Date().toISOString(),
       estimatedDuration: `${randomInt(5, 30)}s`,
     });
@@ -1079,106 +1452,121 @@ let backupFiles = [];
 (function initBackups() {
   for (let i = 0; i < randomInt(15, 30); i++) {
     const date = new Date(Date.now() - i * 86400000 * (Math.random() > 0.7 ? randomInt(1, 3) : 1));
-    const type = date.getUTCHours() === 0 && date.getUTCMinutes() < 10 ? "scheduled" : "manual";
+    const type = date.getUTCHours() === 0 && date.getUTCMinutes() < 10 ? 'scheduled' : 'manual';
     const failed = Math.random() > 0.92;
     backupFiles.push({
-      fileName: `${type}_backup_${date.toISOString().replace(/[:.]/g, "").replace("T", "_").slice(0, 15)}.sql.gz`,
+      fileName: `${type}_backup_${date.toISOString().replace(/[:.]/g, '').replace('T', '_').slice(0, 15)}_${String(i + 1).padStart(2, '0')}.sql.gz`,
       type,
       date: toWibDate(date),
       sizeBytes: randomInt(12 * 1024 * 1024, 80 * 1024 * 1024),
       modifiedAt: date.toISOString(),
-      status: failed ? "FAILED" : "SUCCESS",
-      triggeredBy: type === "scheduled" ? "system" : pickRandom(["admin", "super_admin"]),
+      status: failed ? 'FAILED' : 'SUCCESS',
+      triggeredBy: type === 'scheduled' ? 'system' : pickRandom(['admin', 'super_admin']),
     });
   }
   backupFiles.sort((a, b) => new Date(b.modifiedAt) - new Date(a.modifiedAt));
 })();
 
 function getLatestSuccessfulBackup() {
-  return backupFiles.find((b) => b.status === "SUCCESS") || null;
+  return backupFiles.find((b) => b.status === 'SUCCESS') || null;
 }
 
-app.get("/api/backups/summary", (req, res) => {
-  const successful = backupFiles.filter((b) => b.status === "SUCCESS");
+app.get('/api/backups/summary', (req, res) => {
+  const successful = backupFiles.filter((b) => b.status === 'SUCCESS');
   const latest = getLatestSuccessfulBackup();
   const totalSizeBytes = successful.reduce((acc, f) => acc + f.sizeBytes, 0);
-  return ok(res, {
-    count: successful.length,
-    totalSizeBytes,
-    latestBackupAt: latest ? latest.modifiedAt : null,
-    latestFileName: latest ? latest.fileName : null,
-    storagePath: "/backups",
-    disk: {
-      totalBytes: 100 * 1024 * 1024 * 1024,
-      freeBytes: 40 * 1024 * 1024 * 1024,
-      usedBytes: 60 * 1024 * 1024 * 1024,
-      usedPercent: 60,
+  return ok(
+    res,
+    {
+      count: successful.length,
+      totalSizeBytes,
+      latestBackupAt: latest ? latest.modifiedAt : null,
+      latestFileName: latest ? latest.fileName : null,
+      storagePath: '/backups',
+      disk: {
+        totalBytes: 100 * 1024 * 1024 * 1024,
+        freeBytes: 40 * 1024 * 1024 * 1024,
+        usedBytes: 60 * 1024 * 1024 * 1024,
+        usedPercent: 60,
+      },
+      schedule: { enabled: true, cron: '05 00 * * *', tz: 'Asia/Jakarta' },
     },
-    schedule: { enabled: true, cron: "05 00 * * *", tz: "Asia/Jakarta" },
-  }, { timezone: "Asia/Jakarta" });
+    { timezone: 'Asia/Jakarta' },
+  );
 });
 
-app.get("/api/backups/files", (req, res) => {
+app.get('/api/backups/files', (req, res) => {
   const result = paginate(backupFiles, req.query);
   return ok(res, result.data, result.meta);
 });
 
-app.post("/api/backups/run", (req, res) => {
+app.post('/api/backups/run', (req, res) => {
   const now = new Date();
-  const stamp = now.toISOString().replace(/[:.]/g, "").replace("T", "_").slice(0, 15);
-  const type = (req.body?.type || "manual").toLowerCase() === "scheduled" ? "scheduled" : "manual";
+  const stamp = now.toISOString().replace(/[:.]/g, '').replace('T', '_').slice(0, 15);
+  const type = (req.body?.type || 'manual').toLowerCase() === 'scheduled' ? 'scheduled' : 'manual';
   const newBackup = {
     fileName: `${type}_backup_${stamp}.sql.gz`,
     type,
     date: toWibDate(now),
     sizeBytes: randomInt(12 * 1024 * 1024, 80 * 1024 * 1024),
     modifiedAt: now.toISOString(),
-    status: "SUCCESS",
-    triggeredBy: type === "scheduled" ? "system" : "admin",
+    status: 'SUCCESS',
+    triggeredBy: type === 'scheduled' ? 'system' : 'admin',
   };
   backupFiles.unshift(newBackup);
-  return ok(res, { fileName: newBackup.fileName, sizeBytes: newBackup.sizeBytes, sizeMB: +(newBackup.sizeBytes / 1024 / 1024).toFixed(2), backupLogId: faker.string.uuid() });
+  return ok(res, {
+    fileName: newBackup.fileName,
+    sizeBytes: newBackup.sizeBytes,
+    sizeMB: +(newBackup.sizeBytes / 1024 / 1024).toFixed(2),
+    backupLogId: faker.string.uuid(),
+  });
 });
 
-app.delete("/api/backups/:fileName", (req, res) => {
+app.delete('/api/backups/:fileName', (req, res) => {
   const { confirm } = req.body || {};
   const fileName = req.params.fileName;
   if (!confirm || String(confirm) !== String(fileName)) {
-    return fail(res, 400, "BAD_REQUEST", "Filename confirmation does not match");
+    return fail(res, 400, 'BAD_REQUEST', 'Filename confirmation does not match');
   }
   const idx = backupFiles.findIndex((b) => b.fileName === fileName);
-  if (idx === -1) return fail(res, 404, "NOT_FOUND", "Backup file not found");
+  if (idx === -1) return fail(res, 404, 'NOT_FOUND', 'Backup file not found');
   backupFiles.splice(idx, 1);
   return ok(res, { deleted: true, fileName });
 });
 
-app.get("/api/backups/download/:fileName", (req, res) => {
+app.get('/api/backups/download/:fileName', (req, res) => {
   const fileName = req.params.fileName;
   const backup = backupFiles.find((b) => b.fileName === fileName);
-  if (!backup) return fail(res, 404, "NOT_FOUND", "Backup file not found");
+  if (!backup) return fail(res, 404, 'NOT_FOUND', 'Backup file not found');
   const content = faker.string.alphanumeric({ length: randomInt(100, 500) });
-  return ok(res, { fileName, contentType: "application/octet-stream", contentBase64: Buffer.from(content).toString("base64"), sizeBytes: content.length });
+  return ok(res, {
+    fileName,
+    contentType: 'application/octet-stream',
+    contentBase64: Buffer.from(content).toString('base64'),
+    sizeBytes: content.length,
+  });
 });
 
-app.post("/api/backups/restore", (req, res) => {
+app.post('/api/backups/restore', (req, res) => {
   const { fileName, confirmText } = req.body || {};
-  if (!fileName) return fail(res, 400, "BAD_REQUEST", "fileName is required");
-  if (String(confirmText || "").trim() !== "RESTORE") return fail(res, 400, "BAD_REQUEST", "confirmText must be RESTORE");
+  if (!fileName) return fail(res, 400, 'BAD_REQUEST', 'fileName is required');
+  if (String(confirmText || '').trim() !== 'RESTORE')
+    return fail(res, 400, 'BAD_REQUEST', 'confirmText must be RESTORE');
   return ok(res, { queued: true, fileName });
 });
 
 // Legacy backup endpoints
-app.get("/api/backups", (req, res) => {
+app.get('/api/backups', (req, res) => {
   const result = paginate(backupFiles, req.query);
   return ok(res, result.data, result.meta);
 });
 
-app.post("/api/backup/trigger", (req, res) => {
+app.post('/api/backup/trigger', (req, res) => {
   setTimeout(() => {
     ok(res, {
       jobId: faker.string.uuid(),
-      status: "started",
-      type: req.body?.type || "manual",
+      status: 'started',
+      type: req.body?.type || 'manual',
       triggeredAt: new Date().toISOString(),
       estimatedSize: `${randomInt(12, 80)}MB`,
     });
@@ -1186,7 +1574,7 @@ app.post("/api/backup/trigger", (req, res) => {
 });
 
 // ─── Agents ────────────────────────────────────────────────────────────────────
-app.get("/api/agents", (req, res) => {
+app.get('/api/agents', (req, res) => {
   const agents = STORES.map((store) => ({
     id: `AG-${store.storeCode}`,
     storeId: store.storeCode,
@@ -1195,7 +1583,7 @@ app.get("/api/agents", (req, res) => {
     branchId: store.branchId,
     branchName: store.branchName,
     version: `v${randomInt(2, 4)}.${randomInt(0, 9)}.${randomInt(0, 99)}`,
-    status: pickRandom(["online", "online", "online", "offline", "updating"]),
+    status: pickRandom(['online', 'online', 'online', 'offline', 'updating']),
     lastHeartbeat: randomPastMinutes(5),
     uptime: `${randomInt(1, 720)}h ${randomInt(0, 59)}m`,
     cpu: `${randomInt(5, 60)}%`,
@@ -1207,19 +1595,19 @@ app.get("/api/agents", (req, res) => {
 });
 
 // ─── Alerts ────────────────────────────────────────────────────────────────────
-app.get("/api/alerts", (req, res) => {
-  const limit = Math.min(50, parseInt(req.query.limit || "20", 10));
+app.get('/api/alerts', (req, res) => {
+  const limit = Math.min(50, parseInt(req.query.limit || '20', 10));
   const alerts = [];
   for (let i = 0; i < limit; i++) {
     const store = pickRandom(STORES);
     const types = [
-      { type: "warning", title: "EOD deadline approaching", sev: "LOW" },
-      { type: "critical", title: "Sync failure detected", sev: "HIGH" },
-      { type: "warning", title: "Agent version outdated", sev: "MEDIUM" },
-      { type: "critical", title: "Late EOD submission", sev: "HIGH" },
-      { type: "warning", title: "Connection timeout", sev: "MEDIUM" },
-      { type: "info", title: "Backup size anomaly", sev: "LOW" },
-      { type: "critical", title: "System health degraded", sev: "HIGH" },
+      { type: 'warning', title: 'EOD deadline approaching', sev: 'LOW' },
+      { type: 'critical', title: 'Sync failure detected', sev: 'HIGH' },
+      { type: 'warning', title: 'Agent version outdated', sev: 'MEDIUM' },
+      { type: 'critical', title: 'Late EOD submission', sev: 'HIGH' },
+      { type: 'warning', title: 'Connection timeout', sev: 'MEDIUM' },
+      { type: 'info', title: 'Backup size anomaly', sev: 'LOW' },
+      { type: 'critical', title: 'System health degraded', sev: 'HIGH' },
     ];
     const alert = pickRandom(types);
     alerts.push({
@@ -1236,15 +1624,15 @@ app.get("/api/alerts", (req, res) => {
       resolved: Math.random() > 0.8,
     });
   }
-  return ok(res, alerts, { timezone: "Asia/Jakarta" });
+  return ok(res, alerts, { timezone: 'Asia/Jakarta' });
 });
 
 // ─── System ────────────────────────────────────────────────────────────────────
-app.get("/api/system/overview", (req, res) => {
+app.get('/api/system/overview', (req, res) => {
   const uptimeSeconds = randomInt(86400, 604800);
   return ok(res, {
-    hostname: "eom-api",
-    platform: "linux",
+    hostname: 'eom-api',
+    platform: 'linux',
     uptimeSeconds,
     loadavg: [randomInt(1, 4) / 10, randomInt(2, 6) / 10, randomInt(3, 8) / 10],
     memory: {
@@ -1257,28 +1645,44 @@ app.get("/api/system/overview", (req, res) => {
       usedBytes: randomInt(40, 85) * 1024 * 1024 * 1024,
       usedPercent: randomInt(40, 85),
     },
-    timezone: "Asia/Jakarta",
+    timezone: 'Asia/Jakarta',
     generatedAt: new Date().toISOString(),
   });
 });
 
-app.get("/api/system/services", (req, res) => {
+app.get('/api/system/services', (req, res) => {
   return ok(res, [
-    { name: "API Server", status: "ONLINE", lastCheckedAt: new Date().toISOString() },
-    { name: "Database", status: pickRandom(["ONLINE", "ONLINE", "ONLINE", "DEGRADED"]), lastCheckedAt: new Date().toISOString() },
-    { name: "Scheduler", status: pickRandom(["ONLINE", "ONLINE", "ONLINE", "UNKNOWN"]), lastCheckedAt: new Date().toISOString() },
-    { name: "Notification Service", status: pickRandom(["ONLINE", "ONLINE", "DEGRADED"]), lastCheckedAt: new Date().toISOString() },
-    { name: "Data Sync", status: "ONLINE", lastCheckedAt: new Date().toISOString() },
-    { name: "Backup Service", status: pickRandom(["ONLINE", "ONLINE", "ONLINE", "DEGRADED"]), lastCheckedAt: new Date().toISOString() },
+    { name: 'API Server', status: 'ONLINE', lastCheckedAt: new Date().toISOString() },
+    {
+      name: 'Database',
+      status: pickRandom(['ONLINE', 'ONLINE', 'ONLINE', 'DEGRADED']),
+      lastCheckedAt: new Date().toISOString(),
+    },
+    {
+      name: 'Scheduler',
+      status: pickRandom(['ONLINE', 'ONLINE', 'ONLINE', 'UNKNOWN']),
+      lastCheckedAt: new Date().toISOString(),
+    },
+    {
+      name: 'Notification Service',
+      status: pickRandom(['ONLINE', 'ONLINE', 'DEGRADED']),
+      lastCheckedAt: new Date().toISOString(),
+    },
+    { name: 'Data Sync', status: 'ONLINE', lastCheckedAt: new Date().toISOString() },
+    {
+      name: 'Backup Service',
+      status: pickRandom(['ONLINE', 'ONLINE', 'ONLINE', 'DEGRADED']),
+      lastCheckedAt: new Date().toISOString(),
+    },
   ]);
 });
 
-app.get("/api/system/logs", (req, res) => {
+app.get('/api/system/logs', (req, res) => {
   const { level, component, q } = req.query;
   const count = 200;
   const logs = [];
-  const levels = ["INFO", "INFO", "INFO", "WARNING", "ERROR", "CRITICAL"];
-  const components = ["API", "API", "DB", "SYNC", "SCHEDULER", "BACKUP", "AUTH", "NOTIFICATION"];
+  const levels = ['INFO', 'INFO', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'];
+  const components = ['API', 'API', 'DB', 'SYNC', 'SCHEDULER', 'BACKUP', 'AUTH', 'NOTIFICATION'];
 
   for (let i = 0; i < count; i++) {
     const logLevel = pickRandom(levels);
@@ -1286,9 +1690,22 @@ app.get("/api/system/logs", (req, res) => {
       id: faker.string.uuid(),
       level: logLevel,
       component: pickRandom(components),
-      message: logLevel === "ERROR" || logLevel === "CRITICAL"
-        ? pickRandom(["Connection timeout", "Query failed", "Service unresponsive", "Disk space low", "Memory threshold exceeded"])
-        : pickRandom(["Health check passed", "Sync completed", "Backup created", "User authenticated", "Scheduled job ran"]),
+      message:
+        logLevel === 'ERROR' || logLevel === 'CRITICAL'
+          ? pickRandom([
+              'Connection timeout',
+              'Query failed',
+              'Service unresponsive',
+              'Disk space low',
+              'Memory threshold exceeded',
+            ])
+          : pickRandom([
+              'Health check passed',
+              'Sync completed',
+              'Backup created',
+              'User authenticated',
+              'Scheduled job ran',
+            ]),
       createdAt: randomPastMinutes(1440),
       metadata: {},
     });
@@ -1307,48 +1724,136 @@ app.get("/api/system/logs", (req, res) => {
   return ok(res, result.data, result.meta);
 });
 
-app.post("/api/system/restart/:service", (req, res) => {
+app.post('/api/system/restart/:service', (req, res) => {
   const service = req.params.service;
-  const validServices = ["api", "database", "scheduler", "notification", "data-sync", "backup"];
+  const validServices = ['api', 'database', 'scheduler', 'notification', 'data-sync', 'backup'];
   if (!validServices.includes(service)) {
-    return fail(res, 400, "BAD_REQUEST", `Unknown service: ${service}`);
+    return fail(res, 400, 'BAD_REQUEST', `Unknown service: ${service}`);
   }
   return ok(res, { queued: true, service, requestedAt: new Date().toISOString() });
 });
 
-app.post("/api/system/healthcheck", (req, res) => {
+app.post('/api/system/healthcheck', (req, res) => {
   return ok(res, {
-    database: pickRandom(["healthy", "healthy", "degraded"]),
-    api: "healthy",
-    scheduler: pickRandom(["running", "running", "idle"]),
-    backup: pickRandom(["healthy", "healthy", "degraded"]),
+    database: pickRandom(['healthy', 'healthy', 'degraded']),
+    api: 'healthy',
+    scheduler: pickRandom(['running', 'running', 'idle']),
+    backup: pickRandom(['healthy', 'healthy', 'degraded']),
     checkedAt: toWibIso(new Date()),
   });
 });
 
-app.get("/api/system/logs/export", (req, res) => {
-  return ok(res, {
-    fileName: `system_logs_${toWibDate()}.xlsx`,
-    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    contentBase64: Buffer.from("mock excel content").toString("base64"),
-  });
+app.get('/api/system/logs/export', async (req, res) => {
+  const rows = ['api', 'database', 'scheduler', 'backup'].map((service) => ({
+    service,
+    level: pickRandom(['INFO', 'INFO', 'WARN']),
+    message: `${service} demo health event`,
+    recordedAt: toWibIso(new Date(Date.now() - randomInt(0, 3600000))),
+  }));
+  return ok(
+    res,
+    await buildWorkbookPayload(`system_logs_${toWibDate()}.xlsx`, [
+      {
+        name: 'Logs',
+        columns: [
+          { header: 'Service', key: 'service', width: 18 },
+          { header: 'Level', key: 'level', width: 12 },
+          { header: 'Message', key: 'message', width: 42 },
+          { header: 'Recorded At', key: 'recordedAt', width: 24 },
+        ],
+        rows,
+      },
+    ]),
+  );
 });
 
 // ─── Agent Monitoring ──────────────────────────────────────────────────────────
 const OFFICE_MACHINES = [
-  { id: "OM-001", hostname: "HQ-LAPTOP-01", label: "Head Office - Finance", os: "Windows 11 Pro", cpu: "Intel i7-12700H", ram: "16GB", disk: "512GB SSD", status: "online" },
-  { id: "OM-002", hostname: "HQ-LAPTOP-02", label: "Head Office - HR", os: "Windows 11 Pro", cpu: "Intel i5-12400", ram: "8GB", disk: "256GB SSD", status: "online" },
-  { id: "OM-003", hostname: "NORTH-DESK-01", label: "North Hub - Admin", os: "Windows 10 Pro", cpu: "AMD Ryzen 5 5600G", ram: "16GB", disk: "512GB SSD", status: "online" },
-  { id: "OM-004", hostname: "EAST-DESK-01", label: "East Hub - Operations", os: "Windows 11 Pro", cpu: "Intel i7-12700", ram: "32GB", disk: "1TB SSD", status: "offline" },
-  { id: "OM-005", hostname: "CENTRAL-PC-01", label: "Central Hub - Manager", os: "Windows 11 Pro", cpu: "Intel i5-13500", ram: "16GB", disk: "512GB SSD", status: "online" },
-  { id: "OM-006", hostname: "WEST-LAPTOP-01", label: "West Hub - IT", os: "Windows 11 Pro", cpu: "AMD Ryzen 7 5800H", ram: "32GB", disk: "1TB SSD", status: "online" },
-  { id: "OM-007", hostname: "SOUTH-DESK-01", label: "South Hub - Admin", os: "Windows 10 Pro", cpu: "Intel i3-12100", ram: "8GB", disk: "256GB SSD", status: "warning" },
-  { id: "OM-008", hostname: "COASTAL-PC-01", label: "Coastal Hub - Operations", os: "Windows 11 Pro", cpu: "Intel i5-12400", ram: "16GB", disk: "512GB SSD", status: "online" },
+  {
+    id: 'OM-001',
+    hostname: 'HQ-LAPTOP-01',
+    label: 'Head Office - Finance',
+    os: 'Windows 11 Pro',
+    cpu: 'Intel i7-12700H',
+    ram: '16GB',
+    disk: '512GB SSD',
+    status: 'online',
+  },
+  {
+    id: 'OM-002',
+    hostname: 'HQ-LAPTOP-02',
+    label: 'Head Office - HR',
+    os: 'Windows 11 Pro',
+    cpu: 'Intel i5-12400',
+    ram: '8GB',
+    disk: '256GB SSD',
+    status: 'online',
+  },
+  {
+    id: 'OM-003',
+    hostname: 'NORTH-DESK-01',
+    label: 'North Hub - Admin',
+    os: 'Windows 10 Pro',
+    cpu: 'AMD Ryzen 5 5600G',
+    ram: '16GB',
+    disk: '512GB SSD',
+    status: 'online',
+  },
+  {
+    id: 'OM-004',
+    hostname: 'EAST-DESK-01',
+    label: 'East Hub - Operations',
+    os: 'Windows 11 Pro',
+    cpu: 'Intel i7-12700',
+    ram: '32GB',
+    disk: '1TB SSD',
+    status: 'offline',
+  },
+  {
+    id: 'OM-005',
+    hostname: 'CENTRAL-PC-01',
+    label: 'Central Hub - Manager',
+    os: 'Windows 11 Pro',
+    cpu: 'Intel i5-13500',
+    ram: '16GB',
+    disk: '512GB SSD',
+    status: 'online',
+  },
+  {
+    id: 'OM-006',
+    hostname: 'WEST-LAPTOP-01',
+    label: 'West Hub - IT',
+    os: 'Windows 11 Pro',
+    cpu: 'AMD Ryzen 7 5800H',
+    ram: '32GB',
+    disk: '1TB SSD',
+    status: 'online',
+  },
+  {
+    id: 'OM-007',
+    hostname: 'SOUTH-DESK-01',
+    label: 'South Hub - Admin',
+    os: 'Windows 10 Pro',
+    cpu: 'Intel i3-12100',
+    ram: '8GB',
+    disk: '256GB SSD',
+    status: 'warning',
+  },
+  {
+    id: 'OM-008',
+    hostname: 'COASTAL-PC-01',
+    label: 'Coastal Hub - Operations',
+    os: 'Windows 11 Pro',
+    cpu: 'Intel i5-12400',
+    ram: '16GB',
+    disk: '512GB SSD',
+    status: 'online',
+  },
 ];
 
-app.get("/api/agent/monitoring", (req, res) => {
+app.get('/api/agent/monitoring', (req, res) => {
   const { areaId, region, q } = req.query;
-  let machines = OFFICE_MACHINES.map(m => ({
+  let machines = OFFICE_MACHINES.map((m) => ({
     ...m,
     cpu_percent: m.status === 'online' ? randomInt(5, 85) : 0,
     ram_percent: m.status === 'online' ? randomInt(20, 90) : 0,
@@ -1362,49 +1867,96 @@ app.get("/api/agent/monitoring", (req, res) => {
     processes: m.status === 'online' ? randomInt(50, 200) : 0,
   }));
 
-  if (areaId) machines = machines.filter(m => m.id.includes(areaId) || (m.label && m.label.toLowerCase().includes(areaId.toLowerCase())));
-  if (region) machines = machines.filter(m => m.label && m.label.toLowerCase().includes(region.toLowerCase()));
+  if (areaId)
+    machines = machines.filter(
+      (m) =>
+        m.id.includes(areaId) || (m.label && m.label.toLowerCase().includes(areaId.toLowerCase())),
+    );
+  if (region)
+    machines = machines.filter(
+      (m) => m.label && m.label.toLowerCase().includes(region.toLowerCase()),
+    );
   if (q) {
     const needle = q.toLowerCase();
-    machines = machines.filter(m => m.hostname.toLowerCase().includes(needle) || (m.label && m.label.toLowerCase().includes(needle)));
+    machines = machines.filter(
+      (m) =>
+        m.hostname.toLowerCase().includes(needle) ||
+        (m.label && m.label.toLowerCase().includes(needle)),
+    );
   }
 
-  return ok(res, machines, { timezone: "Asia/Jakarta", total: machines.length });
+  return ok(res, machines, { timezone: 'Asia/Jakarta', total: machines.length });
 });
 
-app.get("/api/agent/monitoring/export", (req, res) => {
+app.get('/api/agent/monitoring/export', async (req, res) => {
+  const rows = OFFICE_MACHINES.map((machine) => ({
+    hostname: machine.hostname,
+    label: machine.label,
+    os: machine.os,
+    status: machine.status,
+    cpuPercent: machine.status === 'online' ? randomInt(5, 85) : 0,
+    ramPercent: machine.status === 'online' ? randomInt(20, 90) : 0,
+    diskPercent: randomInt(30, 95),
+    lastHeartbeat: machine.status === 'online' ? randomPastMinutes(2) : randomPastMinutes(1440),
+  }));
+  return ok(
+    res,
+    await buildWorkbookPayload(`agent_monitoring_${toWibDate()}.xlsx`, [
+      {
+        name: 'Agents',
+        columns: [
+          { header: 'Hostname', key: 'hostname', width: 22 },
+          { header: 'Label', key: 'label', width: 32 },
+          { header: 'OS', key: 'os', width: 18 },
+          { header: 'Status', key: 'status', width: 12 },
+          { header: 'CPU %', key: 'cpuPercent', width: 10 },
+          { header: 'RAM %', key: 'ramPercent', width: 10 },
+          { header: 'Disk %', key: 'diskPercent', width: 10 },
+          { header: 'Last Heartbeat', key: 'lastHeartbeat', width: 24 },
+        ],
+        rows,
+      },
+    ]),
+  );
+});
+
+app.delete('/api/agent/monitoring/:storeId', (req, res) => {
+  const { storeId } = req.params;
+  return ok(res, { deleted: true, storeId, resetTo: 'not_installed' });
+});
+
+app.get('/api/agent/suggest-version', (req, res) => {
   return ok(res, {
-    fileName: `agent_monitoring_${toWibDate()}.xlsx`,
-    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    contentBase64: Buffer.from("mock excel content").toString("base64"),
+    suggestedVersion: '4.2.1',
+    currentVersion: '4.1.0',
+    releaseNotes: 'Bug fixes and performance improvements',
   });
 });
 
-app.delete("/api/agent/monitoring/:storeId", (req, res) => {
-  const { storeId } = req.params;
-  return ok(res, { deleted: true, storeId, resetTo: "not_installed" });
-});
-
-app.get("/api/agent/suggest-version", (req, res) => {
-  return ok(res, { suggestedVersion: "4.2.1", currentVersion: "4.1.0", releaseNotes: "Bug fixes and performance improvements" });
-});
-
-app.post("/api/agent/upload", (req, res) => {
+app.post('/api/agent/upload', (req, res) => {
   const { version } = req.body || {};
-  return ok(res, { uploaded: true, version: version || "4.2.1", deployedAt: toWibIso(new Date()) });
+  return ok(res, { uploaded: true, version: version || '4.2.1', deployedAt: toWibIso(new Date()) });
 });
 
 // ─── After Hours ──────────────────────────────────────────────────────────────
-app.get("/api/system/health", (req, res) => {
+app.get('/api/system/health', (req, res) => {
   return ok(res, {
-    status: pickRandom(["healthy", "healthy", "healthy", "degraded"]),
+    status: pickRandom(['healthy', 'healthy', 'healthy', 'degraded']),
     uptime: `${randomInt(24, 720)}h ${randomInt(0, 59)}m`,
-    apiVersion: "v2.4.1",
-    database: { status: pickRandom(["connected", "connected", "connected", "degraded"]), latency: `${randomInt(2, 15)}ms`, connections: randomInt(5, 30) },
+    apiVersion: 'v2.4.1',
+    database: {
+      status: pickRandom(['connected', 'connected', 'connected', 'degraded']),
+      latency: `${randomInt(2, 15)}ms`,
+      connections: randomInt(5, 30),
+    },
     cpu: { usage: `${randomInt(20, 70)}%`, cores: 4 },
-    memory: { usage: `${randomInt(30, 80)}%`, total: "4GB", used: `${randomInt(1, 3)}GB` },
-    disk: { usage: `${randomInt(40, 85)}%`, total: "100GB", used: `${randomInt(40, 85)}GB` },
-    services: { api: "healthy", scheduler: pickRandom(["running", "running", "idle"]), notifications: pickRandom(["healthy", "healthy", "degraded"]) },
+    memory: { usage: `${randomInt(30, 80)}%`, total: '4GB', used: `${randomInt(1, 3)}GB` },
+    disk: { usage: `${randomInt(40, 85)}%`, total: '100GB', used: `${randomInt(40, 85)}GB` },
+    services: {
+      api: 'healthy',
+      scheduler: pickRandom(['running', 'running', 'idle']),
+      notifications: pickRandom(['healthy', 'healthy', 'degraded']),
+    },
   });
 });
 
@@ -1416,16 +1968,19 @@ for (let i = 0; i < 30; i++) {
 
 const MOCK_AFTERHOURS_SETTINGS = {
   warning_schedule_times: '["23:15","23:30","23:45","00:00"]',
-  first_warning_time: "23:15",
-  final_warning_time: "00:00",
-  whatsapp_notify_enabled: "true",
-  telegram_notify_enabled: "true",
-  check_window_start: "20:00",
-  check_window_end: "06:00"
+  first_warning_time: '23:15',
+  final_warning_time: '00:00',
+  whatsapp_notify_enabled: 'true',
+  telegram_notify_enabled: 'true',
+  check_window_start: '20:00',
+  check_window_end: '06:00',
 };
 
-app.get("/api/afterhours", (req, res) => {
-  const count = randomInt(1, 5);
+app.get('/api/afterhours', (req, res) => {
+  const { branch, search } = req.query;
+  const page = Math.max(1, parseInt(req.query.page, 10) || 1);
+  const pageSize = Math.min(200, Math.max(1, parseInt(req.query.pageSize, 10) || 50));
+  const count = randomInt(12, 24);
   const logs = [];
   for (let i = 0; i < count; i++) {
     const store = pickRandom(STORES);
@@ -1433,103 +1988,142 @@ app.get("/api/afterhours", (req, res) => {
     uploadTime.setUTCHours(randomInt(22, 23), randomInt(0, 59), randomInt(0, 59), 0);
     logs.push({
       id: faker.string.uuid(),
-      storeId: store.storeCode,
-      storeName: store.storeName,
-      storeCode: store.storeCode,
-      branchId: store.branchId,
-      branchName: store.branchName,
-      activity: pickRandom(["data_upload", "eod_submission", "sync_trigger"]),
-      timestamp: uploadTime.toISOString(),
-      fileSize: `${randomInt(1, 20)}MB`,
+      store_id: store.storeCode,
+      store_code: store.storeCode,
+      store_name: store.storeName,
+      branch_id: store.branchId,
+      branch_name: store.branchName,
+      activity: pickRandom(['data_upload', 'eod_submission', 'sync_trigger']),
+      last_sync_at: uploadTime.toISOString(),
+      detected_at: new Date(uploadTime.getTime() + randomInt(5, 35) * 60000).toISOString(),
+      file_size: `${randomInt(1, 20)}MB`,
       duration: `${randomInt(10, 300)}s`,
-      status: pickRandom(["completed", "completed", "flagged"]),
+      status: pickRandom(['completed', 'completed', 'flagged']),
       notes: faker.lorem.sentence(),
-      detectedAt: uploadTime.toISOString(),
       notified: Math.random() > 0.4,
     });
   }
-  return ok(res, logs, { timezone: "Asia/Jakarta" });
+
+  let filtered = logs;
+  if (branch) filtered = filtered.filter((row) => String(row.branch_id) === String(branch));
+  if (search) {
+    const needle = String(search).toLowerCase();
+    filtered = filtered.filter(
+      (row) =>
+        row.store_code.toLowerCase().includes(needle) ||
+        row.store_name.toLowerCase().includes(needle),
+    );
+  }
+
+  const total = filtered.length;
+  const offset = (page - 1) * pageSize;
+  const violations = filtered.slice(offset, offset + pageSize);
+  return ok(res, {
+    violations,
+    pagination: {
+      page,
+      pageSize,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+    },
+  }, { timezone: 'Asia/Jakarta' });
 });
 
-app.get("/api/afterhours/dates", (req, res) => {
-  const limit = parseInt(req.query.limit || "12", 10);
+app.get('/api/afterhours/dates', (req, res) => {
+  const limit = parseInt(req.query.limit || '12', 10);
   const dates = MOCK_AFTERHOURS_DATES.slice(0, limit).map((d) => ({
     check_date: d,
-    violation_count: randomInt(1, 5)
+    violation_count: randomInt(1, 5),
   }));
   return ok(res, { dates });
 });
 
-app.get("/api/afterhours/summary", (req, res) => {
+app.get('/api/afterhours/summary', (req, res) => {
   const date = req.query.date || toWibDate();
-  const branchStats = BRANCHES.map(b => ({
+  const branchStats = BRANCHES.map((b) => ({
     branch_id: b.id,
     branch_name: b.name,
-    violation_count: randomInt(0, 3)
+    violation_count: randomInt(1, 4),
+    latest_sync: randomPastMinutes(180),
   }));
   return ok(res, {
     date,
-    summary: branchStats,
-    totalViolations: branchStats.reduce((sum, b) => sum + b.violation_count, 0)
+    byBranch: branchStats,
+    totalViolations: branchStats.reduce((sum, b) => sum + b.violation_count, 0),
   });
 });
 
-app.get("/api/afterhours/settings", (req, res) => {
+app.get('/api/afterhours/settings', (req, res) => {
   return ok(res, { settings: MOCK_AFTERHOURS_SETTINGS });
 });
 
-app.put("/api/afterhours/settings", (req, res) => {
+app.put('/api/afterhours/settings', (req, res) => {
   const { settings } = req.body || {};
-  if (settings && typeof settings === "object") {
+  if (settings && typeof settings === 'object') {
     Object.assign(MOCK_AFTERHOURS_SETTINGS, settings);
   }
   return ok(res, { saved: Object.keys(settings || {}) });
 });
 
-app.post("/api/afterhours/check", (req, res) => {
+app.post('/api/afterhours/check', (req, res) => {
   const runAllStages = req.body?.runAllStages || false;
   const totalViolations = randomInt(2, 6);
   return ok(res, {
-    runMode: runAllStages ? "all_stages" : "single_stage",
+    runMode: runAllStages ? 'all_stages' : 'single_stage',
     totalViolations,
     branchCount: randomInt(2, 4),
     stageResults: [
-      { warningStage: 1, totalStages: 4, totalViolations, telegramSuccess: 1, whatsappSuccess: 1 }
-    ]
+      { warningStage: 1, totalStages: 4, totalViolations, telegramSuccess: 1, whatsappSuccess: 1 },
+    ],
   });
 });
 
-app.get("/api/afterhours/report/months", (req, res) => {
+app.get('/api/afterhours/report/months', (req, res) => {
   const months = [
-    { report_month: "2026-05", store_count: STORES.length, total_violation_days: randomInt(15, 45), generated_at: new Date().toISOString() },
-    { report_month: "2026-04", store_count: STORES.length, total_violation_days: randomInt(30, 80), generated_at: daysAgo(30).toISOString() }
+    {
+      report_month: '2026-05',
+      store_count: STORES.length,
+      total_violation_days: randomInt(15, 45),
+      generated_at: new Date().toISOString(),
+    },
+    {
+      report_month: '2026-04',
+      store_count: STORES.length,
+      total_violation_days: randomInt(30, 80),
+      generated_at: daysAgo(30).toISOString(),
+    },
   ];
   return ok(res, { months });
 });
 
-app.get("/api/afterhours/report", (req, res) => {
-  const month = req.query.month || "2026-05";
+app.get('/api/afterhours/report', (req, res) => {
+  const month = req.query.month || '2026-05';
   const branch = req.query.branch;
   const search = req.query.search;
-  
+
   let stores = STORES;
   if (branch) {
-    stores = stores.filter(s => s.branchId === String(branch));
+    stores = stores.filter((s) => s.branchId === String(branch));
   }
   if (search) {
     const needle = search.toLowerCase();
-    stores = stores.filter(s => s.storeCode.toLowerCase().includes(needle) || s.storeName.toLowerCase().includes(needle));
+    stores = stores.filter(
+      (s) =>
+        s.storeCode.toLowerCase().includes(needle) || s.storeName.toLowerCase().includes(needle),
+    );
   }
-  
-  const ranking = stores.map((s, index) => ({
-    rank: index + 1,
-    store_code: s.storeCode,
-    store_name: s.storeName,
-    branch_id: s.branchId,
-    branch_name: s.branchName,
-    violation_count: randomInt(0, 10),
-    last_activity_time: "22:15 WIB"
-  })).sort((a, b) => b.violation_count - a.violation_count);
+
+  const ranking = stores
+    .map((s, index) => ({
+      rank: index + 1,
+      store_code: s.storeCode,
+      store_name: s.storeName,
+      branch_id: s.branchId,
+      branch_name: s.branchName,
+      violation_count: randomInt(0, 10),
+      last_activity_time: '22:15 WIB',
+    }))
+    .sort((a, b) => b.violation_count - a.violation_count);
 
   return ok(res, {
     reportMonth: month,
@@ -1537,96 +2131,250 @@ app.get("/api/afterhours/report", (req, res) => {
     summary: {
       totalStores: stores.length,
       totalViolationDays: ranking.reduce((sum, s) => sum + s.violation_count, 0),
-      reportWindowStart: "23:15",
-      reportWindowEndExclusive: "01:00",
-      generatedAt: new Date().toISOString()
+      reportWindowStart: '23:15',
+      reportWindowEndExclusive: '01:00',
+      generatedAt: new Date().toISOString(),
     },
     filters: {
       month,
       branch,
       search: search || null,
-      limit: 20
-    }
+      limit: 20,
+    },
   });
 });
 
-app.post("/api/afterhours/report/generate", (req, res) => {
+app.post('/api/afterhours/report/generate', (req, res) => {
   return ok(res, {
     success: true,
-    month: req.body?.month || "2026-05",
-    generatedAt: new Date().toISOString()
+    month: req.body?.month || '2026-05',
+    generatedAt: new Date().toISOString(),
   });
 });
 
-app.get("/api/afterhours/report/export", (req, res) => {
-  const month = req.query.month || "2026-05";
-  return ok(res, {
-    fileName: `afterhours_report_${month}.xlsx`,
-    contentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    contentBase64: Buffer.from("Excel mock base64 content").toString("base64")
-  });
+app.get('/api/afterhours/report/export', async (req, res) => {
+  const month = req.query.month || '2026-05';
+  const rows = BRANCHES.map((branch) => ({
+    branch: branch.name,
+    month,
+    tickets: randomInt(8, 40),
+    resolved: randomInt(6, 35),
+    avgResponseMinutes: randomInt(12, 90),
+  }));
+  return ok(
+    res,
+    await buildWorkbookPayload(`afterhours_report_${month}.xlsx`, [
+      {
+        name: 'After Hours',
+        columns: [
+          { header: 'Branch', key: 'branch', width: 24 },
+          { header: 'Month', key: 'month', width: 14 },
+          { header: 'Tickets', key: 'tickets', width: 12 },
+          { header: 'Resolved', key: 'resolved', width: 12 },
+          { header: 'Avg Response Minutes', key: 'avgResponseMinutes', width: 22 },
+        ],
+        rows,
+      },
+    ]),
+  );
 });
 
 // ─── Users & Roles mock database ───────────────────────────────────────────────
 const MOCK_ACCOUNTS = {
   demo: {
-    id: 1, username: "demo", password: "demo123", role: "demo",
-    name: "Demo (Read-Only)",
+    id: 1,
+    username: 'demo',
+    password: 'demo123',
+    role: 'demo',
+    name: 'Demo (Read-Only)',
     effectivePerms: [
-      "DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "STORES_VIEW", "EMPLOYEES_VIEW",
-      "BACKUPS_VIEW", "SYSTEM_VIEW", "ACCOUNTS_VIEW",
-      "NIK_LOOKUP", "USERS_VIEW", "ROLES_VIEW",
-      "AFTERHOURS_VIEW", "AGENT_UPDATE",
-      "SYSTEM_HEALTHCHECK",
+      'DASHBOARD_VIEW',
+      'SYNC_VIEW',
+      'EOD_VIEW',
+      'STORES_VIEW',
+      'EMPLOYEES_VIEW',
+      'BACKUPS_VIEW',
+      'SYSTEM_VIEW',
+      'ACCOUNTS_VIEW',
+      'NIK_LOOKUP',
+      'USERS_VIEW',
+      'ROLES_VIEW',
+      'AFTERHOURS_VIEW',
+      'AGENT_UPDATE',
+      'SYSTEM_HEALTHCHECK',
     ],
     isDemo: true,
   },
   superadmin: {
-    id: 2, username: "superadmin", password: "superadmin-password", role: "super_admin",
-    name: "Super Admin",
+    id: 2,
+    username: 'superadmin',
+    password: 'superadmin-password',
+    role: 'super_admin',
+    name: 'Super Admin',
     effectivePerms: [
-      "DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "STORES_VIEW", "EMPLOYEES_VIEW",
-      "BACKUPS_VIEW", "SYSTEM_VIEW", "ACCOUNTS_VIEW",
-      "EOD_SYNC", "EOD_RETRY", "STORES_EDIT", "NIK_LOOKUP",
-      "BACKUPS_RUN", "BACKUPS_DELETE", "BACKUPS_RESTORE",
-      "SYSTEM_HEALTHCHECK", "SYSTEM_RESTART",
-      "USERS_VIEW", "USERS_CREATE", "USERS_EDIT", "USERS_DELETE",
-      "USERS_RESET_PASSWORD", "USERS_CHANGE_PASSWORD",
-      "USERS_ROLE_EDIT", "USERS_PERMISSION_EDIT", "USERS_SCOPE_EDIT",
-      "ROLES_VIEW", "ROLES_EDIT", "AFTERHOURS_VIEW", "AGENT_UPDATE",
+      'DASHBOARD_VIEW',
+      'SYNC_VIEW',
+      'EOD_VIEW',
+      'STORES_VIEW',
+      'EMPLOYEES_VIEW',
+      'BACKUPS_VIEW',
+      'SYSTEM_VIEW',
+      'ACCOUNTS_VIEW',
+      'EOD_SYNC',
+      'EOD_RETRY',
+      'STORES_EDIT',
+      'NIK_LOOKUP',
+      'EMPLOYEES_EDIT',
+      'BACKUPS_RUN',
+      'BACKUPS_DELETE',
+      'BACKUPS_RESTORE',
+      'SYSTEM_HEALTHCHECK',
+      'SYSTEM_RESTART',
+      'USERS_VIEW',
+      'USERS_CREATE',
+      'USERS_EDIT',
+      'USERS_DELETE',
+      'USERS_RESET_PASSWORD',
+      'USERS_CHANGE_PASSWORD',
+      'USERS_ROLE_EDIT',
+      'USERS_PERMISSION_EDIT',
+      'USERS_SCOPE_EDIT',
+      'ROLES_VIEW',
+      'ROLES_EDIT',
+      'AFTERHOURS_VIEW',
+      'AGENT_UPDATE',
     ],
   },
 };
 
 const MOCK_ROLES = [
-  { id: 1, name: "viewer", label: "Viewer", description: "Read-only access to all dashboards", permissions: ["DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "STORES_VIEW", "EMPLOYEES_VIEW", "AFTERHOURS_VIEW"] },
-  { id: 2, name: "ops", label: "Operations Manager", description: "Manage EOD submissions and retries", permissions: ["DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "STORES_VIEW", "EOD_SYNC", "EOD_RETRY", "AFTERHOURS_VIEW"] },
-  { id: 3, name: "admin", label: "Administrator", description: "Manage users and system updates", permissions: ["DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "STORES_VIEW", "EMPLOYEES_VIEW", "BACKUPS_VIEW", "SYSTEM_VIEW", "EOD_SYNC", "EOD_RETRY", "STORES_EDIT", "NIK_LOOKUP", "BACKUPS_RUN", "SYSTEM_HEALTHCHECK", "USERS_VIEW", "USERS_CREATE", "USERS_EDIT", "ROLES_VIEW", "AFTERHOURS_VIEW", "AGENT_UPDATE"] },
-  { id: 4, name: "super_admin", label: "Super Administrator", description: "Unrestricted root-level access", permissions: MOCK_ACCOUNTS.superadmin.effectivePerms }
+  {
+    id: 1,
+    name: 'viewer',
+    label: 'Viewer',
+    description: 'Read-only access to all dashboards',
+    permissions: [
+      'DASHBOARD_VIEW',
+      'SYNC_VIEW',
+      'EOD_VIEW',
+      'STORES_VIEW',
+      'EMPLOYEES_VIEW',
+      'AFTERHOURS_VIEW',
+    ],
+  },
+  {
+    id: 2,
+    name: 'ops',
+    label: 'Operations Manager',
+    description: 'Manage EOD submissions and retries',
+    permissions: [
+      'DASHBOARD_VIEW',
+      'SYNC_VIEW',
+      'EOD_VIEW',
+      'STORES_VIEW',
+      'EOD_SYNC',
+      'EOD_RETRY',
+      'AFTERHOURS_VIEW',
+    ],
+  },
+  {
+    id: 3,
+    name: 'admin',
+    label: 'Administrator',
+    description: 'Manage users and system updates',
+    permissions: [
+      'DASHBOARD_VIEW',
+      'SYNC_VIEW',
+      'EOD_VIEW',
+      'STORES_VIEW',
+      'EMPLOYEES_VIEW',
+      'BACKUPS_VIEW',
+      'SYSTEM_VIEW',
+      'EOD_SYNC',
+      'EOD_RETRY',
+      'STORES_EDIT',
+      'NIK_LOOKUP',
+      'EMPLOYEES_EDIT',
+      'BACKUPS_RUN',
+      'SYSTEM_HEALTHCHECK',
+      'USERS_VIEW',
+      'USERS_CREATE',
+      'USERS_EDIT',
+      'ROLES_VIEW',
+      'AFTERHOURS_VIEW',
+      'AGENT_UPDATE',
+    ],
+  },
+  {
+    id: 4,
+    name: 'super_admin',
+    label: 'Super Administrator',
+    description: 'Unrestricted root-level access',
+    permissions: MOCK_ACCOUNTS.superadmin.effectivePerms,
+  },
 ];
 
 const MOCK_USERS = [
-  { id: 1, username: "demo", name: "Demo (Read-Only)", role: "demo", roleNames: ["demo"], effectivePerms: MOCK_ACCOUNTS.demo.effectivePerms, scopeBranches: [], isAllBranches: true, isDemo: true, roles: [1] },
-  { id: 2, username: "superadmin", name: "Super Admin", role: "super_admin", roleNames: ["super_admin"], effectivePerms: MOCK_ACCOUNTS.superadmin.effectivePerms, scopeBranches: [], isAllBranches: true, roles: [4] },
-  { id: 3, username: "opsmanager", name: "Ops Manager", role: "ops", roleNames: ["ops"], effectivePerms: ["DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "STORES_VIEW", "EOD_SYNC", "EOD_RETRY", "AFTERHOURS_VIEW"], scopeBranches: ["2", "3"], isAllBranches: false, roles: [2] }
+  {
+    id: 1,
+    username: 'demo',
+    name: 'Demo (Read-Only)',
+    role: 'demo',
+    roleNames: ['demo'],
+    effectivePerms: MOCK_ACCOUNTS.demo.effectivePerms,
+    scopeBranches: [],
+    isAllBranches: true,
+    isDemo: true,
+    roles: [1],
+  },
+  {
+    id: 2,
+    username: 'superadmin',
+    name: 'Super Admin',
+    role: 'super_admin',
+    roleNames: ['super_admin'],
+    effectivePerms: MOCK_ACCOUNTS.superadmin.effectivePerms,
+    scopeBranches: [],
+    isAllBranches: true,
+    roles: [4],
+  },
+  {
+    id: 3,
+    username: 'opsmanager',
+    name: 'Ops Manager',
+    role: 'ops',
+    roleNames: ['ops'],
+    effectivePerms: [
+      'DASHBOARD_VIEW',
+      'SYNC_VIEW',
+      'EOD_VIEW',
+      'STORES_VIEW',
+      'EOD_SYNC',
+      'EOD_RETRY',
+      'AFTERHOURS_VIEW',
+    ],
+    scopeBranches: ['2', '3'],
+    isAllBranches: false,
+    roles: [2],
+  },
 ];
 
 const sessions = new Map();
 
-app.post("/api/auth/login", (req, res) => {
+app.post('/api/auth/login', (req, res) => {
   const { username, password } = req.body || {};
   if (!username || !password) {
-    return fail(res, 401, "AUTH_FAILED", "Username and password are required");
+    return fail(res, 401, 'AUTH_FAILED', 'Username and password are required');
   }
 
-  const demoAccount = MOCK_USERS.find((u) => u.username === "demo");
-  const isDemoLogin = username === "demo" && password === MOCK_ACCOUNTS.demo.password;
+  const demoAccount = MOCK_USERS.find((u) => u.username === 'demo');
+  const isDemoLogin = username === 'demo' && password === MOCK_ACCOUNTS.demo.password;
 
   if (!demoAccount || !isDemoLogin) {
-    return fail(res, 401, "INVALID_CREDENTIALS", "Demo mode only allows the demo account");
+    return fail(res, 401, 'INVALID_CREDENTIALS', 'Demo mode only allows the demo account');
   }
 
-  const token = "mock-jwt-token-" + faker.string.alphanumeric(32);
+  const token = 'mock-jwt-token-' + faker.string.alphanumeric(32);
   sessions.set(token, demoAccount);
 
   return ok(res, {
@@ -1635,15 +2383,15 @@ app.post("/api/auth/login", (req, res) => {
   });
 });
 
-app.get("/api/auth/me", (req, res) => {
+app.get('/api/auth/me', (req, res) => {
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return fail(res, 401, "UNAUTHORIZED", "Not authenticated");
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return fail(res, 401, 'UNAUTHORIZED', 'Not authenticated');
   }
-  const token = authHeader.split(" ")[1];
+  const token = authHeader.split(' ')[1];
   const account = sessions.get(token);
   if (!account) {
-    return fail(res, 401, "UNAUTHORIZED", "Invalid or expired session");
+    return fail(res, 401, 'UNAUTHORIZED', 'Invalid or expired session');
   }
   return ok(res, {
     user: account,
@@ -1651,30 +2399,41 @@ app.get("/api/auth/me", (req, res) => {
 });
 
 // ─── User Administration Endpoints ─────────────────────────────────────────────
-app.get("/api/users", (req, res) => {
+app.get('/api/users', (req, res) => {
   const { q } = req.query;
-  let filtered = [...MOCK_USERS];
+  let filtered = MOCK_USERS.map((user) => ({
+    ...user,
+    roles: (user.roles || [])
+      .map((roleId) => MOCK_ROLES.find((role) => role.id === roleId))
+      .filter(Boolean)
+      .map((role) => ({ id: role.id, name: role.name, label: role.label })),
+    branchScope: user.isAllBranches ? 'ALL' : user.scopeBranches,
+    overridesCount: { allow: 0, deny: 0 },
+  }));
   if (q) {
     const needle = q.toLowerCase();
-    filtered = filtered.filter(u => u.username.toLowerCase().includes(needle) || u.name.toLowerCase().includes(needle));
+    filtered = filtered.filter(
+      (u) => u.username.toLowerCase().includes(needle) || u.name.toLowerCase().includes(needle),
+    );
   }
   const result = paginate(filtered, req.query);
-  return ok(res, result.data, result.meta);
+  return ok(res, { users: result.data }, result.meta);
 });
 
-app.get("/api/users/:id", (req, res) => {
-  const user = MOCK_USERS.find(u => u.id === parseInt(req.params.id, 10));
-  if (!user) return fail(res, 404, "NOT_FOUND", "User not found");
+app.get('/api/users/:id', (req, res) => {
+  const user = MOCK_USERS.find((u) => u.id === parseInt(req.params.id, 10));
+  if (!user) return fail(res, 404, 'NOT_FOUND', 'User not found');
   return ok(res, user);
 });
 
-app.post("/api/users", (req, res) => {
+app.post('/api/users', (req, res) => {
   const { username, password, role } = req.body || {};
-  if (!username || !password) return fail(res, 400, "BAD_REQUEST", "Username and password required");
-  if (MOCK_USERS.some(u => u.username === username)) {
-    return fail(res, 409, "CONFLICT", "Username already exists");
+  if (!username || !password)
+    return fail(res, 400, 'BAD_REQUEST', 'Username and password required');
+  if (MOCK_USERS.some((u) => u.username === username)) {
+    return fail(res, 409, 'CONFLICT', 'Username already exists');
   }
-  const matchedRoleObj = MOCK_ROLES.find(r => r.name === role) || MOCK_ROLES[0];
+  const matchedRoleObj = MOCK_ROLES.find((r) => r.name === role) || MOCK_ROLES[0];
   const newUser = {
     id: MOCK_USERS.length + 1,
     username,
@@ -1684,18 +2443,18 @@ app.post("/api/users", (req, res) => {
     effectivePerms: [...matchedRoleObj.permissions],
     scopeBranches: [],
     isAllBranches: true,
-    roles: [matchedRoleObj.id]
+    roles: [matchedRoleObj.id],
   };
   MOCK_USERS.push(newUser);
   return ok(res, newUser);
 });
 
-app.patch("/api/users/:id", (req, res) => {
-  const user = MOCK_USERS.find(u => u.id === parseInt(req.params.id, 10));
-  if (!user) return fail(res, 404, "NOT_FOUND", "User not found");
+app.patch('/api/users/:id', (req, res) => {
+  const user = MOCK_USERS.find((u) => u.id === parseInt(req.params.id, 10));
+  if (!user) return fail(res, 404, 'NOT_FOUND', 'User not found');
   const { role } = req.body || {};
   if (role) {
-    const roleObj = MOCK_ROLES.find(r => r.name === role);
+    const roleObj = MOCK_ROLES.find((r) => r.name === role);
     if (roleObj) {
       user.role = roleObj.name;
       user.roleNames = [roleObj.name];
@@ -1706,42 +2465,42 @@ app.patch("/api/users/:id", (req, res) => {
   return ok(res, user);
 });
 
-app.patch("/api/users/:id/roles", (req, res) => {
-  const user = MOCK_USERS.find(u => u.id === parseInt(req.params.id, 10));
-  if (!user) return fail(res, 404, "NOT_FOUND", "User not found");
+app.patch('/api/users/:id/roles', (req, res) => {
+  const user = MOCK_USERS.find((u) => u.id === parseInt(req.params.id, 10));
+  if (!user) return fail(res, 404, 'NOT_FOUND', 'User not found');
   const { role_ids } = req.body || {};
   if (role_ids) {
     user.roles = role_ids.map(Number);
-    const activeRoles = MOCK_ROLES.filter(r => user.roles.includes(r.id));
-    user.roleNames = activeRoles.map(r => r.name);
-    user.role = user.roleNames[0] || "viewer";
+    const activeRoles = MOCK_ROLES.filter((r) => user.roles.includes(r.id));
+    user.roleNames = activeRoles.map((r) => r.name);
+    user.role = user.roleNames[0] || 'viewer';
     const perms = new Set();
     for (const r of activeRoles) {
-      r.permissions.forEach(p => perms.add(p));
+      r.permissions.forEach((p) => perms.add(p));
     }
     user.effectivePerms = Array.from(perms);
   }
   return ok(res, user);
 });
 
-app.patch("/api/users/:id/permissions", (req, res) => {
-  const user = MOCK_USERS.find(u => u.id === parseInt(req.params.id, 10));
-  if (!user) return fail(res, 404, "NOT_FOUND", "User not found");
+app.patch('/api/users/:id/permissions', (req, res) => {
+  const user = MOCK_USERS.find((u) => u.id === parseInt(req.params.id, 10));
+  if (!user) return fail(res, 404, 'NOT_FOUND', 'User not found');
   const { allow, deny } = req.body || {};
   const basePerms = new Set();
-  const activeRoles = MOCK_ROLES.filter(r => user.roles.includes(r.id));
+  const activeRoles = MOCK_ROLES.filter((r) => user.roles.includes(r.id));
   for (const r of activeRoles) {
-    r.permissions.forEach(p => basePerms.add(p));
+    r.permissions.forEach((p) => basePerms.add(p));
   }
-  if (allow) allow.forEach(p => basePerms.add(p));
-  if (deny) deny.forEach(p => basePerms.delete(p));
+  if (allow) allow.forEach((p) => basePerms.add(p));
+  if (deny) deny.forEach((p) => basePerms.delete(p));
   user.effectivePerms = Array.from(basePerms);
   return ok(res, user);
 });
 
-app.patch("/api/users/:id/branch-scope", (req, res) => {
-  const user = MOCK_USERS.find(u => u.id === parseInt(req.params.id, 10));
-  if (!user) return fail(res, 404, "NOT_FOUND", "User not found");
+app.patch('/api/users/:id/branch-scope', (req, res) => {
+  const user = MOCK_USERS.find((u) => u.id === parseInt(req.params.id, 10));
+  if (!user) return fail(res, 404, 'NOT_FOUND', 'User not found');
   const { branch_ids } = req.body || {};
   if (branch_ids) {
     user.scopeBranches = branch_ids.map(String);
@@ -1750,47 +2509,53 @@ app.patch("/api/users/:id/branch-scope", (req, res) => {
   return ok(res, user);
 });
 
-app.post("/api/users/:id/reset-password", (req, res) => {
-  const user = MOCK_USERS.find(u => u.id === parseInt(req.params.id, 10));
-  if (!user) return fail(res, 404, "NOT_FOUND", "User not found");
-  return ok(res, { success: true, message: "Password reset successfully" });
+app.post('/api/users/:id/reset-password', (req, res) => {
+  const user = MOCK_USERS.find((u) => u.id === parseInt(req.params.id, 10));
+  if (!user) return fail(res, 404, 'NOT_FOUND', 'User not found');
+  return ok(res, { success: true, message: 'Password reset successfully' });
 });
 
-app.delete("/api/users/:id", (req, res) => {
-  const idx = MOCK_USERS.findIndex(u => u.id === parseInt(req.params.id, 10));
-  if (idx === -1) return fail(res, 404, "NOT_FOUND", "User not found");
+app.delete('/api/users/:id', (req, res) => {
+  const idx = MOCK_USERS.findIndex((u) => u.id === parseInt(req.params.id, 10));
+  if (idx === -1) return fail(res, 404, 'NOT_FOUND', 'User not found');
   MOCK_USERS.splice(idx, 1);
   return ok(res, { deleted: true });
 });
 
 // ─── Role Management Endpoints ─────────────────────────────────────────────────
-app.get("/api/roles", (req, res) => {
-  return ok(res, MOCK_ROLES);
+app.get('/api/roles', (req, res) => {
+  const roles = MOCK_ROLES.map((role) => ({
+    ...role,
+    desc: role.description,
+    is_system: ['viewer', 'ops', 'admin', 'super_admin', 'demo', 'it', 'hc'].includes(role.name),
+    userCount: MOCK_USERS.filter((user) => (user.roles || []).includes(role.id)).length,
+  }));
+  return ok(res, { roles });
 });
 
-app.get("/api/roles/:id", (req, res) => {
-  const role = MOCK_ROLES.find(r => r.id === parseInt(req.params.id, 10));
-  if (!role) return fail(res, 404, "NOT_FOUND", "Role not found");
+app.get('/api/roles/:id', (req, res) => {
+  const role = MOCK_ROLES.find((r) => r.id === parseInt(req.params.id, 10));
+  if (!role) return fail(res, 404, 'NOT_FOUND', 'Role not found');
   return ok(res, role);
 });
 
-app.post("/api/roles", (req, res) => {
+app.post('/api/roles', (req, res) => {
   const { name, label, description, permissions } = req.body || {};
-  if (!name || !label) return fail(res, 400, "BAD_REQUEST", "Name and label are required");
+  if (!name || !label) return fail(res, 400, 'BAD_REQUEST', 'Name and label are required');
   const newRole = {
     id: MOCK_ROLES.length + 1,
     name,
     label,
-    description: description || "",
-    permissions: permissions || []
+    description: description || '',
+    permissions: permissions || [],
   };
   MOCK_ROLES.push(newRole);
   return ok(res, newRole);
 });
 
-app.put("/api/roles/:id", (req, res) => {
-  const role = MOCK_ROLES.find(r => r.id === parseInt(req.params.id, 10));
-  if (!role) return fail(res, 404, "NOT_FOUND", "Role not found");
+app.put('/api/roles/:id', (req, res) => {
+  const role = MOCK_ROLES.find((r) => r.id === parseInt(req.params.id, 10));
+  if (!role) return fail(res, 404, 'NOT_FOUND', 'Role not found');
   const { label, description, permissions } = req.body || {};
   if (label) role.label = label;
   if (description !== undefined) role.description = description;
@@ -1798,95 +2563,57 @@ app.put("/api/roles/:id", (req, res) => {
   return ok(res, role);
 });
 
-app.delete("/api/roles/:id", (req, res) => {
-  const idx = MOCK_ROLES.findIndex(r => r.id === parseInt(req.params.id, 10));
-  if (idx === -1) return fail(res, 404, "NOT_FOUND", "Role not found");
+app.delete('/api/roles/:id', (req, res) => {
+  const idx = MOCK_ROLES.findIndex((r) => r.id === parseInt(req.params.id, 10));
+  if (idx === -1) return fail(res, 404, 'NOT_FOUND', 'Role not found');
   MOCK_ROLES.splice(idx, 1);
   return ok(res, { deleted: true });
 });
 
 // ─── System Branches Endpoint ──────────────────────────────────────────────────
-app.get("/api/system/branches", (req, res) => {
+app.get('/api/system/branches', (req, res) => {
   return ok(res, BRANCHES);
 });
 
-
 // ─── Auth ──────────────────────────────────────────────────────────────────────
-app.post("/api/auth/logout", (req, res) => {
+app.post('/api/auth/logout', (req, res) => {
   const authHeader = req.headers.authorization;
-  if (authHeader && authHeader.startsWith("Bearer ")) {
-    const token = authHeader.split(" ")[1];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    const token = authHeader.split(' ')[1];
     sessions.delete(token);
   }
   return ok(res, { loggedOut: true });
 });
 
-app.patch("/api/auth/me/password", (req, res) => {
+app.patch('/api/auth/me/password', (req, res) => {
   const { currentPassword, newPassword } = req.body || {};
   if (!currentPassword || !newPassword) {
-    return fail(res, 400, "BAD_REQUEST", "Current password and new password are required");
+    return fail(res, 400, 'BAD_REQUEST', 'Current password and new password are required');
   }
   if (newPassword.length < 8) {
-    return fail(res, 400, "BAD_REQUEST", "New password must be at least 8 characters");
+    return fail(res, 400, 'BAD_REQUEST', 'New password must be at least 8 characters');
   }
-  return ok(res, { changed: true, message: "Password updated successfully" });
+  return ok(res, { changed: true, message: 'Password updated successfully' });
 });
 
 // ─── NIK / Identity Check ──────────────────────────────────────────────────────
-const NIK_ROLES = ["Store Manager", "Assistant Manager", "Supervisor", "Cashier", "Sales Associate", "Warehouse Staff"];
+const NIK_ROLES = EMPLOYEE_ROLES;
 
-app.get("/api/nik/roles", (req, res) => {
-  return ok(res, NIK_ROLES.map((name, i) => ({ id: i + 1, name, label: name })));
+app.get('/api/nik/roles', (req, res) => {
+  return ok(
+    res,
+    NIK_ROLES.map((name, i) => ({ id: i + 1, name, label: name })),
+  );
 });
 
-app.get("/api/nik/list", (req, res) => {
-  const { query, branchId, role } = req.query;
-  let localIdx = 1;
-  const now = new Date();
-  const yy = String(now.getFullYear()).slice(-2);
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
-  const datePrefix = `${yy}${mm}${dd}`;
-
-  let employees = [];
-  STORES.forEach((store) => {
-    if (branchId && String(store.branchId) !== String(branchId)) return;
-    const hash = store.storeCode.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
-    const count = 10 + (hash % 8);
-    for (let i = 0; i < count; i++) {
-      const pIdx = String(localIdx).padStart(4, "0");
-      localIdx++;
-      const empRole = pickRandom(NIK_ROLES);
-      if (role && empRole !== role) continue;
-
-      const emp = {
-        id: `nik-${pIdx}`,
-        nik: `${datePrefix}${pIdx}`,
-        fullName: `${faker.person.firstName()} ${faker.person.lastName()}`,
-        role: empRole,
-        storeCode: store.storeCode,
-        storeName: store.storeName,
-        branchId: store.branchId,
-        branchName: store.branchName,
-        status: pickRandom(["ACTIVE", "ACTIVE", "ACTIVE", "INACTIVE"]),
-        lastActivity: randomPastMinutes(1440),
-      };
-
-      if (query) {
-        const needle = query.toLowerCase();
-        if (!emp.nik.includes(needle) && !emp.fullName.toLowerCase().includes(needle)) return;
-      }
-
-      employees.push(emp);
-    }
-  });
-
+app.get('/api/nik/list', (req, res) => {
+  const employees = filterEmployeesForRequest({ ...req.query, q: req.query.q || req.query.query });
   const result = paginate(employees, req.query);
   return ok(res, result.data, result.meta);
 });
 
 // ─── System: Service Restart (frontend path) ────────────────────────────────────
-app.post("/api/system/services/:name/restart", (req, res) => {
+app.post('/api/system/services/:name/restart', (req, res) => {
   const name = req.params.name;
   return ok(res, {
     queued: true,
@@ -1897,7 +2624,7 @@ app.post("/api/system/services/:name/restart", (req, res) => {
 });
 
 // ─── Agent Setup Script ─────────────────────────────────────────────────────────
-app.get("/api/agent/setup-script", (req, res) => {
+app.get('/api/agent/setup-script', (req, res) => {
   const scriptContent = `@echo off
 echo Enterprise Ops Monitor - Agent Setup Script
 echo ============================================
@@ -1912,14 +2639,14 @@ echo Starting agent service...
 echo [OK] Agent service started
 echo.
 echo Setup complete.`;
-  res.setHeader("Content-Type", "application/octet-stream");
-  res.setHeader("Content-Disposition", "attachment; filename=\"Setup_Agent_Update.bat\"");
+  res.setHeader('Content-Type', 'application/octet-stream');
+  res.setHeader('Content-Disposition', 'attachment; filename="Setup_Agent_Update.bat"');
   res.send(scriptContent);
 });
 
 // ─── External Sync POST Endpoints for Demo ──────────────────────────────────────
-app.post("/api/external/notif_eod", (req, res) => {
-  const branchId = String(req.body.branch || "");
+app.post('/api/external/notif_eod', (req, res) => {
+  const branchId = String(req.body.branch || '');
   const branchStores = STORES.filter((s) => String(s.branchId) === branchId);
   const data = branchStores.map((store) => {
     const sState = eodState.stores[store.storeCode];
@@ -1928,15 +2655,15 @@ app.post("/api/external/notif_eod", (req, res) => {
       namatoko: store.storeName,
       idcabang: store.branchId,
       namacabang: store.branchName,
-      statussales: sState ? sState.statusSales : "pending",
+      statussales: sState ? sState.statusSales : 'pending',
       persentaseuploadstok: sState ? sState.uploadPercent : 0,
       tglbisnis: toWibDate(),
       tgleod: sState && sState.eodAt ? toWibIso(new Date(sState.eodAt)) : null,
       tglupload: sState && sState.uploadAt ? toWibIso(new Date(sState.uploadAt)) : null,
       maxupload: sState && sState.maxUploadAt ? toWibIso(new Date(sState.maxUploadAt)) : null,
       lastSync: sState && sState.lastSync ? toWibIso(new Date(sState.lastSync)) : null,
-      nikac: "AC" + store.storeCode,
-      NikRH: "RH" + store.storeCode,
+      nikac: 'AC' + store.storeCode,
+      NikRH: 'RH' + store.storeCode,
       area: store.area,
       regional: store.regional,
     };
@@ -1944,34 +2671,34 @@ app.post("/api/external/notif_eod", (req, res) => {
   return ok(res, data);
 });
 
-app.post("/api/external/nik_toko", (req, res) => {
-  const branchId = String(req.body.branch || "");
+app.post('/api/external/nik_toko', (req, res) => {
+  const branchId = String(req.body.branch || '');
   let localMockEmployeeIndex = 1;
   const employees = [];
   const now = new Date();
   const yy = String(now.getFullYear()).slice(-2);
-  const mm = String(now.getMonth() + 1).padStart(2, "0");
-  const dd = String(now.getDate()).padStart(2, "0");
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
   const datePrefix = `${yy}${mm}${dd}`;
 
   STORES.forEach((store) => {
     if (String(store.branchId) !== branchId) return;
-    const hash = store.storeCode.split("").reduce((a, c) => a + c.charCodeAt(0), 0);
+    const hash = store.storeCode.split('').reduce((a, c) => a + c.charCodeAt(0), 0);
     const count = 15 + (hash % 10);
     for (let i = 0; i < count; i++) {
-      const pIdx = String(localMockEmployeeIndex).padStart(4, "0");
+      const pIdx = String(localMockEmployeeIndex).padStart(4, '0');
       localMockEmployeeIndex++;
       const newNik = `${datePrefix}${pIdx}`;
       employees.push({
         empid: newNik,
         name: `${faker.person.firstName()} ${faker.person.lastName()}`,
         jobName: pickRandom([
-          "Store Manager",
-          "Assistant Manager",
-          "Supervisor",
-          "Cashier",
-          "Sales Associate",
-          "Warehouse Staff",
+          'Store Manager',
+          'Assistant Manager',
+          'Supervisor',
+          'Cashier',
+          'Sales Associate',
+          'Warehouse Staff',
         ]),
         storeCode: store.storeCode,
         branchId: store.branchId,
@@ -1983,8 +2710,8 @@ app.post("/api/external/nik_toko", (req, res) => {
   return ok(res, employees);
 });
 
-app.post("/api/external/sync_aud", (req, res) => {
-  const branchId = String(req.body.branch || "");
+app.post('/api/external/sync_aud', (req, res) => {
+  const branchId = String(req.body.branch || '');
   const branchStores = STORES.filter((s) => String(s.branchId) === branchId);
   const data = branchStores.map((store) => {
     const sState = eodState.stores[store.storeCode];
@@ -1998,8 +2725,8 @@ app.post("/api/external/sync_aud", (req, res) => {
 });
 
 // ─── Root ──────────────────────────────────────────────────────────────────────
-app.get("/", (req, res) => {
-  res.json({ message: "Enterprise Operations Monitor - Mock API", version: "2.0.0" });
+app.get('/', (req, res) => {
+  res.json({ message: 'Enterprise Operations Monitor - Mock API', version: '2.0.0' });
 });
 
 // ─── Start ─────────────────────────────────────────────────────────────────────

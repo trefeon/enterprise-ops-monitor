@@ -1,17 +1,21 @@
-# UI Component Refactoring — Agent Handoff Guide
+# UI Component Refactoring — Historical Agent Handoff Guide
+
+> Historical note: this guide is not the current repo map. Check
+> `docs/agent-code-map.md` first, then use this file only for background on
+> the shared component consolidation effort.
 
 > **Goal**: Consolidate dual-layer JSX/TSX UI components into a single set of typed, customizable, responsive shared TSX components. Every component exposes `className` + `cn()` for override.
 
 ## Document Index
 
-| File | Purpose |
-|------|---------|
-| [00-OVERVIEW.md](./00-OVERVIEW.md) | This file — project context and goals |
-| [01-COMPONENT-INVENTORY.md](./01-COMPONENT-INVENTORY.md) | Complete inventory of all current components with source code, props, and usage |
-| [02-COMPONENT-SPECS.md](./02-COMPONENT-SPECS.md) | Exact TypeScript interfaces and implementation specs for each target shared component |
-| [03-MIGRATION-GUIDE.md](./03-MIGRATION-GUIDE.md) | File-by-file import migration instructions for every consumer |
-| [04-RESPONSIVE-PATTERNS.md](./04-RESPONSIVE-PATTERNS.md) | Responsive design patterns and breakpoint conventions |
-| [05-VERIFICATION.md](./05-VERIFICATION.md) | Testing, verification checklist, and commands |
+| File                                                     | Purpose                                                                               |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [00-OVERVIEW.md](./00-OVERVIEW.md)                       | This file — project context and goals                                                 |
+| [01-COMPONENT-INVENTORY.md](./01-COMPONENT-INVENTORY.md) | Complete inventory of all current components with source code, props, and usage       |
+| [02-COMPONENT-SPECS.md](./02-COMPONENT-SPECS.md)         | Exact TypeScript interfaces and implementation specs for each target shared component |
+| [03-MIGRATION-GUIDE.md](./03-MIGRATION-GUIDE.md)         | File-by-file import migration instructions for every consumer                         |
+| [04-RESPONSIVE-PATTERNS.md](./04-RESPONSIVE-PATTERNS.md) | Responsive design patterns and breakpoint conventions                                 |
+| [05-VERIFICATION.md](./05-VERIFICATION.md)               | Testing, verification checklist, and commands                                         |
 
 ## Architecture Context
 
@@ -68,21 +72,22 @@ All phases of the refactoring plan have been successfully executed and verified:
 
 CSS variables and Tailwind tokens are defined in `apps/web/src/index.css`:
 
-| Token | Value |
-|-------|-------|
-| `--bg-base` | `rgb(11 12 14)` |
-| `--bg-surface` | `rgb(17 19 22)` |
-| `--accent-solid` | `rgb(74 222 128)` |
-| `--color-success` | `rgb(74 222 128)` |
-| `--color-warning` | `rgb(251 191 36)` |
-| `--color-danger` | `rgb(248 113 113)` |
-| `--color-info` | `rgb(96 165 250)` |
-| `--radius` | `var(--radius-lg)` = `10px` |
-| `--section-gap` | `24px` |
-| `--card-p` | `20px` |
-| `--transition-fast` | `150ms ease` |
+| Token               | Value                       |
+| ------------------- | --------------------------- |
+| `--bg-base`         | `rgb(11 12 14)`             |
+| `--bg-surface`      | `rgb(17 19 22)`             |
+| `--accent-solid`    | `rgb(74 222 128)`           |
+| `--color-success`   | `rgb(74 222 128)`           |
+| `--color-warning`   | `rgb(251 191 36)`           |
+| `--color-danger`    | `rgb(248 113 113)`          |
+| `--color-info`      | `rgb(96 165 250)`           |
+| `--radius`          | `var(--radius-lg)` = `10px` |
+| `--section-gap`     | `24px`                      |
+| `--card-p`          | `20px`                      |
+| `--transition-fast` | `150ms ease`                |
 
 Utility CSS classes (in `@layer components`):
+
 - `page-container` — max-width + padding for page shells
 - `page-header` — flex row for header layout
 - `page-title` — h1 typography

@@ -105,13 +105,13 @@ export const featureStories = [
     problem:
       'Employee identifiers and store assignments need to be checked quickly when identity or branch ownership mismatches affect operations.',
     solution:
-      'The employee directory lists people by NIK/name, branch, and role with pagination, branch filtering, role filtering, and CSV export.',
+      'The employee directory lists people by NIK/name, branch, and role with pagination, branch filtering, role filtering, and Excel export.',
     impact:
       'Teams can validate NIK-to-store relationships without manual spreadsheet reconciliation.',
     metrics: [
       { label: 'Search modes', value: 'NIK/name' },
       { label: 'Page size', value: '20' },
-      { label: 'Export', value: 'CSV' },
+      { label: 'Export', value: 'XLSX' },
     ],
     techHighlight:
       'Employee and EOD source fetches use limited concurrency across branches to balance speed with upstream stability.',

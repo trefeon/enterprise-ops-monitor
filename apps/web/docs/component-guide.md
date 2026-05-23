@@ -31,7 +31,6 @@ const columns: ColumnDef<MyType>[] = [
   pageSize={25}
   serverSide={false}
   selectable={true}
-  exportable={true}
   onRowClick={(row) => handleClick(row)}
 />
 ```
@@ -45,7 +44,6 @@ const columns: ColumnDef<MyType>[] = [
 | `emptyState` | `ReactNode` | `'No records found.'` | Empty state content |
 | `pageSize` | `number` | `25` | Rows per page |
 | `selectable` | `boolean` | `false` | Row checkboxes |
-| `exportable` | `boolean` | `false` | CSV export button |
 | `serverSide` | `boolean` | `false` | Enable server pagination |
 
 ### DataTableColumnHeader
@@ -77,7 +75,9 @@ Search + column visibility toggle + custom filters.
 **Location:** `@/components/ui/cards/`
 
 ### StatCard
+
 (Existing in `@/components/shared/StatCard`)
+
 ```tsx
 <StatCard
   title="Total Stores"
@@ -90,11 +90,12 @@ Search + column visibility toggle + custom filters.
 ```
 
 ### ListCard
+
 ```tsx
 <ListCard
   title="Recent Alerts"
   subtitle="Last 24 hours"
-  items={alerts.map(a => ({
+  items={alerts.map((a) => ({
     id: a.id,
     label: a.title,
     value: <StatusBadge variant="warning">{a.severity}</StatusBadge>,
@@ -107,6 +108,7 @@ Search + column visibility toggle + custom filters.
 ```
 
 ### DetailCard
+
 ```tsx
 <DetailCard
   title="Store Information"
@@ -123,6 +125,7 @@ Search + column visibility toggle + custom filters.
 ```
 
 ### ActionCard
+
 ```tsx
 <ActionCard
   title="Run Backup"
@@ -136,6 +139,7 @@ Search + column visibility toggle + custom filters.
 ```
 
 ### EmptyCard
+
 ```tsx
 <EmptyCard
   title="No stores found"
@@ -152,15 +156,17 @@ Search + column visibility toggle + custom filters.
 **Location:** `@/components/ui/forms/`
 
 ### FormField
+
 ```tsx
 import { FormField } from '@/components/ui/forms/FormField';
 
 <FormField label="Store Name" name="storeName" required>
   <Input {...register('storeName')} />
-</FormField>
+</FormField>;
 ```
 
 ### SearchInput
+
 ```tsx
 <SearchInput
   value={search}
@@ -172,6 +178,7 @@ import { FormField } from '@/components/ui/forms/FormField';
 ```
 
 ### FilterBar
+
 ```tsx
 <FilterBar activeCount={filterCount} onReset={clearFilters}>
   <Select ... />
@@ -186,6 +193,7 @@ import { FormField } from '@/components/ui/forms/FormField';
 **Location:** `@/components/layout/`
 
 ### ContentSection
+
 ```tsx
 <ContentSection
   title="Backup History"
@@ -204,17 +212,19 @@ import { FormField } from '@/components/ui/forms/FormField';
 **Location:** `@/components/ui/feedback/`
 
 ### LoadingSpinner
+
 ```tsx
 <LoadingSpinner size="lg" label="Loading dashboard..." />
 ```
 
 ### ErrorBoundary
+
 ```tsx
 import { ErrorBoundary } from '@/components/ui/feedback/ErrorBoundary';
 
 <ErrorBoundary onRetry={handleRetry}>
   <Dashboard />
-</ErrorBoundary>
+</ErrorBoundary>;
 ```
 
 ---
@@ -251,6 +261,7 @@ Use for consistent spacing, typography, radius, animation durations, and status 
 ## Migration Checklist
 
 When refactoring a page:
+
 1. ✅ Replace `useToast()` → `import { toast } from 'sonner'`
 2. ✅ Replace custom `<header>` → `<PageHeader>`
 3. ✅ Replace raw `<table>` → `<DataTable>` from data-table/

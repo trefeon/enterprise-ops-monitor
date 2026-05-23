@@ -1,9 +1,4 @@
-import {
-  useCallback,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { useCallback, useMemo, useState, type ReactNode } from 'react';
 import {
   useReactTable,
   getCoreRowModel,
@@ -22,7 +17,7 @@ import {
   type OnChangeFn,
   flexRender,
 } from '@tanstack/react-table';
-import { Download, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 import {
   Table as ShadcnTable,
@@ -74,7 +69,6 @@ export interface DataTableProps<TData extends Record<string, unknown>> {
   noCard?: boolean;
   mobileCardView?: boolean;
   toolbar?: ReactNode;
-  exportable?: boolean;
   /** Enable row selection checkboxes */
   selectable?: boolean;
   onRowSelectionChange?: OnChangeFn<RowSelectionState>;
@@ -82,50 +76,6 @@ export interface DataTableProps<TData extends Record<string, unknown>> {
   /** Initial column visibility */
   columnVisibility?: VisibilityState;
 }
-
-// ---------------------------------------------------------------------------
-// CSV export helper
-// ---------------------------------------------------------------------------
-
-function exportToCsv<TData extends Record<string, unknown>>(
-  columns: ColumnDef<TData>[],
-  data: TData[],
-  filename = 'export.csv',
-) {
-  const headers = columns
-    .filter((col) => col.id !== 'select')
-    .map((col) => {
-      if (typeof col.header === 'string') return col.header;
-      return col.id ?? '';
-    });
-
-  const rows = data.map((row) =>
-    columns
-      .filter((col) => col.id !== 'select')
-      .map((col) => {
-        const val = row[col.id as keyof TData];
-        if (val == null) return '';
-        const str = String(val);
-        // Escape CSV: wrap in quotes if contains comma, quote, or newline
-        return str.includes(',') || str.includes('"') || str.includes('\n')
-          ? `"${str.replace(/"/g, '""')}"`
-          : str;
-      })
-      .join(','),
-  );
-
-  const csv = [headers.join(','), ...rows].join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
-  link.click();
-  URL.revokeObjectURL(link.href);
-}
-
-// ---------------------------------------------------------------------------
-// Selection column helper
-// ---------------------------------------------------------------------------
 
 function getSelectColumn<TData extends Record<string, unknown>>(): ColumnDef<TData> {
   return {
@@ -176,7 +126,6 @@ export function DataTable<TData extends Record<string, unknown>>({
   noCard = false,
   mobileCardView = true,
   toolbar,
-  exportable = false,
   selectable = false,
   onRowSelectionChange,
   rowSelection: externalRowSelection,
@@ -187,7 +136,7 @@ export function DataTable<TData extends Record<string, unknown>>({
   const [internalColumnFilters, setInternalColumnFilters] = useState<ColumnFiltersState>([]);
   const [internalRowSelection, setInternalRowSelection] = useState<RowSelectionState>({});
   const [internalColumnVisibility, setInternalColumnVisibility] = useState<VisibilityState>(
-    initialColumnVisibility ?? {},
+    initialColumnVisibility ?? {}
   );
   const [globalFilter, setGlobalFilter] = useState('');
 
@@ -207,7 +156,7 @@ export function DataTable<TData extends Record<string, unknown>>({
         setInternalSorting(updaterOrValue);
       }
     },
-    [serverSide, onSortingChange],
+    [serverSide, onSortingChange]
   );
 
   const handleColumnFiltersChange: OnChangeFn<ColumnFiltersState> = useCallback(
@@ -218,7 +167,7 @@ export function DataTable<TData extends Record<string, unknown>>({
         setInternalColumnFilters(updaterOrValue);
       }
     },
-    [serverSide, onColumnFiltersChange],
+    [serverSide, onColumnFiltersChange]
   );
 
   const handleRowSelectionChange: OnChangeFn<RowSelectionState> = useCallback(
@@ -229,7 +178,7 @@ export function DataTable<TData extends Record<string, unknown>>({
         setInternalRowSelection(updaterOrValue);
       }
     },
-    [serverSide, onRowSelectionChange],
+    [serverSide, onRowSelectionChange]
   );
 
   // ---- Build final columns ----
@@ -246,7 +195,7 @@ export function DataTable<TData extends Record<string, unknown>>({
       if (keyExtractor) return String(keyExtractor(row));
       return (row.id as string) ?? (row._id as string) ?? crypto.randomUUID();
     },
-    [keyExtractor],
+    [keyExtractor]
   );
 
   // ---- Create TanStack table ----
@@ -289,8 +238,7 @@ export function DataTable<TData extends Record<string, unknown>>({
     onPaginationChange: serverSide
       ? (updater) => {
           const current = { pageIndex, pageSize };
-          const next =
-            typeof updater === 'function' ? updater(current) : updater;
+          const next = typeof updater === 'function' ? updater(current) : updater;
           if (next.pageIndex !== pageIndex && onPageChange) {
             onPageChange(next.pageIndex);
           }
@@ -300,11 +248,6 @@ export function DataTable<TData extends Record<string, unknown>>({
         }
       : undefined,
   });
-
-  // ---- CSV export handler ----
-  const handleExport = useCallback(() => {
-    exportToCsv(columns, data, `data-export-${Date.now()}.csv`);
-  }, [columns, data]);
 
   // ---- Render helpers ----
 
@@ -344,9 +287,7 @@ export function DataTable<TData extends Record<string, unknown>>({
         onClick={() => {
           if (onRowClick) onRowClick(row.original);
         }}
-        className={cn(
-          onRowClick && 'cursor-pointer',
-        )}
+        className={cn(onRowClick && 'cursor-pointer')}
       >
         {row.getVisibleCells().map((cell) => (
           <TableCell
@@ -372,9 +313,7 @@ export function DataTable<TData extends Record<string, unknown>>({
                 {table.getVisibleFlatColumns().map((col) => {
                   if (col.id === 'select') return null;
                   const headerText =
-                    typeof col.columnDef.header === 'string'
-                      ? col.columnDef.header
-                      : col.id;
+                    typeof col.columnDef.header === 'string' ? col.columnDef.header : col.id;
                   return (
                     <div
                       key={col.id}
@@ -412,7 +351,7 @@ export function DataTable<TData extends Record<string, unknown>>({
             className={cn(
               'bg-card',
               onRowClick && 'cursor-pointer',
-              row.getIsSelected() && 'border-primary',
+              row.getIsSelected() && 'border-primary'
             )}
           >
             <CardContent className="space-y-3 p-4">
@@ -449,21 +388,6 @@ export function DataTable<TData extends Record<string, unknown>>({
       {/* Toolbar */}
       {toolbar ?? <DataTableToolbar table={table} />}
 
-      {/* Desktop table */}
-      {exportable && (
-        <div className="flex justify-end px-4 pb-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="h-7 text-xs"
-            onClick={handleExport}
-          >
-            <Download className="mr-1.5 size-3.5" />
-            Export CSV
-          </Button>
-        </div>
-      )}
-
       {/* Loading overlay */}
       <div className="relative">
         {loading && data.length > 0 && (
@@ -487,10 +411,7 @@ export function DataTable<TData extends Record<string, unknown>>({
                     >
                       {header.isPlaceholder
                         ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
+                        : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
                   ))}
                 </TableRow>

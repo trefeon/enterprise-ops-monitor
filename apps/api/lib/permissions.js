@@ -24,6 +24,7 @@ const Permissions = {
 
   // Identity/NIK
   NIK_LOOKUP: "NIK_LOOKUP",
+  EMPLOYEES_EDIT: "EMPLOYEES_EDIT",
 
   // Backups granular
   BACKUPS_RUN: "BACKUPS_RUN",
@@ -64,7 +65,7 @@ const PermissionGroups = {
   "Store Sync": ["SYNC_VIEW"],
   "EOD Monitor": ["EOD_VIEW", "EOD_SYNC", "EOD_RETRY"],
   Stores: ["STORES_VIEW", "STORES_EDIT"],
-  Employees: ["EMPLOYEES_VIEW", "NIK_LOOKUP"],
+  Employees: ["EMPLOYEES_VIEW", "NIK_LOOKUP", "EMPLOYEES_EDIT"],
   Backups: ["BACKUPS_VIEW", "BACKUPS_RUN", "BACKUPS_DELETE", "BACKUPS_RESTORE"],
   System: ["SYSTEM_VIEW", "SYSTEM_HEALTHCHECK", "SYSTEM_RESTART", "AGENT_UPDATE"],
   "After Hours": ["AFTERHOURS_VIEW"],
@@ -127,6 +128,7 @@ const RolePermissions = {
     "STORES_EDIT",
     "EMPLOYEES_VIEW",
     "NIK_LOOKUP",
+    "EMPLOYEES_EDIT",
     "BACKUPS_VIEW",
     "BACKUPS_RUN",
     "BACKUPS_DELETE",

@@ -3,7 +3,7 @@ const router = express.Router();
 const { z } = require("zod");
 const storeController = require("../controllers/storeController");
 const authMiddleware = require("../middleware/authMiddleware");
-const { requirePermission } = require("../middleware/rbac");
+const { requireNotDemo, requirePermission } = require("../middleware/rbac");
 const validate = require("../middleware/validate");
 const asyncHandler = require("../utils/asyncHandler");
 
@@ -22,15 +22,49 @@ const listQuery = z
 
 const updateBody = z
   .object({
-    store_name: z.string().min(1).optional(),
-    area: z.string().optional(),
+    storeCode: z.string().min(1).optional(),
+    storeName: z.string().min(1).optional(),
+    branchId: z.union([z.string(), z.number()]).optional(),
+    areaId: z.union([z.string(), z.number()]).optional(),
     region: z.string().optional(),
+    picName: z.string().optional(),
+    phone: z.string().optional(),
+    contactNumber: z.string().optional(),
+    isActive: z.boolean().optional(),
+    store_code: z.union([z.string(), z.number()]).optional(),
+    store_name: z.string().min(1).optional(),
+    branch_id: z.union([z.string(), z.number()]).optional(),
+    area: z.string().optional(),
     address: z.string().optional(),
     pic_name: z.string().optional(),
     contact_number: z.string().optional(),
     is_active: z.union([z.boolean(), z.string()]).optional(),
   })
   .strict();
+
+const createBody = updateBody.superRefine((value, ctx) => {
+  if (!(value.storeCode || value.store_code)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["storeCode"],
+      message: "Store code is required",
+    });
+  }
+  if (!(value.storeName || value.store_name)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["storeName"],
+      message: "Store name is required",
+    });
+  }
+  if (!(value.branchId || value.branch_id || value.areaId)) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      path: ["branchId"],
+      message: "Branch is required",
+    });
+  }
+});
 
 // GET /api/stores/regions - Get unique regions
 router.get(
@@ -47,6 +81,16 @@ router.get(
   requirePermission("STORES_VIEW", { scope: "branch", branchFrom: "query" }),
   validate({ query: listQuery }),
   asyncHandler(storeController.getAllStores)
+);
+
+// POST /api/stores - Create manual store record
+router.post(
+  "/",
+  authMiddleware,
+  requirePermission("STORES_EDIT", { scope: "branch", branchFrom: "body" }),
+  requireNotDemo(),
+  validate({ body: createBody }),
+  asyncHandler(storeController.createStore)
 );
 
 // GET /api/stores/export - Export stores
@@ -72,8 +116,19 @@ router.put(
   "/:id",
   authMiddleware,
   requirePermission("STORES_EDIT", { scope: "branch", branchFrom: "auto", storeLookup: true }),
+  requireNotDemo(),
   validate({ params: idParams, body: updateBody }),
   asyncHandler(storeController.updateStore)
+);
+
+// DELETE /api/stores/:id - Soft archive store
+router.delete(
+  "/:id",
+  authMiddleware,
+  requirePermission("STORES_EDIT", { scope: "branch", branchFrom: "auto", storeLookup: true }),
+  requireNotDemo(),
+  validate({ params: idParams }),
+  asyncHandler(storeController.archiveStore)
 );
 
 module.exports = router;

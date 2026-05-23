@@ -42,11 +42,16 @@ coverage/
 
 # Local debugging / testing artifacts
 .playwright-mcp/
+playwright/.auth/
+playwright-report/
+test-results/
 *.png
 
 # Agent config — personal overrides
 .opencode/local/
 **/.opencode/**/*.local.*
+.lean-ctx/
+.serena/
 
 # npm lockfiles (pnpm workspace uses pnpm-lock.yaml only)
 **/package-lock.json

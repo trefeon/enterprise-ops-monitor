@@ -181,7 +181,7 @@ export default function DashboardPage() {
       <PageShell>
         <FeatureStoryBanner story={getFeatureStory('dashboard')} />
         <Skeleton className="h-8 w-64" />
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-28" />
           ))}
@@ -243,7 +243,7 @@ export default function DashboardPage() {
         title="Operations Hub"
         description={`Business date ${formatDate(getWibToday())}`}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
             <Button
               variant="outline"
               size="sm"
@@ -263,22 +263,26 @@ export default function DashboardPage() {
                 size="sm"
                 onClick={handleManualSync}
                 disabled={syncing}
-                className="bg-primary hover:bg-primary/90"
+                className="min-w-0 bg-primary hover:bg-primary/90"
               >
                 <Wifi className="size-4 mr-2" />
-                Trigger Sync
+                <span className="truncate">Trigger Sync</span>
               </Button>
             </Guard>
           </div>
         }
       />
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
+      <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-4">
         {/* Left Column: Main Monitor */}
-        <div className="xl:col-span-3 space-y-6">
+        <div className="min-w-0 space-y-6 xl:col-span-3">
           {/* Top KPI Row */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div
+            data-e2e="dashboard-kpi-grid"
+            className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+          >
             <StatCard
+              className="min-h-32"
               title="Global Health"
               value={health.label}
               icon={<HeartPulse className="size-5" />}
@@ -287,6 +291,7 @@ export default function DashboardPage() {
               onClick={() => navigate('/system')}
             />
             <StatCard
+              className="min-h-32"
               title="Sync Status"
               value={sync ? `${sync.healthyPercentage}%` : '--'}
               icon={<Wifi className="size-5" />}
@@ -299,6 +304,7 @@ export default function DashboardPage() {
               onClick={() => navigate('/sync')}
             />
             <StatCard
+              className="min-h-32"
               title="EOD Completion"
               value={`${completionRate}%`}
               icon={<BadgeCheck className="size-5" />}
@@ -307,6 +313,7 @@ export default function DashboardPage() {
               onClick={() => navigate('/eod')}
             />
             <StatCard
+              className="min-h-32"
               title="Active Nodes"
               value={`${agents?.onlineCount ?? 0}/${agents?.activeCount ?? 0}`}
               icon={<Monitor className="size-5" />}
@@ -315,12 +322,12 @@ export default function DashboardPage() {
             />
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2">
             {/* System Status Consolidated */}
-            <Card>
+            <Card data-e2e="dashboard-operational-pulse">
               <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                <div className="flex min-w-0 items-center justify-between gap-3">
+                  <CardTitle className="min-w-0 text-sm font-bold uppercase tracking-wider text-muted-foreground">
                     Operational Pulse
                   </CardTitle>
                   <StatusBadge variant={health.label === 'Healthy' ? 'success' : 'warning'}>
@@ -329,36 +336,36 @@ export default function DashboardPage() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded bg-background border">
+                <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border/50 bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="shrink-0 rounded border bg-background p-2">
                       <Clock className="size-4 text-primary" />
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">Last EOD Sync</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-foreground">Last EOD Sync</p>
                       <p className="text-[10px] text-muted-foreground uppercase tracking-tight">
                         Across 8 regions
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm font-mono font-bold text-foreground">
+                  <p className="min-w-0 text-left font-mono text-sm font-bold text-foreground sm:text-right">
                     {eod?.lastSyncAt ? formatTime(eod.lastSyncAt) : '--:--:--'}
                   </p>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded bg-background border">
+                <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border/50 bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="shrink-0 rounded border bg-background p-2">
                       <Cloud className="size-4 text-primary" />
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">Backup Status</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-foreground">Backup Status</p>
                       <p className="text-[10px] text-muted-foreground uppercase tracking-tight">
                         Database & Media
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
+                  <div className="min-w-0 text-left sm:text-right">
                     <p
                       className={cn(
                         'text-sm font-bold',
@@ -369,35 +376,37 @@ export default function DashboardPage() {
                     >
                       {(backups?.failedCount ?? 0) > 0 ? 'DEGRADED' : 'SUCCESS'}
                     </p>
-                    <p className="text-[10px] text-muted-foreground uppercase">
+                    <p className="text-[10px] uppercase text-muted-foreground">
                       {backups?.failedCount ?? 0} Failed
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30 border border-border/50">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 rounded bg-background border">
+                <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border/50 bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="shrink-0 rounded border bg-background p-2">
                       <Zap className="size-4 text-primary" />
                     </div>
-                    <div>
-                      <p className="text-xs font-semibold text-foreground">Worker Interactions</p>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs font-semibold text-foreground">
+                        Worker Interactions
+                      </p>
                       <p className="text-[10px] text-muted-foreground uppercase tracking-tight">
                         Active sessions today
                       </p>
                     </div>
                   </div>
-                  <p className="text-sm font-mono font-bold text-foreground">
+                  <p className="min-w-0 text-left font-mono text-sm font-bold text-foreground sm:text-right">
                     {interactionsToday ?? 0}
                   </p>
                 </div>
               </CardContent>
             </Card>
 
-            <Card className="flex flex-col">
+            <Card data-e2e="dashboard-alerts" className="flex min-w-0 flex-col">
               <CardHeader className="pb-3 border-b border-border/40">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+                <div className="flex min-w-0 items-center justify-between gap-3">
+                  <CardTitle className="min-w-0 text-sm font-bold uppercase tracking-wider text-muted-foreground">
                     Recent Alerts
                   </CardTitle>
                   <Button
@@ -448,8 +457,8 @@ export default function DashboardPage() {
         </div>
 
         {/* Right Column: Quick Actions & Links */}
-        <div className="space-y-6">
-          <Card className="bg-primary/[0.03] border-primary/20">
+        <div className="min-w-0 space-y-6">
+          <Card data-e2e="dashboard-actions" className="border-primary/20 bg-primary/[0.03]">
             <CardHeader className="pb-3">
               <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
                 Quick Actions
@@ -507,23 +516,26 @@ export default function DashboardPage() {
             <CardContent className="space-y-1">
               <Link
                 to="/about"
-                className="flex items-center justify-between p-2 rounded hover:bg-muted transition-colors text-xs font-medium text-foreground/80"
+                className="flex min-w-0 items-center justify-between gap-3 rounded p-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-muted"
               >
-                Portfolio Story <ArrowRight className="size-3" />
+                <span className="truncate">Portfolio Story</span>
+                <ArrowRight className="size-3 shrink-0" />
               </Link>
               <a
                 href="https://github.com/trefeon/enterprise-ops-monitor"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-between p-2 rounded hover:bg-muted transition-colors text-xs font-medium text-foreground/80"
+                className="flex min-w-0 items-center justify-between gap-3 rounded p-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-muted"
               >
-                GitHub Repo <ArrowRight className="size-3" />
+                <span className="truncate">GitHub Repo</span>
+                <ArrowRight className="size-3 shrink-0" />
               </a>
               <Link
                 to="/profile"
-                className="flex items-center justify-between p-2 rounded hover:bg-muted transition-colors text-xs font-medium text-foreground/80"
+                className="flex min-w-0 items-center justify-between gap-3 rounded p-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-muted"
               >
-                System Profile <ArrowRight className="size-3" />
+                <span className="truncate">System Profile</span>
+                <ArrowRight className="size-3 shrink-0" />
               </Link>
             </CardContent>
           </Card>
@@ -548,14 +560,14 @@ function ActionButton({
     <Button
       variant="ghost"
       className={cn(
-        'group w-full justify-start h-10 px-3 text-xs font-semibold border border-transparent hover:border-border hover:bg-background transition-all',
+        'group h-10 w-full min-w-0 justify-start border border-transparent px-3 text-xs font-semibold transition-all hover:border-border hover:bg-background',
         disabled && 'opacity-50 grayscale pointer-events-none'
       )}
       onClick={onClick}
     >
-      <span className="mr-3 text-muted-foreground">{icon}</span>
-      {label}
-      <ArrowRight className="ml-auto size-3 opacity-0 -translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all" />
+      <span className="mr-3 shrink-0 text-muted-foreground">{icon}</span>
+      <span className="min-w-0 truncate">{label}</span>
+      <ArrowRight className="ml-auto size-3 shrink-0 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
     </Button>
   );
 }

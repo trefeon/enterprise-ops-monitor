@@ -32,6 +32,8 @@ const changePasswordBody = z.object({
   currentPassword: z.string().min(1, "Current password is required"),
   newPassword: passwordSchema,
 });
+const emptyQuery = z.object({}).passthrough();
+const emptyBody = z.object({}).passthrough().optional().default({});
 
 router.post(
   "/login",
@@ -39,8 +41,13 @@ router.post(
   validate({ body: loginBody }),
   asyncHandler(authController.login)
 );
-router.post("/logout", authMiddleware, asyncHandler(authController.logout));
-router.get("/me", authMiddleware, asyncHandler(authController.me));
+router.post(
+  "/logout",
+  authMiddleware,
+  validate({ body: emptyBody }),
+  asyncHandler(authController.logout)
+);
+router.get("/me", authMiddleware, validate({ query: emptyQuery }), asyncHandler(authController.me));
 router.patch(
   "/me/password",
   authMiddleware,

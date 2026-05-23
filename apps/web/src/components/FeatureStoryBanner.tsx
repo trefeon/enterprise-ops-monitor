@@ -1,31 +1,59 @@
-import React, { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
+  Activity,
+  AlertCircle,
   ChevronDown,
   ChevronUp,
-  Info,
-  Zap,
-  LayoutDashboard,
-  RefreshCw,
   ClipboardCheck,
-  Store,
   Contact,
   Database,
-  Activity,
-  ShieldCheck,
-  Laptop,
-  Users,
-  Lock,
-  Moon,
   FileText,
+  Info,
+  Laptop,
+  LayoutDashboard,
+  Lock,
   LogOut,
-  UserCircle,
+  Moon,
+  RefreshCw,
+  ShieldCheck,
+  Store,
   Tv,
-  AlertCircle,
+  UserCircle,
+  Users,
+  Zap,
+  type LucideIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const ICON_MAP = {
+interface FeatureMetric {
+  label: string;
+  value: string;
+}
+
+interface FeatureStory {
+  banner?: boolean;
+  materialIcon?: string;
+  tagline?: string;
+  problem?: string;
+  solution?: string;
+  impact?: string;
+  metrics?: FeatureMetric[];
+  techHighlight?: string;
+}
+
+interface FeatureStoryBannerProps {
+  story?: FeatureStory | null;
+}
+
+interface StoryBlockProps {
+  label: string;
+  tone: string;
+  text?: string;
+  icon: ReactNode;
+}
+
+const ICON_MAP: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
   sync: RefreshCw,
   fact_check: ClipboardCheck,
@@ -45,12 +73,12 @@ const ICON_MAP = {
   live_tv: Tv,
 };
 
-export default function FeatureStoryBanner({ story }) {
+export default function FeatureStoryBanner({ story }: FeatureStoryBannerProps) {
   const [open, setOpen] = useState(false);
 
   if (!story || story.banner === false) return null;
 
-  const Icon = ICON_MAP[story.materialIcon] || ICON_MAP.info;
+  const Icon = ICON_MAP[story.materialIcon || 'info'] || ICON_MAP.info;
 
   return (
     <motion.section
@@ -66,26 +94,26 @@ export default function FeatureStoryBanner({ story }) {
         aria-expanded={open}
       >
         <span className="flex min-w-0 items-center gap-4">
-          <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-105">
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-105">
             <Icon className="size-5" />
           </span>
           <span className="min-w-0">
             <span className="block text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">
               Feature Narrative
             </span>
-            <span className="block text-base font-bold text-foreground line-clamp-2 leading-snug">
+            <span className="line-clamp-2 block text-base font-bold leading-snug text-foreground">
               {story.tagline}
             </span>
           </span>
         </span>
-        <div className="flex h-8 w-8 items-center justify-center rounded-md border bg-secondary text-muted-foreground transition-colors group-hover:text-primary">
+        <div className="flex size-8 items-center justify-center rounded-md border bg-secondary text-muted-foreground transition-colors group-hover:text-primary">
           {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
         </div>
       </button>
 
       {open && (
-        <div className="animate-in slide-in-from-top-2 fade-in duration-200 border-t border-primary/10 px-5 pb-5 pt-5">
-          <p className="text-sm font-medium text-foreground mb-5 leading-relaxed">
+        <div className="animate-in slide-in-from-top-2 fade-in border-t border-primary/10 px-5 pb-5 pt-5 duration-200">
+          <p className="mb-5 text-sm font-medium leading-relaxed text-foreground">
             {story.tagline}
           </p>
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
@@ -118,10 +146,10 @@ export default function FeatureStoryBanner({ story }) {
                       key={`${metric.label}-${metric.value}`}
                       className="flex flex-col gap-0.5 rounded-md border border-border bg-background px-3 py-1.5"
                     >
-                      <span className="text-[9px] font-black uppercase tracking-wider text-muted-foreground leading-none">
+                      <span className="text-[9px] font-black uppercase leading-none tracking-wider text-muted-foreground">
                         {metric.label}
                       </span>
-                      <span className="text-xs font-bold text-foreground leading-none">
+                      <span className="text-xs font-bold leading-none text-foreground">
                         {metric.value}
                       </span>
                     </div>
@@ -131,11 +159,11 @@ export default function FeatureStoryBanner({ story }) {
 
               {story.techHighlight && (
                 <div className="flex items-start gap-3 rounded-lg border border-primary/10 bg-primary/[0.02] px-4 py-3">
-                  <div className="mt-0.5 text-primary shrink-0">
+                  <div className="mt-0.5 shrink-0 text-primary">
                     <Zap className="size-4" />
                   </div>
                   <p className="text-xs leading-relaxed text-muted-foreground">
-                    <span className="font-black uppercase tracking-wider text-primary mr-1.5">
+                    <span className="mr-1.5 font-black uppercase tracking-wider text-primary">
                       Engineering Note:
                     </span>
                     {story.techHighlight}
@@ -150,14 +178,14 @@ export default function FeatureStoryBanner({ story }) {
   );
 }
 
-function StoryBlock({ label, tone, text, icon }) {
+function StoryBlock({ label, tone, text, icon }: StoryBlockProps) {
   return (
     <div className="space-y-2">
       <div className={cn('flex items-center gap-1.5', tone)}>
         {icon}
         <p className="text-[10px] font-black uppercase tracking-widest">{label}</p>
       </div>
-      <p className="text-sm leading-relaxed text-muted-foreground break-words">{text}</p>
+      <p className="break-words text-sm leading-relaxed text-muted-foreground">{text}</p>
     </div>
   );
 }

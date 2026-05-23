@@ -1,11 +1,11 @@
 ---
 description: Standard development workflow for this project
 ---
+
 # Development Workflow
 
-1. **Read context**: Read `AGENTS.md` and relevant `docs/*.md` files
-2. **Understand the code**: Read the files you need to change
-3. **Plan**: Identify the minimal change needed
-4. **Implement**: Make the change following project conventions
-5. **Verify**: Run `pnpm check:all` to ensure everything passes
-6. **Confirm**: Check that existing tests still pass
+1. Read `AGENTS.md`, then inspect only the docs and source files relevant to the task.
+2. Identify the smallest scoped change that satisfies the request.
+3. Preserve repo conventions instead of introducing new patterns.
+4. Verify focused behavior first when useful, then run `pnpm check:all` before completion.
+5. Review `git diff` for unintended instruction drift or unrelated edits before reporting.

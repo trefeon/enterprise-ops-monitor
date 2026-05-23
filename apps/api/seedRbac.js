@@ -26,6 +26,7 @@ const ALL_PERMISSIONS = [
   "STORES_EDIT",
   // Identity/NIK
   "NIK_LOOKUP",
+  "EMPLOYEES_EDIT",
   // Backups granular
   "BACKUPS_RUN",
   "BACKUPS_DELETE",
@@ -101,6 +102,7 @@ const SYSTEM_ROLES = [
       "STORES_EDIT",
       "EMPLOYEES_VIEW",
       "NIK_LOOKUP",
+      "EMPLOYEES_EDIT",
       "BACKUPS_VIEW",
       "BACKUPS_RUN",
       "BACKUPS_DELETE",

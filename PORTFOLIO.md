@@ -164,7 +164,7 @@ The app turns scattered operational checks into a single authenticated console: 
 
 **Problem:** Employee identifiers and store assignments need to be checked quickly when identity or branch ownership mismatches affect operations.
 
-**Solution:** The employee directory lists people by NIK/name, branch, and role with pagination, branch filtering, role filtering, and CSV export.
+**Solution:** The employee directory lists people by NIK/name, branch, and role with pagination, branch filtering, role filtering, and Excel export.
 
 **Impact:** Teams can validate NIK-to-store relationships without manual spreadsheet reconciliation.
 
@@ -172,7 +172,7 @@ The app turns scattered operational checks into a single authenticated console: 
 | ------------ | -------- |
 | Search modes | NIK/name |
 | Page size    | 20       |
-| Export       | CSV      |
+| Export       | XLSX     |
 
 **Technical note:** Employee and EOD source fetches use limited concurrency across branches to balance speed with upstream stability.
 

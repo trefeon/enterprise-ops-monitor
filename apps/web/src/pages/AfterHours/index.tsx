@@ -206,7 +206,7 @@ function parseWarningScheduleTimes(value) {
       return parsed.map((item) => String(item || '').trim()).filter(Boolean);
     }
   } catch {
-    // Not JSON; fallback to CSV parsing.
+    // Not JSON; fallback to comma-separated parsing.
   }
 
   return raw
@@ -722,7 +722,9 @@ export default function AfterHours() {
 
   const handleSaveSettings = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      toast.warning('Demo Account', {
+        description: 'This action is not available in the demo account.',
+      });
       return;
     }
     setSavingSettings(true);
@@ -744,7 +746,9 @@ export default function AfterHours() {
       const whatsappTargetsValue = serializeNotificationTargetMap(whatsappTargetMap);
 
       if (notificationEditorMode === 'advanced' && (telegramTargetsError || whatsappTargetsError)) {
-        toast.error('Error', { description: 'Fix the JSON mapping error before saving notification settings' });
+        toast.error('Error', {
+          description: 'Fix the JSON mapping error before saving notification settings',
+        });
         return;
       }
 
@@ -801,7 +805,9 @@ export default function AfterHours() {
 
   const handleRunCheck = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      toast.warning('Demo Account', {
+        description: 'This action is not available in the demo account.',
+      });
       return;
     }
     setChecking(true);
@@ -830,7 +836,9 @@ export default function AfterHours() {
         loadData();
         loadDates();
       } else {
-        toast.error('Check Failed', { description: res.error?.message || 'Failed to run after-hours check' });
+        toast.error('Check Failed', {
+          description: res.error?.message || 'Failed to run after-hours check',
+        });
       }
     } catch {
       toast.error('Error', { description: 'Failed to run check' });

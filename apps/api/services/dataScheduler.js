@@ -86,7 +86,7 @@ function parseAfterhoursScheduleValue(value) {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) return parsed;
   } catch {
-    // Not a JSON array; fallback to CSV parsing.
+    // Not a JSON array; fallback to comma-separated parsing.
   }
 
   return raw

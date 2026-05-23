@@ -12,23 +12,28 @@ const alertsQuery = z
     limit: z.coerce.number().int().positive().max(50).optional(),
   })
   .passthrough();
+const emptyQuery = z.object({}).passthrough();
+const syncBody = z.object({}).passthrough().optional().default({});
 
 router.get(
   "/summary",
   authMiddleware,
   requirePermission("DASHBOARD_VIEW"),
+  validate({ query: emptyQuery }),
   asyncHandler(dashboardController.getDashboardSummary)
 );
 router.get(
   "/overview",
   authMiddleware,
   requirePermission("DASHBOARD_VIEW"),
+  validate({ query: emptyQuery }),
   asyncHandler(dashboardController.getDashboardSummary)
 );
 router.post(
   "/sync",
   authMiddleware,
   requirePermission("DASHBOARD_VIEW"),
+  validate({ body: syncBody }),
   asyncHandler(dashboardController.syncDashboard)
 );
 router.get(

@@ -1,10 +1,23 @@
-import React, { useState, useEffect, useCallback, type ChangeEvent, type KeyboardEvent } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+  type KeyboardEvent,
+} from 'react';
 import { toast } from 'sonner';
+import { AlertTriangle, Archive, Pencil, Plus, RefreshCw, Search } from 'lucide-react';
+
+import { useAuth } from '../../context/AuthContext';
+import FeatureStoryBanner from '../../components/FeatureStoryBanner';
+import { getFeatureStory } from '../../data/stories';
 import { Button } from '@/components/ui/button';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { PageShell } from '@/components/shared/PageShell';
-import { Toolbar } from '@/components/shared/Toolbar';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import {
   Select,
   SelectContent,
@@ -12,17 +25,25 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DataTable } from '@/components/shared/DataTable';
+import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
+import { DataTable, type Column, type Pagination } from '@/components/shared/DataTable';
 import { EmptyState } from '@/components/shared/EmptyState';
-import FeatureStoryBanner from '../../components/FeatureStoryBanner';
+import { EntityActionMenu } from '@/components/shared/EntityActionMenu';
+import {
+  EntityField,
+  EntityFormDialog,
+  EntityFormGrid,
+} from '@/components/shared/EntityFormDialog';
+import { ExportButton } from '@/components/shared/ExportButton';
+import { PageHeader } from '@/components/shared/PageHeader';
+import { PageShell } from '@/components/shared/PageShell';
 import { SearchBar } from '@/components/shared/SearchBar';
-import { getFeatureStory } from '../../data/stories';
-import { AlertTriangle, Download, RefreshCw, Search } from 'lucide-react';
-import type { Column, Pagination } from '@/components/shared/DataTable';
+import { Toolbar } from '@/components/shared/Toolbar';
+import { downloadWorkbookExport, type WorkbookExportPayload } from '@/lib/api/downloadExport';
+import { isDemoMode } from '@/lib/appMode';
+import { hasPermission, Permissions } from '@/lib/auth/permissions.js';
 
-// ── Types ───────────────────────────────────────────────────────────────────
-
-interface AreaOption {
+interface BranchOption {
   id: string;
   label: string;
 }
@@ -30,29 +51,38 @@ interface AreaOption {
 interface Store {
   storeCode: string;
   storeName: string;
-  region: string;
-  areaName: string;
+  region?: string;
+  areaName?: string;
   areaId?: string;
+  address?: string | null;
+  picName?: string | null;
+  phone?: string | null;
+  status?: 'active' | 'inactive' | string;
+  source?: string;
   id?: string | number;
   [key: string]: unknown;
 }
 
-interface StoreExportData {
-  contentType?: string;
-  contentBase64?: string;
-  content?: string;
-  fileName?: string;
+interface StoreFormState {
+  storeCode: string;
+  storeName: string;
+  branchId: string;
+  region: string;
+  area: string;
+  address: string;
+  picName: string;
+  phone: string;
+  isActive: boolean;
 }
 
 interface FiltersState {
   areaId: string;
   region: string;
+  status: 'active' | 'inactive';
   q: string;
 }
 
-// ── Constants ───────────────────────────────────────────────────────────────
-
-const AREA_OPTIONS: AreaOption[] = [
+const BRANCH_OPTIONS: BranchOption[] = [
   { id: '2', label: 'NORTH HUB' },
   { id: '3', label: 'EAST HUB' },
   { id: '4', label: 'CENTRAL HUB' },
@@ -62,57 +92,80 @@ const AREA_OPTIONS: AreaOption[] = [
   { id: '8', label: 'RIVER HUB' },
   { id: '9', label: 'SOUTH HUB' },
 ];
-const STORE_EXPORT_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-// ── Helpers ─────────────────────────────────────────────────────────────────
+const DEFAULT_STORE_FORM: StoreFormState = {
+  storeCode: '',
+  storeName: '',
+  branchId: '2',
+  region: '',
+  area: '',
+  address: '',
+  picName: '',
+  phone: '',
+  isActive: true,
+};
 
-function base64ToBlob(base64: string, contentType: string): Blob {
-  const binary = atob(String(base64 || ''));
-  const bytes = new Uint8Array(binary.length);
-  for (let index = 0; index < binary.length; index += 1) {
-    bytes[index] = binary.charCodeAt(index);
-  }
-  return new Blob([bytes], { type: contentType });
+const DEFAULT_FILTERS: FiltersState = {
+  areaId: '',
+  region: '',
+  status: 'active',
+  q: '',
+};
+
+function getBranchLabel(branchId?: string) {
+  return (
+    BRANCH_OPTIONS.find((branch) => branch.id === String(branchId || ''))?.label || branchId || ''
+  );
 }
 
-function normalizeStoreExportFileName(fileName: unknown, contentType: string): string {
-  const fallbackName = `stores_export_${new Date().toISOString().slice(0, 10)}.xlsx`;
-  const rawName = String(fileName || '').trim() || fallbackName;
-  const isWorkbook = String(contentType || '').includes('spreadsheetml.sheet');
+function toStoreForm(store?: Store | null): StoreFormState {
+  if (!store) return DEFAULT_STORE_FORM;
 
-  if (!isWorkbook) return rawName;
-  if (rawName.toLowerCase().endsWith('.xlsx')) return rawName;
-  if (rawName.toLowerCase().endsWith('.xls')) return `${rawName.slice(0, -4)}.xlsx`;
-  return `${rawName}.xlsx`;
+  return {
+    storeCode: String(store.storeCode || ''),
+    storeName: String(store.storeName || ''),
+    branchId: String(store.areaId || ''),
+    region: String(store.region || ''),
+    area: String(store.areaName || ''),
+    address: String(store.address || ''),
+    picName: String(store.picName || ''),
+    phone: String(store.phone || ''),
+    isActive: store.status !== 'inactive',
+  };
 }
-
-// ── Component ───────────────────────────────────────────────────────────────
 
 const StoreManagement = () => {
   const { api, user } = useAuth();
-
   const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo';
+  const canManageStores = hasPermission(user, Permissions.STORES_EDIT);
+
   const [data, setData] = useState<Store[]>([]);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pagination, setPagination] = useState<Pagination>({ page: 1, pageSize: 50, total: 0 });
   const [regionalHeads, setRegionalHeads] = useState<string[]>([]);
-  const [filters, setFilters] = useState<FiltersState>({
-    areaId: '',
-    region: '',
-    q: '',
-  });
-  const [appliedFilters, setAppliedFilters] = useState<FiltersState>({
-    areaId: '',
-    region: '',
-    q: '',
-  });
+  const [filters, setFilters] = useState<FiltersState>(DEFAULT_FILTERS);
+  const [appliedFilters, setAppliedFilters] = useState<FiltersState>(DEFAULT_FILTERS);
+  const [formOpen, setFormOpen] = useState(false);
+  const [editingStore, setEditingStore] = useState<Store | null>(null);
+  const [storeForm, setStoreForm] = useState<StoreFormState>(DEFAULT_STORE_FORM);
+  const [archiveTarget, setArchiveTarget] = useState<Store | null>(null);
 
   const fetchRegionalHeads = useCallback(async () => {
     try {
       const res = await api.get('/stores/regions');
       if (res.ok) {
-        setRegionalHeads(res.data || []);
+        const regionItems = (Array.isArray(res.data) ? res.data : []) as Array<
+          string | { name?: string; regionalHead?: string }
+        >;
+        const values = regionItems
+          .map((item: string | { name?: string; regionalHead?: string }): string =>
+            typeof item === 'string' ? item : item.name || item.regionalHead || ''
+          )
+          .filter((value: string): value is string => Boolean(value));
+        setRegionalHeads(Array.from(new Set(values)).sort());
       }
     } catch (err) {
       console.error('Failed to load regions', err);
@@ -129,6 +182,7 @@ const StoreManagement = () => {
           pageSize: pagination.pageSize,
           areaId: appliedFilters.areaId || undefined,
           region: appliedFilters.region || undefined,
+          status: appliedFilters.status || undefined,
           q: appliedFilters.q || undefined,
         },
       });
@@ -150,8 +204,10 @@ const StoreManagement = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleFilterChange = (event: ChangeEvent<HTMLInputElement> | { target: { name: string; value: string } }) => {
-    const nextFilters = { ...filters, [event.target.name]: event.target.value };
+  const handleFilterChange = (
+    event: ChangeEvent<HTMLInputElement> | { target: { name: string; value: string } }
+  ) => {
+    const nextFilters = { ...filters, [event.target.name]: event.target.value } as FiltersState;
     setFilters(nextFilters);
     if (event.target.name !== 'q') {
       setAppliedFilters(nextFilters);
@@ -165,87 +221,207 @@ const StoreManagement = () => {
   };
 
   const handleSearch = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      applyFilters();
+    if (event.key === 'Enter') applyFilters();
+  };
+
+  const openCreateDialog = () => {
+    setEditingStore(null);
+    setStoreForm(DEFAULT_STORE_FORM);
+    setFormOpen(true);
+  };
+
+  const openEditDialog = (store: Store) => {
+    setEditingStore(store);
+    setStoreForm(toStoreForm(store));
+    setFormOpen(true);
+  };
+
+  const updateForm = (patch: Partial<StoreFormState>) => {
+    setStoreForm((prev) => ({ ...prev, ...patch }));
+  };
+
+  const blockDemoWrite = () => {
+    if (!isDemoUser) return false;
+    toast.warning('Demo mode is read-only', {
+      description: 'Demo data is generated by the mock API and is not persisted.',
+    });
+    return true;
+  };
+
+  const handleSubmitStore = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (blockDemoWrite()) return;
+    if (!storeForm.storeCode.trim() || !storeForm.storeName.trim() || !storeForm.branchId) {
+      toast.error('Store code, name, and branch are required.');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const payload = {
+        storeCode: storeForm.storeCode.trim(),
+        storeName: storeForm.storeName.trim(),
+        branchId: storeForm.branchId,
+        area: storeForm.area.trim() || getBranchLabel(storeForm.branchId),
+        region: storeForm.region.trim() || undefined,
+        address: storeForm.address.trim() || undefined,
+        picName: storeForm.picName.trim() || undefined,
+        phone: storeForm.phone.trim() || undefined,
+        isActive: storeForm.isActive,
+      };
+      const res = editingStore
+        ? await api.put(`/stores/${editingStore.storeCode}`, payload)
+        : await api.post('/stores', payload);
+      if (!res.ok) throw new Error(res.error?.message || 'Store save failed');
+
+      toast.success(editingStore ? 'Store updated' : 'Store created');
+      setFormOpen(false);
+      await Promise.all([fetchData(), fetchRegionalHeads()]);
+    } catch (err) {
+      toast.error('Store save failed', { description: (err as Error).message });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleArchiveStore = async () => {
+    if (!archiveTarget || blockDemoWrite()) return;
+
+    setSaving(true);
+    try {
+      const res = await api.delete(`/stores/${archiveTarget.storeCode}`);
+      if (!res.ok) throw new Error(res.error?.message || 'Archive failed');
+      toast.success('Store archived');
+      setArchiveTarget(null);
+      await fetchData();
+    } catch (err) {
+      toast.error('Archive failed', { description: (err as Error).message });
+    } finally {
+      setSaving(false);
     }
   };
 
   const handleExport = async () => {
-    if (isDemoUser) {
-      toast.warning('Demo Account', {
-        description: 'This action is not available in the demo account.',
-      });
-      return;
-    }
+    setExporting(true);
     try {
       const res = await api.get('/stores/export', {
         params: {
           areaId: appliedFilters.areaId || undefined,
           region: appliedFilters.region || undefined,
+          status: appliedFilters.status || undefined,
           q: appliedFilters.q || undefined,
         },
       });
       if (!res.ok) throw new Error(res.error?.message || 'Export failed');
-      const exportData: StoreExportData = res.data || {};
-      const contentType = exportData.contentType || STORE_EXPORT_MIME;
-      const isWorkbook = String(contentType).includes('spreadsheetml.sheet');
-      const contentBase64 = String(exportData.contentBase64 || exportData.content || '');
-      if (isWorkbook && !contentBase64) throw new Error('Export content unavailable');
-
-      const blob = isWorkbook
-        ? base64ToBlob(contentBase64, contentType)
-        : new Blob([String(exportData.content || '')], { type: contentType || 'text/csv' });
-
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = normalizeStoreExportFileName(exportData.fileName, contentType);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      toast.success('Export ready', { description: 'Stores Excel downloaded.' });
+      const fileName = downloadWorkbookExport(
+        (res.data || {}) as WorkbookExportPayload,
+        'stores_export'
+      );
+      toast.success('Export ready', { description: fileName });
     } catch (err) {
       toast.error('Export failed', { description: (err as Error).message });
+    } finally {
+      setExporting(false);
     }
   };
 
-  const columns: Column<Store>[] = [
-    {
-      header: 'Store Code',
-      accessor: 'storeCode',
-      className: 'whitespace-nowrap font-mono text-xs text-left px-4',
-      render: (row) => <span>{row.storeCode || '-'}</span>,
-    },
-    {
-      header: 'Name',
-      accessor: 'storeName',
-      className: 'whitespace-nowrap px-4',
-      render: (row) => <span>{row.storeName || '-'}</span>,
-    },
-    {
-      header: 'Regional Head',
-      accessor: 'region',
-      className: 'whitespace-nowrap px-4',
-      render: (row) => <span>{row.region || '-'}</span>,
-    },
-    {
-      header: 'Branch',
-      accessor: 'areaName',
-      className: 'whitespace-nowrap px-4',
-      render: (row) => <span>{row.areaName || '-'}</span>,
-    },
-  ];
+  const columns = useMemo<Column<Store>[]>(() => {
+    const tableColumns: Column<Store>[] = [
+      {
+        header: 'Store Code',
+        accessor: 'storeCode',
+        className: 'whitespace-nowrap px-4 font-mono text-xs',
+        render: (row) => <span className="block min-w-0 truncate">{row.storeCode || '-'}</span>,
+      },
+      {
+        header: 'Name',
+        accessor: 'storeName',
+        className: 'min-w-[220px] px-4',
+        render: (row) => (
+          <span className="block min-w-0 max-w-[24rem] truncate font-medium">
+            {row.storeName || '-'}
+          </span>
+        ),
+      },
+      {
+        header: 'Branch',
+        accessor: 'areaName',
+        className: 'whitespace-nowrap px-4',
+        render: (row) => <span>{row.areaName || getBranchLabel(row.areaId) || '-'}</span>,
+      },
+      {
+        header: 'Regional Head',
+        accessor: 'region',
+        className: 'whitespace-nowrap px-4',
+        render: (row) => <span>{row.region || '-'}</span>,
+      },
+      {
+        header: 'PIC',
+        accessor: 'picName',
+        className: 'hidden px-4 lg:table-cell',
+        render: (row) => (
+          <span className="block min-w-0 max-w-[14rem] truncate">{row.picName || '-'}</span>
+        ),
+      },
+      {
+        header: 'Status',
+        accessor: 'status',
+        className: 'whitespace-nowrap px-4',
+        render: (row) => (
+          <Badge variant={row.status === 'inactive' ? 'neutral' : 'success'}>
+            {row.status === 'inactive' ? 'Archived' : 'Active'}
+          </Badge>
+        ),
+      },
+    ];
+
+    if (canManageStores) {
+      tableColumns.push({
+        header: '',
+        className: 'w-12 px-3 text-right',
+        render: (row) => (
+          <EntityActionMenu
+            actions={[
+              {
+                label: 'Edit',
+                icon: <Pencil className="size-4" />,
+                onSelect: () => openEditDialog(row),
+              },
+              {
+                label: 'Archive',
+                icon: <Archive className="size-4" />,
+                variant: 'destructive',
+                disabled: row.status === 'inactive',
+                onSelect: () => setArchiveTarget(row),
+              },
+            ]}
+          />
+        ),
+      });
+    }
+
+    return tableColumns;
+  }, [canManageStores]);
 
   return (
     <PageShell>
       <FeatureStoryBanner story={getFeatureStory('store-directory')} />
       <PageHeader
         title="Store Directory"
-        subtitle="Monitor operational status and manage store configurations."
+        subtitle="Monitor operational status and manage canonical store data."
         actions={
-          <Button variant="secondary" onClick={handleExport}>
-            <Download className="size-4" />
-            Export Excel
-          </Button>
+          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+            <Badge variant={isDemoMode ? 'info' : 'success'}>
+              {isDemoMode ? 'Demo' : 'Production'}
+            </Badge>
+            {canManageStores && (
+              <Button onClick={openCreateDialog}>
+                <Plus className="size-4" />
+                <span className="truncate">Add Store</span>
+              </Button>
+            )}
+            <ExportButton onClick={handleExport} loading={exporting} />
+          </div>
         }
       />
       <Toolbar
@@ -259,28 +435,19 @@ const StoreManagement = () => {
               onKeyDown={handleSearch}
               className="flex-1"
             />
-            <div className="flex w-full items-center gap-2 md:w-auto">
+            <div className="grid w-full min-w-0 gap-2 sm:grid-cols-3 md:w-auto">
               <Select
-                value={filters.areaId ? String(filters.areaId) : ''}
-                onValueChange={(val) =>
-                  handleFilterChange({
-                    target: {
-                      name: 'areaId',
-                      value: String(val ?? ''),
-                    },
-                  })
+                value={filters.areaId}
+                onValueChange={(value) =>
+                  handleFilterChange({ target: { name: 'areaId', value: String(value ?? '') } })
                 }
               >
-                <SelectTrigger className="w-full md:w-40">
-                  <SelectValue placeholder="All Branches">
-                    {filters.areaId
-                      ? `Branch: ${AREA_OPTIONS.find((a) => String(a.id) === String(filters.areaId))?.label || filters.areaId}`
-                      : undefined}
-                  </SelectValue>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="All Branches" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">All Branches</SelectItem>
-                  {AREA_OPTIONS.map((branch) => (
+                  {BRANCH_OPTIONS.map((branch) => (
                     <SelectItem key={branch.id} value={branch.id}>
                       {branch.label}
                     </SelectItem>
@@ -289,25 +456,36 @@ const StoreManagement = () => {
               </Select>
               <Select
                 value={filters.region}
-                onValueChange={(val) =>
-                  handleFilterChange({
-                    target: {
-                      name: 'region',
-                      value: String(val ?? ''),
-                    },
-                  })
+                onValueChange={(value) =>
+                  handleFilterChange({ target: { name: 'region', value: String(value ?? '') } })
                 }
               >
-                <SelectTrigger className="w-full md:w-48">
+                <SelectTrigger className="w-full">
                   <SelectValue placeholder="All Regional Heads" />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">All Regional Heads</SelectItem>
-                  {regionalHeads.map((rh) => (
-                    <SelectItem key={rh} value={rh}>
-                      {rh}
+                  {regionalHeads.map((regionalHead) => (
+                    <SelectItem key={regionalHead} value={regionalHead}>
+                      {regionalHead}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={filters.status}
+                onValueChange={(value) =>
+                  handleFilterChange({
+                    target: { name: 'status', value: String(value || 'active') },
+                  })
+                }
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Archived</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -339,9 +517,111 @@ const StoreManagement = () => {
           pagination={pagination}
           onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
           emptyState="No stores found."
-          keyExtractor={(row: Store) => row.storeCode ?? row.id ?? ''}
+          keyExtractor={(row) => row.storeCode ?? row.id ?? ''}
         />
       )}
+
+      <EntityFormDialog
+        open={formOpen}
+        title={editingStore ? 'Edit Store' : 'Add Store'}
+        description="Store data is canonical in production and generated in demo mode."
+        submitLabel={editingStore ? 'Save Store' : 'Create Store'}
+        submitting={saving}
+        onOpenChange={setFormOpen}
+        onSubmit={handleSubmitStore}
+      >
+        <EntityFormGrid>
+          <EntityField label="Store Code" htmlFor="storeCode" required>
+            <Input
+              id="storeCode"
+              value={storeForm.storeCode}
+              onChange={(event) => updateForm({ storeCode: event.target.value })}
+              disabled={Boolean(editingStore)}
+              className="min-w-0"
+            />
+          </EntityField>
+          <EntityField label="Store Name" htmlFor="storeName" required>
+            <Input
+              id="storeName"
+              value={storeForm.storeName}
+              onChange={(event) => updateForm({ storeName: event.target.value })}
+              className="min-w-0"
+            />
+          </EntityField>
+          <EntityField label="Branch" required>
+            <Select
+              value={storeForm.branchId}
+              onValueChange={(value) => updateForm({ branchId: value || '' })}
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select branch" />
+              </SelectTrigger>
+              <SelectContent>
+                {BRANCH_OPTIONS.map((branch) => (
+                  <SelectItem key={branch.id} value={branch.id}>
+                    {branch.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </EntityField>
+          <EntityField label="Regional Head" htmlFor="region">
+            <Input
+              id="region"
+              value={storeForm.region}
+              onChange={(event) => updateForm({ region: event.target.value })}
+            />
+          </EntityField>
+          <EntityField label="PIC Name" htmlFor="picName">
+            <Input
+              id="picName"
+              value={storeForm.picName}
+              onChange={(event) => updateForm({ picName: event.target.value })}
+            />
+          </EntityField>
+          <EntityField label="Contact Number" htmlFor="phone">
+            <Input
+              id="phone"
+              value={storeForm.phone}
+              onChange={(event) => updateForm({ phone: event.target.value })}
+            />
+          </EntityField>
+          <EntityField label="Address" htmlFor="address" className="md:col-span-2">
+            <Textarea
+              id="address"
+              value={storeForm.address}
+              onChange={(event) => updateForm({ address: event.target.value })}
+              className="min-h-24 resize-y"
+            />
+          </EntityField>
+          <EntityField
+            label="Active State"
+            className="md:col-span-2"
+            hint="Turning this off archives the store without deleting it."
+          >
+            <div className="flex min-w-0 items-center justify-between gap-4 rounded-md border border-border bg-card px-3 py-2">
+              <span className="min-w-0 truncate text-sm text-foreground">
+                {storeForm.isActive ? 'Active store' : 'Archived store'}
+              </span>
+              <Switch
+                checked={storeForm.isActive}
+                onCheckedChange={(checked) => updateForm({ isActive: Boolean(checked) })}
+              />
+            </div>
+          </EntityField>
+        </EntityFormGrid>
+      </EntityFormDialog>
+
+      <ConfirmDialog
+        open={Boolean(archiveTarget)}
+        title="Archive store"
+        desc={`Archive ${archiveTarget?.storeName || archiveTarget?.storeCode || 'this store'}?`}
+        confirmText="Archive"
+        danger
+        loading={saving}
+        onConfirm={handleArchiveStore}
+        onClose={() => setArchiveTarget(null)}
+      />
     </PageShell>
   );
 };

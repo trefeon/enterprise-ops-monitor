@@ -36,15 +36,21 @@ if (
   process.env.DATABASE_URL = `postgresql://${user}:${pass}@${host}:${port}/${dbName}`;
 }
 
-const app = require("../server");
-const db = require("../models");
-
 const hasDbConfig = Boolean(
   process.env.DATABASE_URL ||
   (process.env.DB_HOST && process.env.DB_USER && process.env.DB_PASS && process.env.DB_NAME)
 );
+const skipMissingDb = hasDbConfig ? false : "missing DATABASE_URL or DB_NAME+DB_USER+DB_PASS";
 
-test("auth login and logout return envelope", { skip: !hasDbConfig }, async () => {
+let app;
+let db;
+
+if (hasDbConfig) {
+  app = require("../server");
+  db = require("../models");
+}
+
+test("auth login and logout return envelope", { skip: skipMissingDb }, async () => {
   const badRes = await request(app).post("/api/auth/login").send({ username: "admin" });
   assert.equal(badRes.status, 400);
   assert.equal(badRes.body.ok, false);
@@ -69,5 +75,5 @@ test("auth login and logout return envelope", { skip: !hasDbConfig }, async () =
 });
 
 test.after(async () => {
-  await db.sequelize.close().catch(() => {});
+  await db?.sequelize?.close().catch(() => {});
 });

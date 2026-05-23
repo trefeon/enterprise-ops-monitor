@@ -543,6 +543,7 @@ async function ensureAccountRbacPermissions(db) {
   if (!db?.sequelize) return;
 
   const adminPerms = [
+    "EMPLOYEES_EDIT",
     "ACCOUNTS_VIEW",
     "USERS_VIEW",
     "USERS_CREATE",
@@ -568,6 +569,7 @@ async function ensureAccountRbacPermissions(db) {
     "EOD_RETRY",
     "STORES_EDIT",
     "NIK_LOOKUP",
+    "EMPLOYEES_EDIT",
     "BACKUPS_RUN",
     "BACKUPS_DELETE",
     "BACKUPS_RESTORE",

@@ -2,6 +2,8 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const request = require("supertest");
 const bcrypt = require("bcryptjs");
+const path = require("node:path");
+const fs = require("node:fs");
 
 process.env.NODE_ENV = "test";
 process.env.DATA_SYNC_TEST_MODE = "true";
@@ -9,31 +11,64 @@ process.env.JWT_SECRET = process.env.JWT_SECRET || "test_secret_min_16_chars";
 process.env.ADMIN_USERNAME = "admin";
 process.env.ADMIN_PASSWORD_HASH = bcrypt.hashSync("adminpass", 10);
 
+const localEnvPath = path.resolve(__dirname, "../.env");
+if (!fs.existsSync(localEnvPath)) {
+  require("dotenv").config({ path: path.resolve(__dirname, "../../../.env") });
+} else {
+  require("dotenv").config();
+}
+
+if (
+  !process.env.DATABASE_URL &&
+  process.env.DB_USER &&
+  process.env.DB_PASS &&
+  process.env.DB_NAME
+) {
+  const user = encodeURIComponent(String(process.env.DB_USER));
+  const pass = encodeURIComponent(String(process.env.DB_PASS));
+  const dbName = encodeURIComponent(String(process.env.DB_NAME));
+  const hostRaw = String(process.env.DB_HOST || "localhost");
+  const host = hostRaw === "db" ? "localhost" : hostRaw;
+  const port = String(process.env.DB_PORT || "5432");
+  process.env.DATABASE_URL = `postgresql://${user}:${pass}@${host}:${port}/${dbName}`;
+}
+
+const hasDbConfig = Boolean(
+  process.env.DATABASE_URL ||
+  (process.env.DB_HOST && process.env.DB_USER && process.env.DB_PASS && process.env.DB_NAME)
+);
+const skipMissingDb = hasDbConfig ? false : "missing DATABASE_URL or DB_NAME+DB_USER+DB_PASS";
 const originalFetch = global.fetch;
-const { BRANCHES } = require("../services/dataClient");
-const db = require("../models");
+let BRANCHES = [];
+let app;
+let db;
 
-global.fetch = async (_url, options) => {
-  const payload = JSON.parse(options?.body || "{}");
-  const branch = String(payload.branch || "0");
-  const now = Date.now();
-  const fresh = new Date(now - 2 * 60 * 1000).toUTCString();
-  const stale = new Date(now - 20 * 60 * 1000).toUTCString();
+if (hasDbConfig) {
+  BRANCHES = require("../services/dataClient").BRANCHES;
+  db = require("../models");
 
-  const data = [
-    { kodetoko: Number(`${branch}01`), lastSync: fresh, namaToko: `Store ${branch}A` },
-    { kodetoko: Number(`${branch}02`), lastSync: stale, namaToko: `Store ${branch}B` },
-  ];
+  global.fetch = async (_url, options) => {
+    const payload = JSON.parse(options?.body || "{}");
+    const branch = String(payload.branch || "0");
+    const now = Date.now();
+    const fresh = new Date(now - 2 * 60 * 1000).toUTCString();
+    const stale = new Date(now - 20 * 60 * 1000).toUTCString();
 
-  return {
-    ok: true,
-    status: 200,
-    json: async () => data,
-    text: async () => JSON.stringify(data),
+    const data = [
+      { kodetoko: Number(`${branch}01`), lastSync: fresh, namaToko: `Store ${branch}A` },
+      { kodetoko: Number(`${branch}02`), lastSync: stale, namaToko: `Store ${branch}B` },
+    ];
+
+    return {
+      ok: true,
+      status: 200,
+      json: async () => data,
+      text: async () => JSON.stringify(data),
+    };
   };
-};
 
-const app = require("../server");
+  app = require("../server");
+}
 
 async function getToken() {
   const res = await request(app)
@@ -46,7 +81,7 @@ async function getToken() {
   return res.body.data.token;
 }
 
-test("GET /api/sync/status returns summary", async () => {
+test("GET /api/sync/status returns summary", { skip: skipMissingDb }, async () => {
   const token = await getToken();
   const res = await request(app).get("/api/sync/status").set("Authorization", `Bearer ${token}`);
 
@@ -59,7 +94,7 @@ test("GET /api/sync/status returns summary", async () => {
   assert.equal(res.body.data.branches.length, BRANCHES.length);
 });
 
-test("GET /api/sync/summary returns race KPIs + meta", async () => {
+test("GET /api/sync/summary returns race KPIs + meta", { skip: skipMissingDb }, async () => {
   const token = await getToken();
   const res = await request(app).get("/api/sync/summary").set("Authorization", `Bearer ${token}`);
 
@@ -79,7 +114,7 @@ test("GET /api/sync/summary returns race KPIs + meta", async () => {
   assert.equal(res.body.meta.snapshotAgeSec, 0);
 });
 
-test("GET /api/sync/stores returns paginated list", async () => {
+test("GET /api/sync/stores returns paginated list", { skip: skipMissingDb }, async () => {
   const token = await getToken();
   const res = await request(app)
     .get("/api/sync/stores?page=1&pageSize=5")
@@ -91,7 +126,7 @@ test("GET /api/sync/stores returns paginated list", async () => {
   assert.equal(res.body.meta.pagination.total, BRANCHES.length * 2);
 });
 
-test("unauthorized requests return 401", async () => {
+test("unauthorized requests return 401", { skip: skipMissingDb }, async () => {
   const res = await request(app).get("/api/sync/status");
   assert.equal(res.status, 401);
   assert.equal(res.body.ok, false);
@@ -104,5 +139,5 @@ test.after(() => {
 });
 
 test.after(async () => {
-  await db.sequelize.close().catch(() => {});
+  await db?.sequelize?.close().catch(() => {});
 });

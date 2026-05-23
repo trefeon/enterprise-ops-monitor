@@ -1,5 +1,8 @@
 # Reconstruction Audit — Enterprise Ops Monitor
 
+> Historical note: this audit is stale in several areas. Current agent-facing
+> repo truth lives in `docs/agent-code-map.md`.
+
 > Date: 2026-05-22
 > Phase 0 output for full repo reconstruction
 
@@ -39,13 +42,16 @@ enterprise-ops-monitor/
 ```
 
 ### pnpm-workspace.yaml
+
 ```yaml
 packages:
-  - "apps/*"
+  - 'apps/*'
 ```
+
 Simple glob — includes all apps/. No `packages/` directory. No shared packages.
 
 ### Issues Found
+
 - **No `.env.example`** — required vars are undocumented
 - **`docker-compose.yml` vs `docker-compose.prod.yml`** — duplicates, nearly identical
 - **No `packages/` directory** — no shared types or utils between FE and BE
@@ -124,36 +130,37 @@ apps/web/
 
 ### Components Summary
 
-| Component | Path | Type | Reusable | Has Loading | Has Empty | Has Error | TypeScript |
-|---|---|---|---|---|---|---|---|
-| DataTable | shared/DataTable.tsx | TSX | ✅ | ✅ | ✅ | ❌ | ✅ |
-| StatCard | shared/StatCard.tsx | TSX | ✅ | ✅ | ❌ | ❌ | ✅ |
-| EmptyState | shared/EmptyState.tsx | TSX | ✅ | ❌ | ✅ | ❌ | ✅ |
-| PageHeader | shared/PageHeader.tsx | TSX | ✅ | ❌ | ❌ | ❌ | ✅ |
-| PageShell | shared/PageShell.tsx | TSX | ✅ | ❌ | ❌ | ❌ | ✅ |
-| Modal | shared/Modal.tsx | TSX | ✅ | ❌ | ❌ | ❌ | ✅ |
-| ConfirmDialog | shared/ConfirmDialog.tsx | TSX | ✅ | ✅ | ❌ | ❌ | ✅ |
-| SectionCard | shared/SectionCard.tsx | TSX | ✅ | ❌ | ❌ | ❌ | ✅ |
-| Toolbar | shared/Toolbar.tsx | TSX | ✅ | ❌ | ❌ | ❌ | ✅ |
-| StatusBadge | shared/StatusBadge.tsx | TSX | ✅ | ❌ | ❌ | ❌ | ✅ |
-| SearchBar | shared/SearchBar.tsx | TSX | ✅ | ❌ | ❌ | ❌ | ✅ |
-| IconButton | shared/IconButton.tsx | TSX | ✅ | ❌ | ❌ | ❌ | ✅ |
-| ProgressBar | shared/ProgressBar.tsx | TSX | ✅ | ❌ | ❌ | ❌ | ✅ |
-| Sidebar | Sidebar.jsx | JSX | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Header | Header.jsx | JSX | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Layout | Layout.jsx | JSX | ✅ | ❌ | ❌ | ❌ | ❌ |
-| PrivateRoute | PrivateRoute.jsx | JSX | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Guard | auth/Guard.jsx | JSX | ✅ | ❌ | ❌ | ❌ | ❌ |
-| UserAccessModal | UserAccessModal.jsx | JSX | ❌ | ✅ | ❌ | ❌ | ❌ |
-| PageTransition | PageTransition.jsx | JSX | ✅ | ❌ | ❌ | ❌ | ❌ |
-| PageLoader | PageLoader.jsx | JSX | ✅ | ✅ | ❌ | ❌ | ❌ |
-| FeatureStoryBanner | FeatureStoryBanner.jsx | JSX | ❌ | ❌ | ❌ | ❌ | ❌ |
-| ErrorBoundary (old) | ErrorBoundary.jsx | JSX | ✅ | ❌ | ❌ | ✅ | ❌ |
-| ErrorBoundary (new) | ui/feedback/ErrorBoundary.tsx | TSX | ✅ | ❌ | ❌ | ✅ | ✅ |
+| Component           | Path                          | Type | Reusable | Has Loading | Has Empty | Has Error | TypeScript |
+| ------------------- | ----------------------------- | ---- | -------- | ----------- | --------- | --------- | ---------- |
+| DataTable           | shared/DataTable.tsx          | TSX  | ✅       | ✅          | ✅        | ❌        | ✅         |
+| StatCard            | shared/StatCard.tsx           | TSX  | ✅       | ✅          | ❌        | ❌        | ✅         |
+| EmptyState          | shared/EmptyState.tsx         | TSX  | ✅       | ❌          | ✅        | ❌        | ✅         |
+| PageHeader          | shared/PageHeader.tsx         | TSX  | ✅       | ❌          | ❌        | ❌        | ✅         |
+| PageShell           | shared/PageShell.tsx          | TSX  | ✅       | ❌          | ❌        | ❌        | ✅         |
+| Modal               | shared/Modal.tsx              | TSX  | ✅       | ❌          | ❌        | ❌        | ✅         |
+| ConfirmDialog       | shared/ConfirmDialog.tsx      | TSX  | ✅       | ✅          | ❌        | ❌        | ✅         |
+| SectionCard         | shared/SectionCard.tsx        | TSX  | ✅       | ❌          | ❌        | ❌        | ✅         |
+| Toolbar             | shared/Toolbar.tsx            | TSX  | ✅       | ❌          | ❌        | ❌        | ✅         |
+| StatusBadge         | shared/StatusBadge.tsx        | TSX  | ✅       | ❌          | ❌        | ❌        | ✅         |
+| SearchBar           | shared/SearchBar.tsx          | TSX  | ✅       | ❌          | ❌        | ❌        | ✅         |
+| IconButton          | shared/IconButton.tsx         | TSX  | ✅       | ❌          | ❌        | ❌        | ✅         |
+| ProgressBar         | shared/ProgressBar.tsx        | TSX  | ✅       | ❌          | ❌        | ❌        | ✅         |
+| Sidebar             | Sidebar.jsx                   | JSX  | ✅       | ❌          | ❌        | ❌        | ❌         |
+| Header              | Header.jsx                    | JSX  | ✅       | ❌          | ❌        | ❌        | ❌         |
+| Layout              | Layout.jsx                    | JSX  | ✅       | ❌          | ❌        | ❌        | ❌         |
+| PrivateRoute        | PrivateRoute.jsx              | JSX  | ✅       | ❌          | ❌        | ❌        | ❌         |
+| Guard               | auth/Guard.jsx                | JSX  | ✅       | ❌          | ❌        | ❌        | ❌         |
+| UserAccessModal     | UserAccessModal.jsx           | JSX  | ❌       | ✅          | ❌        | ❌        | ❌         |
+| PageTransition      | PageTransition.jsx            | JSX  | ✅       | ❌          | ❌        | ❌        | ❌         |
+| PageLoader          | PageLoader.jsx                | JSX  | ✅       | ✅          | ❌        | ❌        | ❌         |
+| FeatureStoryBanner  | FeatureStoryBanner.jsx        | JSX  | ❌       | ❌          | ❌        | ❌        | ❌         |
+| ErrorBoundary (old) | ErrorBoundary.jsx             | JSX  | ✅       | ❌          | ❌        | ✅        | ❌         |
+| ErrorBoundary (new) | ui/feedback/ErrorBoundary.tsx | TSX  | ✅       | ❌          | ❌        | ✅        | ✅         |
 
 ### Routing (react-router-dom 7)
 
 Current setup in `App.jsx` uses `<BrowserRouter>` + `<Routes>` + `<Route>` pattern (not data router).
+
 - 17 lazy-loaded pages via `React.lazy()`
 - Wrapped in `<Suspense>` with inline fallback
 - `<AppShell>` wraps authenticated routes
@@ -204,50 +211,50 @@ apps/api/
 
 ### Routes — Complete Map (30+ endpoints)
 
-| Method | Path | Auth | Validation |
-|---|---|---|---|
-| POST | /api/auth/login | No | Zod ✅ |
-| POST | /api/auth/logout | Yes | ❌ |
-| GET | /api/auth/me | Yes | ❌ |
-| PATCH | /api/auth/me/password | Yes | Zod ✅ |
-| GET | /api/dashboard/summary | Yes | ❌ |
-| GET | /api/dashboard/alerts | Yes | ❌ |
-| POST | /api/dashboard/sync | Yes | ❌ |
-| GET | /api/eod/stores | Yes | ❌ |
-| GET | /api/eod/areas | Yes | ❌ |
-| GET | /api/eod/trend | Yes | ❌ |
-| GET | /api/eod/ranking | Yes | ❌ |
-| GET | /api/eod/stores/:storeCode/history | Yes | ❌ |
-| POST | /api/eod/sync | Yes | ❌ |
-| GET | /api/stores | Yes | ❌ |
-| GET | /api/stores/:storeCode | Yes | ❌ |
-| GET | /api/sync/summary | Yes | ❌ |
-| GET | /api/sync/logs | Yes | ❌ |
-| GET | /api/backups/summary | Yes | ❌ |
-| GET | /api/backups/files | Yes | ❌ |
-| POST | /api/backups/run | Yes | ❌ |
-| DELETE | /api/backups/files/:fileName | Yes | ❌ |
-| POST | /api/backups/restore | Yes | ❌ |
-| GET | /api/backups/files/:fileName/download | Yes | ❌ |
-| GET | /api/users | Yes | ❌ |
-| GET | /api/users/:id | Yes | ❌ |
-| PATCH | /api/users/:id/roles | Yes | ❌ |
-| PATCH | /api/users/:id/branch-scope | Yes | ❌ |
-| PATCH | /api/users/:id/permissions | Yes | ❌ |
-| GET | /api/roles | Yes | ❌ |
-| POST | /api/roles | Yes | ❌ |
-| PATCH | /api/roles/:id | Yes | ❌ |
-| DELETE | /api/roles/:id | Yes | ❌ |
-| GET | /api/system/branches | Yes | ❌ |
-| GET | /api/system/services | Yes | ❌ |
-| POST | /api/system/services/:name/restart | Yes | ❌ |
-| GET | /api/agents | Yes | ❌ |
-| GET | /api/agents/:id | Yes | ❌ |
-| POST | /api/agents/:id/update | Yes | ❌ |
-| GET | /api/afterhours/settings | Yes | ❌ |
-| PATCH | /api/afterhours/settings | Yes | ❌ |
-| GET | /api/nik/list | Yes | ❌ |
-| GET | /api/nik/roles | Yes | ❌ |
+| Method | Path                                  | Auth | Validation |
+| ------ | ------------------------------------- | ---- | ---------- |
+| POST   | /api/auth/login                       | No   | Zod ✅     |
+| POST   | /api/auth/logout                      | Yes  | ❌         |
+| GET    | /api/auth/me                          | Yes  | ❌         |
+| PATCH  | /api/auth/me/password                 | Yes  | Zod ✅     |
+| GET    | /api/dashboard/summary                | Yes  | ❌         |
+| GET    | /api/dashboard/alerts                 | Yes  | ❌         |
+| POST   | /api/dashboard/sync                   | Yes  | ❌         |
+| GET    | /api/eod/stores                       | Yes  | ❌         |
+| GET    | /api/eod/areas                        | Yes  | ❌         |
+| GET    | /api/eod/trend                        | Yes  | ❌         |
+| GET    | /api/eod/ranking                      | Yes  | ❌         |
+| GET    | /api/eod/stores/:storeCode/history    | Yes  | ❌         |
+| POST   | /api/eod/sync                         | Yes  | ❌         |
+| GET    | /api/stores                           | Yes  | ❌         |
+| GET    | /api/stores/:storeCode                | Yes  | ❌         |
+| GET    | /api/sync/summary                     | Yes  | ❌         |
+| GET    | /api/sync/logs                        | Yes  | ❌         |
+| GET    | /api/backups/summary                  | Yes  | ❌         |
+| GET    | /api/backups/files                    | Yes  | ❌         |
+| POST   | /api/backups/run                      | Yes  | ❌         |
+| DELETE | /api/backups/files/:fileName          | Yes  | ❌         |
+| POST   | /api/backups/restore                  | Yes  | ❌         |
+| GET    | /api/backups/files/:fileName/download | Yes  | ❌         |
+| GET    | /api/users                            | Yes  | ❌         |
+| GET    | /api/users/:id                        | Yes  | ❌         |
+| PATCH  | /api/users/:id/roles                  | Yes  | ❌         |
+| PATCH  | /api/users/:id/branch-scope           | Yes  | ❌         |
+| PATCH  | /api/users/:id/permissions            | Yes  | ❌         |
+| GET    | /api/roles                            | Yes  | ❌         |
+| POST   | /api/roles                            | Yes  | ❌         |
+| PATCH  | /api/roles/:id                        | Yes  | ❌         |
+| DELETE | /api/roles/:id                        | Yes  | ❌         |
+| GET    | /api/system/branches                  | Yes  | ❌         |
+| GET    | /api/system/services                  | Yes  | ❌         |
+| POST   | /api/system/services/:name/restart    | Yes  | ❌         |
+| GET    | /api/agents                           | Yes  | ❌         |
+| GET    | /api/agents/:id                       | Yes  | ❌         |
+| POST   | /api/agents/:id/update                | Yes  | ❌         |
+| GET    | /api/afterhours/settings              | Yes  | ❌         |
+| PATCH  | /api/afterhours/settings              | Yes  | ❌         |
+| GET    | /api/nik/list                         | Yes  | ❌         |
+| GET    | /api/nik/roles                        | Yes  | ❌         |
 
 ### Flagged Issues
 
@@ -260,6 +267,7 @@ apps/api/
 7. **console.log**: Present in authMiddleware.js (line 66) and errorHandler.js (line 38)
 
 ### Auth Flow
+
 - Login → JWT issued (no expiry noted in code, defaults to how jsonwebtoken works)
 - Token stored in localStorage
 - Auth middleware: verify JWT → load authz from DB → attach req.user + req.authz
@@ -271,6 +279,7 @@ apps/api/
 ## 4. Infrastructure Audit
 
 ### docker-compose.yml
+
 - Services: api, web, eom-db, autoheal
 - api health check ✅
 - db health check ✅
@@ -280,18 +289,22 @@ apps/api/
 - **Issues:** No nginx service, no mock-api in main compose
 
 ### docker-compose.demo.yml
+
 - Services: mock-api, web (demo)
 - Mock API on port 4000
 - Web with VITE_API_URL pointing to mock API
 
 ### docker-compose.prod.yml
+
 - Nearly identical to docker-compose.yml — redundant
 
 ### nginx/security-headers.conf
+
 - HSTS, X-Content-Type-Options, X-Frame-Options, CSP ✅
 - **Missing:** Nginx site config (reverse proxy rules)
 
 ### .env (current state)
+
 - 31 lines covering DB, auth, default users, backups, data sync
 - **Missing:** JWT expiration config, NODE_ENV, mock API port
 
@@ -301,37 +314,38 @@ apps/api/
 
 ### From docs/fe-research.md
 
-| Recommendation | Implemented? | Priority |
-|---|---|---|
-| TanStack Table + shadcn Table | ✅ Done (DataTable.tsx) | HIGH |
-| Sonner toast (replace custom) | ✅ Done (all pages migrated) | HIGH |
-| Form components (RHF + Zod) | ⚠️ Partially (form.tsx exists, not wired to pages) | MED |
-| Sidebar component (shadcn official) | ❌ Not done (custom Sidebar.jsx) | MED |
-| Card variants (ListCard, DetailCard, etc.) | ✅ Done | MED |
-| Design token constants | ✅ Done (design-tokens.ts) | LOW |
-| Framer-motion page transitions | ✅ Already present | LOW |
-| JSX → TSX migration (all components) | ⚠️ Partial (Sidebar, Header, etc. still JSX) | HIGH |
-| Loading states on all pages | ⚠️ Partial (Dashboard ✅, EOD ✅, others ❌) | HIGH |
-| Empty states on all lists | ⚠️ Partial | MED |
-| Error boundaries per page | ❌ Not done (only root-level) | MED |
-| Route-level errorElement | ❌ Not done (uses old Router, not data router) | LOW |
+| Recommendation                             | Implemented?                                       | Priority |
+| ------------------------------------------ | -------------------------------------------------- | -------- |
+| TanStack Table + shadcn Table              | ✅ Done (DataTable.tsx)                            | HIGH     |
+| Sonner toast (replace custom)              | ✅ Done (all pages migrated)                       | HIGH     |
+| Form components (RHF + Zod)                | ⚠️ Partially (form.tsx exists, not wired to pages) | MED      |
+| Sidebar component (shadcn official)        | ❌ Not done (custom Sidebar.jsx)                   | MED      |
+| Card variants (ListCard, DetailCard, etc.) | ✅ Done                                            | MED      |
+| Design token constants                     | ✅ Done (design-tokens.ts)                         | LOW      |
+| Framer-motion page transitions             | ✅ Already present                                 | LOW      |
+| JSX → TSX migration (all components)       | ⚠️ Partial (Sidebar, Header, etc. still JSX)       | HIGH     |
+| Loading states on all pages                | ⚠️ Partial (Dashboard ✅, EOD ✅, others ❌)       | HIGH     |
+| Empty states on all lists                  | ⚠️ Partial                                         | MED      |
+| Error boundaries per page                  | ❌ Not done (only root-level)                      | MED      |
+| Route-level errorElement                   | ❌ Not done (uses old Router, not data router)     | LOW      |
 
 ### From docs/fe-backend-audit.md
 
-| Recommendation | Implemented? | Priority |
-|---|---|---|
-| Zod validation on all routes | ❌ Only 2/40+ routes validated | HIGH |
-| Service layer extraction | ⚠️ Partial (some business logic in controllers) | MED |
-| Consistent response envelope | ⚠️ Uses `ok` vs proposed `success` | LOW |
-| Refresh token mechanism | ❌ Not present | MED |
-| Remove console.log | ❌ Present in authMiddleware + errorHandler | LOW |
-| OpenAPI/Swagger docs | ❌ Not present | LOW |
+| Recommendation               | Implemented?                                    | Priority |
+| ---------------------------- | ----------------------------------------------- | -------- |
+| Zod validation on all routes | ❌ Only 2/40+ routes validated                  | HIGH     |
+| Service layer extraction     | ⚠️ Partial (some business logic in controllers) | MED      |
+| Consistent response envelope | ⚠️ Uses `ok` vs proposed `success`              | LOW      |
+| Refresh token mechanism      | ❌ Not present                                  | MED      |
+| Remove console.log           | ❌ Present in authMiddleware + errorHandler     | LOW      |
+| OpenAPI/Swagger docs         | ❌ Not present                                  | LOW      |
 
 ---
 
 ## Summary of Key Findings
 
 ### Blocking Issues (Must Fix)
+
 1. **Most API routes lack Zod validation** — only 2/40+ validated
 2. **13 of 17 pages still in JSX** (not TSX)
 3. **No .env.example** at repo root
@@ -339,6 +353,7 @@ apps/api/
 5. **No router loaders** — all data fetch via useEffect
 
 ### Medium Priority
+
 6. **Duplicate docker-compose files** (yml vs prod.yml)
 7. **AppShell.jsx** is a redundant 3-line wrapper
 8. **hooks/** directory is empty
@@ -346,6 +361,7 @@ apps/api/
 10. **Response envelope** inconsistency (`ok` vs `success`)
 
 ### Low Priority
+
 11. **No packages/ directory** for shared types
 12. **noData.js** in lib/dashboard/ — only used in one place
 13. **CSS utility classes** in index.css (350+ lines) could be componentized

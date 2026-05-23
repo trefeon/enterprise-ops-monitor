@@ -47,6 +47,14 @@ const historySummaryQuery = z
     bucketMinutes: z.coerce.number().int().optional(),
   })
   .passthrough();
+const statusQuery = z
+  .object({
+    branch: z.string().optional(),
+    branchId: z.string().optional(),
+  })
+  .passthrough();
+const storeParams = z.object({ kodetoko: z.string().min(1) });
+const refreshBody = z.object({}).passthrough().optional().default({});
 
 // --- Public routes (no auth) ---
 // GET /api/sync/live - TV dashboard endpoint (public, read-only)
@@ -59,6 +67,7 @@ router.use(authMiddleware);
 router.get(
   "/status",
   requirePermission("SYNC_VIEW", { scope: "branch", branchFrom: "query" }),
+  validate({ query: statusQuery }),
   setPrivateCache(10, 30),
   asyncHandler(getSyncStatus)
 );
@@ -67,6 +76,7 @@ router.get(
 router.get(
   "/summary",
   requirePermission("SYNC_VIEW", { scope: "branch", branchFrom: "query" }),
+  validate({ query: statusQuery }),
   setPrivateCache(10, 30),
   asyncHandler(getSyncSummary)
 );
@@ -84,6 +94,7 @@ router.get(
 router.get(
   "/stores/:kodetoko",
   requirePermission("SYNC_VIEW", { scope: "branch", branchFrom: "auto", storeLookup: true }),
+  validate({ params: storeParams }),
   asyncHandler(getSyncStoreDetail)
 );
 
@@ -108,6 +119,7 @@ router.post(
   "/refresh",
   requirePermission("SYNC_VIEW"),
   requireNotDemo(),
+  validate({ body: refreshBody }),
   asyncHandler(refreshSync)
 );
 

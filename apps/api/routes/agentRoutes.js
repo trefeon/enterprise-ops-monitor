@@ -92,6 +92,7 @@ const monitoringQuery = z
     q: z.string().optional(),
   })
   .passthrough();
+const downloadQuery = z.object({}).passthrough();
 
 const uploadBody = z
   .object({
@@ -106,9 +107,17 @@ const deleteParams = z.object({
 // Public endpoints (for agents / .bat scripts)
 router.get("/version", validate({ query: versionQuery }), agentController.getAgentVersion);
 router.get("/version.txt", validate({ query: versionQuery }), agentController.getAgentVersion);
-router.get("/publisher", agentController.downloadPublisher);
-router.get("/DemoAgentPublisher.exe", agentController.downloadPublisher);
-router.get("/setup-script", agentController.downloadSetupScript);
+router.get("/publisher", validate({ query: downloadQuery }), agentController.downloadPublisher);
+router.get(
+  "/DemoAgentPublisher.exe",
+  validate({ query: downloadQuery }),
+  agentController.downloadPublisher
+);
+router.get(
+  "/setup-script",
+  validate({ query: downloadQuery }),
+  agentController.downloadSetupScript
+);
 
 // Secure endpoints (for admin dashboard)
 router.use(authMiddleware);
@@ -117,6 +126,7 @@ router.get(
   "/monitoring/export",
   requirePermission(Permissions.AGENT_UPDATE),
   requireNotDemo(),
+  validate({ query: monitoringQuery }),
   asyncHandler(agentController.exportAgentReport)
 );
 
@@ -130,6 +140,7 @@ router.get(
 router.get(
   "/suggest-version",
   requirePermission(Permissions.AGENT_UPDATE),
+  validate({ query: downloadQuery }),
   asyncHandler(agentController.suggestVersion)
 );
 

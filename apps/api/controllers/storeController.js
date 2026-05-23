@@ -13,7 +13,8 @@ function toStoreRowFromDb(row, employeeIndex) {
   const branchName = row.branchName || getBranchNameById(branchId) || branchId;
 
   // Best-effort PIC lookup from employees table (store-level).
-  const picName = row.storeCode ? employeeIndex.get(String(row.storeCode))?.name || null : null;
+  const picName =
+    row.picName || (row.storeCode ? employeeIndex.get(String(row.storeCode))?.name || null : null);
 
   return {
     storeId: Number.isFinite(Number(row.storeCode)) ? Number(row.storeCode) : row.storeCode,
@@ -22,10 +23,11 @@ function toStoreRowFromDb(row, employeeIndex) {
     areaId: branchId,
     areaName: branchName,
     region: row.regional || null,
-    address: null,
+    address: row.address || null,
     picName,
-    phone: null,
-    status: "active",
+    phone: row.phone || null,
+    status: row.status || (row.isActive === false ? "inactive" : "active"),
+    source: row.source || "sync",
   };
 }
 
@@ -64,6 +66,10 @@ function applyStoreFilters(stores, { areaId, region, q, status }) {
 
   if (status === "active" || !status) {
     filtered = filtered.filter((store) => store.status === "active");
+  }
+
+  if (status === "inactive") {
+    filtered = filtered.filter((store) => store.status === "inactive");
   }
 
   return filtered;
@@ -204,6 +210,29 @@ function buildStoreExportBase64(buffer) {
     : Buffer.from(buffer).toString("base64");
 }
 
+function normalizeStorePayload(body) {
+  return {
+    storeCode: body.storeCode || body.store_code || body.id || null,
+    storeName: body.storeName || body.store_name || null,
+    branchId: body.branchId || body.branch_id || body.areaId || null,
+    area: body.area || null,
+    regional: body.region || body.regional || null,
+    address: body.address || null,
+    picName: body.picName || body.pic_name || null,
+    phone: body.phone || body.contactNumber || body.contact_number || body.contact_num || null,
+    isActive:
+      typeof body.isActive === "boolean"
+        ? body.isActive
+        : typeof body.is_active === "boolean"
+          ? body.is_active
+          : null,
+  };
+}
+
+function getActorId(req) {
+  return Number.isFinite(Number(req.user?.id)) ? Number(req.user.id) : null;
+}
+
 exports.getAllStores = async (req, res, next) => {
   try {
     const { q, status, region } = req.query;
@@ -239,14 +268,6 @@ exports.getAllStores = async (req, res, next) => {
       partial: false,
       warnings: [],
     });
-
-    if (status === "inactive") {
-      return ok(res, [], {
-        ...buildPaginationMeta({ page, pageSize, total: 0 }),
-        ...externalMeta,
-        timezone: "Asia/Jakarta",
-      });
-    }
 
     const [storeRows, employeeRows] = await Promise.all([
       dataDb.fetchStoresAll(),
@@ -344,8 +365,55 @@ exports.getStoreById = async (req, res, next) => {
   }
 };
 
-exports.updateStore = async (req, res) => {
-  return fail(res, 403, "READ_ONLY", "Store data is read-only (internal data source)");
+exports.createStore = async (req, res, next) => {
+  try {
+    const payload = normalizeStorePayload(req.body);
+    const scopeCheck = ensureBranchAccessForBranchId(req, payload.branchId, { failClosed: true });
+    if (!scopeCheck.ok) {
+      return fail(res, scopeCheck.status, scopeCheck.code, scopeCheck.message, scopeCheck.details);
+    }
+
+    const created = await dataDb.insertManualStore(payload, getActorId(req));
+    if (!created) return fail(res, 409, "CONFLICT", "Store code already exists");
+    return ok(res, toStoreRowFromDb(created, new Map()), { timezone: "Asia/Jakarta" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.updateStore = async (req, res, next) => {
+  try {
+    const payload = normalizeStorePayload(req.body);
+    const nextBranchId = payload.branchId || req.body.areaId || null;
+    if (nextBranchId) {
+      const scopeCheck = ensureBranchAccessForBranchId(req, nextBranchId, { failClosed: true });
+      if (!scopeCheck.ok) {
+        return fail(
+          res,
+          scopeCheck.status,
+          scopeCheck.code,
+          scopeCheck.message,
+          scopeCheck.details
+        );
+      }
+    }
+
+    const updated = await dataDb.updateManualStore(String(req.params.id), payload, getActorId(req));
+    if (!updated) return fail(res, 404, "NOT_FOUND", "Store not found");
+    return ok(res, toStoreRowFromDb(updated, new Map()), { timezone: "Asia/Jakarta" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+exports.archiveStore = async (req, res, next) => {
+  try {
+    const archived = await dataDb.archiveManualStore(String(req.params.id), getActorId(req));
+    if (!archived) return fail(res, 404, "NOT_FOUND", "Store not found");
+    return ok(res, toStoreRowFromDb(archived, new Map()), { timezone: "Asia/Jakarta" });
+  } catch (err) {
+    next(err);
+  }
 };
 
 exports.exportStores = async (req, res, next) => {
@@ -358,22 +426,6 @@ exports.exportStores = async (req, res, next) => {
     const regionLabel = excel.formatLabel(region, "All Regional Heads");
     const searchLabel = excel.formatLabel(q, "All");
     const generatedAt = excel.formatExportDateTime(new Date());
-
-    if (status === "inactive") {
-      const workbook = buildStoresWorkbook({
-        scopeLabel,
-        regionLabel,
-        searchLabel,
-        generatedAt,
-        stores: [],
-      });
-      const buffer = await workbook.xlsx.writeBuffer();
-      return ok(res, {
-        fileName: `stores_export_${toWibDate()}.xlsx`,
-        contentType: STORE_EXPORT_MIME,
-        contentBase64: buildStoreExportBase64(buffer),
-      });
-    }
 
     const [storeRows, employeeRows] = await Promise.all([
       dataDb.fetchStoresAll(),

@@ -1,141 +1,35 @@
-# Enterprise Operations Monitor — AGENTS.md
+# Enterprise Operations Monitor Agent Rules
 
-> This file is the canonical project guide for AI coding agents.
-> It is read natively by **Codex, Copilot, Cursor, Windsurf, Amp, Devin**, and others.
-> **Claude Code** reads `CLAUDE.md` (a thin wrapper that references this file).
-> **Gemini CLI** can be configured to read this file (see compatibility notes below).
+This file keeps repo-specific landmines only. For discoverable project context, use
+`README.md`, `DESIGN.md`, `apps/web/docs/design.md`, and `docs/*.md`.
 
-Real-time dashboard for retail EOD processes, store sync health, backups, agents, office machine monitoring, and RBAC across 8 branch hubs.
+## Required Workflow
 
-## Agent Compatibility
+- Use `pnpm` only. Do not use `npm` or `yarn` for installs, scripts, or lockfile work.
+- Run commands from the repo root unless a package-local doc or script requires otherwise.
+- Check module-local `AGENTS.md` files before changing `apps/web` or `apps/api`.
+- Run `pnpm check:all` before considering work complete. If it cannot run or fails, report the exact command and blocker.
 
-| Tool              | Setup Required                                         | Native Support |
-| ----------------- | ------------------------------------------------------ | :------------: |
-| OpenAI Codex      | None                                                   |       ✅       |
-| GitHub Copilot    | None                                                   |       ✅       |
-| Cursor            | None                                                   |       ✅       |
-| Windsurf          | None                                                   |       ✅       |
-| Amp (Sourcegraph) | None                                                   |       ✅       |
-| Devin             | None                                                   |       ✅       |
-| Antigravity       | Reads `AGENTS.md` (via `.agents/` sync)                |       ✅       |
-| Gemini CLI        | Set `fileName: "AGENTS.md"` in `.gemini/settings.json` |   ⚙️ Config    |
-| Claude Code       | Reads `CLAUDE.md` (add wrapper file if needed)         |   ⚠️ Wrapper   |
+## API And Data
 
-## Quick Commands
+- Preserve the API response envelope: `{ ok, data, meta, error }`.
+- Use `apiGet()`, `apiPost()`, `apiPatch()`, `apiPut()`, and `apiDelete()` from `apps/web/src/lib/api/client.js`; do not import Axios directly in pages.
+- Do not modify `mock-api/` for production logic. It is demo-only and must stay separate from real API behavior.
+- Keep one web codebase; split demo/production with `VITE_APP_MODE=demo|production`, not duplicate apps.
+- User-facing exports must be `.xlsx` workbooks, not browser-generated CSV files.
+- Use migration files in `apps/api/migrations/` for persistent schema changes. Do not add ad hoc schema edits or expand boot-time compatibility SQL unless the task explicitly targets boot compatibility.
 
-| Action      | Command (run from repo root)                      |
-| ----------- | ------------------------------------------------- |
-| Install all | `pnpm i`                                          |
-| Dev (web)   | `pnpm dev`                                        |
-| Dev (API)   | `pnpm dev:api`                                    |
-| Build web   | `pnpm build`                                      |
-| Lint all    | `pnpm lint`                                       |
-| Typecheck   | `pnpm typecheck`                                  |
-| Test all    | `pnpm -r test`                                    |
-| Full check  | `pnpm check:all`                                  |
-| Docker up   | `pnpm up` / `docker compose up -d`                |
-| Docker demo | `docker compose -f docker-compose.demo.yml up -d` |
+## Auth, RBAC, And Demo Safety
 
-## Monorepo Layout
+- Do not remove or rename protected system roles: `viewer`, `ops`, `admin`, `super_admin`, `demo`, `it`, `hc`.
+- Add new permissions in both `apps/api/lib/permissions.js` and `apps/web/src/lib/auth/permissions.js`.
+- Use `hasPermission(user, Permissions.X)`, `<PrivateRoute requiredPerm={...}>`, and `<Guard permission={...}>`; do not gate access by comparing `user.role` directly.
+- Demo users may see guarded actions, but write handlers must block mutation with the existing demo-user pattern. Backend write protection still applies.
 
-```
-apps/api/          Express 5 + Sequelize 6 REST API (port 3000)
-apps/web/          React 19 + Vite 7 + TailwindCSS 3 + shadcn/ui SPA (port 5173)
-mock-api/          Standalone Express mock server (port 4000, no DB)
-docs/              All documentation
-nginx/             Security headers config
-agent_updates/     Agent version tracking
-backups/           Runtime backup files
-```
+## Frontend Landmines
 
-## Key Conventions
-
-- **API**: CommonJS (`require`/`module.exports`), Express 5, Sequelize 6 ORMs
-- **Web**: ES Modules (`import`/`export`), hybrid TSX/JSX — new shared components in `.tsx`, legacy UI in `.jsx`
-- **Monorepo**: pnpm workspaces (`apps/*`)
-- **Auth**: JWT in `Authorization: Bearer <token>` header
-- **API Response Envelope**: `{ ok: boolean, data: any, meta: object|null, error: object|null }` — already unwrapped by Axios interceptor
-- **Time**: All timestamps are WIB (Asia/Jakarta, UTC+7) — use `lib/date.js` helpers, never raw `toLocaleString()`
-- **Env validation**: Zod schema in `apps/api/config/env.js`, fail-fast on boot
-- **Linting**: ESLint + Prettier, run `pnpm format:write` before commits
-- **Dark mode**: Forced (root `<div>` has `dark` class), no light toggle
-
-## Architecture Pointers
-
-- Read `docs/architecture.md` for full system design
-- Read `docs/database.md` for all 16 Sequelize models
-- Read `docs/api_contracts.md` for all 55+ endpoints
-- Read `docs/rbac.md` for 30 permissions across 7 roles
-- Read `apps/web/docs/design.md` for frontend architecture, component tree, and patterns
-- Read `docs/synchronization.md` for external API data pipeline
-- Read `docs/setup.md` for environment variables and deployment
-- Read `docs/testing.md` for test patterns
-
-## Important Constraints
-
-- **Do NOT** use `npm` or `yarn` — use `pnpm` only
-- **Do NOT** modify `mock-api/` for production logic — it is demo-only
-- **Do NOT** remove system roles (`viewer`, `ops`, `admin`, `super_admin`, `demo`, `it`, `hc`) — they are protected
-- **Do NOT** add new permissions without also adding them to `apps/api/lib/permissions.js` AND `apps/web/src/lib/auth/permissions.js`
-- **Do NOT** change the API response envelope format — all endpoints must return `{ ok, data, meta, error }`
-- **Do NOT** use `ALTER TABLE` directly — use migration files in `apps/api/migrations/`
-- **Always** specify `language` on fenced code blocks
-- **Always** run `pnpm check:all` before considering work complete
-
-## Frontend Conventions
-
-### Component Architecture
-
-- **Hybrid TSX/JSX**: New shared components → `components/shared/*.tsx`. Legacy UI → `components/ui/*.jsx`. shadcn primitives → `components/ui/*.tsx`.
-- **Page template**: Routed private pages wrap content in `<PageShell>` and start with one `<FeatureStoryBanner story={getFeatureStory('page-id')} />`. Nested tab/subview content must not render another page shell or banner.
-- **Page layout**: `<PageHeader title={...} />` follows the banner, then page-specific content.
-- **Imports**: New `.tsx` files use `@/` alias (`@/components/ui/button`). Legacy `.jsx` may use relative `../../`.
-
-### API Calls
-
-- Use `apiGet()`, `apiPost()`, `apiPatch()`, `apiPut()`, `apiDelete()` from `lib/api/client.js`.
-- Never import or call `axios` directly — the client wrapper handles token injection, error normalization, and envelope unwrapping.
-- Response is already unwrapped: `{ ok, data, meta, error }`.
-- Error objects: `{ ok: false, code, message }` — catch with try/catch.
-
-### Auth & Permissions
-
-- **Route protection**: `<PrivateRoute requiredPerm={Permissions.X}>` in `App.jsx`.
-- **Permission check**: `hasPermission(user, Permissions.X)` — never compare `user.role` directly.
-- **Action button visibility**: `<Guard permission={Permissions.X}>` for conditional render.
-- **Demo account**: `<Guard>` shows all buttons; page handlers check `isDemoUser` and block writes with a toast.
-- **Auth state**: `useAuth()` hook provides `{ user, loading, login, logout, api }`.
-
-### UI Patterns
-
-- **Icons**: Use `lucide-react` (`RefreshCw`, `AlertTriangle`, etc.). `stories.js` still has a `materialIcon` key name for compatibility, but `FeatureStoryBanner` maps it to Lucide icons. Do not add Material Symbols font imports or spans.
-- **StatCards**: Prefer `shared/StatCard.tsx` for new pages. Both shared and legacy `ui/StatCard.jsx` take ReactNode/Lucide icons.
-- **Tables**: Prefer shadcn `<Table>` from `@/components/ui/table`. Legacy pages use `DataTable.jsx`.
-- **Empty state**: Use `<EmptyState>` when data is null/empty after loading.
-- **Loading**: Use `<Skeleton>` from shadcn for new pages, `<ProgressBar>` for legacy.
-
-### Data Fetching Pattern
-
-- Pages manage state locally with `useState` + `useCallback` (no global state manager).
-- Fetch in `useEffect` with cleanup via `useRef` or `active` flag.
-- Auto-refresh pages use `setInterval` inside `useEffect`, cleanup in return.
-- Demo user checks: `const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo')`.
-
-### Time & Dates
-
-- **All times are WIB** (Asia/Jakarta, UTC+7).
-- Import from `lib/date.js`: `formatDate()`, `formatTime()`, `formatDateTime()`, `getWibToday()`.
-- Never use `new Date().toLocaleString()` — it respects the browser locale, not WIB.
-- EOD window check: `isWithinEodWindowNow()` (returns true after 19:30 WIB).
-
-### Project Context (Portfolio Stories)
-
-- Every feature has a story in `data/stories.js` with `{ id, tagline, problem, solution, impact, metrics, techHighlight }`.
-- The `<FeatureStoryBanner>` displays Problem/Solution/Impact on the page.
-- The `/about` page renders the full catalog of all 16 feature stories.
-
-### Design Tokens
-
-- CSS variables in `index.css`: `--bg-base`, `--bg-surface`, `--accent-solid`, `--radius: var(--radius-lg)`, `--section-gap`, `--success`, `--warning`, `--info`, etc.
-- Semantic colors exposed as Tailwind: `text-status-success`, `border-status-info/30`, `bg-status-error/10`.
-- Spacing: `page-container` (max-width), `section-title`, `surface-card`.
+- Follow `DESIGN.md` for visual tokens and `apps/web/docs/design.md` for React/page patterns.
+- Keep dark-only behavior. Do not add a light-mode toggle.
+- Use Lucide React icons only. `stories.js` keeps the historical `materialIcon` key, but rendered UI must not add Material Symbols imports, icon font spans, or new string-icon APIs.
+- Routed private pages use `<PageShell>`, one top-level `<FeatureStoryBanner>`, then `<PageHeader>`. Nested tabs or subviews must not add another shell or banner.
+- Use WIB helpers from `apps/web/src/lib/date.js` for user-facing operational dates and times. Do not use raw `toLocaleString()` in app UI.

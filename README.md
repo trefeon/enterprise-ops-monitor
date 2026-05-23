@@ -35,22 +35,22 @@ This repository is a portfolio-safe demo. All demo data is simulated or anonymiz
 
 ## Feature map
 
-| Surface | Route | What it demonstrates |
-| --- | --- | --- |
-| Dashboard | `/` | KPI control room for EOD, sync, backups, alerts, and operational shortcuts. |
-| EOD Monitor | `/eod` | Deadline-aware store upload tracking, manual sync/retry actions, branch completion, and XLSX export. |
-| Store Sync | `/sync` | Per-store freshness, stale/problem filters, history buckets, and 10-second refresh monitoring. |
-| Store Directory | `/stores` | Searchable, filterable source of truth for store metadata with Excel export. |
-| Employee Directory | `/identity` | NIK/name lookup, branch/role filters, pagination, and CSV export. |
-| Backups | `/backups` | Backup health, manual backup runs, downloads, delete confirmation, and guarded restore controls. |
-| System Health | `/system` | API/database/scheduler/service status, healthcheck triggers, log filtering, copy, and export. |
-| Agent Updater | `/agent-updater` | Store agent rollout status, version drift, check-ins, error details, and artifact upload controls. |
-| Office Agent Monitor | `/office-agents` | Office laptop inventory, CPU/RAM/disk thresholds, online/offline status, and heartbeat history. |
-| Accounts | `/admin/users` | User management, role assignment, branch scopes, password actions, and permission overrides. |
-| Roles | `/admin/roles` | DB-backed roles, grouped permissions, immutable system roles, and custom role editing. |
-| After Hours | `/admin/afterhours` | Off-window activity checks, staged warning schedules, notification settings, rankings, and reports. |
-| Live Wallboard | `/live`, `/live.html` | Public read-only display for shared operational awareness. |
-| About | `/about` | In-app project narrative, demo disclosure, tech stack, and feature story catalog. |
+| Surface              | Route                 | What it demonstrates                                                                                 |
+| -------------------- | --------------------- | ---------------------------------------------------------------------------------------------------- |
+| Dashboard            | `/`                   | KPI control room for EOD, sync, backups, alerts, and operational shortcuts.                          |
+| EOD Monitor          | `/eod`                | Deadline-aware store upload tracking, manual sync/retry actions, branch completion, and XLSX export. |
+| Store Sync           | `/sync`               | Per-store freshness, stale/problem filters, history buckets, and 10-second refresh monitoring.       |
+| Store Directory      | `/stores`             | Searchable, filterable source of truth for store metadata with Excel export.                         |
+| Employee Directory   | `/identity`           | NIK/name lookup, branch/role filters, pagination, and Excel export.                                  |
+| Backups              | `/backups`            | Backup health, manual backup runs, downloads, delete confirmation, and guarded restore controls.     |
+| System Health        | `/system`             | API/database/scheduler/service status, healthcheck triggers, log filtering, copy, and export.        |
+| Agent Updater        | `/agent-updater`      | Store agent rollout status, version drift, check-ins, error details, and artifact upload controls.   |
+| Office Agent Monitor | `/office-agents`      | Office laptop inventory, CPU/RAM/disk thresholds, online/offline status, and heartbeat history.      |
+| Accounts             | `/admin/users`        | User management, role assignment, branch scopes, password actions, and permission overrides.         |
+| Roles                | `/admin/roles`        | DB-backed roles, grouped permissions, immutable system roles, and custom role editing.               |
+| After Hours          | `/admin/afterhours`   | Off-window activity checks, staged warning schedules, notification settings, rankings, and reports.  |
+| Live Wallboard       | `/live`, `/live.html` | Public read-only display for shared operational awareness.                                           |
+| About                | `/about`              | In-app project narrative, demo disclosure, tech stack, and feature story catalog.                    |
 
 ## Architecture at a glance
 
@@ -83,15 +83,15 @@ Key design choices:
 
 ## Tech stack
 
-| Layer | Stack |
-| --- | --- |
-| Frontend | React 19, Vite 7, React Router 7, TailwindCSS 3, shadcn/ui-style primitives, lucide-react, Axios wrapper |
-| Backend | Node.js, Express 5, CommonJS modules, Sequelize 6, PostgreSQL 15 |
-| Auth & Security | JWT, bcryptjs, Helmet, CORS, rate limiting, RBAC v2, branch scopes |
-| Data & Ops | Scheduled sync jobs, TTL cache, Excel/CSV exports, backup tooling, health checks |
-| Testing | Node Test Runner, Supertest, Vitest, Testing Library, jsdom |
-| Infrastructure | Docker Compose, Nginx, Autoheal, environment validation with Zod |
-| Demo | Standalone mock API with generated sample records |
+| Layer           | Stack                                                                                                    |
+| --------------- | -------------------------------------------------------------------------------------------------------- |
+| Frontend        | React 19, Vite 7, React Router 7, TailwindCSS 3, shadcn/ui-style primitives, lucide-react, Axios wrapper |
+| Backend         | Node.js, Express 5, CommonJS modules, Sequelize 6, PostgreSQL 15                                         |
+| Auth & Security | JWT, bcryptjs, Helmet, CORS, rate limiting, RBAC v2, branch scopes                                       |
+| Data & Ops      | Scheduled sync jobs, TTL cache, Excel exports, backup tooling, health checks                             |
+| Testing         | Node Test Runner, Supertest, Vitest, Testing Library, jsdom                                              |
+| Infrastructure  | Docker Compose, Nginx, Autoheal, environment validation with Zod                                         |
+| Demo            | Standalone mock API with generated sample records                                                        |
 
 ## Quick start
 
@@ -121,9 +121,9 @@ Open `http://localhost:5173`.
 
 Mock accounts:
 
-| Username | Password | Access |
-| --- | --- | --- |
-| `demo` | `demo-password` | Read-only demo user |
+| Username     | Password              | Access                        |
+| ------------ | --------------------- | ----------------------------- |
+| `demo`       | `demo-password`       | Read-only demo user           |
 | `superadmin` | `superadmin-password` | Full 30-permission admin demo |
 
 ### Option 2 — Docker demo
@@ -145,32 +145,32 @@ docker compose up -d --build
 
 Services:
 
-| Service | Default URL / Port |
-| --- | --- |
-| Web | `http://localhost:5173` |
-| API | `http://localhost:3000` |
-| PostgreSQL | `localhost:5433` in Docker mode |
-| Mock API | `http://localhost:4000` when running demo mode manually |
+| Service    | Default URL / Port                                      |
+| ---------- | ------------------------------------------------------- |
+| Web        | `http://localhost:5173`                                 |
+| API        | `http://localhost:3000`                                 |
+| PostgreSQL | `localhost:5433` in Docker mode                         |
+| Mock API   | `http://localhost:4000` when running demo mode manually |
 
 ## Useful commands
 
 Run from the repository root unless noted otherwise.
 
-| Command | Purpose |
-| --- | --- |
-| `pnpm i` | Install workspace dependencies. |
-| `pnpm dev` | Start the React/Vite web app. |
-| `pnpm dev:api` | Start the Express API with nodemon. |
-| `pnpm build` | Build the web app for production. |
-| `pnpm lint` | Run ESLint across workspaces. |
-| `pnpm typecheck` | Run TypeScript checks for the web app. |
-| `pnpm format:check` | Check formatting. |
-| `pnpm format:write` | Auto-format supported files. |
-| `pnpm test` | Run all workspace tests. |
-| `pnpm check:all` | Run lint, typecheck, format check, and tests. |
-| `pnpm up` | Start the full Docker stack. |
-| `pnpm down` | Stop the Docker stack. |
-| `pnpm logs` | Follow Docker logs. |
+| Command             | Purpose                                       |
+| ------------------- | --------------------------------------------- |
+| `pnpm i`            | Install workspace dependencies.               |
+| `pnpm dev`          | Start the React/Vite web app.                 |
+| `pnpm dev:api`      | Start the Express API with nodemon.           |
+| `pnpm build`        | Build the web app for production.             |
+| `pnpm lint`         | Run ESLint across workspaces.                 |
+| `pnpm typecheck`    | Run TypeScript checks for the web app.        |
+| `pnpm format:check` | Check formatting.                             |
+| `pnpm format:write` | Auto-format supported files.                  |
+| `pnpm test`         | Run all workspace tests.                      |
+| `pnpm check:all`    | Run lint, typecheck, format check, and tests. |
+| `pnpm up`           | Start the full Docker stack.                  |
+| `pnpm down`         | Stop the Docker stack.                        |
+| `pnpm logs`         | Follow Docker logs.                           |
 
 ## API overview
 
@@ -187,19 +187,19 @@ The REST API is mounted under `/api` and returns a consistent envelope:
 
 Main modules:
 
-| Module | Example endpoints |
-| --- | --- |
-| Auth | `POST /api/auth/login`, `GET /api/auth/me` |
-| Dashboard | `GET /api/dashboard` |
-| EOD | `GET /api/eod`, `GET /api/eod/live`, `POST /api/eod/sync` |
-| Sync | `GET /api/sync`, `GET /api/sync/history` |
-| Stores | `GET /api/stores` |
-| Employees | `GET /api/employees` |
-| Backups | `GET /api/backups`, `POST /api/backups/run` |
-| System | `GET /api/system/health` |
-| Users/Roles | `GET /api/users`, `GET /api/roles` |
-| After Hours | `GET /api/afterhours`, `GET /api/afterhours/report` |
-| Agent | `GET /api/agent` |
+| Module      | Example endpoints                                         |
+| ----------- | --------------------------------------------------------- |
+| Auth        | `POST /api/auth/login`, `GET /api/auth/me`                |
+| Dashboard   | `GET /api/dashboard`                                      |
+| EOD         | `GET /api/eod`, `GET /api/eod/live`, `POST /api/eod/sync` |
+| Sync        | `GET /api/sync`, `GET /api/sync/history`                  |
+| Stores      | `GET /api/stores`                                         |
+| Employees   | `GET /api/employees`                                      |
+| Backups     | `GET /api/backups`, `POST /api/backups/run`               |
+| System      | `GET /api/system/health`                                  |
+| Users/Roles | `GET /api/users`, `GET /api/roles`                        |
+| After Hours | `GET /api/afterhours`, `GET /api/afterhours/report`       |
+| Agent       | `GET /api/agent`                                          |
 
 See [`docs/api_contracts.md`](docs/api_contracts.md) for the full route contract.
 
@@ -223,17 +223,17 @@ enterprise-ops-monitor/
 
 ## Documentation map
 
-| Document | Use it for |
-| --- | --- |
-| [`PORTFOLIO.md`](PORTFOLIO.md) | Full storytelling narrative and feature-by-feature impact. |
-| [`docs/architecture.md`](docs/architecture.md) | System tiers, data flow, caching, scheduler, and design decisions. |
-| [`docs/database.md`](docs/database.md) | Sequelize models, tables, relationships, and migration notes. |
-| [`docs/api_contracts.md`](docs/api_contracts.md) | Complete REST API contract and response shapes. |
-| [`docs/rbac.md`](docs/rbac.md) | Roles, permissions, branch scoping, and middleware behavior. |
-| [`docs/synchronization.md`](docs/synchronization.md) | External API sync, persistence, fallback, and scheduling flow. |
-| [`docs/setup.md`](docs/setup.md) | Environment variables, Docker modes, deployment notes, and scripts. |
-| [`docs/testing.md`](docs/testing.md) | Test runners, test files, and verification patterns. |
-| [`apps/web/docs/design.md`](apps/web/docs/design.md) | Frontend layout, component conventions, and UI patterns. |
+| Document                                             | Use it for                                                          |
+| ---------------------------------------------------- | ------------------------------------------------------------------- |
+| [`PORTFOLIO.md`](PORTFOLIO.md)                       | Full storytelling narrative and feature-by-feature impact.          |
+| [`docs/architecture.md`](docs/architecture.md)       | System tiers, data flow, caching, scheduler, and design decisions.  |
+| [`docs/database.md`](docs/database.md)               | Sequelize models, tables, relationships, and migration notes.       |
+| [`docs/api_contracts.md`](docs/api_contracts.md)     | Complete REST API contract and response shapes.                     |
+| [`docs/rbac.md`](docs/rbac.md)                       | Roles, permissions, branch scoping, and middleware behavior.        |
+| [`docs/synchronization.md`](docs/synchronization.md) | External API sync, persistence, fallback, and scheduling flow.      |
+| [`docs/setup.md`](docs/setup.md)                     | Environment variables, Docker modes, deployment notes, and scripts. |
+| [`docs/testing.md`](docs/testing.md)                 | Test runners, test files, and verification patterns.                |
+| [`apps/web/docs/design.md`](apps/web/docs/design.md) | Frontend layout, component conventions, and UI patterns.            |
 
 ## Security and permissions
 

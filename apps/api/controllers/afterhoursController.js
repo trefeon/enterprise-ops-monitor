@@ -71,7 +71,7 @@ function parseScheduleValue(value) {
     const parsed = JSON.parse(raw);
     if (Array.isArray(parsed)) return parsed;
   } catch {
-    // Not JSON array, fallback to CSV.
+    // Not JSON array, fallback to comma-separated values.
   }
 
   return raw

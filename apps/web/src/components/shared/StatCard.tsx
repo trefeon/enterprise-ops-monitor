@@ -55,8 +55,8 @@ const statusStyles: Record<StatStatus, { value: string; rail: string; icon: stri
 
 const paddingSizes = {
   sm: 'pt-3.5 px-3.5 pb-3.5',
-  default: 'pt-5 px-5 pb-5',
-  lg: 'pt-6 px-6 pb-6',
+  default: 'pt-4 px-4 pb-4 sm:pt-5 sm:px-5 sm:pb-5',
+  lg: 'pt-5 px-5 pb-5 sm:pt-6 sm:px-6 sm:pb-6',
 };
 
 const titleSizes = {
@@ -67,8 +67,8 @@ const titleSizes = {
 
 const valueSizes = {
   sm: 'text-xl',
-  default: 'text-[1.75rem]',
-  lg: 'text-3xl',
+  default: 'text-2xl sm:text-[1.75rem]',
+  lg: 'text-[1.75rem] sm:text-3xl',
 };
 
 export function StatCard({
@@ -131,7 +131,7 @@ export function StatCard({
           <div className={cn('absolute inset-x-0 top-0 h-0.5', styles.rail)} />
           <div className="flex justify-between items-start">
             <Skeleton className="h-4 w-24 bg-muted/60" />
-            <Skeleton className="size-10 rounded-lg bg-muted/60" />
+            <Skeleton className="size-9 rounded-lg bg-muted/60 sm:size-10" />
           </div>
           <div className="mt-4 mb-2">
             <Skeleton className="h-8 w-32 bg-muted/60" />
@@ -171,7 +171,7 @@ export function StatCard({
             {icon ? (
               <span
                 className={cn(
-                  'flex size-10 shrink-0 items-center justify-center rounded-lg border transition-transform duration-200 group-hover:-translate-y-0.5 [&>svg]:size-5',
+                  'flex size-9 shrink-0 items-center justify-center rounded-lg border transition-transform duration-200 group-hover:-translate-y-0.5 sm:size-10 [&>svg]:size-4 sm:[&>svg]:size-5',
                   styles.icon,
                   accentProp
                 )}
@@ -179,7 +179,7 @@ export function StatCard({
                 {icon}
               </span>
             ) : (
-              <div className="size-10" />
+              <div className="size-9 sm:size-10" />
             )}
           </div>
 

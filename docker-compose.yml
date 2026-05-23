@@ -7,14 +7,14 @@ services:
     container_name: eom-api
     restart: always
     labels:
-      autoheal: "true"
+      autoheal: 'true'
     logging:
       driver: json-file
       options:
-        max-size: "10m"
-        max-file: "5"
+        max-size: '10m'
+        max-file: '5'
     ports:
-      - "127.0.0.1:3000:3000"
+      - '127.0.0.1:3000:3000'
     volumes:
       - ./backups:/backups
       - ./agent_updates:/agent_updates
@@ -22,12 +22,12 @@ services:
       - .env
     environment:
       NODE_ENV: production
-      PORT: "3000"
+      PORT: '3000'
       HOSTNAME: 0.0.0.0
       TZ: Asia/Jakarta
       DATABASE_URL: postgresql://${DB_USER:-eom_user}:${DB_PASS:?DB_PASS is required}@eom-db:5432/${DB_NAME:-eom_db}
       DB_HOST: eom-db
-      DB_PORT: "5432"
+      DB_PORT: '5432'
       DB_NAME: ${DB_NAME:-eom_db}
       DB_USER: ${DB_USER:-eom_user}
       DB_PASS: ${DB_PASS:?DB_PASS is required}
@@ -42,7 +42,7 @@ services:
     healthcheck:
       test:
         [
-          "CMD-SHELL",
+          'CMD-SHELL',
           'node -e "require(''http'').get(''http://localhost:3000/'', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on(''error'', () => process.exit(1));"',
         ]
       interval: 10s
@@ -57,25 +57,26 @@ services:
       dockerfile: apps/web/Dockerfile
       args:
         VITE_API_URL: /api
+        VITE_APP_MODE: production
         VITE_IT_SUPPORT_URL: ${VITE_IT_SUPPORT_URL:-}
         VITE_IT_SUPPORT_EMAIL: ${VITE_IT_SUPPORT_EMAIL:-}
     image: eom-web:latest
     container_name: eom-web
     restart: always
     labels:
-      autoheal: "true"
+      autoheal: 'true'
     logging:
       driver: json-file
       options:
-        max-size: "10m"
-        max-file: "5"
+        max-size: '10m'
+        max-file: '5'
     ports:
-      - "127.0.0.1:5173:5173"
+      - '127.0.0.1:5173:5173'
     depends_on:
       api:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q -O /dev/null http://localhost:5173/ || exit 1"]
+      test: ['CMD-SHELL', 'wget -q -O /dev/null http://localhost:5173/ || exit 1']
       interval: 30s
       timeout: 5s
       retries: 3
@@ -87,12 +88,12 @@ services:
     container_name: eom-db
     restart: always
     labels:
-      autoheal: "true"
+      autoheal: 'true'
     logging:
       driver: json-file
       options:
-        max-size: "10m"
-        max-file: "5"
+        max-size: '10m'
+        max-file: '5'
     volumes:
       - eom_postgres_data:/var/lib/postgresql/data
     environment:
@@ -101,12 +102,12 @@ services:
       POSTGRES_DB: ${DB_NAME:-eom_db}
       TZ: Asia/Jakarta
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-eom_user} -d ${DB_NAME:-eom_db}"]
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-eom_user} -d ${DB_NAME:-eom_db}']
       interval: 5s
       timeout: 5s
       retries: 5
     ports:
-      - "127.0.0.1:5433:5432"
+      - '127.0.0.1:5433:5432'
     networks:
       - app-network
 
@@ -117,11 +118,11 @@ services:
     logging:
       driver: json-file
       options:
-        max-size: "10m"
-        max-file: "5"
+        max-size: '10m'
+        max-file: '5'
     environment:
       AUTOHEAL_CONTAINER_LABEL: autoheal
-      AUTOHEAL_INTERVAL: "30"
+      AUTOHEAL_INTERVAL: '30'
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
