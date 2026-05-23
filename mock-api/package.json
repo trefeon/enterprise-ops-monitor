@@ -1,6 +1,7 @@
 {
   "name": "mock-api",
   "version": "1.0.0",
+  "packageManager": "pnpm@10.33.0",
   "description": "Mock API for Enterprise Operations Monitor demo - generates realistic randomized data",
   "main": "server.js",
   "scripts": {

@@ -360,6 +360,30 @@ rollback_sha="$3"
 
 cd "$remote_dir"
 
+wait_for_container() {
+  local name="$1"
+  local attempts="${2:-60}"
+  local sleep_seconds="${3:-5}"
+  local status=""
+  local health=""
+
+  for _ in $(seq 1 "$attempts"); do
+    status=$(docker inspect --format='{{.State.Status}}' "$name" 2>/dev/null || true)
+    health=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$name" 2>/dev/null || true)
+
+    if [ "$status" = "running" ] && { [ "$health" = "healthy" ] || [ "$health" = "none" ]; }; then
+      echo "[ok] $name is $status/$health"
+      return 0
+    fi
+
+    echo "[wait] $name is ${status:-missing}/${health:-unknown}"
+    sleep "$sleep_seconds"
+  done
+
+  echo "[err] $name did not become healthy" >&2
+  return 1
+}
+
 deploy_stack() {
   if [ "$mode" = "demo-db" ]; then
     docker compose -f docker-compose.demo-db.yml config -q
@@ -368,6 +392,10 @@ deploy_stack() {
     fi
     docker volume inspect eom_postgres_demo_data >/dev/null 2>&1 || docker volume create eom_postgres_demo_data >/dev/null
     docker compose -f docker-compose.demo-db.yml up -d --build --remove-orphans
+    wait_for_container eom-demo-db
+    wait_for_container eom-demo-api
+    wait_for_container eom-mock-api
+    wait_for_container eom-web-demo
     node scripts/deploy-check.js --demo
     return
   fi
@@ -381,6 +409,9 @@ deploy_stack() {
   fi
   docker volume inspect eom_postgres_data >/dev/null 2>&1 || docker volume create eom_postgres_data >/dev/null
   docker compose -f docker-compose.yml up -d --build --remove-orphans
+  wait_for_container eom-db
+  wait_for_container eom-api
+  wait_for_container eom-web
   node scripts/deploy-check.js
 }
 
