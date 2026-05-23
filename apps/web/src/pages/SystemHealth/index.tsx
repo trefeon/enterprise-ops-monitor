@@ -6,7 +6,6 @@ import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -17,6 +16,8 @@ import {
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { PageShell } from '@/components/shared/PageShell';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { SearchBar } from '@/components/shared/SearchBar';
+import { Toolbar } from '@/components/shared/Toolbar';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { DataTable } from '@/components/shared/DataTable';
 import { formatDateTime, formatTime } from '../../lib/date';
@@ -36,7 +37,6 @@ import {
   Timer,
   Cpu,
   HardDrive,
-  Search,
   Activity,
   Download,
   Copy,
@@ -646,23 +646,19 @@ const SystemHealth = () => {
         </div>
 
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <h3 className="section-title">System Logs</h3>
-            <div className="grid grid-cols-1 gap-2 sm:flex sm:flex-wrap sm:items-center sm:gap-3">
-              <div className="relative group">
-                <div className="relative w-full">
-                  <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground">
-                    <Search className="size-4" />
-                  </span>
-                  <Input
-                    placeholder="Filter logs..."
-                    type="text"
-                    value={logQuery}
-                    onChange={(event) => setLogQuery(event.target.value)}
-                    className="w-full pl-10 sm:w-72"
-                  />
-                </div>
-              </div>
+          <Toolbar
+            variant="plain"
+            title="System Logs"
+            right={
+              <>
+              <SearchBar
+                placeholder="Filter logs..."
+                type="text"
+                value={logQuery}
+                onChange={(event) => setLogQuery(event.target.value)}
+                containerClassName="sm:w-72 xl:w-96"
+                className="w-full"
+              />
               <Select
                 value={logLevel}
                 onValueChange={(val) => {
@@ -675,7 +671,7 @@ const SystemHealth = () => {
                   return setLogLevel(event.target.value);
                 }}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full sm:w-28">
                   <SelectValue placeholder="Level: All" />
                 </SelectTrigger>
                 <SelectContent>
@@ -686,8 +682,9 @@ const SystemHealth = () => {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-          </div>
+              </>
+            }
+          />
 
           <DataTable
             columns={logColumns}

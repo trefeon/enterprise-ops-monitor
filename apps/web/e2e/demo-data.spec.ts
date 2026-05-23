@@ -87,7 +87,10 @@ test.describe('authenticated demo sections contain visible data', () => {
   });
 
   test('employee directory renders generated employees', async ({ page, request }) => {
-    const rows = expectRows(await getApiData<Row[]>(request, '/api/employees?pageSize=1'), 'employee rows');
+    const rows = expectRows(
+      await getApiData<Row[]>(request, '/api/employees?status=ACTIVE&pageSize=1'),
+      'employee rows',
+    );
     await visitHealthy(page, '/identity');
     await expectVisibleBodyText(page, stringField(rows[0], 'nik', 'employee row'), 'employee NIK');
   });

@@ -6,6 +6,7 @@ import type { InputHTMLAttributes, ChangeEvent } from 'react';
 export interface SearchBarProps extends Omit<InputHTMLAttributes<HTMLInputElement>, 'size'> {
   onValueChange?: (value: string) => void;
   size?: 'sm' | 'default';
+  containerClassName?: string;
 }
 
 export function SearchBar({
@@ -14,6 +15,7 @@ export function SearchBar({
   onChange,
   placeholder = 'Search...',
   className,
+  containerClassName,
   size = 'default',
   ...props
 }: SearchBarProps) {
@@ -23,7 +25,7 @@ export function SearchBar({
   };
 
   return (
-    <div className="relative w-full">
+    <div className={cn('relative w-full min-w-0', containerClassName)}>
       <div className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-muted-foreground">
         <Search className={cn(size === 'sm' ? 'size-3' : 'size-3.5')} />
       </div>

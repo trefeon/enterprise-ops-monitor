@@ -9,7 +9,6 @@ import {
   XCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import {
   Select,
   SelectContent,
@@ -21,6 +20,7 @@ import { PageHeader } from '@/components/shared/PageHeader';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { StatCard } from '@/components/shared/StatCard';
 import { PageShell } from '@/components/shared/PageShell';
+import { Toolbar } from '@/components/shared/Toolbar';
 import FeatureStoryBanner from '@/components/FeatureStoryBanner';
 import { getFeatureStory } from '@/data/stories';
 import { useOfficeAgents } from './hooks/useOfficeAgents';
@@ -141,19 +141,23 @@ export default function OfficeAgentsPage() {
           className="border-status-error/30"
         />
       </div>
-      <Card>
-        <CardContent className="flex flex-col gap-3 py-4 md:flex-row md:items-center">
+      <Toolbar
+        left={
           <SearchBar
             value={search}
             onValueChange={setSearch}
             placeholder="Search by hostname, CPU, OS..."
-            className="w-full md:max-w-md"
+            containerClassName="lg:w-96 xl:w-[34rem]"
+            className="w-full"
           />
+        }
+        right={
+          <>
           <Select
             value={statusFilter}
             onValueChange={(value) => setStatusFilter(value as typeof statusFilter)}
           >
-            <SelectTrigger className="w-full min-h-10 border-border bg-input transition-all hover:border-border md:w-60">
+            <SelectTrigger className="w-full min-h-10 border-border bg-input transition-all hover:border-border sm:w-64">
               <span className="flex items-center gap-2">
                 <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mr-1">Status:</span>
                 {(() => {
@@ -187,8 +191,9 @@ export default function OfficeAgentsPage() {
               {stats.critical} machine(s) need attention
             </div>
           )}
-        </CardContent>
-      </Card>
+          </>
+        }
+      />
       <MachineTable machines={machines} onView={setSelectedMachine} onEditLabel={setLabelTarget} />
       <MachineDetailDrawer machine={selectedMachine} onClose={() => setSelectedMachine(null)} />
       <DownloadDialog open={downloadOpen} onClose={() => setDownloadOpen(false)} />

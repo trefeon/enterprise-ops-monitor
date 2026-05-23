@@ -14,6 +14,7 @@ import {
 import { PageShell } from '@/components/shared/PageShell';
 import { StatCard } from '@/components/shared/StatCard';
 import { PageHeader } from '@/components/shared/PageHeader';
+import { Toolbar } from '@/components/shared/Toolbar';
 import { DataTable } from '@/components/shared/DataTable';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { ProgressBar } from '@/components/shared/ProgressBar';
@@ -711,11 +712,12 @@ const StoreSync = () => {
 
       {/* Store Table */}
       <div ref={storeTableRef} className="space-y-4">
-        <PageHeader
+        <Toolbar
+          variant="plain"
           title="Store Sync Status"
-          className="mb-0"
-          actions={
-            <div className="flex flex-col sm:flex-row items-center gap-3">
+          rightClassName="md:max-w-none"
+          right={
+            <>
               <label className="flex h-11 w-full sm:w-auto items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground cursor-pointer transition-colors hover:bg-muted/30">
                 <input
                   type="checkbox"
@@ -736,55 +738,54 @@ const StoreSync = () => {
                   setSearch(val);
                   setPagination((p) => ({ ...p, page: 1 }));
                 }}
-                className="w-full sm:w-52"
+                containerClassName="sm:w-52"
+                className="w-full"
               />
 
-              <div className="flex w-full sm:w-auto items-center gap-2">
-                <Select
-                  value={branchFilter}
-                  onValueChange={(val) => {
-                    setBranchFilter(val);
-                    setPagination((p) => ({ ...p, page: 1 }));
-                  }}
-                >
-                  <SelectTrigger className="flex-1 sm:w-40">
-                    <SelectValue placeholder="All Branches">
-                      {branchFilter
-                        ? branchOptions.find((o) => String(o.value) === String(branchFilter))?.label
-                        : undefined}
-                    </SelectValue>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All Branches</SelectItem>
-                    {branchOptions.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>
-                        {opt.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select
-                  value={statusFilter}
-                  onValueChange={(val) => {
-                    setStatusFilter(val);
-                    setPagination((p) => ({ ...p, page: 1 }));
-                  }}
-                >
-                  <SelectTrigger className="flex-1 sm:w-40">
-                    <SelectValue placeholder="All statuses" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="">All statuses</SelectItem>
-                    <SelectItem value="problem">Late (last sync {staleMaxLabel}+)</SelectItem>
-                    <SelectItem value="stale">
-                      Warning ({syncedMaxLabel}–{staleMaxLabel})
+              <Select
+                value={branchFilter}
+                onValueChange={(val) => {
+                  setBranchFilter(val);
+                  setPagination((p) => ({ ...p, page: 1 }));
+                }}
+              >
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue placeholder="All Branches">
+                    {branchFilter
+                      ? branchOptions.find((o) => String(o.value) === String(branchFilter))?.label
+                      : undefined}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Branches</SelectItem>
+                  {branchOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
                     </SelectItem>
-                    <SelectItem value="synced">On-time (0–{syncedMaxLabel})</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select
+                value={statusFilter}
+                onValueChange={(val) => {
+                  setStatusFilter(val);
+                  setPagination((p) => ({ ...p, page: 1 }));
+                }}
+              >
+                <SelectTrigger className="w-full sm:w-40">
+                  <SelectValue placeholder="All statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value="problem">Late (last sync {staleMaxLabel}+)</SelectItem>
+                  <SelectItem value="stale">
+                    Warning ({syncedMaxLabel}–{staleMaxLabel})
+                  </SelectItem>
+                  <SelectItem value="synced">On-time (0–{syncedMaxLabel})</SelectItem>
+                </SelectContent>
+              </Select>
+            </>
           }
         />
 

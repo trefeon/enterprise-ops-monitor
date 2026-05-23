@@ -1325,7 +1325,8 @@ export default function AfterHours() {
                     setPage(1);
                   }}
                   placeholder="Search by store code or name..."
-                  className="w-full md:max-w-sm"
+                  containerClassName="sm:col-span-2 lg:col-span-1 lg:w-72 xl:w-80"
+                  className="w-full"
                 />
                 <Select
                   value={branch ? String(branch) : ''}
@@ -1334,7 +1335,7 @@ export default function AfterHours() {
                     setPage(1);
                   }}
                 >
-                  <SelectTrigger className="w-full md:w-56">
+                  <SelectTrigger className="w-full lg:w-56">
                     <SelectValue placeholder="Branch: All">
                       {branch
                         ? `Branch: ${BRANCH_OPTIONS.find((b) => String(b.id) === String(branch))?.label || branch}`
@@ -1355,7 +1356,7 @@ export default function AfterHours() {
                     setDate(val);
                     setPage(1);
                   }}
-                  className="w-full shrink-0 md:w-auto"
+                  className="w-full shrink-0 lg:w-auto"
                 />
               </>
             }

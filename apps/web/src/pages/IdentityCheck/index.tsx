@@ -437,60 +437,59 @@ const IdentityCheck = () => {
               value={filters.q}
               onChange={(event) => handleFilterChange(event.target)}
               onKeyDown={handleSearchKeyDown}
-              className="flex-1"
+              containerClassName="sm:col-span-2 lg:col-span-1 lg:w-72 xl:w-80"
+              className="w-full"
             />
-            <div className="grid w-full min-w-0 gap-2 sm:grid-cols-3 md:w-auto">
-              <Select
-                value={filters.branchId}
-                onValueChange={(value) =>
-                  handleFilterChange({ name: 'branchId', value: String(value ?? '') })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Branches" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Branches</SelectItem>
-                  {BRANCH_OPTIONS.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.id}>
-                      {branch.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.role}
-                onValueChange={(value) =>
-                  handleFilterChange({ name: 'role', value: String(value ?? '') })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Roles" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Roles</SelectItem>
-                  {roles.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {role}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.status}
-                onValueChange={(value) =>
-                  handleFilterChange({ name: 'status', value: String(value || 'ACTIVE') })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ACTIVE">Active</SelectItem>
-                  <SelectItem value="INACTIVE">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select
+              value={filters.branchId}
+              onValueChange={(value) =>
+                handleFilterChange({ name: 'branchId', value: String(value ?? '') })
+              }
+            >
+              <SelectTrigger className="w-full lg:w-44">
+                <SelectValue placeholder="All Branches" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Branches</SelectItem>
+                {BRANCH_OPTIONS.map((branch) => (
+                  <SelectItem key={branch.id} value={branch.id}>
+                    {branch.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.role}
+              onValueChange={(value) =>
+                handleFilterChange({ name: 'role', value: String(value ?? '') })
+              }
+            >
+              <SelectTrigger className="w-full lg:w-44">
+                <SelectValue placeholder="All Roles" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Roles</SelectItem>
+                {roles.map((role) => (
+                  <SelectItem key={role} value={role}>
+                    {role}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.status}
+              onValueChange={(value) =>
+                handleFilterChange({ name: 'status', value: String(value || 'ACTIVE') })
+              }
+            >
+              <SelectTrigger className="w-full lg:w-36">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ACTIVE">Active</SelectItem>
+                <SelectItem value="INACTIVE">Archived</SelectItem>
+              </SelectContent>
+            </Select>
           </>
         }
         right={

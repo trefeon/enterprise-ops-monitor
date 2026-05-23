@@ -433,62 +433,61 @@ const StoreManagement = () => {
               value={filters.q}
               onChange={handleFilterChange}
               onKeyDown={handleSearch}
-              className="flex-1"
+              containerClassName="sm:col-span-2 lg:col-span-1 lg:w-72 xl:w-80"
+              className="w-full"
             />
-            <div className="grid w-full min-w-0 gap-2 sm:grid-cols-3 md:w-auto">
-              <Select
-                value={filters.areaId}
-                onValueChange={(value) =>
-                  handleFilterChange({ target: { name: 'areaId', value: String(value ?? '') } })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Branches" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Branches</SelectItem>
-                  {BRANCH_OPTIONS.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.id}>
-                      {branch.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.region}
-                onValueChange={(value) =>
-                  handleFilterChange({ target: { name: 'region', value: String(value ?? '') } })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Regional Heads" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Regional Heads</SelectItem>
-                  {regionalHeads.map((regionalHead) => (
-                    <SelectItem key={regionalHead} value={regionalHead}>
-                      {regionalHead}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.status}
-                onValueChange={(value) =>
-                  handleFilterChange({
-                    target: { name: 'status', value: String(value || 'active') },
-                  })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <Select
+              value={filters.areaId}
+              onValueChange={(value) =>
+                handleFilterChange({ target: { name: 'areaId', value: String(value ?? '') } })
+              }
+            >
+              <SelectTrigger className="w-full lg:w-44">
+                <SelectValue placeholder="All Branches" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Branches</SelectItem>
+                {BRANCH_OPTIONS.map((branch) => (
+                  <SelectItem key={branch.id} value={branch.id}>
+                    {branch.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.region}
+              onValueChange={(value) =>
+                handleFilterChange({ target: { name: 'region', value: String(value ?? '') } })
+              }
+            >
+              <SelectTrigger className="w-full lg:w-56">
+                <SelectValue placeholder="All Regional Heads" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Regional Heads</SelectItem>
+                {regionalHeads.map((regionalHead) => (
+                  <SelectItem key={regionalHead} value={regionalHead}>
+                    {regionalHead}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.status}
+              onValueChange={(value) =>
+                handleFilterChange({
+                  target: { name: 'status', value: String(value || 'active') },
+                })
+              }
+            >
+              <SelectTrigger className="w-full lg:w-36">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="inactive">Archived</SelectItem>
+              </SelectContent>
+            </Select>
           </>
         }
         right={
