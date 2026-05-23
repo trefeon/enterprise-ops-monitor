@@ -24,6 +24,11 @@ usage() {
   echo "  -p <port>       SSH port (default: 22)"
   echo "  -d <dir>        Remote deployment directory (default: ~/enterprise-ops-monitor)"
   echo "  -e <env_file>   Custom local .env file to copy (default: .env)"
+  echo "  --dry-run       Run local/remote preflight checks without uploading or changing containers"
+  echo "  --preserve-remote-env"
+  echo "                  Reuse existing remote .env instead of requiring/uploading a local env file"
+  echo "  --drop-demo-volumes"
+  echo "                  Remove demo stack volumes when switching to production (default: preserve)"
   exit 1
 }
 
@@ -41,23 +46,69 @@ ssh_key=""
 ssh_port="22"
 remote_dir="~/enterprise-ops-monitor"
 env_file=".env"
+dry_run=0
+preserve_remote_env=0
+drop_demo_volumes=0
+ssh_target=""
 
-while getopts "i:p:d:e:h" opt; do
-  case "$opt" in
-    i) ssh_key="$OPTARG" ;;
-    p) ssh_port="$OPTARG" ;;
-    d) remote_dir="$OPTARG" ;;
-    e) env_file="$OPTARG" ;;
-    h|*) usage ;;
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -i|--key)
+      ssh_key="$2"
+      shift 2
+      ;;
+    -p|--port)
+      ssh_port="$2"
+      shift 2
+      ;;
+    -d|--dir)
+      remote_dir="$2"
+      shift 2
+      ;;
+    -e|--env-file)
+      env_file="$2"
+      shift 2
+      ;;
+    --dry-run)
+      dry_run=1
+      shift
+      ;;
+    --preserve-remote-env)
+      preserve_remote_env=1
+      shift
+      ;;
+    --drop-demo-volumes)
+      drop_demo_volumes=1
+      shift
+      ;;
+    -h|--help)
+      usage
+      ;;
+    -*)
+      echo -e "${RED}✗ Error: Unknown option '$1'.${RESET}" >&2
+      usage
+      ;;
+    *)
+      if [ -n "$ssh_target" ]; then
+        echo -e "${RED}✗ Error: Multiple SSH targets provided.${RESET}" >&2
+        usage
+      fi
+      ssh_target="$1"
+      shift
+      ;;
   esac
 done
-shift $((OPTIND-1))
 
-ssh_target="$1"
 if [ -z "$ssh_target" ]; then
   echo -e "${RED}✗ Error: Target user@host is required.${RESET}\n" >&2
   usage
 fi
+
+shell_quote() {
+  printf "%q" "$1"
+}
+
+remote_dir_q=$(shell_quote "$remote_dir")
 
 # Build SSH and SCP option arrays
 ssh_opts=(-p "$ssh_port" -o ConnectTimeout=10)
@@ -79,6 +130,9 @@ check_dep "tar"
 check_dep "gzip"
 
 echo -e "\n${BOLD}[2/7] Validating local environment secrets in ${env_file}...${RESET}"
+if [ "$preserve_remote_env" -eq 1 ]; then
+  echo -e "  ✓ Preserving existing remote .env; local env upload disabled."
+else
 if [ ! -f "$env_file" ]; then
   echo -e "${RED}✗ Error: local environment file '$env_file' is missing.${RESET}" >&2
   exit 1
@@ -88,7 +142,8 @@ db_pass=$(grep "^DB_PASS=" "$env_file" | cut -d'=' -f2- | tr -d '"'\'' ')
 jwt_secret=$(grep "^JWT_SECRET=" "$env_file" | cut -d'=' -f2- | tr -d '"'\'' ')
 
 if [ -z "$db_pass" ] || [ "$db_pass" = "your_secure_password" ] || [ "$db_pass" = "placeholder" ]; then
-  echo -e "${YELLOW}⚠ Warning: DB_PASS in $env_file is missing or insecure.${RESET}" >&2
+  echo -e "${RED}✗ Error: DB_PASS in $env_file is missing or insecure. Cannot deploy stack.${RESET}" >&2
+  exit 1
 fi
 
 if [ -z "$jwt_secret" ] || [ "$jwt_secret" = "your_jwt_secret" ] || [ "$jwt_secret" = "placeholder" ]; then
@@ -96,6 +151,7 @@ if [ -z "$jwt_secret" ] || [ "$jwt_secret" = "your_jwt_secret" ] || [ "$jwt_secr
   exit 1
 fi
 echo -e "  ✓ Local environment secrets validated successfully."
+fi
 
 echo -e "\n${BOLD}[3/7] Verifying SSH connectivity and remote dependencies...${RESET}"
 echo "  Connecting to $ssh_target..."
@@ -119,6 +175,12 @@ remote_checks=$(ssh "${ssh_opts[@]}" "$ssh_target" '
   else
     echo "  ✓ docker compose is available on remote host"
   fi
+  if ! command -v curl &>/dev/null; then
+    echo "  ✗ Error: curl is not installed on remote host"
+    err=1
+  else
+    echo "  ✓ curl is installed on remote host"
+  fi
   exit $err
 ')
 check_res=$?
@@ -131,60 +193,125 @@ fi
 
 echo -e "\n${BOLD}[4/7] Packaging repository files...${RESET}"
 archive_name="release-remote.tar.gz"
+archive_path=$(mktemp -t eom-release-remote.XXXXXX.tar.gz)
+trap 'rm -f "$archive_path"' EXIT
 echo "  Excluding node_modules, git, dist, logs, and backups..."
-tar -czf "$archive_name" \
+tar -czf "$archive_path" \
   --exclude='node_modules' \
   --exclude='.git' \
   --exclude="$archive_name" \
+  --exclude='release-*.tar.gz' \
   --exclude='release.tar.gz' \
+  --exclude='.env' \
+  --exclude='.env.local' \
+  --exclude='.env.development' \
+  --exclude='.env.production' \
+  --exclude='.env.test' \
+  --exclude='.lean-ctx' \
+  --exclude='.serena' \
   --exclude='.pnpm-store' \
   --exclude='backups/*' \
   --exclude='agent_updates/*' \
+  --exclude='playwright/.auth' \
+  --exclude='playwright-report' \
+  --exclude='test-results' \
   --exclude='apps/web/dist' \
   .
 tar_res=$?
 
-if [ $tar_res -ne 0 ] || [ ! -f "$archive_name" ]; then
+if [ $tar_res -ne 0 ] || [ ! -f "$archive_path" ]; then
   echo -e "${RED}✗ Error: Failed to create package archive.${RESET}" >&2
   exit 1
 fi
-echo -e "  ✓ Package archive created: $(du -sh "$archive_name" | cut -f1)"
+echo -e "  ✓ Package archive created: $(du -sh "$archive_path" | cut -f1)"
+
+if [ "$dry_run" -eq 1 ]; then
+  echo -e "\n${BOLD}[DRY RUN] Validating remote deployment directory...${RESET}"
+  ssh "${ssh_opts[@]}" "$ssh_target" "
+    if [ -d $remote_dir_q ]; then
+      echo '  ✓ Remote directory exists.'
+      cd $remote_dir_q || exit 1
+      if [ -f .env ]; then
+        if grep -q '^DB_PASS=.' .env && grep -q '^JWT_SECRET=.' .env; then
+          echo '  ✓ Remote .env contains required secret keys.'
+        else
+          echo '  ✗ Remote .env is missing DB_PASS or JWT_SECRET.'
+          exit 1
+        fi
+      elif [ $preserve_remote_env -eq 1 ]; then
+        echo '  ✗ --preserve-remote-env was set, but remote .env is missing.'
+        exit 1
+      else
+        echo '  ⚠ Remote .env not found yet; deploy would upload the local env file.'
+      fi
+      if [ -f docker-compose.yml ]; then
+        docker compose -f docker-compose.yml config -q && echo '  ✓ Remote production compose config is valid.'
+      else
+        echo '  ⚠ Remote production compose file not found yet.'
+      fi
+      if [ -f docker-compose.demo-db.yml ]; then
+        docker compose -f docker-compose.demo-db.yml config -q && echo '  ✓ Remote demo compose config is valid.'
+      fi
+    else
+      echo '  ⚠ Remote directory does not exist yet; deploy would create it.'
+    fi
+  "
+  echo -e "\n${BOLD}${GREEN}✓ DRY RUN PASSED. No archive upload, env upload, container restart, or volume removal was performed.${RESET}\n"
+  exit 0
+fi
 
 echo -e "\n${BOLD}[5/7] Uploading archive to remote host...${RESET}"
 echo "  Creating directory: $remote_dir"
-ssh "${ssh_opts[@]}" "$ssh_target" "mkdir -p $remote_dir"
+ssh "${ssh_opts[@]}" "$ssh_target" "mkdir -p $remote_dir_q"
+
+if [ "$preserve_remote_env" -eq 1 ]; then
+  if ! ssh "${ssh_opts[@]}" "$ssh_target" "test -f $remote_dir_q/.env && grep -q '^DB_PASS=.' $remote_dir_q/.env && grep -q '^JWT_SECRET=.' $remote_dir_q/.env"; then
+    echo -e "${RED}✗ Error: --preserve-remote-env was set, but remote .env is missing required secrets.${RESET}" >&2
+    rm -f "$archive_path"
+    exit 1
+  fi
+  echo "  Remote .env found with required secret keys."
+fi
 
 echo "  Uploading $archive_name..."
-scp "${scp_opts[@]}" "$archive_name" "$ssh_target:$remote_dir/"
+scp "${scp_opts[@]}" "$archive_path" "$ssh_target:$remote_dir/$archive_name"
 if [ $? -ne 0 ]; then
   echo -e "${RED}✗ Error: Failed to upload release archive.${RESET}" >&2
-  rm -f "$archive_name"
+  rm -f "$archive_path"
   exit 1
 fi
 
-echo "  Uploading $env_file..."
-scp "${scp_opts[@]}" "$env_file" "$ssh_target:$remote_dir/.env"
-if [ $? -ne 0 ]; then
-  echo -e "${RED}✗ Error: Failed to upload environment file.${RESET}" >&2
-  rm -f "$archive_name"
-  exit 1
+if [ "$preserve_remote_env" -eq 1 ]; then
+  echo "  Preserving existing remote .env; skipping environment file upload."
+else
+  echo "  Uploading $env_file..."
+  scp "${scp_opts[@]}" "$env_file" "$ssh_target:$remote_dir/.env"
+  if [ $? -ne 0 ]; then
+    echo -e "${RED}✗ Error: Failed to upload environment file.${RESET}" >&2
+    rm -f "$archive_path"
+    exit 1
+  fi
 fi
 
-rm -f "$archive_name"
+rm -f "$archive_path"
 echo -e "  ✓ Upload completed successfully."
 
 echo -e "\n${BOLD}[6/7] Extracting files and launching production stack...${RESET}"
+demo_down_flags="--remove-orphans"
+if [ "$drop_demo_volumes" -eq 1 ]; then
+  demo_down_flags="-v --remove-orphans"
+fi
 ssh "${ssh_opts[@]}" "$ssh_target" "
-  cd $remote_dir || exit 1
+  cd $remote_dir_q || exit 1
   echo '  Extracting release package...'
   tar -xzf release-remote.tar.gz && rm release-remote.tar.gz
 
   echo '  Stopping conflicting demo stacks (if running)...'
   if [ -f docker-compose.demo-db.yml ]; then
-    docker compose -f docker-compose.demo-db.yml down -v --remove-orphans &>/dev/null
+    docker compose -f docker-compose.demo-db.yml down $demo_down_flags &>/dev/null
   fi
   if [ -f docker-compose.demo.yml ]; then
-    docker compose -f docker-compose.demo.yml down -v --remove-orphans &>/dev/null
+    docker compose -f docker-compose.demo.yml down $demo_down_flags &>/dev/null
   fi
 
   echo '  Provisioning external volume eom_postgres_data if missing...'
@@ -215,7 +342,7 @@ fi
 echo -e "\n${BOLD}[7/7] Verifying remote service health and diagnostics...${RESET}"
 echo "  Waiting for remote services to boot up..."
 ssh "${ssh_opts[@]}" "$ssh_target" "
-  cd $remote_dir || exit 1
+  cd $remote_dir_q || exit 1
   
   # Wait loop for healthy status
   echo '  Waiting for API gateway to report healthy...'
