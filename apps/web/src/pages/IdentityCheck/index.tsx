@@ -220,13 +220,22 @@ const IdentityCheck = () => {
     }
   };
 
-  const applyFilters = () => {
-    setAppliedFilters(filters);
-    setPagination((prev) => ({ ...prev, page: 1 }));
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAppliedFilters((prev) => {
+        if (prev.q === filters.q) return prev;
+        return { ...prev, q: filters.q };
+      });
+      setPagination((prev) => ({ ...prev, page: 1 }));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [filters.q]);
 
-  const handleSearchKeyDown = (event: KeyboardEvent<HTMLElement>) => {
-    if (event.key === 'Enter') applyFilters();
+  const handleReset = () => {
+    const cleared: FiltersState = { branchId: '', role: '', status: 'ACTIVE', q: '' };
+    setFilters(cleared);
+    setAppliedFilters(cleared);
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const updateForm = (patch: Partial<EmployeeFormState>) => {
@@ -429,17 +438,17 @@ const IdentityCheck = () => {
         }
       />
       <Toolbar
-        left={
+        search={
+          <SearchBar
+            placeholder="Search employees by NIK or name..."
+            name="q"
+            value={filters.q}
+            onChange={(event) => handleFilterChange(event.target)}
+            className="w-full"
+          />
+        }
+        filters={
           <>
-            <SearchBar
-              placeholder="Search employees by NIK or name..."
-              name="q"
-              value={filters.q}
-              onChange={(event) => handleFilterChange(event.target)}
-              onKeyDown={handleSearchKeyDown}
-              containerClassName="sm:col-span-2 lg:col-span-1 lg:w-72 xl:w-80"
-              className="w-full"
-            />
             <Select
               value={filters.branchId}
               onValueChange={(value) =>
@@ -492,11 +501,12 @@ const IdentityCheck = () => {
             </Select>
           </>
         }
-        right={
-          <Button variant="secondary" onClick={applyFilters}>
-            <Search className="size-4" />
-            Apply
-          </Button>
+        actions={
+          (filters.q !== '' || filters.branchId !== '' || filters.role !== '' || filters.status !== 'ACTIVE') && (
+            <Button variant="ghost" onClick={handleReset} className="h-10 px-3">
+              Reset
+            </Button>
+          )
         }
       />
       {error && !loading && results.length === 0 ? (

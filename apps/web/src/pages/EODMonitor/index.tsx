@@ -10,6 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { PageShell } from '@/components/shared/PageShell';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Toolbar } from '@/components/shared/Toolbar';
+import { SearchBar } from '@/components/shared/SearchBar';
 import { DataTable } from '@/components/shared/DataTable';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
@@ -102,8 +103,17 @@ export default function EODMonitor() {
       )}
 
       <Toolbar
-        left={<EODFilters filters={eod.filters} onFilterChange={eod.handleFilterChange} />}
-        right={
+        search={
+          <SearchBar
+            placeholder="Search Store Code or Name"
+            name="q"
+            value={eod.filters.q}
+            onChange={eod.handleFilterChange}
+            className="w-full"
+          />
+        }
+        filters={<EODFilters filters={eod.filters} onFilterChange={eod.handleFilterChange} />}
+        actions={
           <>
             <Button variant="secondary" size="sm" onClick={eod.handleExport}>
               {eod.exporting && <Loader2 className="size-4 animate-spin" />}

@@ -26,6 +26,7 @@ import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { PageShell } from '@/components/shared/PageShell';
 import { StatCard } from '@/components/shared/StatCard';
+import { Toolbar } from '@/components/shared/Toolbar';
 import { SearchBar } from '@/components/shared/SearchBar';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
@@ -137,6 +138,7 @@ const AgentUpdater = () => {
     region: '',
     q: '',
   });
+  const [debouncedQ, setDebouncedQ] = useState('');
 
   const [file, setFile] = useState(null);
   const [version, setVersion] = useState('');
@@ -158,7 +160,7 @@ const AgentUpdater = () => {
       const query = new URLSearchParams();
       if (filters.areaId) query.set('areaId', filters.areaId);
       if (filters.region) query.set('region', filters.region);
-      if (filters.q) query.set('q', filters.q);
+      if (debouncedQ) query.set('q', debouncedQ);
 
       const monitoringRes = await api.get(`/agent/monitoring?${query.toString()}`);
       if (monitoringRes.ok) {
@@ -190,22 +192,25 @@ const AgentUpdater = () => {
   };
 
   useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQ(filters.q);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [filters.q]);
+
+  useEffect(() => {
     fetchData();
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [filters.areaId, filters.region]);
+  }, [filters.areaId, filters.region, debouncedQ]);
 
   const handleFilterChange = (e) => {
     setFilters((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSearch = (e) => {
-    if (e.key === 'Enter') fetchData();
-  };
-
-  const applyFilters = () => {
-    fetchData();
+  const handleReset = () => {
+    setFilters({ areaId: '', region: '', q: '' });
   };
 
   const handleDeleteAgent = async (storeId) => {
@@ -495,72 +500,79 @@ const AgentUpdater = () => {
         />
       </section>
 
-      <section className="grid grid-cols-1 gap-2 md:flex md:flex-wrap md:items-center md:gap-3 py-4">
-        <SearchBar
-          placeholder="Search by store code or name..."
-          name="q"
-          value={filters.q}
-          onChange={handleFilterChange}
-          onKeyDown={handleSearch}
-          className="flex-1"
-        />
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <Select
-            value={filters.areaId ? String(filters.areaId) : ''}
-            onValueChange={(val) =>
-              handleFilterChange({
-                target: {
-                  name: 'areaId',
-                  value: val,
-                },
-              })
-            }
-          >
-            <SelectTrigger className="w-full md:w-40 h-11">
-              <SelectValue placeholder="All Branches">
-                {filters.areaId
-                  ? `Branch: ${AREA_OPTIONS.find((a) => String(a.id) === String(filters.areaId))?.label || filters.areaId}`
-                  : undefined}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Branches</SelectItem>
-              {AREA_OPTIONS.map((branch) => (
-                <SelectItem key={branch.id} value={branch.id}>
-                  {branch.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.region}
-            onValueChange={(val) =>
-              handleFilterChange({
-                target: {
-                  name: 'region',
-                  value: val,
-                },
-              })
-            }
-          >
-            <SelectTrigger className="w-full md:w-48 h-11">
-              <SelectValue placeholder="All Regional Heads" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Regional Heads</SelectItem>
-              {regionalHeads.map((rh) => (
-                <SelectItem key={rh} value={rh}>
-                  {rh}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <Button variant="secondary" onClick={applyFilters} className="w-full md:w-auto h-11">
-          <Search className="mr-2 size-4" />
-          Apply
-        </Button>
-      </section>
+      <Toolbar
+        variant="plain"
+        search={
+          <SearchBar
+            placeholder="Search by store code or name..."
+            name="q"
+            value={filters.q}
+            onChange={handleFilterChange}
+            className="w-full"
+          />
+        }
+        filters={
+          <>
+            <Select
+              value={filters.areaId ? String(filters.areaId) : ''}
+              onValueChange={(val) =>
+                handleFilterChange({
+                  target: {
+                    name: 'areaId',
+                    value: val,
+                  },
+                })
+              }
+            >
+              <SelectTrigger className="w-full sm:w-40">
+                <SelectValue placeholder="All Branches">
+                  {filters.areaId
+                    ? `Branch: ${AREA_OPTIONS.find((a) => String(a.id) === String(filters.areaId))?.label || filters.areaId}`
+                    : undefined}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Branches</SelectItem>
+                {AREA_OPTIONS.map((branch) => (
+                  <SelectItem key={branch.id} value={branch.id}>
+                    {branch.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={filters.region}
+              onValueChange={(val) =>
+                handleFilterChange({
+                  target: {
+                    name: 'region',
+                    value: val,
+                  },
+                })
+              }
+            >
+              <SelectTrigger className="w-full sm:w-48">
+                <SelectValue placeholder="All Regional Heads" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">All Regional Heads</SelectItem>
+                {regionalHeads.map((rh) => (
+                  <SelectItem key={rh} value={rh}>
+                    {rh}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </>
+        }
+        actions={
+          (filters.areaId !== '' || filters.region !== '' || filters.q !== '') && (
+            <Button variant="ghost" onClick={handleReset} className="h-10 px-3">
+              Reset
+            </Button>
+          )
+        }
+      />
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">

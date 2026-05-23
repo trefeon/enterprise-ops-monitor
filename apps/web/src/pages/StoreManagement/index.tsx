@@ -215,13 +215,22 @@ const StoreManagement = () => {
     }
   };
 
-  const applyFilters = () => {
-    setAppliedFilters(filters);
-    setPagination((prev) => ({ ...prev, page: 1 }));
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setAppliedFilters((prev) => {
+        if (prev.q === filters.q) return prev;
+        return { ...prev, q: filters.q };
+      });
+      setPagination((prev) => ({ ...prev, page: 1 }));
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [filters.q]);
 
-  const handleSearch = (event: KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') applyFilters();
+  const handleReset = () => {
+    const cleared: FiltersState = { q: '', areaId: '', region: '', status: 'active' };
+    setFilters(cleared);
+    setAppliedFilters(cleared);
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const openCreateDialog = () => {
@@ -425,17 +434,17 @@ const StoreManagement = () => {
         }
       />
       <Toolbar
-        left={
+        search={
+          <SearchBar
+            placeholder="Search stores by code or name..."
+            name="q"
+            value={filters.q}
+            onChange={handleFilterChange}
+            className="w-full"
+          />
+        }
+        filters={
           <>
-            <SearchBar
-              placeholder="Search stores by code or name..."
-              name="q"
-              value={filters.q}
-              onChange={handleFilterChange}
-              onKeyDown={handleSearch}
-              containerClassName="sm:col-span-2 lg:col-span-1 lg:w-72 xl:w-80"
-              className="w-full"
-            />
             <Select
               value={filters.areaId}
               onValueChange={(value) =>
@@ -490,11 +499,12 @@ const StoreManagement = () => {
             </Select>
           </>
         }
-        right={
-          <Button variant="secondary" onClick={applyFilters}>
-            <Search className="size-4" />
-            Apply
-          </Button>
+        actions={
+          (filters.q !== '' || filters.areaId !== '' || filters.region !== '' || filters.status !== 'active') && (
+            <Button variant="ghost" onClick={handleReset} className="h-10 px-3">
+              Reset
+            </Button>
+          )
         }
       />
       {error && !loading && data.length === 0 ? (

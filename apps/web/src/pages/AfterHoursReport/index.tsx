@@ -517,18 +517,20 @@ export default function AfterHoursReport() {
         </CardContent>
       </Card>
 
-      <Toolbar>
-        <div className="flex w-full flex-col gap-3">
-          <div className="grid gap-2 lg:grid-cols-3">
-            <SearchBar
-              value={search}
-              onValueChange={(val) => {
-                setSearch(val);
-                setExpandedRow(null);
-              }}
-              placeholder="Search violating store code or name..."
-              className="w-full"
-            />
+      <Toolbar
+        search={
+          <SearchBar
+            value={search}
+            onValueChange={(val) => {
+              setSearch(val);
+              setExpandedRow(null);
+            }}
+            placeholder="Search violating store code or name..."
+            className="w-full"
+          />
+        }
+        filters={
+          <>
             <Select
               value={branch ? String(branch) : ''}
               onValueChange={(val) => {
@@ -536,7 +538,7 @@ export default function AfterHoursReport() {
                 setExpandedRow(null);
               }}
             >
-              <SelectTrigger className="w-full sm:w-full">
+              <SelectTrigger className="w-full sm:w-48">
                 <SelectValue placeholder="Branch: All">
                   {branch
                     ? `Branch: ${BRANCH_OPTIONS.find((b) => String(b.id) === String(branch))?.label || branch}`
@@ -551,6 +553,7 @@ export default function AfterHoursReport() {
                 ))}
               </SelectContent>
             </Select>
+
             <Select
               value={limit}
               onValueChange={(val) => {
@@ -558,7 +561,7 @@ export default function AfterHoursReport() {
                 setExpandedRow(null);
               }}
             >
-              <SelectTrigger className="w-full sm:w-full">
+              <SelectTrigger className="w-full sm:w-36">
                 <SelectValue placeholder="Limit: Top 20" />
               </SelectTrigger>
               <SelectContent>
@@ -569,124 +572,123 @@ export default function AfterHoursReport() {
                 ))}
               </SelectContent>
             </Select>
-          </div>
 
-          <div className="flex flex-col gap-2 border-t border-border/60 pt-3 xl:flex-row xl:items-center xl:justify-between">
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <div className="flex w-full min-w-0 gap-2 sm:w-auto">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  className={TOOLBAR_ICON_BUTTON_CLASS}
-                  onClick={() => setMonth((prev) => shiftMonth(prev, -1))}
-                  aria-label="Previous month"
-                >
-                  <ChevronLeft className="size-4" />
-                </Button>
-                <Select value={month} onValueChange={(val) => setMonth(val)}>
-                  <SelectTrigger className="min-w-0 flex-1 sm:w-52">
-                    <SelectValue placeholder="Select Month" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {monthOptions.map((value) => (
-                      <SelectItem key={value} value={value}>
-                        {formatMonthLabel(`${value}-01`)}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon-sm"
-                  className={TOOLBAR_ICON_BUTTON_CLASS}
-                  onClick={() => setMonth((prev) => shiftMonth(prev, 1))}
-                  disabled={month >= currentMonth}
-                  aria-label="Next month"
-                >
-                  <ChevronRight className="size-4" />
-                </Button>
-              </div>
-              <div className="relative w-full sm:w-40">
-                <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground">
-                  <Clock className="size-4" />
-                </div>
-                <Input
-                  type="time"
-                  value={windowStart}
-                  onChange={(e) => {
-                    windowStartEditedRef.current = true;
-                    setWindowStart(e.target.value);
-                    setExpandedRow(null);
-                  }}
-                  step="300"
-                  className={cn(TOOLBAR_FIELD_CLASS, '!pl-11')}
-                />
-              </div>
-            </div>
-
-            <div className={toolbarActionGroupClass}>
-              <Button
-                variant="ghost"
-                size="sm"
-                className={TOOLBAR_BUTTON_CLASS}
-                onClick={() => {
-                  setBranch('');
-                  setSearch('');
-                  setLimit('20');
-                  windowStartEditedRef.current = false;
-                  setWindowStart(DEFAULT_WINDOW_START);
-                  setMonth(getDefaultMonth());
-                  setExpandedRow(null);
-                }}
-              >
-                <RefreshCw className="size-4" />
-                Reset
-              </Button>
+            <div className="flex w-full min-w-0 gap-2 sm:w-auto">
               <Button
                 type="button"
+                variant="ghost"
+                size="icon-sm"
+                className={TOOLBAR_ICON_BUTTON_CLASS}
+                onClick={() => setMonth((prev) => shiftMonth(prev, -1))}
+                aria-label="Previous month"
+              >
+                <ChevronLeft className="size-4" />
+              </Button>
+              <Select value={month} onValueChange={(val) => setMonth(val)}>
+                <SelectTrigger className="min-w-0 flex-1 sm:w-52">
+                  <SelectValue placeholder="Select Month" />
+                </SelectTrigger>
+                <SelectContent>
+                  {monthOptions.map((value) => (
+                    <SelectItem key={value} value={value}>
+                      {formatMonthLabel(`${value}-01`)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                className={TOOLBAR_ICON_BUTTON_CLASS}
+                onClick={() => setMonth((prev) => shiftMonth(prev, 1))}
+                disabled={month >= currentMonth}
+                aria-label="Next month"
+              >
+                <ChevronRight className="size-4" />
+              </Button>
+            </div>
+
+            <div className="relative w-full sm:w-40">
+              <div className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground">
+                <Clock className="size-4" />
+              </div>
+              <Input
+                type="time"
+                value={windowStart}
+                onChange={(e) => {
+                  windowStartEditedRef.current = true;
+                  setWindowStart(e.target.value);
+                  setExpandedRow(null);
+                }}
+                step="300"
+                className={cn(TOOLBAR_FIELD_CLASS, '!pl-11 h-10')}
+              />
+            </div>
+          </>
+        }
+        actions={
+          <>
+            <Button
+              variant="ghost"
+              size="sm"
+              className={TOOLBAR_BUTTON_CLASS}
+              onClick={() => {
+                setBranch('');
+                setSearch('');
+                setLimit('20');
+                windowStartEditedRef.current = false;
+                setWindowStart(DEFAULT_WINDOW_START);
+                setMonth(getDefaultMonth());
+                setExpandedRow(null);
+              }}
+            >
+              <RefreshCw className="size-4" />
+              Reset
+            </Button>
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              className={TOOLBAR_BUTTON_CLASS}
+              onClick={() => setMonth(currentMonth)}
+            >
+              <Calendar className="size-4" />
+              This Month
+            </Button>
+            {hasExportableReport && (
+              <Button
                 variant="secondary"
                 size="sm"
                 className={TOOLBAR_BUTTON_CLASS}
-                onClick={() => setMonth(currentMonth)}
-              >
-                <Calendar className="size-4" />
-                This Month
-              </Button>
-              {hasExportableReport && (
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  className={TOOLBAR_BUTTON_CLASS}
-                  onClick={handleDownloadReport}
-                  disabled={loading || generating || downloading}
-                >
-                  {downloading ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Download className="size-4" />
-                  )}
-                  {downloading ? 'Downloading...' : 'Download Excel'}
-                </Button>
-              )}
-              <Button
-                onClick={handleGenerate}
-                size="sm"
-                className={TOOLBAR_PRIMARY_BUTTON_CLASS}
+                onClick={handleDownloadReport}
                 disabled={loading || generating || downloading}
               >
-                {generating ? (
+                {downloading ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <FileText className="size-4" />
+                  <Download className="size-4" />
                 )}
-                {generating ? 'Generating...' : 'Generate Report'}
+                <span className="hidden sm:inline">{downloading ? 'Downloading...' : 'Download Excel'}</span>
+                <span className="sm:hidden">Excel</span>
               </Button>
-            </div>
-          </div>
-        </div>
-      </Toolbar>
+            )}
+            <Button
+              onClick={handleGenerate}
+              size="sm"
+              className={TOOLBAR_PRIMARY_BUTTON_CLASS}
+              disabled={loading || generating || downloading}
+            >
+              {generating ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <FileText className="size-4" />
+              )}
+              {generating ? 'Generating...' : 'Generate Report'}
+            </Button>
+          </>
+        }
+      />
 
       <div className="flex flex-wrap gap-2">
         {activeFilters.map((item) => (

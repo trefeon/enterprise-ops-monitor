@@ -1316,18 +1316,19 @@ export default function AfterHours() {
             )}
           </Card>
           <Toolbar
-            left={
+            search={
+              <SearchBar
+                value={search}
+                onValueChange={(val) => {
+                  setSearch(val);
+                  setPage(1);
+                }}
+                placeholder="Search by store code or name..."
+                className="w-full"
+              />
+            }
+            filters={
               <>
-                <SearchBar
-                  value={search}
-                  onValueChange={(val) => {
-                    setSearch(val);
-                    setPage(1);
-                  }}
-                  placeholder="Search by store code or name..."
-                  containerClassName="sm:col-span-2 lg:col-span-1 lg:w-72 xl:w-80"
-                  className="w-full"
-                />
                 <Select
                   value={branch ? String(branch) : ''}
                   onValueChange={(val) => {
@@ -1360,19 +1361,21 @@ export default function AfterHours() {
                 />
               </>
             }
-            right={
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSearch('');
-                  setBranch('');
-                  setPage(1);
-                }}
-              >
-                <RefreshCw className="size-4" />
-                Reset
-              </Button>
+            actions={
+              (search !== '' || branch !== '') && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setSearch('');
+                    setBranch('');
+                    setPage(1);
+                  }}
+                >
+                  <RefreshCw className="size-4" />
+                  Reset
+                </Button>
+              )
             }
           />
           {availableDates.length > 0 && (

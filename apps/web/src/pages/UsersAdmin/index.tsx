@@ -2,6 +2,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import PageShell from '@/components/shared/PageShell';
 import PageHeader from '@/components/shared/PageHeader';
+import { Toolbar } from '@/components/shared/Toolbar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -384,21 +385,33 @@ export default function UsersAdmin() {
           ) : null
         }
       />
-      <Card className="p-4">
-        <CardContent>
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <SearchBar
-              value={q}
-              onValueChange={(val) => {
-                setQ(val);
+      <Toolbar
+        search={
+          <SearchBar
+            value={q}
+            onValueChange={(val) => {
+              setQ(val);
+              setPage(1);
+            }}
+            placeholder="Search username..."
+            className="w-full"
+          />
+        }
+        actions={
+          q !== '' && (
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setQ('');
                 setPage(1);
               }}
-              placeholder="Search username..."
-              className="w-full md:max-w-sm"
-            />
-          </div>
-        </CardContent>
-      </Card>
+              className="h-10 px-3"
+            >
+              Reset
+            </Button>
+          )
+        }
+      />
       {createOpen && (
         <Card className="p-4">
           <CardContent>

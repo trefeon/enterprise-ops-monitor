@@ -649,40 +649,45 @@ const SystemHealth = () => {
           <Toolbar
             variant="plain"
             title="System Logs"
-            right={
-              <>
+            search={
               <SearchBar
                 placeholder="Filter logs..."
                 type="text"
                 value={logQuery}
                 onChange={(event) => setLogQuery(event.target.value)}
-                containerClassName="sm:w-72 xl:w-96"
                 className="w-full"
               />
+            }
+            filters={
               <Select
                 value={logLevel}
-                onValueChange={(val) => {
-                  const event = {
-                    target: {
-                      value: val,
-                    },
-                  };
-
-                  return setLogLevel(event.target.value);
-                }}
+                onValueChange={(val) => setLogLevel(val)}
               >
-                <SelectTrigger className="w-full sm:w-28">
+                <SelectTrigger className="w-full sm:w-36">
                   <SelectValue placeholder="Level: All" />
                 </SelectTrigger>
                 <SelectContent>
                   {LEVEL_OPTIONS.map((level) => (
                     <SelectItem key={level} value={level}>
-                      {level}
+                      {level === 'ALL' ? 'Level: All' : level}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              </>
+            }
+            actions={
+              (logQuery !== '' || logLevel !== 'ALL') && (
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    setLogQuery('');
+                    setLogLevel('ALL');
+                  }}
+                  className="h-10 px-3"
+                >
+                  Reset
+                </Button>
+              )
             }
           />
 

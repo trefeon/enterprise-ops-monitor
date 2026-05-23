@@ -1,4 +1,3 @@
-import { SearchBar } from '@/components/shared/SearchBar';
 import {
   Select,
   SelectContent,
@@ -8,24 +7,16 @@ import {
 } from '@/components/ui/select';
 import { DatePicker } from '@/components/shared/DatePicker';
 import { BRANCH_OPTIONS, STATUS_OPTIONS } from '../columns';
-import type { EODFilters } from '../types';
+import type { EODFilters as EODFiltersType } from '../types';
 
 interface EODFiltersProps {
-  filters: EODFilters;
+  filters: EODFiltersType;
   onFilterChange: (e: { target: { name: string; value: string } }) => void;
 }
 
 export function EODFilters({ filters, onFilterChange }: EODFiltersProps) {
   return (
     <>
-      <SearchBar
-        placeholder="Search Store Code or Name"
-        name="q"
-        value={filters.q}
-        onChange={onFilterChange}
-        containerClassName="sm:col-span-2 lg:col-span-1 lg:w-72 xl:w-80"
-        className="w-full"
-      />
       <Select
         value={filters.areaId ? String(filters.areaId) : ''}
         onValueChange={(val) =>

@@ -715,33 +715,19 @@ const StoreSync = () => {
         <Toolbar
           variant="plain"
           title="Store Sync Status"
-          rightClassName="md:max-w-none"
-          right={
+          search={
+            <SearchBar
+              placeholder="Search store..."
+              value={search}
+              onValueChange={(val) => {
+                setSearch(val);
+                setPagination((p) => ({ ...p, page: 1 }));
+              }}
+              className="w-full"
+            />
+          }
+          filters={
             <>
-              <label className="flex h-11 w-full sm:w-auto items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground cursor-pointer transition-colors hover:bg-muted/30">
-                <input
-                  type="checkbox"
-                  checked={excludeBazar}
-                  onChange={(e) => {
-                    setExcludeBazar(e.target.checked);
-                    setPagination((p) => ({ ...p, page: 1 }));
-                  }}
-                  className="shrink-0 rounded border-border bg-transparent text-primary focus:ring-primary/50"
-                />
-                Exclude &gt; 7 days
-              </label>
-
-              <SearchBar
-                placeholder="Search store..."
-                value={search}
-                onValueChange={(val) => {
-                  setSearch(val);
-                  setPagination((p) => ({ ...p, page: 1 }));
-                }}
-                containerClassName="sm:w-52"
-                className="w-full"
-              />
-
               <Select
                 value={branchFilter}
                 onValueChange={(val) => {
@@ -785,7 +771,37 @@ const StoreSync = () => {
                   <SelectItem value="synced">On-time (0–{syncedMaxLabel})</SelectItem>
                 </SelectContent>
               </Select>
+
+              <label className="flex h-10 items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground cursor-pointer transition-colors hover:bg-muted/30">
+                <input
+                  type="checkbox"
+                  checked={excludeBazar}
+                  onChange={(e) => {
+                    setExcludeBazar(e.target.checked);
+                    setPagination((p) => ({ ...p, page: 1 }));
+                  }}
+                  className="shrink-0 rounded border-border bg-transparent text-primary focus:ring-primary/50"
+                />
+                Exclude &gt; 7 days
+              </label>
             </>
+          }
+          actions={
+            (search !== '' || branchFilter !== '' || statusFilter !== 'problem' || !excludeBazar) && (
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setSearch('');
+                  setBranchFilter('');
+                  setStatusFilter('problem');
+                  setExcludeBazar(true);
+                  setPagination((p) => ({ ...p, page: 1 }));
+                }}
+                className="h-10 px-3 text-xs text-muted-foreground hover:text-foreground"
+              >
+                Reset
+              </Button>
+            )
           }
         />
 

@@ -142,17 +142,15 @@ export default function OfficeAgentsPage() {
         />
       </div>
       <Toolbar
-        left={
+        search={
           <SearchBar
             value={search}
             onValueChange={setSearch}
             placeholder="Search by hostname, CPU, OS..."
-            containerClassName="lg:w-96 xl:w-[34rem]"
             className="w-full"
           />
         }
-        right={
-          <>
+        filters={
           <Select
             value={statusFilter}
             onValueChange={(value) => setStatusFilter(value as typeof statusFilter)}
@@ -185,12 +183,27 @@ export default function OfficeAgentsPage() {
               })}
             </SelectContent>
           </Select>
-          {stats.critical > 0 && (
-            <div className="flex min-h-10 items-center gap-2 rounded-md border border-status-error/30 bg-status-error/10 px-4 text-sm font-medium text-status-error">
-              <AlertCircle className="size-4" />
-              {stats.critical} machine(s) need attention
-            </div>
-          )}
+        }
+        actions={
+          <>
+            {(search !== '' || statusFilter !== 'all') && (
+              <Button
+                variant="ghost"
+                onClick={() => {
+                  setSearch('');
+                  setStatusFilter('all');
+                }}
+                className="h-10 px-3 text-xs"
+              >
+                Reset
+              </Button>
+            )}
+            {stats.critical > 0 && (
+              <div className="flex h-10 items-center gap-2 rounded-md border border-status-error/30 bg-status-error/10 px-4 text-sm font-medium text-status-error">
+                <AlertCircle className="size-4" />
+                {stats.critical} machine(s) need attention
+              </div>
+            )}
           </>
         }
       />
