@@ -414,7 +414,7 @@ const IdentityCheck = () => {
         title="Employee Directory"
         subtitle="Search employees and manage canonical production employee data."
         actions={
-          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center sm:justify-end">
             <Badge variant={isDemoMode ? 'info' : 'success'}>
               {isDemoMode ? 'Demo' : 'Production'}
             </Badge>

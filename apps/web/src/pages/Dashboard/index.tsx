@@ -243,7 +243,7 @@ export default function DashboardPage() {
         title="Operations Hub"
         description={`Business date ${formatDate(getWibToday())}`}
         actions={
-          <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
+          <>
             <Button
               variant="outline"
               size="sm"
@@ -269,7 +269,7 @@ export default function DashboardPage() {
                 <span className="truncate">Trigger Sync</span>
               </Button>
             </Guard>
-          </div>
+          </>
         }
       />
 

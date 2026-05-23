@@ -14,6 +14,7 @@ import {
 import { StatCard } from '@/components/shared/StatCard';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
+import { toolbarActionGroupClass } from '@/components/shared/actionLayout';
 import {
   Table,
   TableHeader,
@@ -625,7 +626,7 @@ export default function AfterHoursReport() {
               </div>
             </div>
 
-            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-end">
+            <div className={toolbarActionGroupClass}>
               <Button
                 variant="ghost"
                 size="sm"

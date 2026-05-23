@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { pageHeaderActionGroupClass } from './actionLayout';
 
 export interface BreadcrumbItem {
   label: string;
@@ -61,7 +62,7 @@ export function PageHeader({
         </nav>
       )}
 
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+      <div className="grid min-w-0 gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
         <div className="flex flex-col gap-1 min-w-0 flex-1">
           <h1 className="page-title text-2xl font-bold tracking-tight text-foreground break-words">{title}</h1>
           {displayDescription && (
@@ -77,9 +78,7 @@ export function PageHeader({
         </div>
 
         {actions && (
-          <div className="flex w-full flex-col gap-2 shrink-0 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end [&>*]:w-full sm:[&>*]:w-auto">
-            {actions}
-          </div>
+          <div className={pageHeaderActionGroupClass}>{actions}</div>
         )}
       </div>
     </motion.div>

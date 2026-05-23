@@ -104,7 +104,7 @@ export default function EODMonitor() {
       <Toolbar
         left={<EODFilters filters={eod.filters} onFilterChange={eod.handleFilterChange} />}
         right={
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <>
             <Button variant="secondary" size="sm" onClick={eod.handleExport}>
               {eod.exporting && <Loader2 className="size-4 animate-spin" />}
               <Download className="size-4" /> {formatDate(eod.filters.date) ? `Export ${formatDate(eod.filters.date)}` : 'Export'}
@@ -112,7 +112,7 @@ export default function EODMonitor() {
             <Button variant="ghost" size="sm" onClick={eod.handleResetFilters}>
               <RotateCw className="size-4" /> Reset
             </Button>
-          </div>
+          </>
         }
       />
 

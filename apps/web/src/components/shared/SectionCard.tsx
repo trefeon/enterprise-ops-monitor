@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { sectionActionGroupClass } from './actionLayout';
 
 export interface SectionCardProps {
   title?: ReactNode;
@@ -23,7 +24,7 @@ export function SectionCard({
     <Card className={cn('border-border bg-card', className)}>
       <CardContent className={cn(noPadding ? 'p-0' : 'p-5')}>
         {(title || right) && (
-          <div className="mb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <div className="mb-4 grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
             <div className="min-w-0 flex-1">
               {title && (
                 <div className="text-sm font-semibold text-foreground leading-none">
@@ -37,9 +38,7 @@ export function SectionCard({
               )}
             </div>
             {right && (
-              <div className="flex items-center shrink-0 w-full sm:w-auto [&>*]:w-full sm:[&>*]:w-auto">
-                {right}
-              </div>
+              <div className={sectionActionGroupClass}>{right}</div>
             )}
           </div>
         )}
