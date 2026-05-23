@@ -385,13 +385,19 @@ wait_for_container() {
 }
 
 deploy_stack() {
+  compose_rebuild_and_up() {
+    local compose_file="$1"
+    docker compose -f "$compose_file" build --pull --no-cache
+    docker compose -f "$compose_file" up -d --force-recreate --remove-orphans
+  }
+
   if [ "$mode" = "demo-db" ]; then
     docker compose -f docker-compose.demo-db.yml config -q
     if [ -f docker-compose.yml ]; then
       docker compose -f docker-compose.yml down --remove-orphans >/dev/null 2>&1 || true
     fi
     docker volume inspect eom_postgres_demo_data >/dev/null 2>&1 || docker volume create eom_postgres_demo_data >/dev/null
-    docker compose -f docker-compose.demo-db.yml up -d --build --remove-orphans
+    compose_rebuild_and_up docker-compose.demo-db.yml
     wait_for_container eom-demo-db
     wait_for_container eom-demo-api
     wait_for_container eom-mock-api
@@ -408,7 +414,7 @@ deploy_stack() {
     docker compose -f docker-compose.demo.yml down --remove-orphans >/dev/null 2>&1 || true
   fi
   docker volume inspect eom_postgres_data >/dev/null 2>&1 || docker volume create eom_postgres_data >/dev/null
-  docker compose -f docker-compose.yml up -d --build --remove-orphans
+  compose_rebuild_and_up docker-compose.yml
   wait_for_container eom-db
   wait_for_container eom-api
   wait_for_container eom-web
