@@ -22,7 +22,7 @@ export default function Header({ onMobileMenuClick }: HeaderProps) {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-12 items-center justify-between border-b border-border bg-card/95 px-6 backdrop-blur">
+    <header className="sticky top-0 z-30 flex h-12 items-center justify-between px-6 glass-header">
       <div className="flex items-center gap-4">
         <Button
           variant="ghost"

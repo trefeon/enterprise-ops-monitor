@@ -91,7 +91,7 @@ export default function Sidebar({ setMobileOpen, inSheet = false }: SidebarProps
   return (
     <aside
       className={cn(
-        "relative z-50 flex h-full flex-col border-r border-border bg-card transition-all duration-300 ease-in-out",
+        "relative z-50 flex h-full flex-col border-r border-border bg-card/60 backdrop-blur-md transition-all duration-300 ease-in-out",
         collapsed ? "md:w-20" : "md:w-60",
         inSheet ? "w-full" : "w-60"
       )}

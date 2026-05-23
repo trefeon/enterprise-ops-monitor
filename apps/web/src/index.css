@@ -16,20 +16,20 @@
     --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 
     /* Direct design tokens */
-    --bg-base: rgb(11 12 14);
-    --bg-surface: rgb(17 19 22);
-    --bg-elevated: rgb(24 27 31);
-    --bg-input: rgb(20 23 27);
-    --bg-hover: rgb(30 33 38);
-    --border-subtle: rgb(255 255 255 / 0.06);
-    --border-default: rgb(255 255 255 / 0.1);
-    --border-strong: rgb(255 255 255 / 0.18);
+    --bg-base: rgb(9 9 11);
+    --bg-surface: rgb(24 24 27);
+    --bg-elevated: rgb(39 39 42);
+    --bg-input: rgb(15 15 17);
+    --bg-hover: rgb(32 32 35);
+    --border-subtle: rgb(255 255 255 / 0.05);
+    --border-default: rgb(39 39 42);
+    --border-strong: rgb(63 63 70);
     --border-accent: rgb(74 222 128 / 0.4);
-    --text-primary: rgb(240 242 245);
-    --text-secondary: rgb(139 145 154);
-    --text-muted: rgb(80 85 94);
-    --text-disabled: rgb(56 60 66);
-    --text-inverse: rgb(11 12 14);
+    --text-primary: rgb(244 244 245);
+    --text-secondary: rgb(161 161 170);
+    --text-muted: rgb(113 113 122);
+    --text-disabled: rgb(82 82 91);
+    --text-inverse: rgb(9 9 11);
     --accent-solid: rgb(74 222 128);
     --accent-dim: rgb(34 197 94);
     --accent-muted: rgb(74 222 128 / 0.12);
@@ -50,24 +50,24 @@
     --chart-5: rgb(248 113 113);
 
     /* Tailwind/shadcn HSL tokens mapped to the direct tokens above */
-    --background: 220 12% 5%;
-    --foreground: 210 14% 95%;
-    --card: 216 13% 8%;
-    --card-foreground: 210 14% 95%;
-    --popover: 214 13% 11%;
-    --popover-foreground: 210 14% 95%;
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 240 10% 5.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 8%;
+    --popover-foreground: 0 0% 98%;
     --primary: 142 76% 73%;
-    --primary-foreground: 220 12% 5%;
-    --secondary: 218 12% 13%;
-    --secondary-foreground: 210 14% 95%;
-    --muted: 214 13% 11%;
-    --muted-foreground: 217 6% 57%;
-    --accent: 218 12% 13%;
-    --accent-foreground: 210 14% 95%;
+    --primary-foreground: 240 10% 3.9%;
+    --secondary: 240 5.9% 10%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 5.9% 10%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 5.9% 10%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 91% 71%;
-    --destructive-foreground: 220 12% 5%;
-    --border: 220 6% 17%;
-    --input: 216 15% 9%;
+    --destructive-foreground: 240 10% 3.9%;
+    --border: 240 5.9% 16%;
+    --input: 240 5.9% 9%;
     --ring: 142 76% 73%;
     --success: 142 76% 73%;
     --warning: 45 96% 64%;
@@ -289,6 +289,40 @@
     background: rgb(255 255 255 / 0.03);
     backdrop-filter: blur(10px);
     border: 1px solid var(--border-subtle);
+  }
+  .glass-header {
+    background: rgba(9, 9, 11, 0.7) !important;
+    backdrop-filter: blur(12px) saturate(180%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+  .badge-glow-success {
+    background: rgba(74, 222, 128, 0.06) !important;
+    color: rgb(74, 222, 128) !important;
+    border: 1px solid rgba(74, 222, 128, 0.25) !important;
+    box-shadow: 0 0 10px rgba(74, 222, 128, 0.04);
+  }
+  .badge-glow-warning {
+    background: rgba(251, 191, 36, 0.06) !important;
+    color: rgb(251, 191, 36) !important;
+    border: 1px solid rgba(251, 191, 36, 0.25) !important;
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.04);
+  }
+  .badge-glow-danger {
+    background: rgba(248, 113, 113, 0.06) !important;
+    color: rgb(248, 113, 113) !important;
+    border: 1px solid rgba(248, 113, 113, 0.25) !important;
+    box-shadow: 0 0 10px rgba(248, 113, 113, 0.04);
+  }
+  .badge-glow-info {
+    background: rgba(96, 165, 250, 0.06) !important;
+    color: rgb(96, 165, 250) !important;
+    border: 1px solid rgba(96, 165, 250, 0.25) !important;
+    box-shadow: 0 0 10px rgba(96, 165, 250, 0.04);
+  }
+  .badge-glow-neutral {
+    background: rgba(161, 161, 170, 0.06) !important;
+    color: rgb(161, 161, 170) !important;
+    border: 1px solid rgba(161, 161, 170, 0.2) !important;
   }
   .glow-button {
     box-shadow: 0 0 16px var(--accent-glow);

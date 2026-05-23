@@ -38,6 +38,18 @@ export function StatusBadge({
         ? 'neutral'
         : normalizedVariant;
 
+  const glowClasses: Record<BadgeVariant, string> = {
+    success: 'badge-glow-success',
+    warning: 'badge-glow-warning',
+    destructive: 'badge-glow-danger',
+    error: 'badge-glow-danger',
+    info: 'badge-glow-info',
+    neutral: 'badge-glow-neutral',
+    default: '',
+    secondary: '',
+    outline: '',
+  };
+
   const dotColor = {
     success: 'bg-status-success',
     warning: 'bg-status-warning',
@@ -65,7 +77,7 @@ export function StatusBadge({
   return (
     <Badge
       variant={badgeVariant}
-      className={cn('font-semibold uppercase tracking-wider', sizes[size], className)}
+      className={cn('font-semibold uppercase tracking-wider', glowClasses[variant], sizes[size], className)}
     >
       {dot && (
         <span
