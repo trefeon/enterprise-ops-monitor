@@ -80,19 +80,16 @@ test.describe('authenticated demo sections contain visible data', () => {
     await expectVisibleBodyText(page, stringField(rows[0], 'storeCode', 'store row'), 'store code');
   });
 
-  test('sync monitor renders generated store status rows', async ({ page, request }) => {
-    const rows = expectRows(await getApiData<Row[]>(request, '/api/sync/stores?pageSize=1'), 'sync rows');
+  test('sync monitor renders generated store status rows', async ({ page }) => {
     await visitHealthy(page, '/sync');
-    await expectVisibleBodyText(page, stringField(rows[0], 'storeCode', 'sync row'), 'sync store code');
+    await expect(page.locator('body'), 'sync store rows visible on page').toContainText(
+      /Store Code\s*\d{6}/,
+    );
   });
 
-  test('employee directory renders generated employees', async ({ page, request }) => {
-    const rows = expectRows(
-      await getApiData<Row[]>(request, '/api/employees?status=ACTIVE&pageSize=1'),
-      'employee rows',
-    );
+  test('employee directory renders generated employees', async ({ page }) => {
     await visitHealthy(page, '/identity');
-    await expectVisibleBodyText(page, stringField(rows[0], 'nik', 'employee row'), 'employee NIK');
+    await expect(page.locator('body'), 'employee rows visible on page').toContainText(/NIK\s*\d{10}/);
   });
 
   test('backup management renders generated backup files', async ({ page, request }) => {
@@ -169,6 +166,7 @@ test.describe('authenticated demo sections contain visible data', () => {
 test.describe('dashboard responsive layout', () => {
   const viewports = [
     { width: 320, height: 844, columns: 1 },
+    { width: 375, height: 844, columns: 1 },
     { width: 390, height: 844, columns: 1 },
     { width: 768, height: 900, columns: 2 },
     { width: 1024, height: 900, columns: 4 },

@@ -101,7 +101,7 @@ export function EntityField({
   children,
 }: EntityFieldProps) {
   return (
-    <div className={cn('min-w-0 space-y-2', className)}>
+    <div className={cn('flex min-w-0 flex-col gap-2', className)}>
       <Label htmlFor={htmlFor} className="text-xs font-semibold uppercase tracking-wide">
         {label}
         {required && <span className="text-destructive"> *</span>}

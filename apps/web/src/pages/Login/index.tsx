@@ -20,6 +20,8 @@ import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 
 interface DemoAccount {
   username: string;
@@ -249,8 +251,8 @@ const Login: React.FC = () => {
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground transition-colors group-focus-within:text-primary">
                     <User className="size-3.5" />
                   </div>
-                  <input
-                    className="login-input pl-10 pr-3"
+                  <Input
+                    className="h-11 pl-10 pr-3"
                     id="username"
                     name="username"
                     placeholder="Username"
@@ -270,8 +272,8 @@ const Login: React.FC = () => {
                   <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-muted-foreground transition-colors group-focus-within:text-primary">
                     <Lock className="size-3.5" />
                   </div>
-                  <input
-                    className="login-input pl-10 pr-11"
+                  <Input
+                    className="h-11 pl-10 pr-11"
                     id="password"
                     name="password"
                     placeholder="Password"
@@ -291,12 +293,10 @@ const Login: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-3">
-                <input
-                  className="size-4 rounded-sm border-border bg-input text-primary focus:ring-primary/20"
+                <Checkbox
                   id="remember"
-                  type="checkbox"
                   checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
+                  onCheckedChange={(checked) => setRememberMe(checked === true)}
                 />
                 <label
                   className="cursor-pointer text-xs font-medium text-muted-foreground"

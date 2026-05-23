@@ -82,7 +82,7 @@ export default function FeatureStoryBanner({ story }: FeatureStoryBannerProps) {
 
   return (
     <motion.section
-      className="group rounded-lg border border-primary/20 bg-primary/[0.03] transition-colors hover:border-primary/30"
+      className="group rounded-lg border border-border bg-card transition-colors hover:border-border-accent/60"
       initial={{ opacity: 0, y: -10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
@@ -94,25 +94,25 @@ export default function FeatureStoryBanner({ story }: FeatureStoryBannerProps) {
         aria-expanded={open}
       >
         <span className="flex min-w-0 items-center gap-4">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-105">
-            <Icon className="size-5" />
+          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg border border-border bg-muted text-foreground transition-colors group-hover:bg-accent">
+            <Icon />
           </span>
           <span className="min-w-0">
-            <span className="block text-[10px] font-black uppercase tracking-[0.2em] text-primary/70">
-              Feature Narrative
+            <span className="block text-[10px] font-black uppercase tracking-[0.16em] text-muted-foreground">
+              Workflow context
             </span>
             <span className="line-clamp-2 block text-base font-bold leading-snug text-foreground">
               {story.tagline}
             </span>
           </span>
         </span>
-        <div className="flex size-8 items-center justify-center rounded-md border bg-secondary text-muted-foreground transition-colors group-hover:text-primary">
-          {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+        <div className="flex size-8 items-center justify-center rounded-md border border-border bg-secondary text-muted-foreground transition-colors group-hover:text-foreground">
+          {open ? <ChevronUp /> : <ChevronDown />}
         </div>
       </button>
 
       {open && (
-        <div className="animate-in slide-in-from-top-2 fade-in border-t border-primary/10 px-5 pb-5 pt-5 duration-200">
+        <div className="animate-in slide-in-from-top-2 fade-in border-t border-border px-5 pb-5 pt-5 duration-200">
           <p className="mb-5 text-sm font-medium leading-relaxed text-foreground">
             {story.tagline}
           </p>
@@ -138,7 +138,7 @@ export default function FeatureStoryBanner({ story }: FeatureStoryBannerProps) {
           </div>
 
           {(story.metrics?.length || story.techHighlight) && (
-            <div className="mt-6 flex flex-col gap-4 border-t border-primary/10 pt-5">
+            <div className="mt-6 flex flex-col gap-4 border-t border-border pt-5">
               {story.metrics?.length ? (
                 <div className="flex flex-wrap gap-2">
                   {story.metrics.map((metric) => (
@@ -158,12 +158,12 @@ export default function FeatureStoryBanner({ story }: FeatureStoryBannerProps) {
               ) : null}
 
               {story.techHighlight && (
-                <div className="flex items-start gap-3 rounded-lg border border-primary/10 bg-primary/[0.02] px-4 py-3">
-                  <div className="mt-0.5 shrink-0 text-primary">
-                    <Zap className="size-4" />
+                <div className="flex items-start gap-3 rounded-lg border border-border bg-background/50 px-4 py-3">
+                  <div className="mt-0.5 shrink-0 text-foreground">
+                    <Zap />
                   </div>
                   <p className="text-xs leading-relaxed text-muted-foreground">
-                    <span className="mr-1.5 font-black uppercase tracking-wider text-primary">
+                    <span className="mr-1.5 font-black uppercase tracking-wider text-foreground">
                       Engineering Note:
                     </span>
                     {story.techHighlight}

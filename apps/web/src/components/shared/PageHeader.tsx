@@ -32,13 +32,16 @@ export function PageHeader({
 
   return (
     <motion.div
-      className={cn('page-header flex flex-col gap-3 pb-6 border-b border-border/10', className)}
+      className={cn('page-header flex flex-col gap-3 border-b border-border/60 pb-5', className)}
       initial={{ opacity: 0, y: -6 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, ease: 'easeOut' }}
     >
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+        <nav
+          aria-label="Breadcrumb"
+          className="flex flex-wrap items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground"
+        >
           {breadcrumbs.map((crumb, idx) => {
             const isLast = idx === breadcrumbs.length - 1;
             return (
@@ -46,7 +49,7 @@ export function PageHeader({
                 {crumb.href && !isLast ? (
                   <a
                     href={crumb.href}
-                    className="hover:text-foreground transition-colors"
+                    className="transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40"
                   >
                     {crumb.label}
                   </a>
@@ -64,7 +67,7 @@ export function PageHeader({
 
       <div className="grid w-full min-w-0 gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
         <div className="flex flex-col gap-1 min-w-0 flex-1">
-          <h1 className="page-title text-2xl font-bold tracking-tight text-foreground break-words">{title}</h1>
+          <h1 className="page-title break-words">{title}</h1>
           {displayDescription && (
             <p className="page-subtitle text-sm text-muted-foreground leading-relaxed break-words">
               {displayDescription}

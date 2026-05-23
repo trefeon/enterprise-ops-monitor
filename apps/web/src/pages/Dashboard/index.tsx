@@ -1,22 +1,16 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   RefreshCw,
-  AlertTriangle,
   CheckCircle2,
-  XCircle,
-  Store,
   BadgeCheck,
   Cloud,
   HeartPulse,
   Monitor,
   Clock,
   ArrowRight,
-  Cpu,
   ShieldAlert,
   Wifi,
-  History,
-  FileSpreadsheet,
   Activity,
   Zap,
 } from 'lucide-react';
@@ -27,28 +21,19 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { StatCard } from '@/components/shared/StatCard';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { DataTable } from '@/components/shared/DataTable';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/EmptyState';
+import { ErrorState } from '@/components/shared/ErrorState';
+import { LoadingState } from '@/components/shared/LoadingState';
 import PageShell from '@/components/shared/PageShell';
 import { Guard } from '@/components/auth/Guard';
 import FeatureStoryBanner from '@/components/FeatureStoryBanner';
-import { hasPermission, Permissions } from '@/lib/auth/permissions';
+import { Permissions } from '@/lib/auth/permissions';
 import { formatDate, formatDateTime, formatTime } from '@/lib/date';
 import { getWibToday, isWithinEodWindowNow } from '@/lib/date';
 import { getFeatureStory } from '@/data/stories';
 import { cn } from '@/lib/utils';
-import type { DashboardSummary, Alert } from './types';
 import { useDashboard } from './hooks/useDashboard';
-
-const SEVERITY_STYLES: Record<
-  string,
-  { label: string; variant: 'destructive' | 'warning' | 'success' | 'default' }
-> = {
-  HIGH: { label: 'High', variant: 'destructive' },
-  MEDIUM: { label: 'Medium', variant: 'warning' },
-  LOW: { label: 'Info', variant: 'default' },
-};
 
 function formatAlertType(value: string) {
   if (!value) return '-';
@@ -181,11 +166,7 @@ export default function DashboardPage() {
       <PageShell>
         <FeatureStoryBanner story={getFeatureStory('dashboard')} />
         <Skeleton className="h-8 w-64" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-28" />
-          ))}
-        </div>
+        <LoadingState title="Loading dashboard" rows={4} />
       </PageShell>
     );
   }
@@ -194,15 +175,10 @@ export default function DashboardPage() {
     return (
       <PageShell>
         <FeatureStoryBanner story={getFeatureStory('dashboard')} />
-        <EmptyState
+        <ErrorState
           title="Failed to load dashboard"
           description={error}
-          icon={<AlertTriangle className="size-8" />}
-          action={
-            <Button onClick={() => fetchData()}>
-              <RefreshCw /> Retry
-            </Button>
-          }
+          onRetry={() => fetchData()}
         />
       </PageShell>
     );
@@ -551,7 +527,7 @@ function ActionButton({
   onClick,
   disabled,
 }: {
-  icon: React.ReactNode;
+  icon: ReactNode;
   label: string;
   onClick: () => void;
   disabled?: boolean;

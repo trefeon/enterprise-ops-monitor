@@ -76,7 +76,7 @@ function TableCell({ className, ...props }: React.ComponentProps<'td'>) {
     <td
       data-slot="table-cell"
       className={cn(
-        'px-cell-x py-cell-y text-left align-middle text-[13.5px] leading-5 whitespace-nowrap text-foreground [&:has([role=checkbox])]:pr-0',
+        'min-w-0 px-cell-x py-cell-y text-left align-middle text-[13.5px] leading-5 text-foreground break-words [&:has([role=checkbox])]:pr-0',
         className
       )}
       {...props}

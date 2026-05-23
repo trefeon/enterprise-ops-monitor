@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useId, useState, type ReactNode } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -7,17 +7,12 @@ import { SlidersHorizontal, ChevronDown, ChevronUp } from 'lucide-react';
 export interface ToolbarProps {
   title?: ReactNode;
   subtitle?: ReactNode;
-  
-  // New props for structured layout
-  search?: ReactNode;       // Main search bar component (always visible)
-  filters?: ReactNode;      // Advanced filters (dropdowns/dates/checkboxes)
-  actions?: ReactNode;      // Action buttons (Reset, Export, Apply, etc.)
-  
-  // Backward compatibility props
+  search?: ReactNode;
+  filters?: ReactNode;
+  actions?: ReactNode;
   left?: ReactNode;
   right?: ReactNode;
   children?: ReactNode;
-  
   className?: string;
   contentClassName?: string;
   leftClassName?: string;
@@ -41,24 +36,21 @@ export function Toolbar({
   variant = 'card',
 }: ToolbarProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+  const filtersId = useId();
 
-  // Determine if we have advanced filters to collapse
-  const hasFilters = Boolean(filters || left);
-  const activeFilters = filters || left;
+  const hasAdvancedFilters = Boolean(filters);
   const activeActions = actions || right;
 
   const content = children ? (
     <div className="flex w-full min-w-0 flex-col gap-3">{children}</div>
   ) : (
-    <div className="flex w-full flex-col gap-3.5">
-      {/* Top Row: Title, Search, Primary Actions, and Filter Toggle */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between w-full min-w-0">
-        
-        {/* Title / Heading Section */}
+    <div className="grid w-full min-w-0 gap-3">
+      <div className="grid w-full min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+        <div className="grid min-w-0 gap-3 md:grid-cols-[auto_minmax(0,1fr)] md:items-center lg:flex lg:flex-wrap">
         {(title || subtitle) && (
-          <div className="min-w-0 shrink-0">
+            <div className="min-w-0 lg:mr-1">
             {title && (
-              <div className="text-lg font-bold leading-tight tracking-normal text-foreground break-words">
+                <div className="text-lg font-bold leading-tight tracking-normal text-foreground break-words">
                 {title}
               </div>
             )}
@@ -70,50 +62,61 @@ export function Toolbar({
           </div>
         )}
 
-        {/* Search Bar Section (flex-1 so it takes available space) */}
         {search && (
-          <div className="flex-1 min-w-0 md:max-w-md lg:max-w-xl">
+            <div className="min-w-0 md:max-w-md lg:max-w-xl lg:flex-1">
             {search}
           </div>
         )}
 
-        {/* Actions & Filters Toggle Button Group */}
-        <div className="flex items-center gap-2 shrink-0 justify-end w-full md:w-auto">
-          {/* Action buttons (Reset, Export, Add, etc.) shown on the main row if not collapsed */}
+          {left && (
+            <div
+              className={cn(
+                'grid w-full min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 lg:flex lg:w-auto lg:flex-wrap lg:items-center [&>*]:min-w-0',
+                leftClassName
+              )}
+            >
+              {left}
+            </div>
+          )}
+        </div>
+
+        <div className="flex w-full min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end lg:ml-auto lg:w-auto [&>*]:w-full sm:[&>*]:w-auto">
           {activeActions && (
-            <div className={cn("flex flex-wrap items-center gap-2", rightClassName)}>
+            <div className={cn('flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end', rightClassName)}>
               {activeActions}
             </div>
           )}
 
-          {/* Filters Toggle Button (only rendered if there are advanced filters) */}
-          {hasFilters && (
+          {hasAdvancedFilters && (
             <Button
+              type="button"
               variant="outline"
               size="sm"
               onClick={() => setIsExpanded(!isExpanded)}
+              aria-expanded={isExpanded}
+              aria-controls={filtersId}
               className={cn(
-                "h-10 px-3 flex items-center gap-1.5 border-border transition-all hover:bg-muted/30",
-                isExpanded && "border-primary/40 bg-primary/10 text-primary"
+                'h-10 min-w-24 border-border transition-all hover:bg-muted/30',
+                isExpanded && 'border-primary/40 bg-primary/10 text-primary'
               )}
             >
-              <SlidersHorizontal className="size-4" />
+              <SlidersHorizontal />
               <span className="text-xs font-semibold">Filters</span>
-              {isExpanded ? <ChevronUp className="size-3.5" /> : <ChevronDown className="size-3.5" />}
+              {isExpanded ? <ChevronUp /> : <ChevronDown />}
             </Button>
           )}
         </div>
       </div>
 
-      {/* Bottom Collapsible Row: Advanced Filters */}
-      {hasFilters && isExpanded && (
+      {hasAdvancedFilters && isExpanded && (
         <div 
+          id={filtersId}
           className={cn(
-            "grid grid-cols-1 gap-3 border-t border-border/40 pt-3.5 sm:grid-cols-2 md:grid-cols-3 lg:flex lg:flex-wrap lg:items-center [&>*]:min-w-0 animate-in fade-in slide-in-from-top-1 duration-200",
+            'animate-in fade-in slide-in-from-top-1 grid grid-cols-1 gap-3 border-t border-border/60 pt-3.5 duration-200 sm:grid-cols-2 md:grid-cols-3 lg:flex lg:flex-wrap lg:items-center [&>*]:min-w-0',
             leftClassName
           )}
         >
-          {activeFilters}
+          {filters}
         </div>
       )}
     </div>

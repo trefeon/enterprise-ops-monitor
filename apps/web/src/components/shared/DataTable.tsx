@@ -201,11 +201,11 @@ export function DataTable<T>({
   );
 
   const cardContent = (
-    <div className="block sm:hidden space-y-4 p-4">
+    <div className="block p-4 sm:hidden">
       {loading ? (
         Array.from({ length: 3 }).map((_, rIdx) => (
-          <Card key={rIdx} className="bg-card">
-            <CardContent className="p-4 space-y-3">
+          <div key={rIdx} className="mb-3 rounded-lg border border-border bg-background/40 p-4 last:mb-0">
+            <div className="grid gap-3">
               {columns.map((col, cIdx) => {
                 if (col.hiddenBelow) return null;
                 return (
@@ -218,8 +218,8 @@ export function DataTable<T>({
                   </div>
                 );
               })}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))
       ) : data.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border bg-card p-8 text-center text-sm text-muted-foreground">
@@ -227,16 +227,28 @@ export function DataTable<T>({
         </div>
       ) : (
         data.map((row) => (
-          <Card
+          <article
             key={keyExtractor(row)}
             onClick={onRowClick ? () => onRowClick(row) : undefined}
             className={cn(
-              'bg-card',
-              onRowClick && 'cursor-pointer active:scale-[0.98] transition-transform',
+              'mb-3 rounded-lg border border-border bg-background/40 p-4 last:mb-0',
+              onRowClick && 'cursor-pointer transition-colors hover:bg-muted/30 active:bg-muted/40',
               rowClassName?.(row)
             )}
+            tabIndex={onRowClick ? 0 : undefined}
+            role={onRowClick ? 'button' : undefined}
+            onKeyDown={
+              onRowClick
+                ? (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      onRowClick(row);
+                    }
+                  }
+                : undefined
+            }
           >
-            <CardContent className="p-4 space-y-3">
+            <div className="grid gap-3">
               {columns.map((col, cIdx) => {
                 if (col.hiddenBelow) return null;
                 return (
@@ -257,8 +269,8 @@ export function DataTable<T>({
                   </div>
                 );
               })}
-            </CardContent>
-          </Card>
+            </div>
+          </article>
         ))
       )}
     </div>

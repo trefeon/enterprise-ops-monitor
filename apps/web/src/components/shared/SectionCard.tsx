@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { sectionActionGroupClass } from './actionLayout';
 
@@ -22,26 +22,16 @@ export function SectionCard({
 }: SectionCardProps) {
   return (
     <Card className={cn('border-border bg-card', className)}>
-      <CardContent className={cn(noPadding ? 'p-0' : 'p-5')}>
-        {(title || right) && (
-          <div className="mb-4 grid min-w-0 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
-            <div className="min-w-0 flex-1">
-              {title && (
-                <div className="text-sm font-semibold text-foreground leading-none">
-                  {title}
-                </div>
-              )}
-              {subtitle && (
-                <div className="text-xs text-muted-foreground mt-1 leading-relaxed break-words">
-                  {subtitle}
-                </div>
-              )}
-            </div>
-            {right && (
-              <div className={sectionActionGroupClass}>{right}</div>
-            )}
+      {(title || right) && (
+        <CardHeader className={cn(!subtitle && 'items-center')}>
+          <div className="min-w-0">
+            {title && <CardTitle>{title}</CardTitle>}
+            {subtitle && <CardDescription className="mt-1 break-words">{subtitle}</CardDescription>}
           </div>
-        )}
+          {right && <CardAction className={sectionActionGroupClass}>{right}</CardAction>}
+        </CardHeader>
+      )}
+      <CardContent className={cn(noPadding ? 'p-0' : 'p-5')}>
         {children}
       </CardContent>
     </Card>

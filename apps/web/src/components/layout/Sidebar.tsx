@@ -3,6 +3,7 @@ import { NavLink, useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { hasPermission, Permissions } from "../../lib/auth/permissions";
 import { Button } from "../ui/button";
+import { Avatar, AvatarFallback } from "../ui/avatar";
 import {
   LayoutDashboard,
   RefreshCw,
@@ -91,26 +92,25 @@ export default function Sidebar({ setMobileOpen, inSheet = false }: SidebarProps
   return (
     <aside
       className={cn(
-        "relative z-50 flex h-full flex-col border-r border-border bg-card/60 backdrop-blur-md transition-all duration-300 ease-in-out",
+        "relative z-50 flex h-full flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-all duration-300 ease-in-out",
         collapsed ? "md:w-20" : "md:w-60",
         inSheet ? "w-full" : "w-60"
       )}
     >
-      {/* Logo Area */}
       <div
         className={cn(
-          "flex h-14 items-center border-b border-border",
+          "flex h-14 items-center border-b border-sidebar-border",
           collapsed ? "md:justify-center md:px-2" : "justify-between px-5"
         )}
       >
         <div
           className={cn(
-            "flex items-center gap-3 font-display font-bold tracking-normal text-foreground whitespace-nowrap",
+            "flex items-center gap-3 font-display font-bold tracking-normal text-sidebar-foreground whitespace-nowrap",
             collapsed ? "md:hidden" : "overflow-hidden"
           )}
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <LineChart className="size-4" />
+          <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
+            <LineChart />
           </div>
           <span className="text-[13px] uppercase tracking-[0.12em]">Ops Hub</span>
         </div>
@@ -120,8 +120,8 @@ export default function Sidebar({ setMobileOpen, inSheet = false }: SidebarProps
             variant="ghost"
             size="icon"
             onClick={toggleCollapsed}
-            className="hidden text-muted-foreground transition-colors hover:text-primary md:flex"
-            aria-label={collapsed ? "Expand" : "Collapse"}
+            className="hidden text-muted-foreground transition-colors hover:text-sidebar-foreground md:flex"
+            aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
           >
             {collapsed ? <ChevronRight className="size-5" /> : <ChevronLeft className="size-5" />}
           </Button>
@@ -129,15 +129,16 @@ export default function Sidebar({ setMobileOpen, inSheet = false }: SidebarProps
             variant="ghost"
             size="icon"
             onClick={() => setMobileOpen(false)}
-            className="md:hidden focus-visible:ring-0 focus-visible:border-transparent focus-visible:ring-offset-0 focus:outline-none focus:ring-0 focus:border-transparent"
+            className="md:hidden"
+            aria-label="Close navigation"
           >
-            <X className="size-5" />
+            <X />
           </Button>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 space-y-0.5 overflow-y-auto px-2 py-4 scrollbar-none">
+      <nav className="flex-1 overflow-y-auto px-2 py-4 scrollbar-none" aria-label="Primary navigation">
+        <div className="grid gap-1">
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -149,8 +150,8 @@ export default function Sidebar({ setMobileOpen, inSheet = false }: SidebarProps
                 cn(
                   "group relative flex min-h-9 items-center gap-2.5 rounded-md px-3 py-2 text-[13.5px] font-medium transition-all duration-150",
                   isActive
-                    ? "bg-primary/10 text-primary font-semibold"
-                    : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                    ? "active bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                    : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                   collapsed ? "md:justify-center" : ""
                 )
               }
@@ -162,12 +163,13 @@ export default function Sidebar({ setMobileOpen, inSheet = false }: SidebarProps
               >
                 {item.label}
               </span>
-              <div className="absolute left-0 h-5 w-0.5 scale-y-0 rounded-r-full bg-primary opacity-0 transition-all duration-150 group-[.active]:scale-y-100 group-[.active]:opacity-100" />
+              <div className="absolute left-0 h-5 w-0.5 scale-y-0 rounded-r-full bg-sidebar-primary opacity-0 transition-all duration-150 group-[.active]:scale-y-100 group-[.active]:opacity-100" />
             </NavLink>
           );
         })}
+        </div>
 
-        <div className="mt-6 border-t border-border/50 pt-4">
+        <div className="mt-6 border-t border-sidebar-border pt-4">
           <p
             className={cn(
               "mb-2 px-3 text-[10px] font-bold uppercase tracking-[0.1em] text-muted-foreground/60",
@@ -187,8 +189,8 @@ export default function Sidebar({ setMobileOpen, inSheet = false }: SidebarProps
                   cn(
                     "group relative flex min-h-9 items-center gap-2.5 rounded-md px-3 py-2 text-[13.5px] font-medium transition-all duration-150",
                     isActive
-                      ? "bg-status-info/10 text-status-info font-semibold"
-                      : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                      ? "active bg-sidebar-accent text-sidebar-accent-foreground font-semibold"
+                      : "text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
                     collapsed ? "md:justify-center" : ""
                   )
                 }
@@ -209,20 +211,19 @@ export default function Sidebar({ setMobileOpen, inSheet = false }: SidebarProps
         </div>
       </nav>
 
-      {/* User Profile Summary (Bottom) */}
-      <div className="mt-auto border-t border-border/50 p-3">
+      <div className="mt-auto border-t border-sidebar-border p-3">
         <Button
           variant="ghost"
           onClick={handleProfile}
           className={cn(
-            "h-auto w-full justify-start rounded-lg border border-transparent p-2 transition-all hover:border-border hover:bg-secondary",
+            "h-auto w-full justify-start rounded-lg border border-transparent p-2 transition-all hover:border-sidebar-border hover:bg-sidebar-accent",
             collapsed ? "md:justify-center" : ""
           )}
           title={collapsed ? "Profile" : ""}
         >
-          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
-            {initials}
-          </div>
+          <Avatar>
+            <AvatarFallback>{initials}</AvatarFallback>
+          </Avatar>
           <div
             className={cn(
               "ml-3 min-w-0 text-left transition-opacity duration-300",
