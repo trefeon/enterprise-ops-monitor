@@ -62,7 +62,7 @@ export function PageHeader({
         </nav>
       )}
 
-      <div className="grid min-w-0 gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
+      <div className="grid w-full min-w-0 gap-4 md:grid-cols-[minmax(0,1fr)_auto] md:items-start">
         <div className="flex flex-col gap-1 min-w-0 flex-1">
           <h1 className="page-title text-2xl font-bold tracking-tight text-foreground break-words">{title}</h1>
           {displayDescription && (

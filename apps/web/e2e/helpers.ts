@@ -184,6 +184,7 @@ export async function assertDashboardResponsive(page: Page, expectedColumns: num
   await assertNoFrameworkOverlay(page);
   await assertNoHorizontalOverflow(page);
   await assertNoOverlappingElements(page, '[data-e2e="dashboard-kpi-grid"] > [data-slot="card"]');
+  await assertDashboardHeaderActionsAligned(page);
 
   const columns = await page.locator('[data-e2e="dashboard-kpi-grid"]').evaluate((element) => {
     return getComputedStyle(element)
@@ -192,6 +193,27 @@ export async function assertDashboardResponsive(page: Page, expectedColumns: num
   });
 
   expect(columns, 'dashboard KPI grid column count').toBe(expectedColumns);
+}
+
+export async function assertDashboardHeaderActionsAligned(page: Page) {
+  const viewport = page.viewportSize();
+  if (!viewport || viewport.width < 768) return;
+
+  const header = page
+    .locator('.page-header')
+    .filter({ has: page.getByRole('heading', { name: 'Operations Hub' }) })
+    .first();
+  const headerBox = await header.boundingBox();
+  const actionBox = await header.locator('button').last().boundingBox();
+
+  if (!headerBox || !actionBox) {
+    throw new Error('Dashboard page header action bounds unavailable');
+  }
+
+  expect(
+    actionBox.x + actionBox.width,
+    'dashboard page header actions should align to the right edge',
+  ).toBeGreaterThanOrEqual(headerBox.x + headerBox.width - 24);
 }
 
 export async function getApiData<T>(request: APIRequestContext, path: string): Promise<T> {
