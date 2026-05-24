@@ -35,6 +35,7 @@ import {
 import { Card, CardContent } from '@/components/ui/card';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { SearchBar } from '@/components/shared/SearchBar';
+import { BaseSection } from '@/components/base';
 
 const AUTO_REFRESH_INTERVAL = 10000; // stores table refresh: 10 seconds
 const STATUS_REFRESH_INTERVAL = 10000; // KPI/status refresh: 10 seconds
@@ -714,10 +715,9 @@ const StoreSync = () => {
       )}
 
       {/* Store Table */}
-      <div ref={storeTableRef} className="space-y-4">
-        <PageHeader
+      <div ref={storeTableRef}>
+        <BaseSection
           title="Store Sync Status"
-          className="mb-0"
           actions={
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <div className="flex h-11 w-full cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/30 sm:w-auto">
@@ -792,39 +792,41 @@ const StoreSync = () => {
               </div>
             </div>
           }
-        />
-
-        <DataTable
-          columns={storeColumns}
-          data={stores}
-          loading={loadingStores && stores.length === 0}
-          pagination={{
-            page: pagination.page,
-            pageSize: pagination.pageSize,
-            total: pagination.total || stores.length || 0,
-          }}
-          onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
-          onPageSizeChange={(pageSize) => setPagination((prev) => ({ ...prev, pageSize, page: 1 }))}
-          onRowClick={(store) => openHistory(store.storeCode, store.storeName)}
-          rowClassName={getRowClassName}
-          keyExtractor={(row) => row.storeCode}
-          tableFixed
-          emptyState={
-            storesError ? (
-              <div className="flex flex-col items-center justify-center gap-2 py-4">
-                <span className="text-sm text-muted-foreground">
-                  Failed to load stores: {storesError}
-                </span>
-                <Button variant="secondary" onClick={fetchStores} size="sm">
-                  <RefreshCw className="mr-2 size-4" />
-                  Retry
-                </Button>
-              </div>
-            ) : (
-              'No stores match the current filters.'
-            )
-          }
-        />
+        >
+          <DataTable
+            columns={storeColumns}
+            data={stores}
+            loading={loadingStores && stores.length === 0}
+            pagination={{
+              page: pagination.page,
+              pageSize: pagination.pageSize,
+              total: pagination.total || stores.length || 0,
+            }}
+            onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
+            onPageSizeChange={(pageSize) =>
+              setPagination((prev) => ({ ...prev, pageSize, page: 1 }))
+            }
+            onRowClick={(store) => openHistory(store.storeCode, store.storeName)}
+            rowClassName={getRowClassName}
+            keyExtractor={(row) => row.storeCode}
+            tableFixed
+            emptyState={
+              storesError ? (
+                <div className="flex flex-col items-center justify-center gap-2 py-4">
+                  <span className="text-sm text-muted-foreground">
+                    Failed to load stores: {storesError}
+                  </span>
+                  <Button variant="secondary" onClick={fetchStores} size="sm">
+                    <RefreshCw className="mr-2 size-4" />
+                    Retry
+                  </Button>
+                </div>
+              ) : (
+                'No stores match the current filters.'
+              )
+            }
+          />
+        </BaseSection>
       </div>
 
       <Modal

@@ -1,5 +1,7 @@
 export * from "./base-action-menu";
 export * from "./base-animation";
+export * from "./base-app-frame";
+export * from "./base-app-header";
 export * from "./base-breadcrumbs";
 export * from "./base-card";
 export * from "./base-data-table";
