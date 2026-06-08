@@ -52,6 +52,7 @@ test-results/
 **/.opencode/**/*.local.*
 .lean-ctx/
 .serena/
+.superpowers/
 
 # npm lockfiles (pnpm workspace uses pnpm-lock.yaml only)
 **/package-lock.json
