@@ -79,6 +79,7 @@ export function BaseLoginForm({
               id="username"
               name="username"
               type="text"
+              autoComplete="username"
               value={username}
               onChange={(event) => onUsernameChange(event.target.value)}
               placeholder="Username"
@@ -94,6 +95,7 @@ export function BaseLoginForm({
               id="password"
               name="password"
               type={showPassword ? "text" : "password"}
+              autoComplete="current-password"
               value={password}
               onChange={(event) => onPasswordChange(event.target.value)}
               placeholder="Password"
