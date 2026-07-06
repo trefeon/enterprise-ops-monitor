@@ -107,7 +107,7 @@ export default {
       },
       backgroundImage: {
         'radial-login':
-          'radial-gradient(ellipse 60% 60% at 30% 50%, hsl(var(--primary) / 0.06) 0%, transparent 70%)',
+          'linear-gradient(135deg, hsl(var(--primary) / 0.08) 0%, transparent 46%), linear-gradient(90deg, rgb(255 255 255 / 0.03) 1px, transparent 1px)',
       },
       spacing: {
         'page-x': 'var(--page-px)',

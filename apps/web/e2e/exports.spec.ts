@@ -24,7 +24,7 @@ test('store export downloads an XLSX workbook', async ({ page, request }, testIn
   const { token } = await loginViaApi(request);
   await expectWorkbookPayload(request, token, '/api/stores/export');
 
-  await page.goto('/stores');
+  await page.goto('/app/stores');
   await expect(page.getByRole('heading', { name: /Store Directory/i })).toBeVisible();
 
   const [download] = await Promise.all([
@@ -42,7 +42,7 @@ test('employee export downloads an XLSX workbook', async ({ page, request }, tes
   const { token } = await loginViaApi(request);
   await expectWorkbookPayload(request, token, '/api/employees/export');
 
-  await page.goto('/identity');
+  await page.goto('/app/identity');
   await expect(page.getByRole('heading', { name: /Employee Directory/i })).toBeVisible();
 
   const [download] = await Promise.all([

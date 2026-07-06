@@ -31,7 +31,7 @@ test.describe('authenticated routes', () => {
 
   test('Logout route renders confirmation without immediate failure', async ({ page }) => {
     await assertRouteHealthy(page, {
-      path: '/logout',
+      path: '/app/logout',
       name: 'Logout',
       expectedText: /Confirm logout|Logout/i,
     });

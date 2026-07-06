@@ -4,6 +4,17 @@
 .vscode/
 .idea/
 .DS_Store
+*.swp
+*.swo
+
+# Agent / AI tool directories
+.agents/
+.codex-run/
+.gemini/
+.lean-ctx/
+.playwright-mcp/
+.serena/
+.superpowers/
 
 # Dependencies and build output
 node_modules/
@@ -19,6 +30,16 @@ coverage/
 backups/
 agent_updates/
 
+# Test artifacts
+test-results/
+playwright-report/
+playwright/
+
+# Documentation
+docs/
+*.md
+!apps/api/AGENTS.md
+
 # Logs
 *.log
 npm-debug.log*
@@ -31,3 +52,6 @@ pnpm-debug.log*
 !.env.example
 *.pem
 *.key
+
+# Screenshots
+*.png

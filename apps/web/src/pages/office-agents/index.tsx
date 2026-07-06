@@ -3,7 +3,6 @@ import {
   AlertCircle,
   AlertTriangle,
   CheckCircle,
-  Download,
   Monitor,
   RefreshCw,
   XCircle,
@@ -24,7 +23,6 @@ import { PageShell } from '@/components/shared/PageShell';
 import FeatureStoryBanner from '@/components/FeatureStoryBanner';
 import { getFeatureStory } from '@/data/stories';
 import { useOfficeAgents } from './hooks/useOfficeAgents';
-import { DownloadDialog } from './components/DownloadDialog';
 import { LabelEditDialog } from './components/LabelEditDialog';
 import { MachineDetailDrawer } from './components/MachineDetailDrawer';
 import { MachineTable } from './components/MachineTable';
@@ -93,7 +91,6 @@ export default function OfficeAgentsPage() {
     refreshMetrics,
     updateLabel,
   } = useOfficeAgents();
-  const [downloadOpen, setDownloadOpen] = useState(false);
   const [labelTarget, setLabelTarget] = useState<AgentMachine | null>(null);
 
   return (
@@ -107,10 +104,6 @@ export default function OfficeAgentsPage() {
             <Button onClick={refreshMetrics}>
               <RefreshCw className="size-4" />
               Refresh
-            </Button>
-            <Button variant="outline" onClick={() => setDownloadOpen(true)}>
-              <Download className="size-4" />
-              Download Office Agent
             </Button>
           </>
         }
@@ -191,7 +184,6 @@ export default function OfficeAgentsPage() {
       </Card>
       <MachineTable machines={machines} onView={setSelectedMachine} onEditLabel={setLabelTarget} />
       <MachineDetailDrawer machine={selectedMachine} onClose={() => setSelectedMachine(null)} />
-      <DownloadDialog open={downloadOpen} onClose={() => setDownloadOpen(false)} />
       {labelTarget && (
         <LabelEditDialog
           machineId={labelTarget.id}

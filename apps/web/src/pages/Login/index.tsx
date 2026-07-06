@@ -97,7 +97,7 @@ export default function Login() {
     try {
       const result = await login(username, password, { persist: rememberMe });
       if (result.success) {
-        navigate("/");
+        navigate("/app");
       } else {
         setError(normalizeLoginError(result.error));
       }
@@ -143,14 +143,14 @@ export default function Login() {
           <div className="flex size-11 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <LineChart className="size-5" />
           </div>
-          <span className="login-brand-label">Operations Hub</span>
+          <span className="login-brand-label">Ops Starter</span>
         </div>
         <div className="z-10 max-w-lg">
           <h1 className="mb-6 font-display text-5xl font-bold leading-tight tracking-normal text-foreground">
-            Enterprise <br /> Monitor
+            Enterprise Ops <br /> Starter
           </h1>
           <p className="mb-10 max-w-md text-base leading-7 text-muted-foreground">
-            Real-time tracking for Store EOD processes, data integrity, and network-wide system health.
+            Demo access for a sanitized operations dashboard starter with RBAC, exports, and system health.
           </p>
           <div className="flex flex-wrap gap-4">
             <div className="login-chip flex items-center gap-2 rounded-xs bg-status-success/10 px-2 py-1 text-status-success">
@@ -164,7 +164,7 @@ export default function Login() {
           </div>
         </div>
         <div className="z-10 font-mono text-xs text-muted-foreground">
-          &copy; 2026 Enterprise Operations Monitor
+          &copy; 2026 Enterprise Ops Starter
         </div>
       </section>
 
@@ -173,7 +173,7 @@ export default function Login() {
           <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <LineChart className="size-5" />
           </div>
-          <span className="login-brand-label font-display font-bold">Operations Hub</span>
+          <span className="login-brand-label font-display font-bold">Ops Starter</span>
         </div>
         <BaseLoginForm
           username={username}
@@ -221,7 +221,7 @@ export default function Login() {
 
       <div className="border-t border-border bg-card p-6 text-center md:hidden">
         <p className="font-mono text-xs uppercase tracking-wide text-muted-foreground">
-          Enterprise Operations Platform
+          Enterprise Ops Starter
         </p>
       </div>
     </div>

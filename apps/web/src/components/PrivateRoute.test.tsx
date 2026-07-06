@@ -5,13 +5,13 @@ import PrivateRoute from './PrivateRoute';
 import { AuthContext } from '../context/AuthContext';
 
 describe('PrivateRoute', () => {
-  it('redirects to /login when unauthenticated', () => {
+  it('redirects /app to /login when unauthenticated', () => {
     render(
       <AuthContext.Provider value={{ user: null, loading: false } as any}>
-        <MemoryRouter initialEntries={['/']}>
+        <MemoryRouter initialEntries={['/app']}>
           <Routes>
             <Route element={<PrivateRoute />}>
-              <Route path="/" element={<div>Home</div>} />
+              <Route path="/app" element={<div>Dashboard</div>} />
             </Route>
             <Route path="/login" element={<div>Login</div>} />
           </Routes>
@@ -22,13 +22,13 @@ describe('PrivateRoute', () => {
     expect(screen.getByText('Login')).toBeInTheDocument();
   });
 
-  it('renders child route when authenticated', () => {
+  it('renders /app child route when authenticated', () => {
     render(
       <AuthContext.Provider value={{ user: { id: '1' }, loading: false } as any}>
-        <MemoryRouter initialEntries={['/']}>
+        <MemoryRouter initialEntries={['/app']}>
           <Routes>
             <Route element={<PrivateRoute />}>
-              <Route path="/" element={<div>Home</div>} />
+              <Route path="/app" element={<div>Dashboard</div>} />
             </Route>
             <Route path="/login" element={<div>Login</div>} />
           </Routes>
@@ -36,7 +36,7 @@ describe('PrivateRoute', () => {
       </AuthContext.Provider>
     );
 
-    expect(screen.getByText('Home')).toBeInTheDocument();
+    expect(screen.getByText('Dashboard')).toBeInTheDocument();
   });
 
   it('renders children when used as an element wrapper', () => {

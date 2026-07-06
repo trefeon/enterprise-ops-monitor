@@ -63,38 +63,38 @@ test.describe('authenticated demo sections contain visible data', () => {
     const summary = await getApiData<{ storesTotal: number }>(request, '/api/dashboard/summary');
     expect(summary.storesTotal, 'dashboard store total').toBeGreaterThan(0);
 
-    await visitHealthy(page, '/');
+    await visitHealthy(page, '/app');
     await assertDashboardSections(page);
     await expectVisibleBodyText(page, summary.storesTotal, 'dashboard store total');
   });
 
   test('EOD monitor renders generated store rows', async ({ page, request }) => {
     const rows = expectRows(await getApiData<Row[]>(request, '/api/eod/stores?pageSize=1'), 'EOD rows');
-    await visitHealthy(page, '/eod');
+    await visitHealthy(page, '/app/eod');
     await expectVisibleBodyText(page, stringField(rows[0], 'storeCode', 'EOD row'), 'EOD store code');
   });
 
   test('store directory renders generated stores', async ({ page, request }) => {
     const rows = expectRows(await getApiData<Row[]>(request, '/api/stores?pageSize=1'), 'store rows');
-    await visitHealthy(page, '/stores');
+    await visitHealthy(page, '/app/stores');
     await expectVisibleBodyText(page, stringField(rows[0], 'storeCode', 'store row'), 'store code');
   });
 
   test('sync monitor renders generated store status rows', async ({ page, request }) => {
     const rows = expectRows(await getApiData<Row[]>(request, '/api/sync/stores?pageSize=1'), 'sync rows');
-    await visitHealthy(page, '/sync');
+    await visitHealthy(page, '/app/sync');
     await expectVisibleBodyText(page, stringField(rows[0], 'storeCode', 'sync row'), 'sync store code');
   });
 
   test('employee directory renders generated employees', async ({ page, request }) => {
     const rows = expectRows(await getApiData<Row[]>(request, '/api/employees?pageSize=1'), 'employee rows');
-    await visitHealthy(page, '/identity');
+    await visitHealthy(page, '/app/identity');
     await expectVisibleBodyText(page, stringField(rows[0], 'nik', 'employee row'), 'employee NIK');
   });
 
   test('backup management renders generated backup files', async ({ page, request }) => {
     const rows = expectRows(await getApiData<Row[]>(request, '/api/backups/files?pageSize=1'), 'backup rows');
-    await visitHealthy(page, '/backups');
+    await visitHealthy(page, '/app/backups');
     await expectVisibleBodyText(page, stringField(rows[0], 'fileName', 'backup row'), 'backup file');
   });
 
@@ -105,7 +105,7 @@ test.describe('authenticated demo sections contain visible data', () => {
     );
     const logs = expectRows(await getApiData<Row[]>(request, '/api/system/logs?pageSize=1'), 'system logs');
 
-    await visitHealthy(page, '/system');
+    await visitHealthy(page, '/app/system');
     await expectVisibleBodyText(page, stringField(services[0], 'name', 'system service'), 'system service');
     await expectVisibleBodyText(page, stringField(logs[0], 'component', 'system log'), 'system log');
   });
@@ -117,10 +117,10 @@ test.describe('authenticated demo sections contain visible data', () => {
     const roles = expectRows(rolesData.roles, 'role rows');
     const opsUser = users.find((user) => user.username === 'opsmanager') || users[0];
 
-    await visitHealthy(page, '/admin/users');
+    await visitHealthy(page, '/app/admin/users');
     await expectVisibleBodyText(page, stringField(opsUser, 'username', 'user row'), 'user username');
 
-    await visitHealthy(page, '/admin/roles');
+    await visitHealthy(page, '/app/admin/roles');
     await expectVisibleBodyText(page, stringField(roles[0], 'label', 'role row'), 'role label');
   });
 
@@ -132,7 +132,7 @@ test.describe('authenticated demo sections contain visible data', () => {
     expect(summary.totalViolations, 'after-hours total violations').toBeGreaterThan(0);
     expect(summary.byBranch.length, 'after-hours branch rows').toBeGreaterThan(0);
 
-    await visitHealthy(page, '/admin/afterhours');
+    await visitHealthy(page, '/app/admin/afterhours');
     await expectVisibleBodyText(page, summary.byBranch[0].branch_name, 'after-hours branch');
     await expect(page.locator('body')).toContainText(/Violations by Branch/i);
 
@@ -147,18 +147,18 @@ test.describe('authenticated demo sections contain visible data', () => {
     );
     const hostname = stringField(agents[0], 'hostname', 'agent row');
 
-    await visitHealthy(page, '/agent-updater');
+    await visitHealthy(page, '/app/agent-updater');
     await expectVisibleBodyText(page, hostname, 'agent updater hostname');
 
-    await visitHealthy(page, '/office-agents');
+    await visitHealthy(page, '/app/office-agents');
     await expectVisibleBodyText(page, 'OFC-LT-001', 'office agent hostname');
   });
 
   test('about and profile render demo context', async ({ page }) => {
-    await visitHealthy(page, '/about');
-    await expect(page.locator('body')).toContainText(/Operations Hub|Feature Catalog|Portfolio/i);
+    await visitHealthy(page, '/case-study');
+    await expect(page.locator('body')).toContainText(/Portfolio case study|Feature coverage/i);
 
-    await visitHealthy(page, '/profile');
+    await visitHealthy(page, '/app/profile');
     await expect(page.locator('body')).toContainText(/demo|Demo/i);
   });
 });

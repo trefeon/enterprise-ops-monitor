@@ -39,11 +39,11 @@ const Logout: React.FC = () => {
         <SectionCard>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
-              You are about to sign out from Enterprise Operations Monitor. Any unsaved changes will
-              be lost.
+              You are about to sign out from Enterprise Ops Starter. Any unsaved changes will be
+              lost.
             </p>
             <div className="flex gap-2">
-              <Button variant="secondary" onClick={() => navigate('/')}>
+              <Button variant="secondary" onClick={() => navigate('/app')}>
                 Cancel
               </Button>
               <Button variant="destructive" onClick={() => setOpen(true)} disabled={loading}>

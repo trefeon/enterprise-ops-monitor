@@ -1,5 +1,5 @@
 export const projectStory = {
-  name: 'Enterprise Operations Monitor',
+  name: 'Enterprise Ops Starter',
   tagline:
     'Real-time visibility for End-of-Day operations, store sync health, backups, agents, access control, and after-hours activity across a simulated retail branch network.',
   context:
@@ -21,7 +21,7 @@ export const featureStories = [
   {
     id: 'dashboard',
     featureName: 'Dashboard',
-    route: '/',
+    route: '/app',
     materialIcon: 'dashboard',
     tagline: 'The daily control room for store operations.',
     problem:
@@ -41,7 +41,7 @@ export const featureStories = [
   {
     id: 'store-sync',
     featureName: 'Store Sync',
-    route: '/sync',
+    route: '/app/sync',
     materialIcon: 'sync',
     tagline: 'Find stale store uploads before they become reporting failures.',
     problem:
@@ -61,7 +61,7 @@ export const featureStories = [
   {
     id: 'eod-monitor',
     featureName: 'EOD Monitor',
-    route: '/eod',
+    route: '/app/eod',
     materialIcon: 'fact_check',
     tagline: 'Deadline compliance made visible while there is still time to act.',
     problem:
@@ -81,7 +81,7 @@ export const featureStories = [
   {
     id: 'store-directory',
     featureName: 'Store Directory',
-    route: '/stores',
+    route: '/app/stores',
     materialIcon: 'store',
     tagline: 'One searchable source for store and branch metadata.',
     problem:
@@ -99,7 +99,7 @@ export const featureStories = [
   {
     id: 'employee-directory',
     featureName: 'Employee Directory',
-    route: '/identity',
+    route: '/app/identity',
     materialIcon: 'badge',
     tagline: 'Employee-store mapping that can be searched under pressure.',
     problem:
@@ -119,7 +119,7 @@ export const featureStories = [
   {
     id: 'backups',
     featureName: 'Backups',
-    route: '/backups',
+    route: '/app/backups',
     materialIcon: 'backup',
     tagline: 'Backup confidence needs timestamps, files, and restore controls.',
     problem:
@@ -137,7 +137,7 @@ export const featureStories = [
   {
     id: 'system',
     featureName: 'System Health',
-    route: '/system',
+    route: '/app/system',
     materialIcon: 'monitor_heart',
     tagline: 'Service health, logs, and restart actions in one guarded place.',
     problem:
@@ -155,7 +155,7 @@ export const featureStories = [
   {
     id: 'agent-updater',
     featureName: 'Agent Updater',
-    route: '/agent-updater',
+    route: '/app/agent-updater',
     materialIcon: 'browser_updated',
     tagline: 'Version drift is visible before rollout support starts.',
     problem:
@@ -173,7 +173,7 @@ export const featureStories = [
   {
     id: 'office-agents',
     featureName: 'Office Agent Monitor',
-    route: '/office-agents',
+    route: '/app/office-agents',
     materialIcon: 'computer',
     tagline: 'Laptop health signals are visible before support tickets arrive.',
     problem:
@@ -193,7 +193,7 @@ export const featureStories = [
   {
     id: 'accounts',
     featureName: 'Accounts',
-    route: '/admin/users',
+    route: '/app/admin/users',
     materialIcon: 'manage_accounts',
     tagline: 'Accountability starts with named users and scoped access.',
     problem:
@@ -211,7 +211,7 @@ export const featureStories = [
   {
     id: 'roles',
     featureName: 'Roles',
-    route: '/admin/roles',
+    route: '/app/admin/roles',
     materialIcon: 'admin_panel_settings',
     tagline: 'RBAC that is explicit enough for real operations.',
     problem:
@@ -231,7 +231,7 @@ export const featureStories = [
   {
     id: 'after-hours',
     featureName: 'After Hours',
-    route: '/admin/afterhours',
+    route: '/app/admin/afterhours',
     materialIcon: 'nightlight',
     tagline: 'After-hours activity is only useful when it becomes an alert, report, and trend.',
     problem:
@@ -249,7 +249,7 @@ export const featureStories = [
   {
     id: 'after-hours-report',
     featureName: 'After Hours Report',
-    route: '/admin/afterhours',
+    route: '/app/admin/afterhours',
     materialIcon: 'summarize',
     tagline: 'Monthly violation patterns are turned into a reviewable branch report.',
     problem:
@@ -267,7 +267,7 @@ export const featureStories = [
   {
     id: 'logout',
     featureName: 'Logout',
-    route: '/logout',
+    route: '/app/logout',
     materialIcon: 'logout',
     tagline: 'Session exit is explicit instead of hidden behind a sidebar click.',
     problem:
@@ -285,7 +285,7 @@ export const featureStories = [
   {
     id: 'profile',
     featureName: 'Profile',
-    route: '/profile',
+    route: '/app/profile',
     materialIcon: 'account_circle',
     tagline: 'Current-user context and account actions stay close to the operator.',
     problem:
@@ -303,7 +303,7 @@ export const featureStories = [
   {
     id: 'about',
     featureName: 'About This Project',
-    route: '/about',
+    route: '/case-study',
     materialIcon: 'info',
     tagline: 'The portfolio context is documented inside the product, not only in README files.',
     problem:

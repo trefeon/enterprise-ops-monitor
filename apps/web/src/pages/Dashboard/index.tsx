@@ -240,7 +240,7 @@ export default function DashboardPage() {
       <FeatureStoryBanner story={getFeatureStory('dashboard')} />
 
       <PageHeader
-        title="Operations Hub"
+        title="Ops Starter"
         description={`Business date ${formatDate(getWibToday())}`}
         actions={
           <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">
@@ -288,7 +288,7 @@ export default function DashboardPage() {
               icon={<HeartPulse className="size-5" />}
               accent={health.dot.replace('bg-', 'text-')}
               subtext={health.subtext}
-              onClick={() => navigate('/system')}
+              onClick={() => navigate('/app/system')}
             />
             <StatCard
               className="min-h-32"
@@ -301,7 +301,7 @@ export default function DashboardPage() {
                   : 'text-status-success'
               }
               subtext={`${(sync?.staleCount || 0) + (sync?.problemCount || 0)} active alerts`}
-              onClick={() => navigate('/sync')}
+              onClick={() => navigate('/app/sync')}
             />
             <StatCard
               className="min-h-32"
@@ -310,7 +310,7 @@ export default function DashboardPage() {
               icon={<BadgeCheck className="size-5" />}
               accent={completionRate === 100 ? 'text-status-success' : 'text-primary'}
               subtext={`${eod?.done ?? 0} of ${storesTotal ?? 0} stores`}
-              onClick={() => navigate('/eod')}
+              onClick={() => navigate('/app/eod')}
             />
             <StatCard
               className="min-h-32"
@@ -318,7 +318,7 @@ export default function DashboardPage() {
               value={`${agents?.onlineCount ?? 0}/${agents?.activeCount ?? 0}`}
               icon={<Monitor className="size-5" />}
               subtext={`${agents?.updatePending ?? 0} need update`}
-              onClick={() => navigate('/office-agents')}
+              onClick={() => navigate('/app/office-agents')}
             />
           </div>
 
@@ -413,7 +413,7 @@ export default function DashboardPage() {
                     variant="ghost"
                     size="sm"
                     className="h-7 text-[10px] font-bold"
-                    onClick={() => navigate('/sync')}
+                    onClick={() => navigate('/app/sync')}
                   >
                     VIEW ALL <ArrowRight className="ml-1 size-3" />
                   </Button>
@@ -468,7 +468,7 @@ export default function DashboardPage() {
               <ActionButton
                 icon={<Monitor className="size-4" />}
                 label="Monitor EOD"
-                onClick={() => navigate('/eod')}
+                onClick={() => navigate('/app/eod')}
               />
               <ActionButton
                 icon={<Cloud className="size-4" />}
@@ -496,13 +496,13 @@ export default function DashboardPage() {
               <ActionButton
                 icon={<Zap className="size-4" />}
                 label="Deploy Agents"
-                onClick={() => navigate('/office-agents')}
+                onClick={() => navigate('/app/office-agents')}
                 disabled={user?.isDemo}
               />
               <ActionButton
                 icon={<Activity className="size-4" />}
                 label="Check System"
-                onClick={() => navigate('/system')}
+                onClick={() => navigate('/app/system')}
               />
             </CardContent>
           </Card>
@@ -515,10 +515,10 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="space-y-1">
               <Link
-                to="/about"
+                to="/case-study"
                 className="flex min-w-0 items-center justify-between gap-3 rounded p-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-muted"
               >
-                <span className="truncate">Portfolio Story</span>
+                <span className="truncate">Case Study</span>
                 <ArrowRight className="size-3 shrink-0" />
               </Link>
               <a
@@ -531,10 +531,10 @@ export default function DashboardPage() {
                 <ArrowRight className="size-3 shrink-0" />
               </a>
               <Link
-                to="/profile"
+                to="/starter"
                 className="flex min-w-0 items-center justify-between gap-3 rounded p-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-muted"
               >
-                <span className="truncate">System Profile</span>
+                <span className="truncate">Starter Guide</span>
                 <ArrowRight className="size-3 shrink-0" />
               </Link>
             </CardContent>

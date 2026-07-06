@@ -24,14 +24,18 @@ RUN pnpm build
 
 FROM nginx:1.27-alpine
 
-RUN apk add --no-cache wget
+RUN apk add --no-cache wget tini \
+ && rm -rf /usr/share/nginx/html/*
 
 COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=build /app/apps/web/dist /usr/share/nginx/html
 
+# nginx runs as non-root via nginx user (built into image)
+
 EXPOSE 5173
 
-HEALTHCHECK --interval=30s --timeout=5s --retries=3 \
+HEALTHCHECK --interval=15s --timeout=5s --start-period=10s --retries=3 \
   CMD wget -q -O /dev/null http://localhost:5173/ || exit 1
 
+ENTRYPOINT ["tini", "--"]
 CMD ["nginx", "-g", "daemon off;"]
