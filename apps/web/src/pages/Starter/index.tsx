@@ -64,7 +64,7 @@ export default function Starter() {
           const Icon = step.icon;
           return (
             <article key={step.title} className="rounded-lg border border-border bg-card p-5">
-              <Icon className="mb-5 size-5 text-primary" />
+              <Icon aria-hidden="true" className="mb-5 size-5 text-primary" />
               <h2 className="text-base font-semibold text-foreground">{step.title}</h2>
               <p className="mt-3 text-sm leading-6 text-muted-foreground">{step.detail}</p>
             </article>
@@ -76,7 +76,7 @@ export default function Starter() {
         <div className="portfolio-container grid gap-4 py-10 lg:grid-cols-3">
           {['pnpm dev', 'pnpm --filter web test', 'docker compose up -d'].map((command) => (
             <div key={command} className="flex items-center gap-3 rounded-lg border border-border bg-background p-4">
-              <CheckCircle2 className="size-4 text-primary" />
+              <CheckCircle2 aria-hidden="true" className="size-4 text-primary" />
               <code className="text-sm text-muted-foreground">{command}</code>
             </div>
           ))}
@@ -89,7 +89,7 @@ export default function Starter() {
           className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/85"
         >
           Open Demo
-          <ArrowRight className="size-4" />
+          <ArrowRight aria-hidden="true" className="size-4" />
         </Link>
         <a
           href="https://github.com/trefeon/enterprise-ops-monitor"
@@ -98,7 +98,7 @@ export default function Starter() {
           className="inline-flex h-10 items-center justify-center gap-2 rounded-lg border border-border bg-card px-4 text-sm font-semibold text-foreground hover:bg-muted"
         >
           View GitHub
-          <ArrowRight className="size-4" />
+          <ArrowRight aria-hidden="true" className="size-4" />
         </a>
       </section>
     </main>

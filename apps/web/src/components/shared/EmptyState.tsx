@@ -82,7 +82,7 @@ export function EmptyState({
           </p>
         )}
         {action && (
-          <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <div className="motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 duration-500">
             {renderAction()}
           </div>
         )}

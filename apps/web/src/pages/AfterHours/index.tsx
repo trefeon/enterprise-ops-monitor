@@ -402,7 +402,7 @@ function NotificationTargetEditor({
             value={getBranchNotificationValue(targetMap, '_all')}
             onChange={(value) => onBranchTargetChange('_all', value)}
             placeholder={fallbackPlaceholder}
-            icon={<Globe className="size-5" />}
+            icon={<Globe className="size-5" aria-hidden="true" />}
           />
 
           {branchOptions.map((branchItem) => {
@@ -415,7 +415,7 @@ function NotificationTargetEditor({
                 value={getBranchNotificationValue(targetMap, branchId)}
                 onChange={(value) => onBranchTargetChange(branchId, value)}
                 placeholder={branchPlaceholder}
-                icon={<Icon className="size-4" />}
+                icon={<Icon className="size-4" aria-hidden="true" />}
               />
             );
           })}
@@ -875,9 +875,9 @@ export default function AfterHours() {
           activeTab === 'monitor' ? (
             <Button onClick={handleRunCheck}>
               {checking ? (
-                <Hourglass className="animate-spin mr-2 size-4" />
+                <Hourglass className="animate-spin mr-2 size-4" aria-hidden="true" />
               ) : (
-                <Play className="mr-2 size-4" />
+                <Play className="mr-2 size-4" aria-hidden="true" />
               )}
               {checking ? 'Running...' : 'Run Check Now'}
             </Button>
@@ -894,7 +894,7 @@ export default function AfterHours() {
               onClick={() => setActiveTab('monitor')}
               className="justify-start sm:justify-center"
             >
-              <Moon className="size-4" />
+              <Moon className="size-4" aria-hidden="true" />
               Daily Monitor
             </Button>
             <Button
@@ -904,7 +904,7 @@ export default function AfterHours() {
               onClick={() => setActiveTab('report')}
               className="justify-start sm:justify-center"
             >
-              <FileText className="size-4" />
+              <FileText className="size-4" aria-hidden="true" />
               Monthly Report
             </Button>
           </div>
@@ -914,7 +914,7 @@ export default function AfterHours() {
         <Suspense
           fallback={
             <div className="flex justify-center items-center h-32">
-              <Loader2 className="h-6 w-6 animate-spin text-primary" />
+              <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
             </div>
           }
         >
@@ -926,26 +926,26 @@ export default function AfterHours() {
             <StatCard
               title="PCs Still Online"
               value={totalViolations}
-              icon={<Monitor className="size-5" />}
+              icon={<Monitor className="size-5" aria-hidden="true" />}
               status={totalViolations > 0 ? 'error' : 'success'}
               subtext={formatDate(date)}
             />
             <StatCard
               title="Branches Affected"
               value={branchCount}
-              icon={<Store className="size-5" />}
+              icon={<Store className="size-5" aria-hidden="true" />}
               status={branchCount > 0 ? 'warning' : 'success'}
               subtext={branch ? `Filtered: ${selectedBranchLabel}` : 'All monitored branches'}
             />
             <StatCard
               title="Latest Last Sync"
               value={latestSyncTime}
-              icon={<Clock className="size-5" />}
+              icon={<Clock className="size-5" aria-hidden="true" />}
               status="info"
             />
           </div>
 
-          <Card className="overflow-hidden p-0">
+          <Card className="overflow-hidden p-0" style={{ overscrollBehavior: 'contain' }}>
             <div className="flex flex-col gap-3 border-b border-border bg-card px-5 py-4 md:flex-row md:items-center md:justify-between">
               <div className="flex items-center gap-4">
                 <div
@@ -955,7 +955,7 @@ export default function AfterHours() {
                       : 'border-border bg-muted text-muted-foreground'
                   }`}
                 >
-                  <NotificationsActive className="size-5" />
+                  <NotificationsActive className="size-5" aria-hidden="true" />
                 </div>
                 <div>
                   <h2 className="flex items-center gap-2 text-sm font-semibold tracking-wide text-foreground">
@@ -983,6 +983,7 @@ export default function AfterHours() {
                     type="button"
                     role="switch"
                     aria-checked={notifyEnabled}
+                    aria-label="Toggle setting"
                     onClick={() =>
                       updateSetting('notify_enabled', notifyEnabled ? 'false' : 'true')
                     }
@@ -991,7 +992,7 @@ export default function AfterHours() {
                     }`}
                   >
                     <span
-                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-foreground ring-0 transition duration-300 ease-in-out ${
+                      className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-foreground ring-0 transition-transform duration-300 ease-in-out ${
                         notifyEnabled ? 'translate-x-5' : 'translate-x-0.5'
                       }`}
                     />
@@ -1013,12 +1014,12 @@ export default function AfterHours() {
                 >
                   {showSettings ? (
                     <>
-                      <ChevronUp className="mr-2 size-4 transition-transform duration-300" />
+                      <ChevronUp className="mr-2 size-4 transition-transform duration-300" aria-hidden="true" />
                       Hide
                     </>
                   ) : (
                     <>
-                      <ChevronDown className="mr-2 size-4 transition-transform duration-300" />
+                      <ChevronDown className="mr-2 size-4 transition-transform duration-300" aria-hidden="true" />
                       Configure
                     </>
                   )}
@@ -1043,7 +1044,7 @@ export default function AfterHours() {
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      <LayoutDashboard className="mr-1.5 size-3.5" />
+                      <LayoutDashboard className="mr-1.5 size-3.5" aria-hidden="true" />
                       Per Branch Form
                     </Button>
                     <Button
@@ -1056,7 +1057,7 @@ export default function AfterHours() {
                           : 'text-muted-foreground hover:text-foreground'
                       }`}
                     >
-                      <Code className="mr-1.5 size-3.5" />
+                      <Code className="mr-1.5 size-3.5" aria-hidden="true" />
                       Advanced JSON
                     </Button>
                   </div>
@@ -1066,18 +1067,19 @@ export default function AfterHours() {
                   <div className="space-y-4">
                     <h4 className="mb-4 flex items-center gap-2.5 border-b border-border/40 pb-3 text-sm font-bold tracking-wider uppercase text-foreground">
                       <span className="rounded-md border border-status-info/20 bg-status-info/10 p-1.5 text-status-info">
-                        <Send className="size-4" />
+                        <Send className="size-4" aria-hidden="true" />
                       </span>
                       Telegram Configuration
                     </h4>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                      <label htmlFor="afterhours-bot-token" className="mb-1.5 block text-xs font-medium text-muted-foreground">
                         Bot Token
                       </label>
                       <div className="relative w-full">
-                        <Key className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                        <Key className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
                         <Input
+                          id="afterhours-bot-token"
                           type="password"
                           value={settings.telegram_bot_token || ''}
                           onChange={(e) => updateSetting('telegram_bot_token', e.target.value)}
@@ -1144,18 +1146,19 @@ export default function AfterHours() {
                   <div className="space-y-4">
                     <h4 className="mb-4 flex items-center gap-2.5 border-b border-border/40 pb-3 text-sm font-bold tracking-wider uppercase text-foreground">
                       <span className="rounded-md border border-status-success/20 bg-status-success/10 p-1.5 text-status-success">
-                        <MessageSquare className="size-4" />
+                        <MessageSquare className="size-4" aria-hidden="true" />
                       </span>
                       WhatsApp Gateway (API)
                     </h4>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                      <label htmlFor="afterhours-api-url" className="mb-1.5 block text-xs font-medium text-muted-foreground">
                         API URL
                       </label>
                       <div className="relative w-full">
-                        <Link className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                        <Link className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
                         <Input
+                          id="afterhours-api-url"
                           type="text"
                           value={settings.whatsapp_api_url || ''}
                           onChange={(e) => updateSetting('whatsapp_api_url', e.target.value)}
@@ -1170,12 +1173,13 @@ export default function AfterHours() {
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                      <label htmlFor="afterhours-api-key" className="mb-1.5 block text-xs font-medium text-muted-foreground">
                         API Key
                       </label>
                       <div className="relative w-full">
-                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
                         <Input
+                          id="afterhours-api-key"
                           type="password"
                           value={settings.whatsapp_api_key || ''}
                           onChange={(e) => updateSetting('whatsapp_api_key', e.target.value)}
@@ -1190,12 +1194,13 @@ export default function AfterHours() {
                     </div>
 
                     <div>
-                      <label className="mb-1.5 block text-xs font-medium text-muted-foreground">
+                      <label htmlFor="afterhours-secret-key" className="mb-1.5 block text-xs font-medium text-muted-foreground">
                         Secret Key
                       </label>
                       <div className="relative w-full">
-                        <Key className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" />
+                        <Key className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none" aria-hidden="true" />
                         <Input
+                          id="afterhours-secret-key"
                           type="password"
                           value={settings.whatsapp_api_secret || ''}
                           onChange={(e) => updateSetting('whatsapp_api_secret', e.target.value)}
@@ -1266,11 +1271,11 @@ export default function AfterHours() {
                       {normalizedScheduleTimes.map((timeValue, idx) => (
                         <div key={`schedule-stage-${idx}`} className="w-full">
                           <label className="mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                            <Clock className="size-3.5 text-primary" />
+                            <Clock className="size-3.5 text-primary" aria-hidden="true" />
                             {`Schedule ${idx + 1} (WIB)`}
                           </label>
                           <div className="relative">
-                            <div className="pointer-events-none absolute left-3.5 inset-y-0 flex items-center text-muted-foreground/60">
+                            <div className="pointer-events-none absolute left-3.5 inset-y-0 flex items-center text-muted-foreground/60" aria-hidden="true">
                               <Clock className="size-4" />
                             </div>
                             <Input
@@ -1298,9 +1303,9 @@ export default function AfterHours() {
                       className="h-10 px-5 text-xs font-semibold"
                     >
                       {savingSettings ? (
-                        <Loader2 className="animate-spin mr-2 size-4" />
+                        <Loader2 className="animate-spin mr-2 size-4" aria-hidden="true" />
                       ) : (
-                        <FileText className="mr-2 size-4" />
+                        <FileText className="mr-2 size-4" aria-hidden="true" />
                       )}
                       {savingSettings ? 'Saving...' : 'Save Settings'}
                     </Button>
@@ -1363,7 +1368,7 @@ export default function AfterHours() {
                   setPage(1);
                 }}
               >
-                <RefreshCw className="size-4" />
+                <RefreshCw className="size-4" aria-hidden="true" />
                 Reset
               </Button>
             }
@@ -1459,13 +1464,13 @@ export default function AfterHours() {
               )}
               {loading ? (
                 <div className="flex justify-center items-center h-32">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
                 </div>
               ) : violations.length === 0 ? (
                 <EmptyState
                   title="No violations found"
                   description={`No after-hours violations detected for ${formatDate(date)}.`}
-                  icon={<CheckCircle2 className="size-8 text-status-success/40" />}
+                  icon={<CheckCircle2 className="size-8 text-status-success/40" aria-hidden="true" />}
                 />
               ) : (
                 <>

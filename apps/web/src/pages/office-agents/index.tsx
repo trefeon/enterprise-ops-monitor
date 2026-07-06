@@ -54,25 +54,25 @@ const getStatusLabelAndIcon = (status: string) => {
     case 'healthy':
       return {
         label: 'Healthy',
-        icon: <CheckCircle className="size-4 text-status-success" />,
+        icon: <CheckCircle className="size-4 text-status-success" aria-hidden="true" />,
         color: 'text-status-success'
       };
     case 'warning':
       return {
         label: 'Warning',
-        icon: <AlertTriangle className="size-4 text-status-warning" />,
+        icon: <AlertTriangle className="size-4 text-status-warning" aria-hidden="true" />,
         color: 'text-status-warning'
       };
     case 'critical':
       return {
         label: 'Critical',
-        icon: <XCircle className="size-4 text-status-error" />,
+        icon: <XCircle className="size-4 text-status-error" aria-hidden="true" />,
         color: 'text-status-error'
       };
     default:
       return {
         label: 'All Statuses',
-        icon: <Monitor className="size-4 text-status-info" />,
+        icon: <Monitor className="size-4 text-status-info" aria-hidden="true" />,
         color: 'text-foreground'
       };
   }
@@ -102,7 +102,7 @@ export default function OfficeAgentsPage() {
         actions={
           <>
             <Button onClick={refreshMetrics}>
-              <RefreshCw className="size-4" />
+              <RefreshCw className="size-4" aria-hidden="true" />
               Refresh
             </Button>
           </>
@@ -112,25 +112,25 @@ export default function OfficeAgentsPage() {
         <StatCard
           title="Total Machines"
           value={stats.total}
-          icon={<Monitor className="size-5" />}
+          icon={<Monitor className="size-5" aria-hidden="true" />}
           subtext={`${stats.online} online · ${stats.offline} offline`}
         />
         <StatCard
           title="Healthy"
           value={stats.healthy}
-          icon={<CheckCircle className="size-5 text-status-success" />}
+          icon={<CheckCircle className="size-5 text-status-success" aria-hidden="true" />}
           className="border-status-success/30"
         />
         <StatCard
           title="Warning"
           value={stats.warning}
-          icon={<AlertTriangle className="size-5 text-status-warning" />}
+          icon={<AlertTriangle className="size-5 text-status-warning" aria-hidden="true" />}
           className="border-status-warning/30"
         />
         <StatCard
           title="Critical"
           value={stats.critical}
-          icon={<XCircle className="size-5 text-status-error" />}
+          icon={<XCircle className="size-5 text-status-error" aria-hidden="true" />}
           className="border-status-error/30"
         />
       </div>
@@ -176,7 +176,7 @@ export default function OfficeAgentsPage() {
           </Select>
           {stats.critical > 0 && (
             <div className="flex min-h-10 items-center gap-2 rounded-md border border-status-error/30 bg-status-error/10 px-4 text-sm font-medium text-status-error">
-              <AlertCircle className="size-4" />
+              <AlertCircle className="size-4" aria-hidden="true" />
               {stats.critical} machine(s) need attention
             </div>
           )}

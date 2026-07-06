@@ -146,7 +146,7 @@ interface KpiCardProps {
 
 const KpiCard = ({ icon: Icon, title, value, subtitle, color = 'default', pulse = false }: KpiCardProps) => {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-card p-5 transition-all duration-300 hover:border-primary/40 hover:bg-muted/10 group">
+    <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-card p-5 transition-[transform,box-shadow] duration-300 hover:border-primary/40 hover:bg-muted/10 group">
       {pulse && (
         <div className="absolute inset-0 animate-pulse-slow bg-destructive/5 rounded-2xl" />
       )}
@@ -163,7 +163,7 @@ const KpiCard = ({ icon: Icon, title, value, subtitle, color = 'default', pulse 
                   : 'bg-primary/10 text-primary shadow-primary/5'
           )}
         >
-          <Icon className="size-7" />
+          <Icon className="size-7" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="text-3xs font-black uppercase tracking-widest-lg text-muted-foreground/60">
@@ -232,7 +232,7 @@ const BranchCard = ({ name, synced, stale, problem, total }: BranchCardProps) =>
           : 'bg-muted';
 
   return (
-    <div className="rounded-2xl border border-border/40 bg-card p-4 transition-all duration-300 hover:border-primary/30 hover:bg-muted/5 group">
+    <div className="rounded-2xl border border-border/40 bg-card p-4 transition-[transform,box-shadow] duration-300 hover:border-primary/30 hover:bg-muted/5 group">
       <div className="flex items-center justify-between mb-4">
         <span
           className="font-bold text-foreground text-xs uppercase tracking-tight truncate pr-2"
@@ -251,7 +251,7 @@ const BranchCard = ({ name, synced, stale, problem, total }: BranchCardProps) =>
       </div>
       <div className="w-full h-1.5 rounded-full bg-muted overflow-hidden mb-3">
         <div
-          className={cn('h-full rounded-full transition-all duration-1000', barColor)}
+          className={cn('h-full rounded-full transition-[width] duration-1000', barColor)}
           // eslint-disable-next-line no-restricted-syntax
           style={{ width: `${Math.min(100, healthPct)}%` }}
         />
@@ -380,12 +380,12 @@ const LiveSync = () => {
   const eodSummary = eodData?.summary || ({} as EodSummary);
 
   return (
-    <div className="fixed inset-0 flex flex-col gap-4 overflow-hidden bg-background text-foreground dark">
+    <div className="fixed inset-0 flex flex-col gap-4 overflow-hidden bg-background text-foreground dark" style={{ overscrollBehavior: 'contain' }}>
       {/* ── Header Bar ─────────────────────────────────────────── */}
       <header className="flex shrink-0 items-center justify-between border-b border-border/40 bg-card px-6 py-4 backdrop-blur-xl">
         <div className="flex items-center gap-5">
           <div className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Radio className="size-5" />
+            <Radio className="size-5" aria-hidden="true" />
           </div>
           <div>
             <h1 className="text-xl font-black uppercase tracking-tight text-foreground">
@@ -402,7 +402,7 @@ const LiveSync = () => {
         <div className="flex items-center gap-8">
           {error && (
             <span className="flex items-center gap-2 px-3 py-1 rounded-lg bg-status-error/10 border border-status-error/20 text-3xs font-black uppercase tracking-widest text-status-error">
-              <AlertCircle className="size-3.5" />
+              <AlertCircle className="size-3.5" aria-hidden="true" />
               {error}
             </span>
           )}
@@ -502,7 +502,7 @@ const LiveSync = () => {
         <div className="flex flex-col min-h-0">
           <div className="flex items-center justify-between mb-4">
             <h2 className="flex items-center text-3xs font-black text-muted-foreground uppercase tracking-widest-xl">
-              <RefreshCw className="mr-2 size-3 text-status-error" />
+              <RefreshCw className="mr-2 size-3 text-status-error" aria-hidden="true" />
               Live Latency Monitor
               {lateStores.length > 0 && (
                 <span className="ml-3 px-2 py-0.5 rounded bg-status-error/10 text-status-error font-black border border-status-error/20">
@@ -517,10 +517,11 @@ const LiveSync = () => {
           <div
             ref={scrollRef}
             className="flex-1 overflow-y-auto rounded-lg border border-border bg-card scrollbar-none"
+            style={{ overscrollBehavior: 'contain' }}
           >
             {lateStores.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 gap-4">
-                <CheckCircle2 className="size-12 text-status-success/20" />
+                <CheckCircle2 className="size-12 text-status-success/20" aria-hidden="true" />
                 <span className="text-xs font-black uppercase tracking-widest">
                   All regions perfectly synced
                 </span>
@@ -559,7 +560,7 @@ const LiveSync = () => {
         <div className="flex flex-col min-h-0">
           <div className="flex items-center justify-between mb-4">
             <h2 className="flex items-center text-3xs font-black text-muted-foreground uppercase tracking-widest-xl">
-              <TrendingDown className="mr-2 size-3 text-status-warning" />
+              <TrendingDown className="mr-2 size-3 text-status-warning" aria-hidden="true" />
               Integrity Performance Ranking
               {eodRanking.length > 0 && (
                 <span className="ml-3 px-2 py-0.5 rounded bg-status-warning/10 text-status-warning font-black border border-status-warning/20">
@@ -577,10 +578,11 @@ const LiveSync = () => {
           <div
             ref={eodScrollRef}
             className="flex-1 overflow-y-auto rounded-lg border border-border bg-card scrollbar-none"
+            style={{ overscrollBehavior: 'contain' }}
           >
             {eodRanking.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 gap-4">
-                <CheckCircle2 className="size-12 text-status-success/20" />
+                <CheckCircle2 className="size-12 text-status-success/20" aria-hidden="true" />
                 <span className="text-xs font-black uppercase tracking-widest">
                   Zero EOD integrity violations
                 </span>

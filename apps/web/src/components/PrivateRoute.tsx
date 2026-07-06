@@ -18,7 +18,7 @@ export default function PrivateRoute({ requiredPerm, children }: PrivateRoutePro
     return (
       <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
         <div className="flex items-center gap-4 text-muted-foreground">
-          <Loader2 className="size-4 animate-spin" />
+          <Loader2 className="size-4 animate-spin" aria-hidden="true" />
           <span className="text-sm">Loading...</span>
         </div>
       </div>
@@ -39,7 +39,7 @@ export default function PrivateRoute({ requiredPerm, children }: PrivateRoutePro
       <div className="flex min-h-screen items-center justify-center bg-background text-foreground">
         <div className="max-w-md p-8 text-center">
           <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-destructive/10">
-            <Lock className="size-8 text-destructive" />
+            <Lock className="size-8 text-destructive" aria-hidden="true" />
           </div>
           <h1 className="mb-2 text-xl font-semibold">Access Denied</h1>
           <p className="mb-4 text-muted-foreground">
@@ -51,7 +51,7 @@ export default function PrivateRoute({ requiredPerm, children }: PrivateRoutePro
             variant="secondary"
             className="gap-2 rounded-lg"
           >
-            <ArrowLeft className="size-4" />
+            <ArrowLeft className="size-4" aria-hidden="true" />
             Go Back
           </Button>
         </div>

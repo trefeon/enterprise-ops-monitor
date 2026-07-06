@@ -416,7 +416,7 @@ const StoreManagement = () => {
             </Badge>
             {canManageStores && (
               <Button onClick={openCreateDialog}>
-                <Plus className="size-4" />
+                <Plus aria-hidden="true" className="size-4" />
                 <span className="truncate">Add Store</span>
               </Button>
             )}
@@ -493,7 +493,7 @@ const StoreManagement = () => {
         }
         right={
           <Button variant="secondary" onClick={applyFilters}>
-            <Search className="size-4" />
+            <Search aria-hidden="true" className="size-4" />
             Apply
           </Button>
         }
@@ -505,7 +505,7 @@ const StoreManagement = () => {
           icon={<AlertTriangle className="size-8" />}
           action={
             <Button onClick={fetchData}>
-              <RefreshCw className="mr-2 size-4" /> Retry
+              <RefreshCw aria-hidden="true" className="mr-2 size-4" /> Retry
             </Button>
           }
         />

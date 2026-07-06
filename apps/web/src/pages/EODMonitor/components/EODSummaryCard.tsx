@@ -1,5 +1,4 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import type { EODArea } from '../types';
 
@@ -24,13 +23,18 @@ export function EODSummaryCard({ branch, onBranchClick }: EODSummaryCardProps) {
         : 'bg-status-error';
 
   return (
-    <Button
-      type="button"
-      variant="ghost"
-      className="block h-auto w-full rounded-xl border-0 bg-transparent p-0 text-left hover:bg-transparent"
+    <Card
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e: React.KeyboardEvent) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onBranchClick(branch);
+        }
+      }}
+      className="transition-[box-shadow,transform] hover:shadow-md hover:ring-1 hover:ring-ring cursor-pointer min-h-36 justify-between border border-border/50"
       onClick={() => onBranchClick(branch)}
     >
-      <Card className="transition-all hover:shadow-md hover:ring-1 hover:ring-ring cursor-pointer min-h-36 justify-between border border-border/50">
         <CardContent className="p-4 flex flex-col gap-3.5 h-full justify-between">
           <div className="flex items-center justify-between gap-2">
             <div className="font-semibold text-foreground tracking-tight break-words">
@@ -50,11 +54,11 @@ export function EODSummaryCard({ branch, onBranchClick }: EODSummaryCardProps) {
             <ProgressBar
               value={completionPercent}
               trackClassName="bg-secondary border border-border/20 h-2"
-              barClassName={`h-2 transition-all ${barClassName}`}
+              barClassName={`h-2 transition-[width] ${barClassName}`}
             />
             <div className="flex items-center justify-between live-text-2xs text-muted-foreground/80 font-medium">
               <span>Progress</span>
-              <span>{completionPercent}%</span>
+              <span className="tabular">{completionPercent}%</span>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-xs text-muted-foreground font-medium">
@@ -68,6 +72,5 @@ export function EODSummaryCard({ branch, onBranchClick }: EODSummaryCardProps) {
           </div>
         </CardContent>
       </Card>
-    </Button>
   );
 }

@@ -59,18 +59,18 @@ export default function EODMonitor() {
         subtitle="Real-time EOD status by store."
         meta={
           <div className="flex flex-wrap items-center gap-2 mt-1.5">
-            <span className={badgeClass}><Clock className="size-3.5" /> Last: {eod.lastUpdatedLabel}</span>
-            <span className={badgeClass}><User className="size-3.5" /> {user?.username || 'Admin'}</span>
-            <span className={badgeClass}><Shield className="size-3.5" /> {user?.role ? String(user.role).replace(/_/g, ' ') : 'IT Ops'}</span>
+            <span className={badgeClass}><Clock aria-hidden="true" className="size-3.5" /> Last: <span className="tabular">{eod.lastUpdatedLabel}</span></span>
+            <span className={badgeClass}><User aria-hidden="true" className="size-3.5" /> {user?.username || 'Admin'}</span>
+            <span className={badgeClass}><Shield aria-hidden="true" className="size-3.5" /> {user?.role ? String(user.role).replace(/_/g, ' ') : 'IT Ops'}</span>
           </div>
         }
         actions={
           <>
             <Button variant={eod.autoRefresh ? 'default' : 'secondary'} onClick={() => eod.setAutoRefresh((p) => !p)}>
-              {eod.autoRefresh ? <RefreshCw className="mr-2 size-4 animate-spin" /> : <Pause className="mr-2 size-4" />}
-              {eod.autoRefresh ? `Auto (${as}s)` : 'Auto Off'}
+              {eod.autoRefresh ? <RefreshCw aria-hidden="true" className="mr-2 size-4 animate-spin" /> : <Pause aria-hidden="true" className="mr-2 size-4" />}
+              {eod.autoRefresh ? <span className="tabular">Auto ({as}s)</span> : 'Auto Off'}
             </Button>
-            <Button variant="secondary" onClick={eod.handleRefresh}><RotateCw className="mr-2 size-4" /> Refresh</Button>
+            <Button variant="secondary" onClick={eod.handleRefresh}><RotateCw aria-hidden="true" className="mr-2 size-4" /> Refresh</Button>
             {(hasPermission(user, 'EOD_SYNC') || eod.isDemoUser) && (
               <Button
                 variant="default"
@@ -80,7 +80,7 @@ export default function EODMonitor() {
                   eod.setSyncOpen(true);
                 }}
               >
-                <RefreshCw className="mr-2 size-4" /> Sync All
+                <RefreshCw aria-hidden="true" className="mr-2 size-4" /> Sync All
               </Button>
             )}
           </>
@@ -106,11 +106,11 @@ export default function EODMonitor() {
         right={
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
             <Button variant="secondary" size="sm" onClick={eod.handleExport}>
-              {eod.exporting && <Loader2 className="size-4 animate-spin" />}
-              <Download className="size-4" /> {formatDate(eod.filters.date) ? `Export ${formatDate(eod.filters.date)}` : 'Export'}
+              {eod.exporting && <Loader2 aria-hidden="true" className="size-4 animate-spin" />}
+              <Download aria-hidden="true" className="size-4" /> {formatDate(eod.filters.date) ? `Export ${formatDate(eod.filters.date)}` : 'Export'}
             </Button>
             <Button variant="ghost" size="sm" onClick={eod.handleResetFilters}>
-              <RotateCw className="size-4" /> Reset
+              <RotateCw aria-hidden="true" className="size-4" /> Reset
             </Button>
           </div>
         }
@@ -121,8 +121,8 @@ export default function EODMonitor() {
           {eod.error ? (
             <div className="p-card">
               <EmptyState title="Failed to load EOD data" description={eod.error}
-                icon={<AlertTriangle className="size-8" />}
-                action={<Button onClick={eod.fetchData}><RefreshCw className="mr-2 size-4" /> Retry</Button>} />
+                icon={<AlertTriangle aria-hidden="true" className="size-8" />}
+                action={<Button onClick={eod.fetchData}><RefreshCw aria-hidden="true" className="mr-2 size-4" /> Retry</Button>} />
             </div>
           ) : (
             <DataTable columns={mainTableColumns} data={eod.data} loading={eod.loading}

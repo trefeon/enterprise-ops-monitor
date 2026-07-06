@@ -136,7 +136,7 @@ function NavBar() {
           className="inline-flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-opacity hover:opacity-90"
         >
           Live Demo
-          <ArrowRight className="size-3" />
+          <ArrowRight aria-hidden="true" className="size-3" />
         </Link>
       </div>
     </header>
@@ -228,7 +228,7 @@ function SectionLabel({ children }: { children: ReactNode }) {
 function IconBox({ icon: Icon }: { icon: LucideIcon }) {
   return (
     <div className="flex size-10 items-center justify-center rounded-lg border border-border bg-card">
-      <Icon className="size-5 text-foreground" />
+      <Icon aria-hidden="true" className="size-5 text-foreground" />
     </div>
   );
 }
@@ -261,7 +261,7 @@ export default function Landing() {
               to="/login"
               className="inline-flex h-10 items-center gap-2 rounded-lg bg-foreground px-5 text-sm font-medium text-background transition-opacity hover:opacity-90"
             >
-              <Play className="size-4" />
+              <Play aria-hidden="true" className="size-4" />
               Open Live Demo
             </Link>
             <Link
@@ -269,7 +269,7 @@ export default function Landing() {
               className="inline-flex h-10 items-center gap-2 rounded-lg border border-border px-5 text-sm font-medium text-foreground transition-colors hover:bg-card"
             >
               Read Case Study
-              <ArrowRight className="size-4" />
+              <ArrowRight aria-hidden="true" className="size-4" />
             </Link>
           </div>
         </div>
@@ -309,7 +309,7 @@ export default function Landing() {
               <h3 className="mt-4 text-sm font-semibold text-foreground">{f.title}</h3>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">{f.description}</p>
               <Link to={f.route} className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
-                Explore <ArrowRight className="size-3" />
+                Explore <ArrowRight aria-hidden="true" className="size-3" />
               </Link>
             </article>
           ))}
@@ -330,7 +330,7 @@ export default function Landing() {
               const TIcon = t.icon;
               return (
                 <div key={t.name} className="flex items-center gap-3 rounded-lg border border-border bg-background p-3">
-                  <TIcon className="size-4 shrink-0 text-muted-foreground" />
+                  <TIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium text-foreground">{t.name}</div>
                     <div className="text-[10px] text-muted-foreground">{t.category}</div>
@@ -382,7 +382,7 @@ export default function Landing() {
             </p>
             <div className="mt-8 overflow-hidden rounded-xl border border-border bg-background">
               <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-                <Terminal className="size-3.5 text-muted-foreground" />
+                <Terminal aria-hidden="true" className="size-3.5 text-muted-foreground" />
                 <span className="font-mono text-xs text-muted-foreground">terminal</span>
               </div>
               <div className="p-4 font-mono text-sm leading-7">
@@ -411,7 +411,7 @@ export default function Landing() {
               ].map((item) => (
                 <div key={item.label} className="rounded-lg border border-border bg-background p-4">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="size-3.5 text-status-success" />
+                    <CheckCircle2 aria-hidden="true" className="size-3.5 text-status-success" />
                     <span className="text-xs font-semibold text-foreground">{item.label}</span>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.detail}</p>
@@ -455,7 +455,7 @@ export default function Landing() {
               className="inline-flex h-10 items-center gap-2 rounded-lg bg-foreground px-5 text-sm font-medium text-background transition-opacity hover:opacity-90"
             >
               Open Live Demo
-              <ArrowRight className="size-3.5" />
+              <ArrowRight aria-hidden="true" className="size-3.5" />
             </Link>
             <a
               href="https://github.com/trefeon/enterprise-ops-monitor"
@@ -463,7 +463,7 @@ export default function Landing() {
               rel="noopener noreferrer"
               className="inline-flex h-10 items-center gap-2 rounded-lg border border-border px-5 text-sm font-medium text-foreground transition-colors hover:bg-card"
             >
-              <GitBranch className="size-4" />
+              <GitBranch aria-hidden="true" className="size-4" />
               View Source
             </a>
           </div>

@@ -54,7 +54,7 @@ export function PageHeader({
                     {crumb.label}
                   </span>
                 )}
-                {!isLast && <ChevronRight className="size-3 text-muted-foreground/50 shrink-0" />}
+                {!isLast && <ChevronRight className="size-3 text-muted-foreground/50 shrink-0" aria-hidden="true" />}
               </div>
             );
           })}

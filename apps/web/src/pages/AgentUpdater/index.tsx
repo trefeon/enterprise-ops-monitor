@@ -345,10 +345,10 @@ const AgentUpdater = () => {
         <EmptyState
           title="Error Loading Agent Data"
           description={error}
-          icon={<AlertCircle className="size-8" />}
+          icon={<AlertCircle className="size-8" aria-hidden="true" />}
           action={
             <Button variant="outline" onClick={handleRefresh}>
-              <RefreshCw className="mr-2 size-4" />
+              <RefreshCw className="mr-2 size-4" aria-hidden="true" />
               Retry
             </Button>
           }
@@ -395,7 +395,7 @@ const AgentUpdater = () => {
               disabled={loading}
               className="w-full sm:w-auto"
             >
-              <RefreshCw className={cn('mr-2 size-4', loading && 'animate-spin')} />
+              <RefreshCw className={cn('mr-2 size-4', loading && 'animate-spin')} aria-hidden="true" />
               Refresh
             </Button>
             <Button
@@ -405,18 +405,18 @@ const AgentUpdater = () => {
               className="w-full sm:w-auto"
             >
               {exporting ? (
-                <Loader2 className="animate-spin mr-2 size-4" />
+                <Loader2 className="animate-spin mr-2 size-4" aria-hidden="true" />
               ) : (
-                <Download className="mr-2 size-4" />
+                <Download className="mr-2 size-4" aria-hidden="true" />
               )}
               Export Excel
             </Button>
             <Button variant="outline" onClick={handleDownloadSetup} className="w-full sm:w-auto">
-              <Download className="mr-2 size-4" />
+              <Download className="mr-2 size-4" aria-hidden="true" />
               Setup Script
             </Button>
             <Button onClick={handleOpenDeployModal} className="w-full sm:w-auto">
-              <UploadCloud className="mr-2 size-4" />
+              <UploadCloud className="mr-2 size-4" aria-hidden="true" />
               Deploy Update
             </Button>
           </>
@@ -426,14 +426,14 @@ const AgentUpdater = () => {
         <StatCard
           title="Current Deployed Version"
           value={metricsLoading ? '...' : currentVersion || 'None'}
-          icon={<CheckCircle2 className="size-5" />}
+          icon={<CheckCircle2 className="size-5" aria-hidden="true" />}
           status={currentVersion ? 'success' : 'default'}
         />
 
         <StatCard
           title="Active Nodes"
           value={metricsLoading ? '--' : installedAgents.length}
-          icon={<Monitor className="size-5" />}
+          icon={<Monitor className="size-5" aria-hidden="true" />}
           subtext={
             <div className="flex justify-between items-center w-full">
               <span>{runningPublisherCount} node(s) synced</span>
@@ -453,7 +453,7 @@ const AgentUpdater = () => {
         <StatCard
           title="Publisher Sync"
           value={metricsLoading ? '--' : publisherSyncedPercent}
-          icon={<Zap className="size-5" />}
+          icon={<Zap className="size-5" aria-hidden="true" />}
           status={publisherOutdatedCount === 0 ? 'success' : 'warning'}
           subtext={
             <div className="flex items-center justify-between">
@@ -483,7 +483,7 @@ const AgentUpdater = () => {
         <StatCard
           title="Legacy Worker Scripts"
           value={metricsLoading ? '--' : nonModernWorkers}
-          icon={<History className="size-5" />}
+          icon={<History className="size-5" aria-hidden="true" />}
           status={nonModernWorkers > 0 ? 'warning' : 'default'}
           subtext="Setup script required for non-modern workers"
         />
@@ -551,7 +551,7 @@ const AgentUpdater = () => {
           </Select>
         </div>
         <Button variant="secondary" onClick={applyFilters} className="w-full md:w-auto h-11">
-          <Search className="mr-2 size-4" />
+          <Search className="mr-2 size-4" aria-hidden="true" />
           Apply
         </Button>
       </section>
@@ -606,7 +606,7 @@ const AgentUpdater = () => {
                   {getStatusBadge(getNodeStatus(node, currentVersion))}
                   {node.last_error && (
                     <span title={node.last_error}>
-                      <AlertCircle className="size-3.5 text-status-error cursor-help" />
+                      <AlertCircle className="size-3.5 text-status-error cursor-help" aria-hidden="true" />
                     </span>
                   )}
                 </div>
@@ -625,10 +625,11 @@ const AgentUpdater = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => handleDeleteAgent(node.store_id)}
-                      className="size-8 text-muted-foreground hover:text-status-error hover:bg-status-error/10 transition-all"
+                      className="size-8 text-muted-foreground hover:text-status-error hover:bg-status-error/10 transition-[opacity,transform]"
                       title="Delete Agent Record"
+                      aria-label="Delete file"
                     >
-                      <Trash2 className="size-4" />
+                      <Trash2 className="size-4" aria-hidden="true" />
                     </Button>
                   )}
                 </div>
@@ -660,10 +661,10 @@ const AgentUpdater = () => {
                 Publisher Binary (.exe)
               </label>
               <div className="flex items-center justify-center w-full">
-                <div className="group/upload flex h-40 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/20 transition-all hover:border-primary/40 hover:bg-muted">
+                <div className="group/upload flex h-40 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/20 transition-[border-color,background-color] hover:border-primary/40 hover:bg-muted">
                   <div className="flex flex-col items-center justify-center pt-5 pb-6">
                     <div className="mb-4 flex size-12 items-center justify-center rounded-lg border border-border bg-muted transition-colors group-hover/upload:bg-primary/10 group-hover/upload:text-primary">
-                      <FileUp className="size-6" />
+                      <FileUp className="size-6" aria-hidden="true" />
                     </div>
                     <p className="text-sm font-bold text-foreground">
                       {file ? (
@@ -731,9 +732,9 @@ const AgentUpdater = () => {
               disabled={isDeploying}
             >
               {isDeploying ? (
-                <Loader2 className="animate-spin mr-2 size-4" />
+                <Loader2 className="animate-spin mr-2 size-4" aria-hidden="true" />
               ) : (
-                <UploadCloud className="mr-2 size-4" />
+                <UploadCloud className="mr-2 size-4" aria-hidden="true" />
               )}
               Deploy Version
             </Button>

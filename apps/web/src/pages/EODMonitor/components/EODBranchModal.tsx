@@ -28,7 +28,7 @@ export function EODBranchModal({
       maxWidth="max-w-4xl"
     >
       {branch && (
-        <div className="space-y-4">
+        <div className="space-y-4" aria-live="polite" aria-busy={loading}>
           <p className="text-sm text-muted-foreground">
             {branch.storesTotal || 0} stores &bull; {branch.done || 0} done &bull;{' '}
             {branch.pending || 0} pending &bull;

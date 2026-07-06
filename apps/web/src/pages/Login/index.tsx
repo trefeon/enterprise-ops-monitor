@@ -119,7 +119,7 @@ export default function Login() {
         <div className="grid gap-4">
           <div className="rounded-lg border border-border bg-muted p-4">
             <div className="flex gap-4">
-              <Compass className="size-5 text-muted-foreground" />
+              <Compass aria-hidden="true" className="size-5 text-muted-foreground" />
               <div>
                 <div className="text-sm font-semibold">How to sign in</div>
                 <div className="mt-1 text-xs text-muted-foreground">
@@ -129,7 +129,7 @@ export default function Login() {
             </div>
           </div>
           <Button type="button" onClick={openSupportChannel} variant="secondary" className="h-11 w-full">
-            <Activity data-icon="inline-start" />
+            <Activity aria-hidden="true" data-icon="inline-start" />
             Contact IT Support
           </Button>
         </div>
@@ -141,7 +141,7 @@ export default function Login() {
         </div>
         <div className="z-10 flex items-center gap-3 font-display font-bold tracking-normal text-foreground">
           <div className="flex size-11 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <LineChart className="size-5" />
+            <LineChart aria-hidden="true" className="size-5" />
           </div>
           <span className="login-brand-label">Ops Starter</span>
         </div>
@@ -154,11 +154,11 @@ export default function Login() {
           </p>
           <div className="flex flex-wrap gap-4">
             <div className="login-chip flex items-center gap-2 rounded-xs bg-status-success/10 px-2 py-1 text-status-success">
-              <span className="size-1.5 rounded-full bg-status-success animate-pulse" />
+              <span className="size-1.5 rounded-full bg-status-success motion-safe:animate-pulse" />
               Operational
             </div>
             <div className="login-chip flex items-center gap-2 rounded-xs bg-secondary px-2 py-1 text-muted-foreground">
-              <ShieldCheck className="size-3" />
+              <ShieldCheck aria-hidden="true" className="size-3" />
               Secure Hub
             </div>
           </div>
@@ -171,7 +171,7 @@ export default function Login() {
       <main className="relative flex flex-1 flex-col items-center justify-center border-l border-border bg-card/95 p-6 md:p-10 lg:p-12">
         <div className="mb-8 flex items-center gap-3 self-start md:hidden">
           <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <LineChart className="size-5" />
+            <LineChart aria-hidden="true" className="size-5" />
           </div>
           <span className="login-brand-label font-display font-bold">Ops Starter</span>
         </div>
@@ -203,8 +203,9 @@ export default function Login() {
             variant="ghost"
             className="text-xs font-semibold uppercase tracking-wide text-status-success/80 hover:text-status-success"
             onClick={() => window.open("/live", "_blank", "noopener")}
+            aria-label="Open Live TV in new window"
           >
-            <Tv data-icon="inline-start" />
+            <Tv aria-hidden="true" data-icon="inline-start" />
             Live TV
           </Button>
           <Button
@@ -213,7 +214,7 @@ export default function Login() {
             className="text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
             onClick={() => setHelpOpen(true)}
           >
-            <HelpCircle data-icon="inline-start" />
+            <HelpCircle aria-hidden="true" data-icon="inline-start" />
             System Support
           </Button>
         </div>

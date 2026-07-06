@@ -147,7 +147,7 @@ const Profile: React.FC = () => {
               !user?.roleNames?.includes('demo') &&
               user?.role !== 'demo' && (
                 <Button variant="secondary" onClick={() => setShowPasswordModal(true)}>
-                  <Key className="size-4" />
+                  <Key className="size-4" aria-hidden="true" />
                   Change Password
                 </Button>
               )}
@@ -161,11 +161,11 @@ const Profile: React.FC = () => {
         </SectionCard>
       </div>
 
-      <Modal open={showPasswordModal} onClose={closePasswordModal} title="Change Password">
+      <Modal style={{ overscrollBehavior: 'contain' }} open={showPasswordModal} onClose={closePasswordModal} title="Change Password">
         <form onSubmit={handlePasswordChange} className="space-y-4">
           {error && (
             <div className="flex items-center gap-2 rounded-lg border border-status-error/20 bg-status-error/10 p-3 text-sm text-status-error">
-              <AlertCircle className="size-4" />
+              <AlertCircle className="size-4" aria-hidden="true" />
               {error}
             </div>
           )}
@@ -223,7 +223,7 @@ const Profile: React.FC = () => {
               Cancel
             </Button>
             <Button type="submit" className="flex-1" disabled={loading}>
-              <Loader2 className="animate-spin mr-2" />
+              <Loader2 className="animate-spin mr-2" aria-hidden="true" />
               {loading ? 'Changing...' : 'Change Password'}
             </Button>
           </div>

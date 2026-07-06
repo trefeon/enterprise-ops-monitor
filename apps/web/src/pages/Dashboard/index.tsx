@@ -181,7 +181,7 @@ export default function DashboardPage() {
       <PageShell>
         <FeatureStoryBanner story={getFeatureStory('dashboard')} />
         <Skeleton className="h-8 w-64" />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div role="status" aria-label="Loading..." className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 5 }).map((_, i) => (
             <Skeleton key={i} className="h-28" />
           ))}
@@ -197,10 +197,10 @@ export default function DashboardPage() {
         <EmptyState
           title="Failed to load dashboard"
           description={error}
-          icon={<AlertTriangle className="size-8" />}
+          icon={<AlertTriangle aria-hidden="true" className="size-8" />}
           action={
             <Button onClick={() => fetchData()}>
-              <RefreshCw /> Retry
+              <RefreshCw aria-hidden="true" /> Retry
             </Button>
           }
         />
@@ -215,7 +215,7 @@ export default function DashboardPage() {
         <EmptyState
           title="No summary data"
           description="Dashboard data is unavailable."
-          icon={<Monitor className="size-8" />}
+          icon={<Monitor aria-hidden="true" className="size-8" />}
         />
       </PageShell>
     );
@@ -252,9 +252,9 @@ export default function DashboardPage() {
               title="Manual Refresh"
             >
               {syncing ? (
-                <RefreshCw className="size-4 animate-spin" />
+                <RefreshCw aria-hidden="true" className="size-4 animate-spin" />
               ) : (
-                <RefreshCw className="size-4" />
+                <RefreshCw aria-hidden="true" className="size-4" />
               )}
               <span className="hidden sm:inline ml-2">Refresh</span>
             </Button>
@@ -265,7 +265,7 @@ export default function DashboardPage() {
                 disabled={syncing}
                 className="min-w-0 bg-primary hover:bg-primary/90"
               >
-                <Wifi className="size-4 mr-2" />
+                <Wifi aria-hidden="true" className="size-4 mr-2" />
                 <span className="truncate">Trigger Sync</span>
               </Button>
             </Guard>
@@ -285,7 +285,7 @@ export default function DashboardPage() {
               className="min-h-32"
               title="Global Health"
               value={health.label}
-              icon={<HeartPulse className="size-5" />}
+              icon={<HeartPulse aria-hidden="true" className="size-5" />}
               accent={health.dot.replace('bg-', 'text-')}
               subtext={health.subtext}
               onClick={() => navigate('/app/system')}
@@ -294,7 +294,7 @@ export default function DashboardPage() {
               className="min-h-32"
               title="Sync Status"
               value={sync ? `${sync.healthyPercentage}%` : '--'}
-              icon={<Wifi className="size-5" />}
+              icon={<Wifi aria-hidden="true" className="size-5" />}
               accent={
                 (sync?.staleCount || 0) + (sync?.problemCount || 0) > 0
                   ? 'text-status-warning'
@@ -307,7 +307,7 @@ export default function DashboardPage() {
               className="min-h-32"
               title="EOD Completion"
               value={`${completionRate}%`}
-              icon={<BadgeCheck className="size-5" />}
+              icon={<BadgeCheck aria-hidden="true" className="size-5" />}
               accent={completionRate === 100 ? 'text-status-success' : 'text-primary'}
               subtext={`${eod?.done ?? 0} of ${storesTotal ?? 0} stores`}
               onClick={() => navigate('/app/eod')}
@@ -316,7 +316,7 @@ export default function DashboardPage() {
               className="min-h-32"
               title="Active Nodes"
               value={`${agents?.onlineCount ?? 0}/${agents?.activeCount ?? 0}`}
-              icon={<Monitor className="size-5" />}
+              icon={<Monitor aria-hidden="true" className="size-5" />}
               subtext={`${agents?.updatePending ?? 0} need update`}
               onClick={() => navigate('/app/office-agents')}
             />
@@ -339,7 +339,7 @@ export default function DashboardPage() {
                 <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border/50 bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="shrink-0 rounded border bg-background p-2">
-                      <Clock className="size-4 text-primary" />
+                      <Clock aria-hidden="true" className="size-4 text-primary" />
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-xs font-semibold text-foreground">Last EOD Sync</p>
@@ -356,7 +356,7 @@ export default function DashboardPage() {
                 <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border/50 bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="shrink-0 rounded border bg-background p-2">
-                      <Cloud className="size-4 text-primary" />
+                      <Cloud aria-hidden="true" className="size-4 text-primary" />
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-xs font-semibold text-foreground">Backup Status</p>
@@ -385,7 +385,7 @@ export default function DashboardPage() {
                 <div className="flex min-w-0 flex-col gap-3 rounded-lg border border-border/50 bg-muted/30 p-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="shrink-0 rounded border bg-background p-2">
-                      <Zap className="size-4 text-primary" />
+                      <Zap aria-hidden="true" className="size-4 text-primary" />
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-xs font-semibold text-foreground">
@@ -415,14 +415,14 @@ export default function DashboardPage() {
                     className="h-7 text-[10px] font-bold"
                     onClick={() => navigate('/app/sync')}
                   >
-                    VIEW ALL <ArrowRight className="ml-1 size-3" />
+                    VIEW ALL <ArrowRight aria-hidden="true" className="ml-1 size-3" />
                   </Button>
                 </div>
               </CardHeader>
               <CardContent className="p-0 flex-1">
                 {alerts.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-48 text-center px-6">
-                    <CheckCircle2 className="size-8 text-status-success/40 mb-2" />
+                    <CheckCircle2 aria-hidden="true" className="size-8 text-status-success/40 mb-2" />
                     <p className="text-xs text-muted-foreground">All clear. No active alerts.</p>
                   </div>
                 ) : (
@@ -430,7 +430,7 @@ export default function DashboardPage() {
                     {alerts.slice(0, 4).map((alert) => (
                       <div key={alert.id} className="p-4 hover:bg-muted/30 transition-colors">
                         <div className="flex items-start gap-3">
-                          <ShieldAlert
+                          <ShieldAlert aria-hidden="true"
                             className={cn(
                               'size-4 shrink-0 mt-0.5',
                               alert.severity === 'HIGH'
@@ -466,18 +466,18 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent className="grid grid-cols-1 gap-2">
               <ActionButton
-                icon={<Monitor className="size-4" />}
+                icon={<Monitor aria-hidden="true" className="size-4" />}
                 label="Monitor EOD"
                 onClick={() => navigate('/app/eod')}
               />
               <ActionButton
-                icon={<Cloud className="size-4" />}
+                icon={<Cloud aria-hidden="true" className="size-4" />}
                 label="Trigger Backup"
                 onClick={handleBackup}
                 disabled={user?.isDemo}
               />
               <ActionButton
-                icon={<RefreshCw className="size-4" />}
+                icon={<RefreshCw aria-hidden="true" className="size-4" />}
                 label="Run Audit"
                 onClick={async () => {
                   if (user?.isDemo) {
@@ -494,13 +494,13 @@ export default function DashboardPage() {
                 }}
               />
               <ActionButton
-                icon={<Zap className="size-4" />}
+                icon={<Zap aria-hidden="true" className="size-4" />}
                 label="Deploy Agents"
                 onClick={() => navigate('/app/office-agents')}
                 disabled={user?.isDemo}
               />
               <ActionButton
-                icon={<Activity className="size-4" />}
+                icon={<Activity aria-hidden="true" className="size-4" />}
                 label="Check System"
                 onClick={() => navigate('/app/system')}
               />
@@ -519,7 +519,7 @@ export default function DashboardPage() {
                 className="flex min-w-0 items-center justify-between gap-3 rounded p-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-muted"
               >
                 <span className="truncate">Case Study</span>
-                <ArrowRight className="size-3 shrink-0" />
+                <ArrowRight aria-hidden="true" className="size-3 shrink-0" />
               </Link>
               <a
                 href="https://github.com/trefeon/enterprise-ops-monitor"
@@ -528,14 +528,14 @@ export default function DashboardPage() {
                 className="flex min-w-0 items-center justify-between gap-3 rounded p-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-muted"
               >
                 <span className="truncate">GitHub Repo</span>
-                <ArrowRight className="size-3 shrink-0" />
+                <ArrowRight aria-hidden="true" className="size-3 shrink-0" />
               </a>
               <Link
                 to="/starter"
                 className="flex min-w-0 items-center justify-between gap-3 rounded p-2 text-xs font-medium text-foreground/80 transition-colors hover:bg-muted"
               >
                 <span className="truncate">Starter Guide</span>
-                <ArrowRight className="size-3 shrink-0" />
+                <ArrowRight aria-hidden="true" className="size-3 shrink-0" />
               </Link>
             </CardContent>
           </Card>
@@ -560,14 +560,14 @@ function ActionButton({
     <Button
       variant="ghost"
       className={cn(
-        'group h-10 w-full min-w-0 justify-start border border-transparent px-3 text-xs font-semibold transition-all hover:border-border hover:bg-background',
+        'group h-10 w-full min-w-0 justify-start border border-transparent px-3 text-xs font-semibold transition-[transform,opacity] hover:border-border hover:bg-background',
         disabled && 'opacity-50 grayscale pointer-events-none'
       )}
       onClick={onClick}
     >
       <span className="mr-3 shrink-0 text-muted-foreground">{icon}</span>
       <span className="min-w-0 truncate">{label}</span>
-      <ArrowRight className="ml-auto size-3 shrink-0 -translate-x-1 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100" />
+                <ArrowRight aria-hidden="true" className="ml-auto size-3 shrink-0 -translate-x-1 opacity-0 transition-[transform,opacity] group-hover:translate-x-0 group-hover:opacity-100" />
     </Button>
   );
 }
