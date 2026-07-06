@@ -7,7 +7,7 @@ services:
     container_name: eom-demo-api
     restart: always
     ports:
-      - "127.0.0.1:3001:3000"
+      - "0.0.0.0:3001:3000"
     volumes:
       - ./backups:/backups
       - ./agent_updates:/agent_updates
@@ -68,7 +68,7 @@ services:
     container_name: eom-web-demo
     restart: always
     ports:
-      - "127.0.0.1:5173:5173"
+      - "0.0.0.0:5173:5173"
     depends_on:
       demo-api:
         condition: service_healthy
