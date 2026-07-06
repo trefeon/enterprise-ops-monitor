@@ -110,12 +110,38 @@ async function ensureNormalizedSchema(db) {
         nik_rh VARCHAR(50),
         last_seen_at TIMESTAMPTZ,
         last_sync TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        raw_payload JSONB
+        raw_payload JSONB,
+        address TEXT,
+        pic_name VARCHAR(255),
+        contact_number VARCHAR(50),
+        is_active BOOLEAN NOT NULL DEFAULT TRUE,
+        source VARCHAR(20) NOT NULL DEFAULT 'sync',
+        manual_created_at TIMESTAMPTZ,
+        manual_updated_at TIMESTAMPTZ,
+        manual_updated_by INTEGER,
+        archived_at TIMESTAMPTZ
       );
     `);
     await db.sequelize.query(`
       CREATE INDEX IF NOT EXISTS idx_data_stores_branch
       ON data_stores (branch_id, store_code);
+    `);
+    await db.sequelize.query(`
+      CREATE INDEX IF NOT EXISTS idx_data_stores_active
+      ON data_stores (is_active, store_code);
+    `);
+    // Ensure columns exist for databases created before the schema update
+    await db.sequelize.query(`
+      ALTER TABLE data_stores
+        ADD COLUMN IF NOT EXISTS address TEXT,
+        ADD COLUMN IF NOT EXISTS pic_name VARCHAR(255),
+        ADD COLUMN IF NOT EXISTS contact_number VARCHAR(50),
+        ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE,
+        ADD COLUMN IF NOT EXISTS source VARCHAR(20) NOT NULL DEFAULT 'sync',
+        ADD COLUMN IF NOT EXISTS manual_created_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS manual_updated_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS manual_updated_by INTEGER,
+        ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
     `);
 
     // Latest EOD status per store
@@ -180,7 +206,12 @@ async function ensureNormalizedSchema(db) {
         store_name VARCHAR(255),
         status VARCHAR(20) NOT NULL DEFAULT 'ACTIVE',
         last_synced_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-        raw_payload JSONB
+        raw_payload JSONB,
+        source VARCHAR(20) NOT NULL DEFAULT 'sync',
+        manual_created_at TIMESTAMPTZ,
+        manual_updated_at TIMESTAMPTZ,
+        manual_updated_by INTEGER,
+        archived_at TIMESTAMPTZ
       );
     `);
     await db.sequelize.query(`
@@ -190,6 +221,19 @@ async function ensureNormalizedSchema(db) {
     await db.sequelize.query(`
       CREATE INDEX IF NOT EXISTS idx_data_employees_store
       ON data_employees (store_code, nik);
+    `);
+    await db.sequelize.query(`
+      CREATE INDEX IF NOT EXISTS idx_data_employees_status
+      ON data_employees (status, nik);
+    `);
+    // Ensure columns exist for databases created before the schema update
+    await db.sequelize.query(`
+      ALTER TABLE data_employees
+        ADD COLUMN IF NOT EXISTS source VARCHAR(20) NOT NULL DEFAULT 'sync',
+        ADD COLUMN IF NOT EXISTS manual_created_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS manual_updated_at TIMESTAMPTZ,
+        ADD COLUMN IF NOT EXISTS manual_updated_by INTEGER,
+        ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
     `);
   } catch (err) {
     console.warn(
