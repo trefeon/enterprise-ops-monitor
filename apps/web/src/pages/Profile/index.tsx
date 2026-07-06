@@ -139,7 +139,7 @@ const Profile: React.FC = () => {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => navigate('/')}>
+            <Button variant="secondary" onClick={() => navigate('/app')}>
               Back
             </Button>
             {!isEnvAdmin &&
@@ -152,9 +152,9 @@ const Profile: React.FC = () => {
                 </Button>
               )}
             {canManageAccounts && (
-              <Button onClick={() => navigate('/admin/users')}>Account Management</Button>
+              <Button onClick={() => navigate('/app/admin/users')}>Account Management</Button>
             )}
-            <Button variant="destructive" onClick={() => navigate('/logout')}>
+            <Button variant="destructive" onClick={() => navigate('/app/logout')}>
               Logout
             </Button>
           </div>

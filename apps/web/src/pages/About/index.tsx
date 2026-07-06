@@ -310,15 +310,15 @@ const About: React.FC = () => {
           Ready to see it in action?
         </h2>
         <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-          The Operations Hub demo is fully interactive. You can explore all pillars from monitoring
+            The Ops Starter demo is fully interactive. You can explore all pillars from monitoring
           to enterprise governance right now.
         </p>
         <Button
           size="lg"
           className="h-12 px-8 text-base font-semibold"
-          onClick={() => navigate('/')}
+              onClick={() => navigate('/app')}
         >
-          Launch Operations Hub <ChevronRight className="ml-2 size-5" />
+              Launch Ops Starter <ChevronRight className="ml-2 size-5" />
         </Button>
       </section>
     </PageShell>

@@ -18,9 +18,24 @@ export type RouteCase = {
 
 export const publicRoutes: RouteCase[] = [
   {
+    path: '/',
+    name: 'Landing',
+    expectedText: /Enterprise Ops Starter|Open Demo/i,
+  },
+  {
+    path: '/case-study',
+    name: 'Case Study',
+    expectedText: /Portfolio case study|reusable operations starter/i,
+  },
+  {
+    path: '/starter',
+    name: 'Starter Kit',
+    expectedText: /Reusable project base|Start another operations app/i,
+  },
+  {
     path: '/login',
     name: 'Login',
-    expectedText: /Welcome Back|Enterprise Monitor/i,
+    expectedText: /Welcome Back|Enterprise Ops Starter/i,
   },
   {
     path: '/live',
@@ -35,41 +50,64 @@ export const publicRoutes: RouteCase[] = [
 ];
 
 export const authenticatedRoutes: RouteCase[] = [
-  { path: '/', name: 'Dashboard', expectedText: /Operations Hub/i },
-  { path: '/eod', name: 'EOD Monitor', expectedText: /EOD Monitor/i },
-  { path: '/stores', name: 'Store Directory', expectedText: /Store Directory/i },
-  { path: '/sync', name: 'Store Sync', expectedText: /Store Sync Monitor/i },
-  { path: '/identity', name: 'Employee Directory', expectedText: /Employee Directory/i },
-  { path: '/backups', name: 'Backups', expectedText: /Backups Management/i },
-  { path: '/system', name: 'System Health', expectedText: /System Health/i },
-  { path: '/admin/users', name: 'Users', expectedText: /Users/i },
-  { path: '/admin/roles', name: 'Roles', expectedText: /Roles Management/i },
+  { path: '/app', name: 'Dashboard', expectedText: /Ops Starter/i },
+  { path: '/app/eod', name: 'EOD Monitor', expectedText: /EOD Monitor/i },
+  { path: '/app/stores', name: 'Store Directory', expectedText: /Store Directory/i },
+  { path: '/app/sync', name: 'Store Sync', expectedText: /Store Sync Monitor/i },
+  { path: '/app/identity', name: 'Employee Directory', expectedText: /Employee Directory/i },
+  { path: '/app/backups', name: 'Backups', expectedText: /Backups Management/i },
+  { path: '/app/system', name: 'System Health', expectedText: /System Health/i },
+  { path: '/app/admin/users', name: 'Users', expectedText: /Users/i },
+  { path: '/app/admin/roles', name: 'Roles', expectedText: /Roles Management/i },
   {
-    path: '/admin/afterhours',
+    path: '/app/admin/afterhours',
     name: 'After Hours',
     expectedText: /After-Hours PC Monitor/i,
   },
-  { path: '/agent-updater', name: 'Agent Updater', expectedText: /Agent Updater/i },
+  { path: '/app/agent-updater', name: 'Agent Updater', expectedText: /Agent Updater/i },
   {
-    path: '/office-agents',
+    path: '/app/office-agents',
     name: 'Office Agents',
     expectedText: /Office Agent Monitor/i,
   },
-  { path: '/about', name: 'About', expectedText: /Portfolio|Feature/i },
-  { path: '/profile', name: 'Profile', expectedText: /Profile/i },
+  { path: '/app/profile', name: 'Profile', expectedText: /Profile/i },
 ];
 
 export const redirectRoutes: RouteCase[] = [
   {
+    path: '/eod',
+    name: 'EOD legacy route',
+    expectedText: /EOD Monitor/i,
+    finalPath: /\/app\/eod$/,
+  },
+  {
+    path: '/sync',
+    name: 'Sync legacy route',
+    expectedText: /Store Sync Monitor/i,
+    finalPath: /\/app\/sync$/,
+  },
+  {
+    path: '/stores',
+    name: 'Stores legacy route',
+    expectedText: /Store Directory/i,
+    finalPath: /\/app\/stores$/,
+  },
+  {
     path: '/eod-area',
     name: 'EOD legacy redirect',
     expectedText: /EOD Monitor/i,
-    finalPath: /\/eod$/,
+    finalPath: /\/app\/eod$/,
+  },
+  {
+    path: '/about',
+    name: 'About legacy redirect',
+    expectedText: /Portfolio case study|reusable operations starter/i,
+    finalPath: /\/case-study$/,
   },
   {
     path: '/not-a-real-route',
     name: 'Unknown route redirect',
-    expectedText: /Operations Hub/i,
+    expectedText: /Enterprise Ops Starter/i,
     finalPath: /\/$/,
   },
 ];
@@ -179,7 +217,7 @@ export async function assertDashboardSections(page: Page) {
 }
 
 export async function assertDashboardResponsive(page: Page, expectedColumns: number) {
-  await page.goto('/');
+  await page.goto('/app');
   await assertDashboardSections(page);
   await assertNoFrameworkOverlay(page);
   await assertNoHorizontalOverflow(page);

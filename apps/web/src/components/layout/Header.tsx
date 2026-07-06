@@ -24,11 +24,11 @@ export default function Header({ mobileOpen, onMobileMenuClick }: HeaderProps) {
 
   return (
     <BaseAppHeader
-      title="Enterprise Operations Platform"
+      title="Enterprise Ops Starter"
       mobileOpen={mobileOpen}
       onMobileMenuClick={onMobileMenuClick}
       profileInitials={getInitials(user?.username, user?.role)}
-      onProfileClick={() => navigate('/profile')}
+      onProfileClick={() => navigate('/app/profile')}
     />
   );
 }

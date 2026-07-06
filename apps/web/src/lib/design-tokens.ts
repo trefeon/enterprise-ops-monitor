@@ -1,5 +1,5 @@
 /**
- * Design Tokens — Enterprise Ops Monitor
+ * Design Tokens - Enterprise Ops Starter
  *
  * Semantic tokens for consistent spacing, typography, color, and animation.
  * Import these constants instead of hardcoding values in components.
@@ -18,9 +18,9 @@ export const SPACING = {
 
 // ─── Typography ────────────────────────────────────────
 export const TYPOGRAPHY = {
-  fontDisplay: "'DM Sans', 'Geist', system-ui, sans-serif",
-  fontBody: "'Geist', 'DM Sans', system-ui, sans-serif",
-  fontMono: "'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace",
+  fontDisplay: "'Space Grotesk Variable', 'Geist Variable', system-ui, sans-serif",
+  fontBody: "'Geist Variable', 'Inter', system-ui, sans-serif",
+  fontMono: "'JetBrains Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular, monospace",
 
   sizeXs: '0.65rem',
   sizeSm: '0.7rem',
@@ -44,12 +44,12 @@ export const RADIUS = {
   full: '9999px',
 } as const;
 
-// ─── Shadows ────────────────────────────────────────────
+// ─── Shadows — Vercel Geist-aligned ────────────────────
 export const SHADOW = {
-  card: '0 0 0 1px rgb(255 255 255 / 0.06)',
-  elevated: '0 4px 12px rgb(0 0 0 / 0.3)',
-  modal: '0 24px 80px rgb(0 0 0 / 0.6)',
-  glow: '0 0 16px rgb(74 222 128 / 0.2)',
+  card: '0 1px 2px rgba(0, 0, 0, 0.16)',
+  elevated: '0 1px 1px rgba(0,0,0,0.02), 0 4px 8px -4px rgba(0,0,0,0.04), 0 16px 24px -8px rgba(0,0,0,0.06)',
+  modal: '0 1px 1px rgba(0,0,0,0.02), 0 8px 16px -4px rgba(0,0,0,0.04), 0 24px 32px -8px rgba(0,0,0,0.06)',
+  glow: '0 0 16px rgb(34 211 238 / 0.24)',
 } as const;
 
 // ─── Animation ──────────────────────────────────────────

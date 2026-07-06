@@ -66,34 +66,34 @@ export default function Sidebar({ onClose, inSheet = false }: SidebarProps) {
 
   const primaryNav: AppNavItem[] = [
     {
-      href: '/',
+      href: '/app',
       title: 'Dashboard',
       icon: LayoutDashboard,
       permission: Permissions.DASHBOARD_VIEW,
     },
-    { href: '/sync', title: 'Store Sync', icon: RefreshCw, permission: Permissions.SYNC_VIEW },
-    { href: '/eod', title: 'EOD Monitor', icon: ClipboardCheck, permission: Permissions.EOD_VIEW },
-    { href: '/stores', title: 'Store Directory', icon: Store, permission: Permissions.STORES_VIEW },
+    { href: '/app/sync', title: 'Store Sync', icon: RefreshCw, permission: Permissions.SYNC_VIEW },
+    { href: '/app/eod', title: 'EOD Monitor', icon: ClipboardCheck, permission: Permissions.EOD_VIEW },
+    { href: '/app/stores', title: 'Store Directory', icon: Store, permission: Permissions.STORES_VIEW },
     {
-      href: '/identity',
+      href: '/app/identity',
       title: 'Employee Directory',
       icon: Contact,
       permission: Permissions.EMPLOYEES_VIEW,
     },
-    { href: '/backups', title: 'Backups', icon: Database, permission: Permissions.BACKUPS_VIEW },
-    { href: '/system', title: 'System', icon: Activity, permission: Permissions.SYSTEM_VIEW },
+    { href: '/app/backups', title: 'Backups', icon: Database, permission: Permissions.BACKUPS_VIEW },
+    { href: '/app/system', title: 'System', icon: Activity, permission: Permissions.SYSTEM_VIEW },
     {
       title: 'Tools',
       icon: Wrench,
       children: [
         {
-          href: '/agent-updater',
+          href: '/app/agent-updater',
           title: 'Agent Updater',
           icon: ShieldCheck,
           permission: Permissions.AGENT_UPDATE,
         },
         {
-          href: '/office-agents',
+          href: '/app/office-agents',
           title: 'Office Agents',
           icon: Laptop,
           permission: Permissions.AGENT_UPDATE,
@@ -103,10 +103,10 @@ export default function Sidebar({ onClose, inSheet = false }: SidebarProps) {
   ];
 
   const administrationNav: AppNavItem[] = [
-    { href: '/admin/users', title: 'Accounts', icon: Users, permission: Permissions.ACCOUNTS_VIEW },
-    { href: '/admin/roles', title: 'Roles', icon: Lock, permission: Permissions.ROLES_VIEW },
+    { href: '/app/admin/users', title: 'Accounts', icon: Users, permission: Permissions.ACCOUNTS_VIEW },
+    { href: '/app/admin/roles', title: 'Roles', icon: Lock, permission: Permissions.ROLES_VIEW },
     {
-      href: '/admin/afterhours',
+      href: '/app/admin/afterhours',
       title: 'After Hours',
       icon: Moon,
       permission: Permissions.AFTERHOURS_VIEW,
@@ -114,7 +114,7 @@ export default function Sidebar({ onClose, inSheet = false }: SidebarProps) {
   ];
 
   const portfolioNav: BaseNavItem[] = [
-    { href: '/about', title: 'Portfolio Context', icon: Info, tone: 'info' },
+    { href: '/case-study', title: 'Case Study', icon: Info, tone: 'info' },
   ];
 
   const groups: BaseSidebarNavGroup[] = [
@@ -133,7 +133,7 @@ export default function Sidebar({ onClose, inSheet = false }: SidebarProps) {
   return (
     <BaseSidebar
       groups={groups}
-      brandLabel="Ops Hub"
+      brandLabel="Ops Starter"
       collapsed={inSheet ? false : collapsed}
       onCollapsedChange={inSheet ? undefined : setCollapsedState}
       onClose={inSheet ? onClose : undefined}
@@ -142,7 +142,7 @@ export default function Sidebar({ onClose, inSheet = false }: SidebarProps) {
       userSummary={{ initials, name: usernameLabel, meta: roleLabel }}
       onUserClick={() => {
         onClose?.();
-        navigate('/profile');
+        navigate('/app/profile');
       }}
     />
   );

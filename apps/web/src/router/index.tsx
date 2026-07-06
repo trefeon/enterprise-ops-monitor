@@ -6,6 +6,9 @@ import PageTransition from "../components/common/PageTransition";
 import { Permissions } from "../lib/auth/permissions";
 
 const Login = lazy(() => import("../pages/Login"));
+const Landing = lazy(() => import("../pages/Landing"));
+const CaseStudy = lazy(() => import("../pages/CaseStudy"));
+const Starter = lazy(() => import("../pages/Starter"));
 const LiveSync = lazy(() => import("../pages/LiveSync"));
 const Dashboard = lazy(() => import("../pages/Dashboard"));
 const EODMonitor = lazy(() => import("../pages/EODMonitor"));
@@ -21,16 +24,57 @@ const RolesAdmin = lazy(() => import("../pages/RolesAdmin"));
 const AfterHours = lazy(() => import("../pages/AfterHours"));
 const AgentUpdater = lazy(() => import("../pages/AgentUpdater"));
 const OfficeAgents = lazy(() => import("../pages/office-agents"));
-const About = lazy(() => import("../pages/About"));
 
 const fallback = (
   <div className="flex h-screen items-center justify-center">Loading...</div>
 );
 
+const legacyRedirects = [
+  ["/eod", "/app/eod"],
+  ["/eod-area", "/app/eod"],
+  ["/stores", "/app/stores"],
+  ["/sync", "/app/sync"],
+  ["/identity", "/app/identity"],
+  ["/backups", "/app/backups"],
+  ["/system", "/app/system"],
+  ["/admin/users", "/app/admin/users"],
+  ["/admin/roles", "/app/admin/roles"],
+  ["/admin/afterhours", "/app/admin/afterhours"],
+  ["/agent-updater", "/app/agent-updater"],
+  ["/office-agents", "/app/office-agents"],
+  ["/profile", "/app/profile"],
+  ["/logout", "/app/logout"],
+  ["/about", "/case-study"],
+] as const;
+
 export default function AppRouter() {
   return (
     <Suspense fallback={fallback}>
       <Routes>
+        <Route
+          path="/"
+          element={
+            <PageTransition>
+              <Landing />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/case-study"
+          element={
+            <PageTransition>
+              <CaseStudy />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/starter"
+          element={
+            <PageTransition>
+              <Starter />
+            </PageTransition>
+          }
+        />
         <Route
           path="/login"
           element={
@@ -56,7 +100,11 @@ export default function AppRouter() {
           }
         />
 
-        <Route element={<PrivateRoute />}>
+        {legacyRedirects.map(([from, to]) => (
+          <Route key={from} path={from} element={<Navigate to={to} replace />} />
+        ))}
+
+        <Route path="/app" element={<PrivateRoute />}>
           <Route element={<AppShell />}>
             <Route
               index
@@ -74,7 +122,7 @@ export default function AppRouter() {
                 </PrivateRoute>
               }
             />
-            <Route path="eod-area" element={<Navigate to="/eod" />} />
+            <Route path="eod-area" element={<Navigate to="/app/eod" replace />} />
             <Route
               path="stores"
               element={
@@ -155,13 +203,12 @@ export default function AppRouter() {
                 </PrivateRoute>
               }
             />
-            <Route path="about" element={<About />} />
             <Route path="profile" element={<Profile />} />
             <Route path="logout" element={<Logout />} />
           </Route>
         </Route>
 
-        <Route path="*" element={<Navigate to="/" />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>
   );

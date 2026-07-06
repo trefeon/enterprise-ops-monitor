@@ -1,6 +1,8 @@
 @import 'tw-animate-css';
 @import 'shadcn/tailwind.css';
 @import '@fontsource-variable/geist';
+@import '@fontsource-variable/space-grotesk';
+@import '@fontsource-variable/jetbrains-mono';
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -11,76 +13,76 @@
     font-family: var(--font-body);
 
     /* Typography */
-    --font-display: 'DM Sans', 'Geist', system-ui, sans-serif;
-    --font-body: 'Geist', 'DM Sans', system-ui, sans-serif;
-    --font-mono: 'Geist Mono', 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    --font-display: 'Space Grotesk Variable', 'Geist Variable', system-ui, sans-serif;
+    --font-body: 'Geist Variable', 'Inter', system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
 
-    /* Direct design tokens */
-    --bg-base: rgb(11 12 14);
-    --bg-surface: rgb(17 19 22);
-    --bg-elevated: rgb(24 27 31);
-    --bg-input: rgb(20 23 27);
-    --bg-hover: rgb(30 33 38);
+    /* Direct design tokens — aligned with Vercel Geist dark palette */
+    --bg-base: #000000;
+    --bg-surface: #0a0a0a;
+    --bg-elevated: #111111;
+    --bg-input: #0a0a0a;
+    --bg-hover: #1a1a1a;
     --border-subtle: rgb(255 255 255 / 0.06);
-    --border-default: rgb(255 255 255 / 0.1);
-    --border-strong: rgb(255 255 255 / 0.18);
-    --border-accent: rgb(74 222 128 / 0.4);
-    --text-primary: rgb(240 242 245);
-    --text-secondary: rgb(139 145 154);
-    --text-muted: rgb(80 85 94);
-    --text-disabled: rgb(56 60 66);
-    --text-inverse: rgb(11 12 14);
-    --accent-solid: rgb(74 222 128);
-    --accent-dim: rgb(34 197 94);
-    --accent-muted: rgb(74 222 128 / 0.12);
-    --accent-glow: rgb(74 222 128 / 0.2);
-    --color-success: rgb(74 222 128);
-    --color-warning: rgb(251 191 36);
+    --border-default: #333333;
+    --border-strong: #444444;
+    --border-accent: rgb(34 211 238 / 0.45);
+    --text-primary: #ededed;
+    --text-secondary: #a1a1a1;
+    --text-muted: #888888;
+    --text-disabled: #555555;
+    --text-inverse: #000000;
+    --accent-solid: rgb(34 211 238);
+    --accent-dim: rgb(8 145 178);
+    --accent-muted: rgb(34 211 238 / 0.12);
+    --accent-glow: rgb(34 211 238 / 0.24);
+    --color-success: rgb(57 255 136);
+    --color-warning: rgb(250 204 21);
     --color-danger: rgb(248 113 113);
     --color-info: rgb(96 165 250);
     --color-neutral: rgb(107 114 128);
-    --bg-success: rgb(74 222 128 / 0.1);
-    --bg-warning: rgb(251 191 36 / 0.1);
+    --bg-success: rgb(57 255 136 / 0.1);
+    --bg-warning: rgb(250 204 21 / 0.1);
     --bg-danger: rgb(248 113 113 / 0.1);
     --bg-info: rgb(96 165 250 / 0.1);
-    --chart-1: rgb(74 222 128);
-    --chart-2: rgb(96 165 250);
-    --chart-3: rgb(251 191 36);
-    --chart-4: rgb(167 139 250);
+    --chart-1: rgb(34 211 238);
+    --chart-2: rgb(57 255 136);
+    --chart-3: rgb(250 204 21);
+    --chart-4: rgb(96 165 250);
     --chart-5: rgb(248 113 113);
 
-    /* Tailwind/shadcn HSL tokens mapped to the direct tokens above */
-    --background: 220 12% 5%;
-    --foreground: 210 14% 95%;
-    --card: 216 13% 8%;
-    --card-foreground: 210 14% 95%;
-    --popover: 214 13% 11%;
-    --popover-foreground: 210 14% 95%;
-    --primary: 142 76% 73%;
-    --primary-foreground: 220 12% 5%;
-    --secondary: 218 12% 13%;
-    --secondary-foreground: 210 14% 95%;
-    --muted: 214 13% 11%;
-    --muted-foreground: 217 6% 57%;
-    --accent: 218 12% 13%;
-    --accent-foreground: 210 14% 95%;
-    --destructive: 0 91% 71%;
-    --destructive-foreground: 220 12% 5%;
-    --border: 220 6% 17%;
-    --input: 216 15% 9%;
-    --ring: 142 76% 73%;
-    --success: 142 76% 73%;
-    --warning: 45 96% 64%;
+    /* Tailwind/shadcn HSL tokens — Vercel Geist-aligned dark palette */
+    --background: 0 0% 0%;
+    --foreground: 0 0% 93%;
+    --card: 0 0% 4%;
+    --card-foreground: 0 0% 93%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 93%;
+    --primary: 188 86% 53%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 7%;
+    --secondary-foreground: 0 0% 93%;
+    --muted: 0 0% 7%;
+    --muted-foreground: 0 0% 63%;
+    --accent: 0 0% 7%;
+    --accent-foreground: 0 0% 93%;
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 7%;
+    --ring: 188 86% 53%;
+    --success: 146 100% 61%;
+    --warning: 48 96% 53%;
     --info: 217 91% 67%;
-    --brand: 142 76% 73%;
-    --sidebar: 216 13% 8%;
-    --sidebar-foreground: 210 14% 95%;
-    --sidebar-primary: 142 76% 73%;
-    --sidebar-primary-foreground: 220 12% 5%;
-    --sidebar-accent: 218 12% 13%;
-    --sidebar-accent-foreground: 210 14% 95%;
-    --sidebar-border: 220 6% 17%;
-    --sidebar-ring: 142 76% 73%;
+    --brand: 188 86% 53%;
+    --sidebar: 0 0% 0%;
+    --sidebar-foreground: 0 0% 93%;
+    --sidebar-primary: 188 86% 53%;
+    --sidebar-primary-foreground: 0 0% 0%;
+    --sidebar-accent: 0 0% 7%;
+    --sidebar-accent-foreground: 0 0% 93%;
+    --sidebar-border: 0 0% 20%;
+    --sidebar-ring: 188 86% 53%;
 
     /* Spacing, shape, and motion */
     --radius-xs: 4px;
@@ -114,11 +116,10 @@
 
   body {
     background-color: var(--bg-base);
-    background-image:
-      radial-gradient(ellipse 80% 50% at 50% -20%, rgb(74 222 128 / 0.04) 0%, transparent 60%),
-      url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.015'%3E%3Cpath d='M0 0h40v1H0zM0 0v40h1V0z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
     color: var(--text-primary);
     font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
     @apply antialiased;
   }
 
@@ -184,7 +185,32 @@
 @layer components {
   /* Utility class to be used by PageShell ONLY */
   .page-container {
-    @apply mx-auto w-full max-w-screen-2xl px-4 py-6 sm:px-6 lg:px-8 space-y-6;
+    @apply w-full px-4 py-6 sm:px-6 lg:px-8 2xl:px-10 space-y-6;
+  }
+
+  .portfolio-container {
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .portfolio-container {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .portfolio-container {
+      padding-inline: 2rem;
+    }
+  }
+
+  @media (min-width: 1536px) {
+    .portfolio-container {
+      padding-inline: 2.5rem;
+    }
   }
 
   /* Utility class to be used by PageHeader ONLY */

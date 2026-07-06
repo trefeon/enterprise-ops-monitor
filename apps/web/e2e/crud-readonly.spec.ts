@@ -2,11 +2,11 @@ import { expect, test } from '@playwright/test';
 import { API_URL, expectDemoReadOnly, loginViaApi } from './helpers';
 
 test('demo user does not see store or employee edit controls', async ({ page }) => {
-  await page.goto('/stores');
+  await page.goto('/app/stores');
   await expect(page.getByRole('heading', { name: /Store Directory/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /Add Store/i })).toHaveCount(0);
 
-  await page.goto('/identity');
+  await page.goto('/app/identity');
   await expect(page.getByRole('heading', { name: /Employee Directory/i })).toBeVisible();
   await expect(page.getByRole('button', { name: /Add Employee/i })).toHaveCount(0);
 });
