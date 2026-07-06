@@ -98,7 +98,7 @@ export default function CaseStudy() {
       <section className="portfolio-container pt-28 pb-16">
         <div className="mx-auto max-w-3xl">
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs text-muted-foreground">
-            <Code2 className="size-3" />
+            <Code2 aria-hidden="true" className="size-3" />
             Portfolio Case Study
           </div>
           <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
@@ -179,7 +179,7 @@ export default function CaseStudy() {
                 <div className="grid gap-2 p-5 sm:grid-cols-2">
                   {layer.decisions.map((decision) => (
                     <div key={decision} className="flex gap-2">
-                      <CheckCircle2 className="mt-0.5 size-3 shrink-0 text-status-success" />
+                      <CheckCircle2 aria-hidden="true" className="mt-0.5 size-3 shrink-0 text-status-success" />
                       <span className="text-xs leading-5 text-muted-foreground">{decision}</span>
                     </div>
                   ))}
@@ -273,7 +273,7 @@ export default function CaseStudy() {
               className="inline-flex h-10 items-center gap-2 rounded-lg bg-foreground px-5 text-sm font-medium text-background transition-opacity hover:opacity-90"
             >
               Open Live Demo
-              <ArrowRight className="size-3.5" />
+              <ArrowRight aria-hidden="true" className="size-3.5" />
             </Link>
             <a
               href="https://github.com/trefeon/enterprise-ops-monitor"
@@ -282,7 +282,7 @@ export default function CaseStudy() {
               className="inline-flex h-10 items-center gap-2 rounded-lg border border-border px-5 text-sm font-medium text-foreground transition-colors hover:bg-card"
             >
               View Source
-              <ExternalLink className="size-3.5" />
+              <ExternalLink aria-hidden="true" className="size-3.5" />
             </a>
           </div>
         </div>

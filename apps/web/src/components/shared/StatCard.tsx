@@ -111,7 +111,7 @@ export function StatCard({
             trendColors[trend.direction]
           )}
         >
-          <TrendIcon className="size-3" />
+          <TrendIcon className="size-3" aria-hidden="true" />
           {trend.direction !== 'flat' && (trend.value > 0 ? '+' : '')}
           {trend.value}%
         </span>
@@ -146,14 +146,26 @@ export function StatCard({
   }
 
   return (
-    <Card
-      onClick={onClick}
-      className={cn(
-        'group relative flex h-full flex-col overflow-hidden transition-all duration-200 border-border',
-        onClick && 'cursor-pointer hover:border-primary/50 active:scale-[0.98]',
-        className
-      )}
-    >
+      <Card
+        onClick={onClick}
+        role={onClick ? 'button' : undefined}
+        tabIndex={onClick ? 0 : undefined}
+        onKeyDown={
+          onClick
+            ? (e: React.KeyboardEvent) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onClick();
+                }
+              }
+            : undefined
+        }
+        className={cn(
+          'group relative flex h-full flex-col overflow-hidden transition-shadow duration-200 border-border',
+          onClick && 'cursor-pointer hover:border-primary/50 active:scale-[0.98]',
+          className
+        )}
+      >
       <CardContent className={cn('flex flex-1 flex-col', paddingSizes[size])}>
         {/* Top semantic rail */}
         <div className={cn('absolute inset-x-0 top-0 h-0.5', styles.rail)} />

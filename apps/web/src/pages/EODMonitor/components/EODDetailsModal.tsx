@@ -25,7 +25,7 @@ export function EODDetailsModal({ detail, loading, error, onClose }: EODDetailsM
       maxWidth="max-w-2xl"
     >
       {loading ? (
-        <div className="text-sm text-muted-foreground">Loading details...</div>
+        <div className="text-sm text-muted-foreground" aria-live="polite" aria-busy="true">Loading details...</div>
       ) : error ? (
         <div className="text-sm text-status-error">{error}</div>
       ) : (

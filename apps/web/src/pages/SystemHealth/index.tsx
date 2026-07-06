@@ -376,14 +376,15 @@ const SystemHealth = () => {
           <Button
             type="button"
             variant="ghost"
-            size="icon"
-            className="size-8 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+                    size="icon"
+                    aria-label="Copy log entry"
+                    className="size-8 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
             onClick={(e) => {
               e.stopPropagation();
               handleCopyLog(log);
             }}
           >
-            <Copy className="size-4" />
+            <Copy className="size-4" aria-hidden="true" />
           </Button>
         ),
       },
@@ -405,10 +406,10 @@ const SystemHealth = () => {
         <EmptyState
           title="Failed to load system health"
           description={error}
-          icon={<AlertTriangle className="size-8" />}
+          icon={<AlertTriangle className="size-8" aria-hidden="true" />}
           action={
             <Button onClick={refreshAll}>
-              <RefreshCw className="mr-2 size-4" /> Retry
+              <RefreshCw className="mr-2 size-4" aria-hidden="true" /> Retry
             </Button>
           }
         />
@@ -434,24 +435,24 @@ const SystemHealth = () => {
                   disabled={loadingOverview || loadingServices || loadingLogs}
                 >
                   {loadingOverview || loadingServices || loadingLogs ? (
-                    <Loader2 className="animate-spin mr-2" />
+                    <Loader2 className="animate-spin mr-2" aria-hidden="true" />
                   ) : (
-                    <RotateCw className="mr-2 size-4" />
+                    <RotateCw className="mr-2 size-4" aria-hidden="true" />
                   )}
                   Refresh
                 </Button>
                 <Guard user={user} permission="SYSTEM_HEALTHCHECK">
                   <Button variant="secondary" onClick={handleHealthCheck}>
                     {healthLoading ? (
-                      <Loader2 className="animate-spin mr-2" />
+                      <Loader2 className="animate-spin mr-2" aria-hidden="true" />
                     ) : (
-                      <Activity className="mr-2 size-4" />
+                      <Activity className="mr-2 size-4" aria-hidden="true" />
                     )}
                     {healthLoading ? 'Checking...' : 'Run Health Check'}
                   </Button>
                 </Guard>
                 <Button onClick={handleExportLogs}>
-                  <Download className="mr-2 size-4" />
+                  <Download className="mr-2 size-4" aria-hidden="true" />
                   Export Logs
                 </Button>
               </>
@@ -469,7 +470,7 @@ const SystemHealth = () => {
                     {overview?.platform || '-'}
                   </h3>
                 </div>
-                <Monitor className="size-8 text-muted-foreground" />
+                <Monitor className="size-8 text-muted-foreground" aria-hidden="true" />
               </div>
               <div className="text-xs text-muted-foreground break-words">
                 Host {overview?.hostname || '-'}
@@ -486,7 +487,7 @@ const SystemHealth = () => {
                     {formatUptime(overview?.uptimeSeconds)}
                   </h3>
                 </div>
-                <Timer className="size-8 text-muted-foreground" />
+                <Timer className="size-8 text-muted-foreground" aria-hidden="true" />
               </div>
               <div className="text-xs text-muted-foreground">
                 Updated {formatTime(overview?.generatedAt)}
@@ -499,11 +500,11 @@ const SystemHealth = () => {
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <p className="text-muted-foreground text-sm font-medium mb-1">CPU Usage</p>
-                  <h3 className="text-foreground text-xl font-bold">
+                  <h3 className="text-foreground text-xl font-bold tabular-nums">
                     {overview?.cpuUsage != null ? `${overview.cpuUsage.toFixed(1)}%` : '-'}
                   </h3>
                 </div>
-                <Cpu className="size-8 text-muted-foreground" />
+                <Cpu className="size-8 text-muted-foreground" aria-hidden="true" />
               </div>
               <ProgressBar
                 value={overview?.cpuUsage || 0}
@@ -527,11 +528,11 @@ const SystemHealth = () => {
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <p className="text-muted-foreground text-sm font-medium mb-1">Memory Usage</p>
-                  <h3 className="text-foreground text-xl font-bold">
+                  <h3 className="text-foreground text-xl font-bold tabular-nums">
                     {memoryUsedPercent != null ? `${memoryUsedPercent.toFixed(1)}%` : '-'}
                   </h3>
                 </div>
-                <HardDrive className="size-8 text-muted-foreground" />
+                <HardDrive className="size-8 text-muted-foreground" aria-hidden="true" />
               </div>
               <ProgressBar
                 value={memoryUsedPercent != null ? Math.min(memoryUsedPercent, 100) : 0}
@@ -557,7 +558,7 @@ const SystemHealth = () => {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                   <p className="text-sm text-muted-foreground">Disk Usage</p>
-                  <p className="text-lg font-semibold text-foreground">
+                  <p className="text-lg font-semibold text-foreground tabular-nums">
                     {diskUsedPercent != null ? `${diskUsedPercent.toFixed(1)}%` : '-'}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -599,12 +600,12 @@ const SystemHealth = () => {
                 return (
                   <Card
                     key={service.name}
-                    className="group relative overflow-hidden transition-all hover:border-primary/50"
+                    className="group relative overflow-hidden transition-[box-shadow,border-color,transform] hover:border-primary/50"
                   >
                     <CardContent className="p-4 flex flex-col gap-3">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex size-10 items-center justify-center rounded-lg bg-muted/50 text-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
-                          <Icon className="size-5" />
+                          <Icon className="size-5" aria-hidden="true" />
                         </div>
                         <div className="flex items-center gap-1.5">
                           <StatusBadge
@@ -638,7 +639,7 @@ const SystemHealth = () => {
                           }}
                           aria-label={`Restart ${service.name}`}
                         >
-                          <RotateCw className="size-4" />
+                          <RotateCw className="size-4" aria-hidden="true" />
                         </Button>
                       </Guard>
                     </CardContent>
@@ -656,9 +657,10 @@ const SystemHealth = () => {
               <div className="relative group">
                 <div className="relative w-full">
                   <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground">
-                    <Search className="size-4" />
+                    <Search className="size-4" aria-hidden="true" />
                   </span>
                   <Input
+                    aria-label="Filter logs"
                     placeholder="Filter logs..."
                     type="text"
                     value={logQuery}
@@ -711,6 +713,7 @@ const SystemHealth = () => {
         </div>
       </PageShell>
       <ConfirmDialog
+        style={{ overscrollBehavior: 'contain' }}
         open={Boolean(restartTarget)}
         title={restartTarget ? `Restart ${restartTarget.name}` : 'Restart Service'}
         desc="This will request a service restart and add an entry to system logs."

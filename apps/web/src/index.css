@@ -112,6 +112,13 @@
 
   * {
     @apply border-border outline-ring/50;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+
+  /* Numeric tabular rendering for all monospaced/data-heavy contexts */
+  .tabular, table, [data-tabular] {
+    font-variant-numeric: tabular-nums;
   }
 
   body {

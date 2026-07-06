@@ -158,7 +158,7 @@ export default function RolesAdmin() {
         <FeatureStoryBanner story={getFeatureStory('roles')} />
         <PageHeader title="Roles Management" subtitle="Manage system and custom roles" />
         <div className="flex justify-center items-center h-64">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" />
+          <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
         </div>
       </PageShell>
     );
@@ -173,7 +173,7 @@ export default function RolesAdmin() {
         actions={
           <Guard user={user} permission="ROLES_EDIT">
             <Button onClick={handleCreate}>
-              <Plus className="size-4" />
+              <Plus className="size-4" aria-hidden="true" />
               Create Role
             </Button>
           </Guard>
@@ -181,7 +181,7 @@ export default function RolesAdmin() {
       />
       {/* Role Editor Modal */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm" style={{ overscrollBehavior: 'contain' }}>
           <Card className="w-full max-w-2xl max-h-screen overflow-y-auto m-4">
             <CardContent>
               <div className="p-6">
@@ -192,10 +192,11 @@ export default function RolesAdmin() {
                 <div className="space-y-4">
                   {!selectedRole && (
                     <div>
-                      <label className="block text-sm font-medium mb-1">
+                      <label htmlFor="role-name" className="block text-sm font-medium mb-1">
                         Name (lowercase, underscores)
                       </label>
                       <Input
+                        id="role-name"
                         type="text"
                         value={editForm.name}
                         onChange={(e) =>
@@ -211,8 +212,9 @@ export default function RolesAdmin() {
                   )}
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">Label</label>
+                    <label htmlFor="role-label" className="block text-sm font-medium mb-1">Label</label>
                     <Input
+                      id="role-label"
                       type="text"
                       value={editForm.label}
                       onChange={(e) => setEditForm({ ...editForm, label: e.target.value })}
@@ -222,8 +224,9 @@ export default function RolesAdmin() {
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium mb-1">Description</label>
+                    <label htmlFor="role-description" className="block text-sm font-medium mb-1">Description</label>
                     <Textarea
+                      id="role-description"
                       value={editForm.description}
                       onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
                       className="resize-none"
@@ -295,8 +298,8 @@ export default function RolesAdmin() {
                     <p className="text-sm text-muted-foreground mt-1">{role.description}</p>
                   )}
                   <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                    <span>{role.permissions?.length || 0} permissions</span>
-                    <span>{role.userCount || 0} users</span>
+                    <span className="tabular-nums">{role.permissions?.length || 0} permissions</span>
+                    <span className="tabular-nums">{role.userCount || 0} users</span>
                   </div>
                   <div className="flex flex-wrap gap-1 mt-2">
                     {(role.permissions || []).slice(0, 8).map((p) => (
@@ -316,14 +319,14 @@ export default function RolesAdmin() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Guard user={user} permission="ROLES_EDIT">
-                    <Button variant="ghost" size="sm" onClick={() => handleEdit(role)}>
-                      <Edit3 className="size-4" />
+                    <Button variant="ghost" size="sm" aria-label="Edit role" onClick={() => handleEdit(role)}>
+                      <Edit3 className="size-4" aria-hidden="true" />
                     </Button>
                   </Guard>
                   {!role.is_system && (
                     <Guard user={user} permission="ROLES_EDIT">
-                      <Button variant="ghost" size="sm" onClick={() => handleDelete(role)}>
-                        <Trash2 className="size-4 text-destructive" />
+                      <Button variant="ghost" size="sm" aria-label="Delete role" onClick={() => handleDelete(role)}>
+                        <Trash2 className="size-4 text-destructive" aria-hidden="true" />
                       </Button>
                     </Guard>
                   )}

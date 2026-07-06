@@ -27,14 +27,14 @@ export function EODStatsRow({
       <StatCard
         title="Total Stores"
         value={isLoadingOrError ? '-' : stats.total}
-        icon={<Store className="size-5" />}
+        icon={<Store aria-hidden="true" className="size-5" />}
         subtext="Active locations"
         onClick={() => onStatusClick('')}
       />
       <StatCard
         title="EOD Completed"
         value={isLoadingOrError ? '-' : stats.done}
-        icon={<CheckCircle2 className="size-5" />}
+        icon={<CheckCircle2 aria-hidden="true" className="size-5" />}
         status="success"
         footer={
           <ProgressBar
@@ -48,7 +48,7 @@ export function EODStatsRow({
       <StatCard
         title="Pending"
         value={isLoadingOrError ? '-' : stats.pending}
-        icon={<Hourglass className="size-5" />}
+        icon={<Hourglass aria-hidden="true" className="size-5" />}
         status="warning"
         footer={
           <ProgressBar
@@ -62,7 +62,7 @@ export function EODStatsRow({
       <StatCard
         title="Failed"
         value={isLoadingOrError ? '-' : stats.failed}
-        icon={<CircleAlert className="size-5" />}
+        icon={<CircleAlert aria-hidden="true" className="size-5" />}
         status="error"
         subtext="Needs attention"
         onClick={() => onStatusClick('failed')}

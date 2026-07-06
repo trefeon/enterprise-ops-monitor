@@ -404,16 +404,18 @@ export default function UsersAdmin() {
           <CardContent>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div>
-                <label className="text-xs text-muted-foreground">Username</label>
+                <label htmlFor="username" className="text-xs text-muted-foreground">Username</label>
                 <Input
+                  id="username"
                   value={createForm.username}
                   onChange={(e) => setCreateForm((s) => ({ ...s, username: e.target.value }))}
                   placeholder="username"
                 />
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Password</label>
+                <label htmlFor="password" className="text-xs text-muted-foreground">Password</label>
                 <Input
+                  id="password"
                   type="password"
                   value={createForm.password}
                   onChange={(e) => setCreateForm((s) => ({ ...s, password: e.target.value }))}
@@ -424,8 +426,9 @@ export default function UsersAdmin() {
                 </div>
               </div>
               <div>
-                <label className="text-xs text-muted-foreground">Role</label>
+                <label htmlFor="role" className="text-xs text-muted-foreground">Role</label>
                 <Select
+                  id="role"
                   value={createForm.role}
                   onValueChange={(val) => {
                     const e = {
@@ -456,7 +459,7 @@ export default function UsersAdmin() {
                 onClick={handleCreate}
                 disabled={loading || !createForm.username.trim() || !createForm.password}
               >
-                <Loader2 className="animate-spin mr-2" />
+                <Loader2 className="animate-spin mr-2" aria-hidden="true" />
                 Create
               </Button>
             </div>
@@ -564,6 +567,7 @@ export default function UsersAdmin() {
         confirmDisabled={deleteLoading}
       />
       <Modal
+        style={{ overscrollBehavior: 'contain' }}
         open={changePassOpen}
         onClose={closeChangePasswordModal}
         title={`Change Password for ${changePassUser?.username || ''}`}

@@ -41,7 +41,7 @@ export function Modal({
             <DialogTitle className="text-lg font-semibold tracking-tight text-foreground">{title}</DialogTitle>
           </DialogHeader>
         )}
-        <div className="-mr-1 flex-1 overflow-y-auto py-1 pr-1 text-sm leading-relaxed text-muted-foreground">
+        <div className="-mr-1 flex-1 overflow-y-auto py-1 pr-1 text-sm leading-relaxed text-muted-foreground" style={{ overscrollBehavior: 'contain' }}>
           {children}
         </div>
       </DialogContent>

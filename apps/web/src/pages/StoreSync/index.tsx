@@ -474,9 +474,10 @@ const StoreSync = () => {
               event.stopPropagation();
               openHistory(store.storeCode, store.storeName);
             }}
+            aria-label="View history"
             title="View sync history"
           >
-            <History className="size-4" />
+            <History aria-hidden="true" className="size-4" />
           </Button>
         ),
       },
@@ -515,7 +516,7 @@ const StoreSync = () => {
           icon={<AlertTriangle className="size-8" />}
           action={
             <Button onClick={handleRefresh}>
-              <RefreshCw className="mr-2 size-4" /> Retry
+              <RefreshCw aria-hidden="true" className="mr-2 size-4" /> Retry
             </Button>
           }
         />
@@ -533,8 +534,8 @@ const StoreSync = () => {
         meta={`Updated ${updatedLabel} • Auto-refresh ${countdown}s${sourceMeta ? ` • ${sourceMeta}` : ''}`}
         actions={
           <Button onClick={handleRefresh}>
-            {refreshing && <Loader2 className="animate-spin mr-2" />}
-            <RefreshCw className="mr-2 size-4" />
+            {refreshing && <Loader2 aria-hidden="true" className="animate-spin mr-2" />}
+            <RefreshCw aria-hidden="true" className="mr-2 size-4" />
             {refreshing ? 'Refreshing...' : 'Refresh Now'}
           </Button>
         }
@@ -556,7 +557,7 @@ const StoreSync = () => {
                   variant="secondary"
                   onClick={() => Promise.all([fetchSummary(), fetchStatus(), fetchStores()])}
                 >
-                  <RefreshCw className="mr-2 size-4" />
+                  <RefreshCw aria-hidden="true" className="mr-2 size-4" />
                   Retry
                 </Button>
               </div>
@@ -570,7 +571,7 @@ const StoreSync = () => {
         <StatCard
           title="Total Stores"
           icon={<Store className="size-5" />}
-          value={summary?.totalStores ?? '-'}
+          value={<span className="tabular-nums">{summary?.totalStores ?? '-'}</span>}
           subtext="Across all branches"
           onClick={handleTotalStoresClick}
           className={statusFilter === '' ? 'ring-2 ring-ring' : ''}
@@ -579,7 +580,7 @@ const StoreSync = () => {
         <StatCard
           title="On-time"
           icon={<CheckCircle className="size-5" />}
-          value={<span className="text-status-success">{summary?.synced ?? '-'}</span>}
+          value={<span className="tabular-nums text-status-success">{summary?.synced ?? '-'}</span>}
           subtext={`Last sync 0–${syncedMaxLabel}`}
           accent="text-status-success"
           onClick={() => handleKpiStatusClick('synced')}
@@ -591,9 +592,7 @@ const StoreSync = () => {
           icon={<AlertTriangle className="size-5" />}
           value={
             <span
-              className={
-                (Number(summary?.stale) || 0) > 0 ? 'text-status-warning' : 'text-foreground'
-              }
+              className={`tabular-nums ${(Number(summary?.stale) || 0) > 0 ? 'text-status-warning' : 'text-foreground'}`}
             >
               {summary?.stale ?? '-'}
             </span>
@@ -611,7 +610,7 @@ const StoreSync = () => {
           icon={<AlertTriangle className="size-5" />}
           value={
             <span
-              className={(Number(status?.late) || 0) > 0 ? 'text-status-error' : 'text-foreground'}
+              className={`tabular-nums ${(Number(status?.late) || 0) > 0 ? 'text-status-error' : 'text-foreground'}`}
             >
               {status?.late ?? '-'}
             </span>
@@ -627,7 +626,7 @@ const StoreSync = () => {
         <StatCard
           title="Oldest Last Sync"
           icon={<Clock className="size-5" />}
-          value={summary?.oldest?.ageSec != null ? formatDuration(summary.oldest.ageSec) : '-'}
+          value={summary?.oldest?.ageSec != null ? <span className="tabular-nums">{formatDuration(summary.oldest.ageSec)}</span> : '-'}
           subtext={
             <span className="block break-words" title={summary?.oldest?.namaToko}>
               {summary?.oldest?.namaToko || '-'}
@@ -672,6 +671,8 @@ const StoreSync = () => {
               return (
                 <Card
                   key={branch.id}
+                  role="button"
+                  tabIndex={0}
                   onClick={() => {
                     setBranchFilter((prev) =>
                       String(prev || '') === String(branch.id || '') ? '' : String(branch.id || '')
@@ -679,7 +680,16 @@ const StoreSync = () => {
                     resetPagination();
                     scrollToStoreTable();
                   }}
-                  className={`transition-all hover:border-primary/50 hover:shadow-md active:scale-95 cursor-pointer ${isBranchSelected ? 'ring-2 ring-ring' : ''}`}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      setBranchFilter((prev) =>
+                        String(prev || '') === String(branch.id || '') ? '' : String(branch.id || '')
+                      );
+                      resetPagination();
+                      scrollToStoreTable();
+                    }
+                  }}
+                  className={`transition-[transform,box-shadow,border-color] hover:border-primary/50 hover:shadow-md active:scale-95 cursor-pointer ${isBranchSelected ? 'ring-2 ring-ring' : ''}`}
                 >
                   <div className="flex flex-col gap-3 p-4">
                     <div className="flex items-center justify-between">
@@ -817,7 +827,7 @@ const StoreSync = () => {
                     Failed to load stores: {storesError}
                   </span>
                   <Button variant="secondary" onClick={fetchStores} size="sm">
-                    <RefreshCw className="mr-2 size-4" />
+                    <RefreshCw aria-hidden="true" className="mr-2 size-4" />
                     Retry
                   </Button>
                 </div>
@@ -840,7 +850,7 @@ const StoreSync = () => {
             <p className="text-sm text-muted-foreground">
               {historyStore.storeCode} - {historyStore.storeName}
             </p>
-            <div className="modal-scroll-70 overflow-y-auto">
+            <div className="modal-scroll-70 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div className="flex flex-wrap items-center gap-3">
                   <Select value={historyMode} onValueChange={(val) => setHistoryMode(val)}>

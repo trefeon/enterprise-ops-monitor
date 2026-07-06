@@ -24,6 +24,7 @@ export function EODFilters({ filters, onFilterChange }: EODFiltersProps) {
         value={filters.q}
         onChange={onFilterChange}
         className="w-full md:max-w-sm"
+        aria-label="Search stores"
       />
       <Select
         value={filters.areaId ? String(filters.areaId) : ''}
@@ -31,7 +32,7 @@ export function EODFilters({ filters, onFilterChange }: EODFiltersProps) {
           onFilterChange({ target: { name: 'areaId', value: String(val ?? '') } })
         }
       >
-        <SelectTrigger className="w-full md:w-44">
+        <SelectTrigger className="w-full md:w-44" aria-label="Filter by branch">
           <SelectValue placeholder="Branch: All">
             {filters.areaId
               ? `Branch: ${BRANCH_OPTIONS.find((b) => String(b.id) === String(filters.areaId))?.label || filters.areaId}`
@@ -53,7 +54,7 @@ export function EODFilters({ filters, onFilterChange }: EODFiltersProps) {
           onFilterChange({ target: { name: 'status', value: String(val ?? '') } })
         }
       >
-        <SelectTrigger className="w-full md:w-40">
+        <SelectTrigger className="w-full md:w-40" aria-label="Filter by status">
           <SelectValue placeholder="Status: All">
             {filters.status
               ? `Status: ${STATUS_OPTIONS.find((s) => s.value === filters.status)?.label || filters.status.toUpperCase()}`
@@ -73,6 +74,7 @@ export function EODFilters({ filters, onFilterChange }: EODFiltersProps) {
         value={filters.date}
         onChange={onFilterChange}
         className="w-full shrink-0 md:w-auto"
+        aria-label="Filter by date"
       />
     </>
   );

@@ -130,7 +130,7 @@ export default function Backups() {
           icon={<AlertCircle className="size-8" />}
           action={
             <Button variant="outline" onClick={b.handleRefresh}>
-              <RefreshCw className="mr-2 size-4" />
+              <RefreshCw aria-hidden="true" className="mr-2 size-4" />
               Retry
             </Button>
           }
@@ -160,15 +160,15 @@ export default function Backups() {
         actions={
           <>
             <Button variant="outline" onClick={b.handleRefresh} disabled={b.isLoading}>
-              <RefreshCw className={`mr-2 size-4 ${b.isLoading ? 'animate-spin' : ''}`} />
+              <RefreshCw aria-hidden="true" className={`mr-2 size-4 ${b.isLoading ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
             <Guard user={user} permission="BACKUPS_RUN">
               <Button onClick={b.runManualBackup} disabled={b.manualLoading}>
                 {b.manualLoading ? (
-                  <Loader2 className="animate-spin mr-2 size-4" />
+                  <Loader2 aria-hidden="true" className="animate-spin mr-2 size-4" />
                 ) : (
-                  <Play className="mr-2 size-4" />
+                  <Play aria-hidden="true" className="mr-2 size-4" />
                 )}
                 Run Backup Now
               </Button>
@@ -204,7 +204,7 @@ export default function Backups() {
                   / {diskTotal != null ? formatBytes(diskTotal) : '-'}
                 </span>
               </span>
-              <span className="text-sm font-bold text-foreground">
+              <span className="tabular-nums text-sm font-bold text-foreground">
                 {diskPercent != null ? `${diskPercent.toFixed(0)}%` : '-'}
               </span>
             </div>
@@ -226,7 +226,7 @@ export default function Backups() {
                 </p>
               )}
               <p className="text-3xs font-bold text-primary uppercase tracking-widest pt-1">
-                Snapshot volume: {formatBytes(b.summary?.totalSizeBytes ?? 0)}
+                Snapshot volume: <span className="tabular-nums">{formatBytes(b.summary?.totalSizeBytes ?? 0)}</span>
               </p>
             </div>
           </div>
@@ -314,42 +314,46 @@ export default function Backups() {
       </section>
 
       {/* Delete confirmation */}
-      <ConfirmDialog
-        open={Boolean(b.deleteTarget)}
-        title="Delete backup file"
-        desc={`Type the filename to confirm deletion: ${b.deleteTarget?.fileName}`}
-        confirmText="Delete"
-        danger
-        confirmExpected={b.deleteTarget?.fileName || ''}
-        confirmValue={b.deleteConfirm}
-        onConfirmValueChange={b.setDeleteConfirm}
-        onConfirm={b.handleDelete}
-        onClose={() => {
-          b.setDeleteTarget(null);
-          b.setDeleteConfirm('');
-        }}
-        confirmLabel="Filename confirmation"
-      />
+      <div style={{ overscrollBehavior: 'contain' }}>
+        <ConfirmDialog
+          open={Boolean(b.deleteTarget)}
+          title="Delete backup file"
+          desc={`Type the filename to confirm deletion: ${b.deleteTarget?.fileName}`}
+          confirmText="Delete"
+          danger
+          confirmExpected={b.deleteTarget?.fileName || ''}
+          confirmValue={b.deleteConfirm}
+          onConfirmValueChange={b.setDeleteConfirm}
+          onConfirm={b.handleDelete}
+          onClose={() => {
+            b.setDeleteTarget(null);
+            b.setDeleteConfirm('');
+          }}
+          confirmLabel="Filename confirmation"
+        />
+      </div>
 
       {/* Restore confirmation */}
-      <ConfirmDialog
-        open={Boolean(b.restoreTarget)}
-        title="Restore database"
-        desc="This will queue a database restore. Type RESTORE to continue."
-        confirmText="Queue Restore"
-        danger
-        confirmExpected="RESTORE"
-        confirmValue={b.restoreConfirm}
-        onConfirmValueChange={(v) => {
-          if (v !== 'RESTORE') b.setRestoreConfirm(v);
-        }}
-        onConfirm={b.handleRestore}
-        onClose={() => {
-          b.setRestoreTarget(null);
-          b.setRestoreConfirm('');
-        }}
-        confirmLabel="Type RESTORE"
-      />
+      <div style={{ overscrollBehavior: 'contain' }}>
+        <ConfirmDialog
+          open={Boolean(b.restoreTarget)}
+          title="Restore database"
+          desc="This will queue a database restore. Type RESTORE to continue."
+          confirmText="Queue Restore"
+          danger
+          confirmExpected="RESTORE"
+          confirmValue={b.restoreConfirm}
+          onConfirmValueChange={(v) => {
+            if (v !== 'RESTORE') b.setRestoreConfirm(v);
+          }}
+          onConfirm={b.handleRestore}
+          onClose={() => {
+            b.setRestoreTarget(null);
+            b.setRestoreConfirm('');
+          }}
+          confirmLabel="Type RESTORE"
+        />
+      </div>
     </PageShell>
   );
 }

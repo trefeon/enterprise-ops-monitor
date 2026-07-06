@@ -420,7 +420,7 @@ const IdentityCheck = () => {
             </Badge>
             {canManageEmployees && (
               <Button onClick={openCreateDialog}>
-                <Plus className="size-4" />
+                <Plus aria-hidden="true" className="size-4" />
                 <span className="truncate">Add Employee</span>
               </Button>
             )}
@@ -495,7 +495,7 @@ const IdentityCheck = () => {
         }
         right={
           <Button variant="secondary" onClick={applyFilters}>
-            <Search className="size-4" />
+            <Search aria-hidden="true" className="size-4" />
             Apply
           </Button>
         }
@@ -507,7 +507,7 @@ const IdentityCheck = () => {
           icon={<AlertTriangle className="size-8" />}
           action={
             <Button onClick={fetchEmployees}>
-              <RefreshCw className="mr-2 size-4" /> Retry
+              <RefreshCw aria-hidden="true" className="mr-2 size-4" /> Retry
             </Button>
           }
         />
