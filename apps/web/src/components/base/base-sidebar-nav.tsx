@@ -42,11 +42,15 @@ export interface BaseSidebarNavProps {
 }
 
 function isItemActive(pathname: string, item: BaseNavItem): boolean {
-  if (
-    item.href &&
-    (pathname === item.href || (item.href !== '/' && pathname.startsWith(item.href)))
-  ) {
-    return true;
+  if (item.href) {
+    // Leaf items (no children): exact match only — prevents false positives
+    // e.g. /app matching /app/eod, /app/system, etc.
+    if (!item.children?.length) {
+      if (pathname === item.href) return true;
+    } else {
+      // Parent items (with children): exact match OR prefix match on segment boundary
+      if (pathname === item.href || pathname.startsWith(item.href + '/')) return true;
+    }
   }
   return item.children?.some((child) => isItemActive(pathname, child)) ?? false;
 }
