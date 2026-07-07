@@ -78,7 +78,8 @@ async function loadUserAuthz(userId) {
 
   // Extract branch scopes - normalize to strings for consistent comparison
   const scopeBranches = (user.branchScopes || []).map((bs) => String(bs.branch_id));
-  const isAllBranches = scopeBranches.length === 0;
+  const isOrgAdmin = roleNames.includes('org_owner') || roleNames.includes('org_admin') || roleNames.includes('super_admin');
+  const isAllBranches = isOrgAdmin;
 
   return {
     userId,

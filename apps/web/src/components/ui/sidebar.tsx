@@ -181,7 +181,7 @@ function SidebarGroupLabel({ className, ...props }: React.ComponentProps<'div'>)
     <div
       data-slot="sidebar-group-label"
       className={cn(
-        'px-3 py-2 text-[10px] font-bold uppercase tracking-[0.12em] text-sidebar-foreground/60 group-data-[state=collapsed]/sidebar-wrapper:hidden',
+        'px-3 py-2 text-3xs font-semibold uppercase tracking-wider text-sidebar-foreground/60 group-data-[state=collapsed]/sidebar-wrapper:hidden',
         className
       )}
       {...props}
@@ -218,8 +218,8 @@ function SidebarMenuButton({
   asChild?: boolean;
 }) {
   const classes = cn(
-    'flex min-h-9 w-full items-center gap-2.5 rounded-md px-3 py-2 text-[13.5px] font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring disabled:pointer-events-none disabled:opacity-50 group-data-[state=collapsed]/sidebar-wrapper:justify-center group-data-[state=collapsed]/sidebar-wrapper:px-2 relative',
-    isActive && 'bg-sidebar-primary/12 text-sidebar-primary font-semibold before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-4 before:w-0.5 before:rounded-full before:bg-sidebar-primary before:shadow-[0_0_8px_var(--sidebar-primary)]',
+    'flex min-h-9 w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring disabled:pointer-events-none disabled:opacity-50 group-data-[state=collapsed]/sidebar-wrapper:justify-center group-data-[state=collapsed]/sidebar-wrapper:px-2 relative',
+    isActive && 'bg-sidebar-primary/12 text-sidebar-primary font-semibold before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-4 before:w-0.5 before:rounded-full before:bg-sidebar-primary before:shadow-lg shadow-sidebar-primary/30',
     className
   );
 
@@ -243,7 +243,7 @@ function SidebarMenuBadge({ className, ...props }: React.ComponentProps<'span'>)
     <span
       data-slot="sidebar-menu-badge"
       className={cn(
-        'ml-auto rounded bg-sidebar-accent px-1.5 py-0.5 text-[10px] text-sidebar-accent-foreground',
+        'ml-auto rounded bg-sidebar-accent px-1.5 py-0.5 text-3xs text-sidebar-accent-foreground',
         className
       )}
       {...props}

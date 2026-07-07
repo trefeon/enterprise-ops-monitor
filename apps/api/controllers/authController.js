@@ -193,3 +193,286 @@ exports.changePassword = async (req, res) => {
     return fail(res, 500, "INTERNAL_ERROR", "Internal server error", { requestId: req.id || null });
   }
 };
+
+// ───────────────────────────── Register ─────────────────────────────
+exports.register = async (req, res) => {
+  try {
+    const { username, email, password, orgName } = req.body;
+
+    // Check if username already exists
+    const existingUser = await User.findOne({ where: { username } });
+    if (existingUser) {
+      return fail(res, 409, "CONFLICT", "Username already exists", { requestId: req.id || null });
+    }
+
+    // Check if email already exists
+    const existingEmail = await User.findOne({ where: { email } });
+    if (existingEmail) {
+      return fail(res, 409, "CONFLICT", "Email already exists", { requestId: req.id || null });
+    }
+
+    // 1. Create Tenant
+    const tenantName = orgName || `${username}'s Org`;
+    const tenantSlug = `${username}-org-${Date.now()}`;
+    const [tenantResult] = await require("../models").sequelize.query(
+      `INSERT INTO tenants (id, name, slug, settings_json, created_at, updated_at)
+       VALUES (gen_random_uuid(), $1, $2, '{}'::jsonb, NOW(), NOW())
+       RETURNING id;`,
+      { bind: [tenantName, tenantSlug] }
+    );
+    const tenantId = tenantResult[0].id;
+
+    // 2. Create User with org_id
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = await User.create({
+      username,
+      email,
+      password_hash: passwordHash,
+      role: "org_owner",
+      status: "active",
+      org_id: tenantId,
+    });
+
+    // 3. Create UserIdentity (local provider)
+    await require("../models").UserIdentity?.create({
+      user_id: user.id,
+      provider: "local",
+      provider_id: username,
+    });
+
+    // 4. Assign org_owner role
+    const orgOwnerRole = await require("../models").Role.findOne({
+      where: { name: "org_owner" },
+    });
+    if (orgOwnerRole) {
+      await require("../models").UserRole.create({
+        user_id: user.id,
+        role_id: orgOwnerRole.id,
+        org_id: tenantId,
+      });
+    } else {
+      // Fallback: try super_admin or admin
+      const fallbackRole = await require("../models").Role.findOne({
+        where: { name: "super_admin" },
+      }) || await require("../models").Role.findOne({
+        where: { name: "admin" },
+      });
+      if (fallbackRole) {
+        await require("../models").UserRole.create({
+          user_id: user.id,
+          role_id: fallbackRole.id,
+          org_id: tenantId,
+        });
+      }
+    }
+
+    // 5. Generate JWT
+    const token = jwt.sign(
+      { id: user.id, username: user.username, role: "org_owner", orgId: tenantId },
+      env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    return ok(res, {
+      token,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        orgId: tenantId,
+        roleNames: ["org_owner"],
+      },
+    });
+  } catch (error) {
+    console.error("Register error:", error);
+    return fail(res, 500, "INTERNAL_ERROR", "Internal server error", { requestId: req.id || null });
+  }
+};
+
+// ───────────────────────────── Invite ─────────────────────────────
+exports.invite = async (req, res) => {
+  try {
+    const { email, roleName } = req.body;
+    const orgId = req.user?.orgId;
+
+    if (!orgId) {
+      return fail(res, 400, "BAD_REQUEST", "User does not belong to an organization", {
+        requestId: req.id || null,
+      });
+    }
+
+    // Check if email already exists
+    const existingUser = await User.findOne({ where: { email } });
+    if (existingUser) {
+      return fail(res, 409, "CONFLICT", "A user with this email already exists", {
+        requestId: req.id || null,
+      });
+    }
+
+    // Verify the role exists and belongs to this org (or is a system role)
+    const role = await require("../models").Role.findOne({
+      where: { name: roleName },
+    });
+    if (!role) {
+      return fail(res, 400, "BAD_REQUEST", `Role "${roleName}" not found`, {
+        requestId: req.id || null,
+      });
+    }
+
+    // Generate invite token
+    const inviteToken = crypto.randomBytes(32).toString("hex");
+
+    // Create user with status='invited'
+    const username = email.split("@")[0];
+    const user = await User.create({
+      username: `${username}_${inviteToken.slice(0, 8)}`,
+      email,
+      password_hash: crypto.randomBytes(32).toString("hex"),
+      role: roleName,
+      status: "invited",
+      invite_token: inviteToken,
+      org_id: orgId,
+    });
+
+    // Assign the requested role
+    await require("../models").UserRole.create({
+      user_id: user.id,
+      role_id: role.id,
+      org_id: orgId,
+    });
+
+    const inviteUrl = `${req.protocol}://${req.get("host")}/accept-invite?token=${inviteToken}`;
+
+    return ok(res, {
+      inviteToken,
+      inviteUrl,
+      user: {
+        id: user.id,
+        email: user.email,
+        roleName,
+      },
+    });
+  } catch (error) {
+    console.error("Invite error:", error);
+    return fail(res, 500, "INTERNAL_ERROR", "Internal server error", { requestId: req.id || null });
+  }
+};
+
+// ───────────────────────────── Accept Invite ─────────────────────────────
+exports.acceptInvite = async (req, res) => {
+  try {
+    const { token, username, password } = req.body;
+
+    // Find user by invite token
+    const user = await User.findOne({ where: { invite_token: token, status: "invited" } });
+    if (!user) {
+      return fail(res, 400, "INVALID_TOKEN", "Invalid or expired invite token", {
+        requestId: req.id || null,
+      });
+    }
+
+    // Check if new username is available
+    const existingUsername = await User.findOne({
+      where: { username, id: { [require("sequelize").Op.ne]: user.id } },
+    });
+    if (existingUsername) {
+      return fail(res, 409, "CONFLICT", "Username already taken", {
+        requestId: req.id || null,
+      });
+    }
+
+    // Hash password and activate user
+    const passwordHash = await bcrypt.hash(password, 10);
+    await user.update({
+      username,
+      password_hash: passwordHash,
+      status: "active",
+      invite_token: null,
+    });
+
+    // Generate JWT
+    const jwtToken = jwt.sign(
+      {
+        id: user.id,
+        username: user.username,
+        role: user.role,
+        orgId: user.org_id || null,
+      },
+      env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    return ok(res, {
+      token: jwtToken,
+      user: {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        orgId: user.org_id,
+        roleNames: [user.role],
+      },
+    });
+  } catch (error) {
+    console.error("Accept invite error:", error);
+    return fail(res, 500, "INTERNAL_ERROR", "Internal server error", { requestId: req.id || null });
+  }
+};
+
+// ───────────────────────────── Refresh Token ─────────────────────────────
+exports.refresh = async (req, res) => {
+  try {
+    const currentUser = req.user;
+    if (!currentUser) {
+      return fail(res, 401, "UNAUTHORIZED", "Not authenticated", {
+        requestId: req.id || null,
+      });
+    }
+
+    // Issue new JWT with same payload + new 24h expiry
+    const token = jwt.sign(
+      {
+        id: currentUser.id,
+        username: currentUser.username,
+        role: currentUser.role,
+        orgId: currentUser.orgId || null,
+      },
+      env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    return ok(res, { token });
+  } catch (error) {
+    console.error("Refresh error:", error);
+    return fail(res, 500, "INTERNAL_ERROR", "Internal server error", { requestId: req.id || null });
+  }
+};
+
+// ───────────────────────────── Google OAuth Callback ─────────────────────────────
+exports.googleCallback = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.redirect(`${env.GOOGLE_CALLBACK_URL || "/login"}?error=auth_failed`);
+    }
+
+    const user = req.user;
+
+    // Generate JWT
+    const token = jwt.sign(
+      {
+        id: user.id,
+        username: user.username,
+        role: user.role || "viewer",
+        orgId: user.orgId || null,
+      },
+      env.JWT_SECRET,
+      { expiresIn: "24h" }
+    );
+
+    // Redirect to frontend with token
+    const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+    return res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+  } catch (error) {
+    console.error("Google callback error:", error);
+    return res.redirect("/login?error=internal_error");
+  }
+};

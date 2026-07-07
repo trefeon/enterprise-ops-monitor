@@ -57,3 +57,7 @@ test-results/
 # npm lockfiles (pnpm workspace uses pnpm-lock.yaml only)
 **/package-lock.json
 **/yarn.lock
+
+# Generated analysis artifacts
+graphify-out/
+sqlite_mcp_server.db

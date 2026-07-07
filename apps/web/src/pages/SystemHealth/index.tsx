@@ -402,7 +402,7 @@ const SystemHealth = () => {
     logs.length === 0
   ) {
     return (
-      <PageShell>
+      <PageShell debugLabel="System-Health">
         <EmptyState
           title="Failed to load system health"
           description={error}
@@ -419,7 +419,7 @@ const SystemHealth = () => {
 
   return (
     <div>
-      <PageShell>
+      <PageShell debugLabel="System-Health">
         <FeatureStoryBanner story={getFeatureStory('system')} />
 
         <div className="flex flex-col gap-4">

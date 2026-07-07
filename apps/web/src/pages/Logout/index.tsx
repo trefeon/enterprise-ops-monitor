@@ -31,7 +31,7 @@ const Logout: React.FC = () => {
   };
 
   return (
-    <PageShell>
+    <PageShell debugLabel="Logout">
       <FeatureStoryBanner story={getFeatureStory('logout')} />
 
       <div className="space-y-6 max-w-2xl w-full">

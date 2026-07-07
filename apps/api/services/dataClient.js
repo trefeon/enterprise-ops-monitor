@@ -1,7 +1,10 @@
 const { toWibDate } = require("../utils/time");
 const { normalizeBranchName } = require("../utils/branchNames");
+const db = require("../models");
 
-const BRANCHES = [
+// ─── Legacy Hardcoded Branches ──────────────────────────────────────────────
+// Used as fallback when no orgId has been set (backward-compatible legacy mode).
+const LEGACY_BRANCHES = [
   { code: "302", id: "2", name: "NORTH HUB" },
   { code: "303", id: "3", name: "EAST HUB" },
   { code: "304", id: "4", name: "CENTRAL HUB" },
@@ -12,9 +15,82 @@ const BRANCHES = [
   { code: "309", id: "9", name: "SOUTH HUB" },
 ];
 
-const BRANCH_IDS = BRANCHES.map((branch) => branch.id);
-const BRANCH_BY_ID = new Map(BRANCHES.map((branch) => [String(branch.id), branch]));
-const BRANCH_BY_CODE = new Map(BRANCHES.map((branch) => [String(branch.code), branch]));
+// ─── Exported Live Arrays ─────────────────────────────────────────────────
+// Mutated in-place by setOrgId() so existing `const { BRANCHES }` destructured
+// references at module-require time stay live (same object identity).
+const BRANCHES = [...LEGACY_BRANCHES];
+const BRANCH_IDS = LEGACY_BRANCHES.map((b) => b.id);
+
+// ─── Internal Lookup Maps ─────────────────────────────────────────────────
+let _branchById = new Map(LEGACY_BRANCHES.map((b) => [String(b.id), b]));
+let _branchByCode = new Map(LEGACY_BRANCHES.map((b) => [String(b.code), b]));
+
+function _rebuildLookups() {
+  BRANCH_IDS.length = 0;
+  BRANCH_IDS.push(...BRANCHES.map((b) => b.id));
+  _branchById = new Map(BRANCHES.map((b) => [String(b.id), b]));
+  _branchByCode = new Map(BRANCHES.map((b) => [String(b.code), b]));
+}
+
+// ─── Branch Resolution ──────────────────────────────────────────────────────
+
+/**
+ * Query the data_branches table for a given org.
+ * @param {string} orgId - UUID of the organization
+ * @returns {Promise<Array<{code:string, id:string, name:string}>|null>}
+ */
+async function fetchBranches(orgId) {
+  if (!orgId) return null;
+  try {
+    const rows = await db.sequelize.query(
+      `SELECT branch_id, branch_name, source_code
+       FROM data_branches
+       WHERE org_id = :orgId AND is_active = TRUE
+       ORDER BY branch_id`,
+      {
+        replacements: { orgId },
+        type: db.Sequelize.QueryTypes.SELECT,
+      }
+    );
+    if (!rows || rows.length === 0) return null;
+    return rows.map((row) => ({
+      code: String(row.source_code != null ? row.source_code : row.branch_id),
+      id: String(row.branch_id),
+      name: row.branch_name,
+    }));
+  } catch (err) {
+    console.error("[dataClient] fetchBranches error:", err.message);
+    return null;
+  }
+}
+
+/**
+ * Set the active org and load its branches from the database.
+ * Falls back to legacy hardcoded branches if DB fetch fails or returns empty.
+ * @param {string} orgId - UUID of the organization
+ */
+async function setOrgId(orgId) {
+  const branches = await fetchBranches(orgId);
+  if (branches && branches.length > 0) {
+    // Mutate the exported BRANCHES array in-place so existing references see changes
+    BRANCHES.length = 0;
+    BRANCHES.push(...branches);
+  } else {
+    // Fall back to legacy
+    BRANCHES.length = 0;
+    BRANCHES.push(...LEGACY_BRANCHES);
+  }
+  _rebuildLookups();
+}
+
+/**
+ * Return the current live branch list (same reference as exported BRANCHES).
+ */
+function getBranches() {
+  return BRANCHES;
+}
+
+// ─── Branch Lookup Functions ────────────────────────────────────────────────
 
 function inferBranchFromStoreCode(storeCode) {
   if (!storeCode) return null;
@@ -24,8 +100,14 @@ function inferBranchFromStoreCode(storeCode) {
     .match(/^(\d{3})/);
   if (!match) return null;
 
-  return BRANCH_BY_CODE.get(match[1]) || null;
+  return _branchByCode.get(match[1]) || null;
 }
+
+function getBranchNameById(id) {
+  return _branchById.get(String(id))?.name || null;
+}
+
+// ─── Config / Constants ─────────────────────────────────────────────────────
 
 const DATA_EOD_API_URL =
   process.env.DATA_EOD_API_URL ||
@@ -51,9 +133,7 @@ const EMPLOYEE_CACHE_TTL_MS = Number.parseInt(
 const cache = new Map();
 const inFlight = new Map();
 
-function getBranchNameById(id) {
-  return BRANCH_BY_ID.get(String(id))?.name || null;
-}
+// ─── Caching Layer ──────────────────────────────────────────────────────────
 
 function getCached(key) {
   const entry = cache.get(key);
@@ -89,6 +169,8 @@ async function cachedFetch(key, ttlMs, fetcher, { bypassCache = false } = {}) {
     inFlight.delete(key);
   }
 }
+
+// ─── HTTP / Retry Layer ─────────────────────────────────────────────────────
 
 async function postJson(url, payload, timeoutMs = DEFAULT_TIMEOUT_MS) {
   const controller = new AbortController();
@@ -262,6 +344,8 @@ async function fetchBranchData(url, branchId, options = {}) {
   throw lastError || new Error(`Internal data API fetch failed for branch ${branchId}`);
 }
 
+// ─── Parsers ────────────────────────────────────────────────────────────────
+
 function parsePercent(value) {
   if (value == null) return 0;
   if (typeof value === "number") return value;
@@ -294,6 +378,8 @@ function parseDate(value) {
 
   return parsed;
 }
+
+// ─── Normalizers ────────────────────────────────────────────────────────────
 
 function normalizeEodRow(raw) {
   const storeCode = raw?.kodetoko ?? raw?.kodeToko ?? raw?.storeCode;
@@ -363,6 +449,8 @@ function inferBusinessDate(rows) {
   return toWibDate();
 }
 
+// ─── Public Data Fetchers ───────────────────────────────────────────────────
+
 async function fetchEodAllBranches(options = {}) {
   return cachedFetch(
     "data:eod:all",
@@ -372,6 +460,7 @@ async function fetchEodAllBranches(options = {}) {
       const responses = [];
 
       // Fetch with limited concurrency to balance speed and upstream stability
+      // Uses BRANCHES (live array — updated by setOrgId())
       const results = await mapConcurrent(BRANCHES, 3, async (branch) => {
         try {
           const items = await fetchBranchData(DATA_EOD_API_URL, branch.id, { requestLabel: "EOD" });
@@ -425,7 +514,7 @@ async function fetchEmployeesAllBranches(options = {}) {
       const branchErrors = [];
       const responses = [];
 
-      // Fetch with limited concurrency to balance speed and upstream stability
+      // Uses BRANCHES (live array — updated by setOrgId())
       const results = await mapConcurrent(BRANCHES, 3, async (branch) => {
         try {
           const items = await fetchBranchData(DATA_EMPLOYEE_API_URL, branch.id, {
@@ -481,6 +570,7 @@ function invalidateEmployeeCache() {
 }
 
 // ─── Store Sync Audit ────────────────────────────────────────────────────────
+
 const DATA_SYNC_AUD_API_URL =
   process.env.DATA_SYNC_AUD_API_URL || "https://internal-data-api.example.com/sync_aud";
 const SYNC_CACHE_TTL_MS = Number.parseInt(process.env.DATA_SYNC_CACHE_TTL_MS || "30000", 10);
@@ -519,6 +609,7 @@ async function fetchStoreSyncAllBranches(options = {}) {
 
       // IMPORTANT: this endpoint behaves inconsistently when hit in parallel.
       // Fetch branches sequentially to avoid cross-branch duplication/missing data.
+      // Uses BRANCHES (live array — updated by setOrgId())
       for (const branch of BRANCHES) {
         try {
           const items = await fetchBranchData(DATA_SYNC_AUD_API_URL, branch.id, {
@@ -565,16 +656,28 @@ function invalidateSyncCache() {
 }
 
 module.exports = {
+  // Live branch data (mutated in-place by setOrgId)
   BRANCHES,
   BRANCH_IDS,
+
+  // Branch resolution
   inferBranchFromStoreCode,
   getBranchNameById,
+
+  // Org-aware branch management
+  fetchBranches,
+  setOrgId,
+  getBranches,
+
+  // Data fetchers
   fetchEodAllBranches,
   fetchEmployeesAllBranches,
   invalidateEodCache,
   invalidateEmployeeCache,
   fetchStoreSyncAllBranches,
   invalidateSyncCache,
+
+  // Config (legacy)
   DATA_SYNC_AUD_API_URL,
   STALE_THRESHOLD_MS,
 };

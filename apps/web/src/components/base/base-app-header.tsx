@@ -42,7 +42,7 @@ export function BaseAppHeader({
           <Menu />
           <span className="sr-only">{mobileMenuLabel}</span>
         </Button>
-        <div className="hidden min-w-0 truncate font-mono text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground sm:block">
+        <div className="hidden min-w-0 truncate font-mono text-3xs font-semibold uppercase tracking-widest text-muted-foreground sm:block">
           {title}
         </div>
       </div>

@@ -26,7 +26,7 @@ const steps = [
 
 export default function Starter() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-background text-foreground" data-debug-component-root="Starter">
       <header className="portfolio-container flex items-center justify-between py-5">
         <Link to="/" className="font-display text-sm font-bold text-foreground">
           Enterprise Ops Starter

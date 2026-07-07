@@ -97,7 +97,14 @@ function mapDbEodRow(row, { targetBusinessDate } = {}) {
   };
 }
 
-async function fetchEodHistoryByRecordedDate(recordedDate) {
+/**
+ * Fetch EOD history for a specific recorded date.
+ * @param {string} recordedDate - The date to query (e.g. '2026-07-08')
+ * @param {object} [options] - Optional parameters
+ * @param {string} [options.orgId] - Org UUID for defense-in-depth filtering
+ */
+async function fetchEodHistoryByRecordedDate(recordedDate, options = {}) {
+  const orgId = options?.orgId || null;
   const rows = await safeQuery(
     `
       SELECT
@@ -122,15 +129,23 @@ async function fetchEodHistoryByRecordedDate(recordedDate) {
       JOIN data_stores s ON s.store_code = h.store_code
       LEFT JOIN data_branches b ON b.branch_id = s.branch_id
       WHERE h.recorded_date = :recordedDate
+        AND (:orgId IS NULL OR h.org_id = :orgId)
     `,
-    { recordedDate }
+    { recordedDate, orgId }
   );
 
   if (rows === null) return null;
   return rows.map((row) => mapDbEodRow(row));
 }
 
+/**
+ * Fetch current EOD data.
+ * @param {object} [options] - Optional parameters
+ * @param {string} [options.targetBusinessDate] - Filter by specific business date
+ * @param {string} [options.orgId] - Org UUID for defense-in-depth filtering
+ */
 async function fetchEodCurrent(options = {}) {
+  const orgId = options?.orgId || null;
   const rows = await safeQuery(
     `
       SELECT
@@ -154,8 +169,9 @@ async function fetchEodCurrent(options = {}) {
       FROM data_stores s
       LEFT JOIN data_store_eod_current c ON c.store_code = s.store_code
       LEFT JOIN data_branches b ON b.branch_id = s.branch_id
+      WHERE (:orgId IS NULL OR s.org_id = :orgId)
     `,
-    {}
+    { orgId }
   );
 
   if (rows === null) return null;
@@ -196,7 +212,14 @@ function mapStoreRow(row) {
   };
 }
 
-async function fetchEmployeesAll({ includeInactive = false } = {}) {
+/**
+ * Fetch all employees.
+ * @param {object} [options] - Optional parameters
+ * @param {boolean} [options.includeInactive] - Whether to include inactive employees
+ * @param {string} [options.orgId] - Org UUID for defense-in-depth filtering
+ */
+async function fetchEmployeesAll(options = {}) {
+  const { includeInactive = false, orgId = null } = options;
   const rows = await safeQuery(
     `
       SELECT
@@ -213,8 +236,9 @@ async function fetchEmployeesAll({ includeInactive = false } = {}) {
         raw_payload
       FROM data_employees
       WHERE (:includeInactive = TRUE OR status = 'ACTIVE')
+        AND (:orgId IS NULL OR org_id = :orgId)
     `,
-    { includeInactive }
+    { includeInactive, orgId }
   );
 
   if (rows === null) return null;
@@ -222,13 +246,20 @@ async function fetchEmployeesAll({ includeInactive = false } = {}) {
   return rows.map(mapEmployeeRow);
 }
 
-async function fetchStoresCount() {
+/**
+ * Fetch store count.
+ * @param {object} [options] - Optional parameters
+ * @param {string} [options.orgId] - Org UUID for defense-in-depth filtering
+ */
+async function fetchStoresCount(options = {}) {
+  const orgId = options?.orgId || null;
   const rows = await safeQuery(
     `
       SELECT COUNT(*)::int AS count
       FROM data_stores
+      WHERE (:orgId IS NULL OR org_id = :orgId)
     `,
-    {}
+    { orgId }
   );
 
   if (rows === null) return null;
@@ -236,7 +267,13 @@ async function fetchStoresCount() {
   return Number.isFinite(count) ? count : null;
 }
 
-async function fetchStoresAll() {
+/**
+ * Fetch all stores.
+ * @param {object} [options] - Optional parameters
+ * @param {string} [options.orgId] - Org UUID for defense-in-depth filtering
+ */
+async function fetchStoresAll(options = {}) {
+  const orgId = options?.orgId || null;
   const rows = await safeQuery(
     `
       SELECT
@@ -254,8 +291,9 @@ async function fetchStoresAll() {
         s.archived_at
       FROM data_stores s
       LEFT JOIN data_branches b ON b.branch_id = s.branch_id
+      WHERE (:orgId IS NULL OR s.org_id = :orgId)
     `,
-    {}
+    { orgId }
   );
 
   if (rows === null) return null;

@@ -5,7 +5,7 @@ import {
   ClipboardCheck,
   Contact,
   Database,
-  Info,
+  FileText,
   Laptop,
   LayoutDashboard,
   Lock,
@@ -107,14 +107,16 @@ export default function Sidebar({ onClose, inSheet = false }: SidebarProps) {
     { href: '/app/admin/roles', title: 'Roles', icon: Lock, permission: Permissions.ROLES_VIEW },
     {
       href: '/app/admin/afterhours',
-      title: 'After Hours',
+      title: 'Daily Monitor',
       icon: Moon,
       permission: Permissions.AFTERHOURS_VIEW,
     },
-  ];
-
-  const portfolioNav: BaseNavItem[] = [
-    { href: '/case-study', title: 'Case Study', icon: Info, tone: 'info' },
+    {
+      href: '/app/admin/afterhours/report',
+      title: 'Monthly Report',
+      icon: FileText,
+      permission: Permissions.AFTERHOURS_VIEW,
+    },
   ];
 
   const groups: BaseSidebarNavGroup[] = [
@@ -123,7 +125,6 @@ export default function Sidebar({ onClose, inSheet = false }: SidebarProps) {
       label: 'Administration',
       items: filterNav(administrationNav, user as object | null | undefined),
     },
-    { label: 'Portfolio', items: portfolioNav },
   ].filter((group) => group.items.length > 0);
 
   const initials = getInitials(user?.username, user?.role);

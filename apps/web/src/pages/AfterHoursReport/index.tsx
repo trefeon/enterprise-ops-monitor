@@ -13,6 +13,8 @@ import {
   DEFAULT_WINDOW_START,
 } from './types';
 import { formatMonthLabel, formatWindowLabel } from './utils';
+import PageShell from '@/components/shared/PageShell';
+import PageHeader from '@/components/shared/PageHeader';
 
 export default function AfterHoursReport() {
   const {
@@ -83,8 +85,13 @@ export default function AfterHoursReport() {
   }, [month, selectedBranchLabel, limit, windowStart, normalizedSearch]);
 
   return (
-    <div className="space-y-6">
-      <WhatsappTargetSection
+    <PageShell debugLabel="After-Hours-Report">
+      <PageHeader
+        title="Monthly Report"
+        subtitle="After-hours PC monitoring monthly violation report"
+      />
+      <div className="space-y-6">
+        <WhatsappTargetSection
         value={monthlyReportWhatsappTargets}
         onChange={setMonthlyReportWhatsappTargets}
         onSave={handleSaveMonthlyReportSettings}
@@ -148,6 +155,7 @@ export default function AfterHoursReport() {
         onToggleExpand={(storeCode) => setExpandedRow(storeCode)}
         onFormatMonthLabel={formatMonthLabel}
       />
-    </div>
+      </div>
+    </PageShell>
   );
 }

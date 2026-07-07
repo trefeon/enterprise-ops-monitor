@@ -123,7 +123,7 @@ export default function Backups() {
 
   if (b.error && !b.isLoading && b.hasNoData) {
     return (
-      <PageShell>
+      <PageShell debugLabel="Backups">
         <EmptyState
           title="Failed to load backups"
           description={b.error}
@@ -144,7 +144,7 @@ export default function Backups() {
   // -----------------------------------------------------------------------
 
   return (
-    <PageShell>
+    <PageShell debugLabel="Backups">
       <FeatureStoryBanner story={getFeatureStory('backups')} />
 
       <PageHeader
@@ -179,7 +179,7 @@ export default function Backups() {
 
       {/* Inline error banner when data partially loaded */}
       {b.error && !b.hasNoData && (
-        <div className="rounded-xl border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
+        <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
           <AlertCircle className="size-4" />
           {b.error}
         </div>
@@ -246,7 +246,7 @@ export default function Backups() {
           }
         >
           <div className="space-y-4">
-            <div className="rounded-xl border border-border/60 bg-muted/20 p-4">
+            <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Schedule</p>
@@ -264,7 +264,7 @@ export default function Backups() {
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-xl border border-border/60 bg-card/60 p-3">
+              <div className="rounded-lg border border-border/60 bg-card/60 p-3">
                 <p className="text-3xs font-bold uppercase tracking-widest text-muted-foreground">
                   Latest Backup
                 </p>
@@ -275,7 +275,7 @@ export default function Backups() {
                   {b.summary?.latestFileName || 'No backup yet'}
                 </p>
               </div>
-              <div className="rounded-xl border border-border/60 bg-card/60 p-3">
+              <div className="rounded-lg border border-border/60 bg-card/60 p-3">
                 <p className="text-3xs font-bold uppercase tracking-widest text-muted-foreground">Scheduler</p>
                 <div className="mt-2 flex items-center gap-2 text-sm font-bold text-foreground">
                   {scheduleEnabled ? (

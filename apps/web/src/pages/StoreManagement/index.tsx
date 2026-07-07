@@ -404,7 +404,7 @@ const StoreManagement = () => {
   }, [canManageStores]);
 
   return (
-    <PageShell>
+    <PageShell debugLabel="Store-Management">
       <FeatureStoryBanner story={getFeatureStory('store-directory')} />
       <PageHeader
         title="Store Directory"
@@ -435,7 +435,7 @@ const StoreManagement = () => {
               onKeyDown={handleSearch}
               className="flex-1"
             />
-            <div className="grid w-full min-w-0 gap-2 sm:grid-cols-3 md:w-auto">
+            <div className="grid w-full min-w-0 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:w-auto">
               <Select
                 value={filters.areaId}
                 onValueChange={(value) =>

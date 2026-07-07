@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { BaseAppHeader } from '@/components/base';
+import OrgSwitcher from './OrgSwitcher';
 
 interface HeaderProps {
   mobileOpen: boolean;
@@ -23,12 +24,15 @@ export default function Header({ mobileOpen, onMobileMenuClick }: HeaderProps) {
   const navigate = useNavigate();
 
   return (
-    <BaseAppHeader
-      title="Enterprise Ops Starter"
-      mobileOpen={mobileOpen}
-      onMobileMenuClick={onMobileMenuClick}
-      profileInitials={getInitials(user?.username, user?.role)}
-      onProfileClick={() => navigate('/app/profile')}
-    />
+    <>
+      <OrgSwitcher />
+      <BaseAppHeader
+        title="Enterprise Ops Starter"
+        mobileOpen={mobileOpen}
+        onMobileMenuClick={onMobileMenuClick}
+        profileInitials={getInitials(user?.username, user?.role)}
+        onProfileClick={() => navigate('/app/profile')}
+      />
+    </>
   );
 }

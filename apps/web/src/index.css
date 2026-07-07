@@ -1,7 +1,5 @@
-@import 'tw-animate-css';
-@import 'shadcn/tailwind.css';
 @import '@fontsource-variable/geist';
-@import '@fontsource-variable/space-grotesk';
+@import '@fontsource-variable/geist-mono';
 @import '@fontsource-variable/jetbrains-mono';
 @tailwind base;
 @tailwind components;
@@ -12,87 +10,151 @@
     color-scheme: dark;
     font-family: var(--font-body);
 
+    /* ================================================================
+       Geist Design Tokens — Dark Theme (Vercel-aligned --ds-* scale)
+       ================================================================ */
+
     /* Typography */
-    --font-display: 'Space Grotesk Variable', 'Geist Variable', system-ui, sans-serif;
+    --font-display: 'Geist Variable', system-ui, sans-serif;
     --font-body: 'Geist Variable', 'Inter', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
 
-    /* Direct design tokens — aligned with Vercel Geist dark palette */
-    --bg-base: #000000;
-    --bg-surface: #0a0a0a;
-    --bg-elevated: #111111;
-    --bg-input: #0a0a0a;
-    --bg-hover: #1a1a1a;
-    --border-subtle: rgb(255 255 255 / 0.06);
-    --border-default: #333333;
-    --border-strong: #444444;
-    --border-accent: rgb(34 211 238 / 0.45);
-    --text-primary: #ededed;
-    --text-secondary: #a1a1a1;
-    --text-muted: #888888;
-    --text-disabled: #555555;
-    --text-inverse: #000000;
-    --accent-solid: rgb(34 211 238);
-    --accent-dim: rgb(8 145 178);
-    --accent-muted: rgb(34 211 238 / 0.12);
-    --accent-glow: rgb(34 211 238 / 0.24);
-    --color-success: rgb(57 255 136);
-    --color-warning: rgb(250 204 21);
-    --color-danger: rgb(248 113 113);
-    --color-info: rgb(96 165 250);
-    --color-neutral: rgb(107 114 128);
-    --bg-success: rgb(57 255 136 / 0.1);
-    --bg-warning: rgb(250 204 21 / 0.1);
-    --bg-danger: rgb(248 113 113 / 0.1);
-    --bg-info: rgb(96 165 250 / 0.1);
-    --chart-1: rgb(34 211 238);
-    --chart-2: rgb(57 255 136);
-    --chart-3: rgb(250 204 21);
-    --chart-4: rgb(96 165 250);
-    --chart-5: rgb(248 113 113);
+    /* ---- Gray scale (dark mode inverted) ---- */
+    --ds-gray-100:  #1a1a1a;
+    --ds-gray-200:  #222222;
+    --ds-gray-300:  #2a2a2a;
+    --ds-gray-400:  #333333;
+    --ds-gray-500:  #444444;
+    --ds-gray-600:  #555555;
+    --ds-gray-700:  #666666;
+    --ds-gray-800:  #888888;
+    --ds-gray-900:  #a1a1a1;
+    --ds-gray-1000: #ededed;
 
-    /* Tailwind/shadcn HSL tokens — Vercel Geist-aligned dark palette */
+    /* ---- Gray alpha (dark mode) ---- */
+    --ds-gray-alpha-100: rgba(255, 255, 255, 0.06);
+    --ds-gray-alpha-200: rgba(255, 255, 255, 0.09);
+    --ds-gray-alpha-300: rgba(255, 255, 255, 0.12);
+    --ds-gray-alpha-400: rgba(255, 255, 255, 0.08);
+    --ds-gray-alpha-500: rgba(255, 255, 255, 0.14);
+    --ds-gray-alpha-600: rgba(255, 255, 255, 0.16);
+    --ds-gray-alpha-700: rgba(255, 255, 255, 0.18);
+    --ds-gray-alpha-800: rgba(255, 255, 255, 0.22);
+    --ds-gray-alpha-900: rgba(255, 255, 255, 0.30);
+    --ds-gray-alpha-1000: rgba(255, 255, 255, 0.90);
+
+    /* ---- Blue (accent) ---- */
+    --ds-blue-100:  #003366;
+    --ds-blue-200:  #004080;
+    --ds-blue-300:  #00509e;
+    --ds-blue-400:  #0060c0;
+    --ds-blue-500:  #0070e0;
+    --ds-blue-600:  #2080f0;
+    --ds-blue-700:  #40a0ff;
+    --ds-blue-800:  #80c0ff;
+    --ds-blue-900:  #b0d8ff;
+    --ds-blue-1000: #e8f0ff;
+
+    /* ---- Backgrounds ---- */
+    --ds-background-100: #000000;
+    --ds-background-200: #111111;
+
+    /* ---- Focus ---- */
+    --ds-focus-ring: 2px solid rgba(0, 112, 243, 0.5);
+
+    /* ---- Semantic backgrounds (mapped from Geist gray) ---- */
+    --bg-base: var(--ds-background-100);
+    --bg-surface: var(--ds-background-200);
+    --bg-elevated: var(--ds-gray-200);
+    --bg-input: var(--ds-gray-100);
+    --bg-hover: var(--ds-gray-300);
+
+    /* ---- Borders ---- */
+    --border-subtle: var(--ds-gray-alpha-100);
+    --border-default: var(--ds-gray-400);
+    --border-strong: var(--ds-gray-500);
+    --border-accent: var(--ds-blue-500);
+
+    /* ---- Text ---- */
+    --text-primary: var(--ds-gray-1000);
+    --text-secondary: var(--ds-gray-900);
+    --text-muted: var(--ds-gray-800);
+    --text-disabled: var(--ds-gray-600);
+    --text-inverse: var(--ds-gray-100);
+
+    /* ---- Accent ---- */
+    --accent-solid: var(--ds-blue-600);
+    --accent-dim: var(--ds-blue-400);
+    --accent-muted: rgba(0, 112, 243, 0.12);
+    --accent-glow: rgba(0, 112, 243, 0.24);
+
+    /* ---- Status (Geist-aligned) ---- */
+    --color-success: #22c55e;
+    --color-warning: #f59e0b;
+    --color-danger: #ef4444;
+    --color-info: var(--ds-blue-600);
+    --color-neutral: var(--ds-gray-700);
+    --bg-success: rgb(34 197 94 / 0.12);
+    --bg-warning: rgb(245 158 11 / 0.12);
+    --bg-danger: rgb(239 68 68 / 0.12);
+    --bg-info: rgba(0, 112, 243, 0.12);
+
+    /* ---- Charts ---- */
+    --chart-1: var(--ds-blue-600);
+    --chart-2: #22c55e;
+    --chart-3: #f59e0b;
+    --chart-4: #60a5fa;
+    --chart-5: #ef4444;
+
+    /* ================================================================
+       shadcn HSL tokens — aligned to Geist dark palette
+       ================================================================ */
     --background: 0 0% 0%;
     --foreground: 0 0% 93%;
     --card: 0 0% 4%;
     --card-foreground: 0 0% 93%;
     --popover: 0 0% 4%;
     --popover-foreground: 0 0% 93%;
-    --primary: 188 86% 53%;
+    --primary: 215 100% 53%;
     --primary-foreground: 0 0% 0%;
     --secondary: 0 0% 7%;
     --secondary-foreground: 0 0% 93%;
-    --muted: 0 0% 7%;
-    --muted-foreground: 0 0% 63%;
-    --accent: 0 0% 7%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 53%;
+    --accent: 0 0% 10%;
     --accent-foreground: 0 0% 93%;
-    --destructive: 0 100% 50%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
     --border: 0 0% 20%;
-    --input: 0 0% 7%;
-    --ring: 188 86% 53%;
-    --success: 146 100% 61%;
-    --warning: 48 96% 53%;
-    --info: 217 91% 67%;
-    --brand: 188 86% 53%;
+    --input: 0 0% 10%;
+    --ring: 215 100% 53%;
+    --success: 142 76% 36%;
+    --warning: 38 92% 50%;
+    --info: 215 100% 53%;
+    --brand: 215 100% 53%;
     --sidebar: 0 0% 0%;
     --sidebar-foreground: 0 0% 93%;
-    --sidebar-primary: 188 86% 53%;
+    --sidebar-primary: 215 100% 53%;
     --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 7%;
+    --sidebar-accent: 0 0% 10%;
     --sidebar-accent-foreground: 0 0% 93%;
     --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 188 86% 53%;
+    --sidebar-ring: 215 100% 53%;
 
-    /* Spacing, shape, and motion */
-    --radius-xs: 4px;
-    --radius-sm: 6px;
-    --radius-md: 8px;
-    --radius-lg: 10px;
-    --radius-xl: 12px;
-    --radius-2xl: 16px;
-    --radius-full: 9999px;
-    --radius: var(--radius-lg);
+    /* ================================================================
+       Geist Radius & Spacing
+       ================================================================ */
+    --ds-radius-sm: 6px;
+    --ds-radius-lg: 12px;
+    --ds-radius-pill: 9999px;
+
+    --radius-sm: var(--ds-radius-sm);
+    --radius-md: var(--ds-radius-sm);
+    --radius-lg: var(--ds-radius-lg);
+    --radius-full: var(--ds-radius-pill);
+    --radius: var(--radius-md);
+
+    /* Page & component spacing */
     --page-px: 24px;
     --page-py: 24px;
     --section-gap: 24px;
@@ -100,6 +162,8 @@
     --table-cell-px: 16px;
     --table-cell-py: 12px;
     --row-h: 48px;
+
+    /* Geist motion tokens */
     --transition-fast: 150ms ease;
     --transition-normal: 250ms ease;
     --transition-slow: 350ms ease-out;
@@ -116,7 +180,7 @@
     touch-action: manipulation;
   }
 
-  /* Numeric tabular rendering for all monospaced/data-heavy contexts */
+  /* Numeric tabular rendering */
   .tabular, table, [data-tabular] {
     font-variant-numeric: tabular-nums;
   }
@@ -127,10 +191,11 @@
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    @apply antialiased;
+    font-size: 14px;
+    line-height: 1.5;
   }
 
-  /* Make native dropdown menus match dark UI (select option list background/text). */
+  /* Dark native dropdowns */
   select {
     color-scheme: dark;
   }
@@ -141,7 +206,7 @@
     color: var(--text-primary);
   }
 
-  /* Hide native date-picker icon when we provide our own calendar button */
+  /* Date input hacks */
   input[type='date'].date-input-no-indicator {
     -webkit-appearance: none;
     appearance: none;
@@ -170,27 +235,24 @@
   }
 }
 
-/* Custom scrollbar for dark mode dashboards */
+/* ---- Scrollbar (6px Geist-style) ---- */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
-
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-
 ::-webkit-scrollbar-thumb {
-  background: rgb(255 255 255 / 0.1);
+  background: var(--ds-gray-alpha-500);
   border-radius: 3px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-  background: rgb(255 255 255 / 0.18);
+  background: var(--ds-gray-alpha-700);
 }
 
 @layer components {
-  /* Utility class to be used by PageShell ONLY */
+  /* Page container — Geist page padding */
   .page-container {
     @apply w-full px-4 py-6 sm:px-6 lg:px-8 2xl:px-10 space-y-6;
   }
@@ -220,7 +282,7 @@
     }
   }
 
-  /* Utility class to be used by PageHeader ONLY */
+  /* Page header — Geist style */
   .page-header {
     @apply flex flex-col justify-between gap-4 border-b border-border pb-5 md:flex-row md:items-start;
   }
@@ -241,13 +303,13 @@
     @apply mb-4 font-display text-lg font-semibold tracking-normal text-foreground break-words;
   }
 
-  /* Utility class to be used by Card ONLY */
+  /* Surface cards — Geist Card with --ds-gray-400 border, 6px radius */
   .surface-card {
-    @apply rounded-lg border border-border bg-card p-card transition-colors;
+    @apply rounded-[var(--ds-radius-sm)] border border-default bg-card p-card transition-colors;
   }
 
   .surface-card-compact {
-    @apply rounded-lg border border-border bg-card p-4 transition-colors;
+    @apply rounded-[var(--ds-radius-sm)] border border-default bg-card p-4 transition-colors;
   }
 
   .form-label {
@@ -258,6 +320,7 @@
     color: var(--text-secondary);
   }
 
+  /* --- Login/auth shell --- */
   .login-shell {
     @apply dark flex min-h-screen flex-col overflow-hidden bg-background text-foreground md:grid;
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
@@ -287,13 +350,11 @@
   }
 
   .login-input {
-    @apply block h-11 w-full rounded-sm border border-input bg-input text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground hover:border-border focus:border-primary focus:ring-2 focus:ring-primary/20;
-    transition:
-      border-color var(--transition-fast),
-      box-shadow var(--transition-fast);
+    @apply block h-11 w-full rounded-sm border border-input bg-input text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground hover:border-border focus:border-ring focus:ring-2 focus:ring-ring/20;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
   }
 
-  /* Table base classes */
+  /* --- Table base (kept for imperative tables, shadcn Table used for most) --- */
   .table-base {
     @apply w-full text-left text-sm border-collapse;
   }
@@ -310,95 +371,63 @@
     @apply px-cell-x py-cell-y align-middle text-left;
   }
 
-  /* Animation utilities */
+  /* --- Geist-style animations --- */
   .animate-in {
-    animation: animateIn 300ms ease-out;
+    animation: fadeIn 300ms ease-out;
   }
 
-  @keyframes animateIn {
-    from {
-      opacity: 0;
-      transform: translateY(5px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
 
+  /* --- Glass & glow --- */
   .glass-panel {
     background: rgb(255 255 255 / 0.03);
     backdrop-filter: blur(10px);
     border: 1px solid var(--border-subtle);
   }
+
   .glow-button {
     box-shadow: 0 0 16px var(--accent-glow);
     transition: all var(--transition-fast);
   }
+
   .glow-button:hover {
     box-shadow: 0 0 20px var(--accent-glow);
     transform: translateY(-1px);
   }
+
   .logo-ring {
     stroke-dasharray: 100;
-    animation: rotate 10s linear infinite;
+    animation: logoRotate 10s linear infinite;
   }
-  @keyframes rotate {
-    from {
-      transform: rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg);
-    }
+
+  @keyframes logoRotate {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
   }
-  /* LiveSync page utilities (avoid arbitrary Tailwind values in pages) */
-  .live-text-2xs {
-    font-size: 11px;
-    line-height: 1.4;
-  }
-  .live-text-3xs {
-    font-size: 10px;
-    line-height: 1.4;
-  }
-  .live-truncate-name {
-    max-width: 200px;
-  }
-  .live-truncate-name-sm {
-    max-width: 180px;
-  }
-  .live-bar-fill {
-    transition: width 0.7s ease-out;
-  }
-  .login-text-2xs {
-    font-size: 10px;
-    line-height: 1rem;
-  }
-  .login-badge-text {
-    font-size: 9px;
-    line-height: 0.875rem;
-  }
-  .modal-scroll-65 {
-    max-height: 65vh;
-  }
-  .modal-scroll-70 {
-    max-height: 70vh;
-  }
-  /* Portfolio Storytelling Utilities */
-  .portfolio-hero-monitor {
-    width: 400px;
-    height: 400px;
-  }
-  .portfolio-pillar-title {
-    @apply text-2xl font-black tracking-tight uppercase;
-  }
+
+  /* --- Page-specific utilities --- */
+  .live-text-2xs  { font-size: 11px; line-height: 1.4; }
+  .live-text-3xs  { font-size: 10px; line-height: 1.4; }
+  .live-truncate-name { max-width: 200px; }
+  .live-truncate-name-sm { max-width: 180px; }
+  .live-bar-fill { transition: width 0.7s ease-out; }
+  .login-text-2xs { font-size: 10px; line-height: 1rem; }
+  .login-badge-text { font-size: 9px; line-height: 0.875rem; }
+  .modal-scroll-65 { max-height: 65vh; }
+  .modal-scroll-70 { max-height: 70vh; }
+
+  /* --- Portfolio page utilities --- */
+  .portfolio-hero-monitor { width: 400px; height: 400px; }
+  .portfolio-pillar-title { @apply text-2xl font-black tracking-tight uppercase; }
   .portfolio-feature-tag {
     @apply mb-3 inline-flex items-center gap-2 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground;
     background: var(--bg-elevated);
     border: 1px solid var(--border-subtle);
   }
-  .portfolio-story-label {
-    @apply text-[10px] font-black uppercase tracking-widest;
-  }
+  .portfolio-story-label { @apply text-[10px] font-black uppercase tracking-widest; }
   .portfolio-tech-note {
     @apply flex items-start gap-3 rounded-lg p-3;
     background: var(--accent-muted);
@@ -406,10 +435,9 @@
   }
 }
 
+/* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
+  *, *::before, *::after {
     animation-duration: 0.01ms !important;
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;

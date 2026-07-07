@@ -9,9 +9,25 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: false,
     },
+    email: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
     role: {
       type: DataTypes.STRING,
       defaultValue: "user", // 'admin', 'user'
+    },
+    status: {
+      type: DataTypes.STRING(50),
+      defaultValue: "active", // 'active', 'invited', 'disabled'
+    },
+    invite_token: {
+      type: DataTypes.STRING(255),
+      allowNull: true,
+    },
+    org_id: {
+      type: DataTypes.UUID,
+      allowNull: true,
     },
   });
   return User;

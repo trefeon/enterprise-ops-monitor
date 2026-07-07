@@ -30,6 +30,12 @@ const envSchema = z
     ADMIN_USERNAME: z.string().optional(),
     ADMIN_PASSWORD_HASH: z.string().optional(),
     SEED_DEMO_DATA: z.string().optional(),
+
+    // Google OAuth
+    GOOGLE_CLIENT_ID: z.string().optional(),
+    GOOGLE_CLIENT_SECRET: z.string().optional(),
+    GOOGLE_CALLBACK_URL: z.string().optional(),
+    GOOGLE_AUTO_REGISTER: z.string().optional(),
   })
   .superRefine((val, ctx) => {
     const hasDatabaseUrl = Boolean(val.DATABASE_URL);

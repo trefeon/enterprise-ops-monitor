@@ -27,6 +27,22 @@ apiClient.interceptors.request.use(
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
+    // Auto-prefix orgId for non-auth, non-org routes when the user has an orgId
+    if (config.url && !config.url.startsWith('/auth/') && !config.url.startsWith('/orgs/')) {
+      try {
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+          const user = JSON.parse(storedUser);
+          if (user?.orgId) {
+            config.url = `/orgs/${user.orgId}${config.url.startsWith('/') ? config.url : `/${config.url}`}`;
+          }
+        }
+      } catch {
+        // ignore parse errors
+      }
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
@@ -126,4 +142,80 @@ export const apiPut = async (url, data, config) => {
  */
 export const apiDelete = async (url, config) => {
   return apiClient.delete(url, config);
+};
+
+// ── Org-scoped API helpers ─────────────────────────────────────────────────
+
+/**
+ * Prefix a URL with the org path: /api/orgs/{orgId}{url}
+ * @param {string} url
+ * @param {string} orgId
+ * @returns {string}
+ */
+function orgUrl(url, orgId) {
+  const clean = url.startsWith('/') ? url : `/${url}`;
+  return `/orgs/${orgId}${clean}`;
+}
+
+/**
+ * Org-scoped GET — calls /api/orgs/{orgId}{url}
+ * @template T
+ * @param {string} url
+ * @param {string} orgId
+ * @param {object} [config]
+ * @returns {Promise<import('./types').ApiResponse<T, any>>}
+ */
+export const apiOrgGet = async (url, orgId, config) => {
+  return apiClient.get(orgUrl(url, orgId), config);
+};
+
+/**
+ * Org-scoped POST — calls /api/orgs/{orgId}{url}
+ * @template T
+ * @param {string} url
+ * @param {string} orgId
+ * @param {any} data
+ * @param {object} [config]
+ * @returns {Promise<import('./types').ApiResponse<T, any>>}
+ */
+export const apiOrgPost = async (url, orgId, data, config) => {
+  return apiClient.post(orgUrl(url, orgId), data, config);
+};
+
+/**
+ * Org-scoped PATCH — calls /api/orgs/{orgId}{url}
+ * @template T
+ * @param {string} url
+ * @param {string} orgId
+ * @param {any} data
+ * @param {object} [config]
+ * @returns {Promise<import('./types').ApiResponse<T, any>>}
+ */
+export const apiOrgPatch = async (url, orgId, data, config) => {
+  return apiClient.patch(orgUrl(url, orgId), data, config);
+};
+
+/**
+ * Org-scoped PUT — calls /api/orgs/{orgId}{url}
+ * @template T
+ * @param {string} url
+ * @param {string} orgId
+ * @param {any} data
+ * @param {object} [config]
+ * @returns {Promise<import('./types').ApiResponse<T, any>>}
+ */
+export const apiOrgPut = async (url, orgId, data, config) => {
+  return apiClient.put(orgUrl(url, orgId), data, config);
+};
+
+/**
+ * Org-scoped DELETE — calls /api/orgs/{orgId}{url}
+ * @template T
+ * @param {string} url
+ * @param {string} orgId
+ * @param {object} [config]
+ * @returns {Promise<import('./types').ApiResponse<T, any>>}
+ */
+export const apiOrgDelete = async (url, orgId, config) => {
+  return apiClient.delete(orgUrl(url, orgId), config);
 };

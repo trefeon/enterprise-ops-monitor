@@ -146,14 +146,14 @@ interface KpiCardProps {
 
 const KpiCard = ({ icon: Icon, title, value, subtitle, color = 'default', pulse = false }: KpiCardProps) => {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border/40 bg-card p-5 transition-[transform,box-shadow] duration-300 hover:border-primary/40 hover:bg-muted/10 group">
+    <div className="relative overflow-hidden rounded-lg border border-border/40 bg-card p-5 transition-[transform,box-shadow] duration-300 hover:border-primary/40 hover:bg-muted/10 group">
       {pulse && (
-        <div className="absolute inset-0 animate-pulse-slow bg-destructive/5 rounded-2xl" />
+        <div className="absolute inset-0 animate-pulse-slow bg-destructive/5 rounded-lg" />
       )}
       <div className="relative flex items-start gap-4">
         <div
           className={cn(
-            'flex items-center justify-center w-14 h-14 rounded-xl shadow-lg',
+            'flex items-center justify-center w-14 h-14 rounded-sm shadow-lg',
             color === 'success'
               ? 'bg-status-success/15 text-status-success shadow-status-success/5'
               : color === 'warning'
@@ -232,7 +232,7 @@ const BranchCard = ({ name, synced, stale, problem, total }: BranchCardProps) =>
           : 'bg-muted';
 
   return (
-    <div className="rounded-2xl border border-border/40 bg-card p-4 transition-[transform,box-shadow] duration-300 hover:border-primary/30 hover:bg-muted/5 group">
+    <div className="rounded-lg border border-border/40 bg-card p-4 transition-[transform,box-shadow] duration-300 hover:border-primary/30 hover:bg-muted/5 group">
       <div className="flex items-center justify-between mb-4">
         <span
           className="font-bold text-foreground text-xs uppercase tracking-tight truncate pr-2"
@@ -242,7 +242,7 @@ const BranchCard = ({ name, synced, stale, problem, total }: BranchCardProps) =>
         </span>
         <span
           className={cn(
-            'text-4xs font-black uppercase tracking-widest px-2 py-0.5 rounded-full border leading-none shrink-0',
+            'text-3xs font-black uppercase tracking-widest px-2 py-0.5 rounded-full border leading-none shrink-0',
             badgeColor
           )}
         >
@@ -256,7 +256,7 @@ const BranchCard = ({ name, synced, stale, problem, total }: BranchCardProps) =>
           style={{ width: `${Math.min(100, healthPct)}%` }}
         />
       </div>
-      <div className="flex items-center justify-between text-4xs font-black uppercase tracking-tighter text-muted-foreground/50">
+      <div className="flex items-center justify-between text-3xs font-black uppercase tracking-tighter text-muted-foreground/50">
         <span>{synced} OK</span>
         <span className="text-muted-foreground/20">•</span>
         <span>{stale} WARN</span>
@@ -380,7 +380,7 @@ const LiveSync = () => {
   const eodSummary = eodData?.summary || ({} as EodSummary);
 
   return (
-    <div className="fixed inset-0 flex flex-col gap-4 overflow-hidden bg-background text-foreground dark" style={{ overscrollBehavior: 'contain' }}>
+    <div className="fixed inset-0 flex flex-col gap-4 overflow-hidden bg-background text-foreground dark" data-debug-component-root="Live-Sync" style={{ overscrollBehavior: 'contain' }}>
       {/* ── Header Bar ─────────────────────────────────────────── */}
       <header className="flex shrink-0 items-center justify-between border-b border-border/40 bg-card px-6 py-4 backdrop-blur-xl">
         <div className="flex items-center gap-5">
@@ -410,13 +410,13 @@ const LiveSync = () => {
             <div className="font-mono text-3xl font-black tabular-nums tracking-tighter text-foreground">
               {clock}
             </div>
-            <div className="text-4xs font-black uppercase tracking-widest-2xl text-muted-foreground/40 pr-1">
+            <div className="text-3xs font-black uppercase tracking-widest-2xl text-muted-foreground/40 pr-1">
               WIB LOCAL TIME
             </div>
           </div>
           <div className="flex flex-col items-center gap-1 border-l border-border/40 pl-8">
             <div className="text-xl font-black tabular-nums text-primary/60">{countdown}s</div>
-            <div className="text-5xs font-black uppercase tracking-widest text-muted-foreground/40">
+            <div className="text-3xs font-black uppercase tracking-widest text-muted-foreground/40">
               NEXT REFRESH
             </div>
           </div>
@@ -510,7 +510,7 @@ const LiveSync = () => {
                 </span>
               )}
             </h2>
-            <div className="text-4xs font-bold text-muted-foreground/30 uppercase tracking-widest">
+            <div className="text-3xs font-bold text-muted-foreground/30 uppercase tracking-widest">
               Last Polled: {lastFetchAt ? formatTime(lastFetchAt.toISOString()) : '-'}
             </div>
           </div>
@@ -568,7 +568,7 @@ const LiveSync = () => {
                 </span>
               )}
             </h2>
-            <div className="text-4xs font-bold text-muted-foreground/30 uppercase tracking-widest">
+            <div className="text-3xs font-bold text-muted-foreground/30 uppercase tracking-widest">
               Range:{' '}
               {eodSummary.dateRange?.from && eodSummary.dateRange?.to
                 ? `${eodSummary.dateRange.from} – ${eodSummary.dateRange.to}`

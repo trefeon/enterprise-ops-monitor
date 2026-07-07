@@ -22,8 +22,13 @@ const Profile = lazy(() => import("../pages/Profile"));
 const UsersAdmin = lazy(() => import("../pages/UsersAdmin"));
 const RolesAdmin = lazy(() => import("../pages/RolesAdmin"));
 const AfterHours = lazy(() => import("../pages/AfterHours"));
+const AfterHoursReport = lazy(() => import("../pages/AfterHoursReport"));
 const AgentUpdater = lazy(() => import("../pages/AgentUpdater"));
 const OfficeAgents = lazy(() => import("../pages/office-agents"));
+const Signup = lazy(() => import("../pages/Signup"));
+const Pricing = lazy(() => import("../pages/Pricing"));
+const LiveTVDisplay = lazy(() => import("../pages/LiveTVDisplay"));
+const LiveMenuDashboard = lazy(() => import("../pages/LiveMenuDashboard"));
 
 const fallback = (
   <div className="flex h-screen items-center justify-center">Loading...</div>
@@ -80,6 +85,30 @@ export default function AppRouter() {
           element={
             <PageTransition>
               <Login />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/signup"
+          element={
+            <PageTransition>
+              <Signup />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/pricing"
+          element={
+            <PageTransition>
+              <Pricing />
+            </PageTransition>
+          }
+        />
+        <Route
+          path="/display/:screenToken"
+          element={
+            <PageTransition>
+              <LiveTVDisplay />
             </PageTransition>
           }
         />
@@ -188,6 +217,14 @@ export default function AppRouter() {
               }
             />
             <Route
+              path="admin/afterhours/report"
+              element={
+                <PrivateRoute requiredPerm={Permissions.AFTERHOURS_VIEW}>
+                  <AfterHoursReport />
+                </PrivateRoute>
+              }
+            />
+            <Route
               path="agent-updater"
               element={
                 <PrivateRoute requiredPerm={Permissions.AGENT_UPDATE}>
@@ -200,6 +237,14 @@ export default function AppRouter() {
               element={
                 <PrivateRoute requiredPerm={Permissions.AGENT_UPDATE}>
                   <OfficeAgents />
+                </PrivateRoute>
+              }
+            />
+            <Route
+              path="live-menu"
+              element={
+                <PrivateRoute requiredPerm={Permissions.DASHBOARD_VIEW}>
+                  <LiveMenuDashboard />
                 </PrivateRoute>
               }
             />

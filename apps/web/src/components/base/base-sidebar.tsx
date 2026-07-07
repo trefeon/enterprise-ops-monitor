@@ -60,10 +60,10 @@ export function BaseSidebar({
           <SidebarHeader className="shrink-0">
             <div className="flex h-10 items-center justify-between gap-2 px-2">
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-primary text-primary-foreground">
                   <LineChart className="size-4" />
                 </div>
-                <span className="min-w-0 truncate text-[13px] font-bold uppercase tracking-[0.12em] group-data-[state=collapsed]/sidebar-wrapper:hidden">
+                <span className="min-w-0 truncate text-sm font-bold uppercase tracking-widest group-data-[state=collapsed]/sidebar-wrapper:hidden">
                   {brandLabel}
                 </span>
               </div>
@@ -79,7 +79,7 @@ export function BaseSidebar({
                     variant="ghost"
                     size="icon-sm"
                     onClick={() => onCollapsedChange?.(!isCollapsed)}
-                    className="hidden md:inline-flex"
+                    className="hidden md:inline-flex ml-auto"
                     aria-label={collapseLabel}
                     title={collapseLabel}
                   >
@@ -113,7 +113,7 @@ export function BaseSidebar({
                   aria-label="Open profile"
                   title={isCollapsed ? 'Profile' : undefined}
                 >
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-xs font-bold text-primary-foreground">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-primary text-xs font-bold text-primary-foreground">
                     {userSummary.initials}
                   </span>
                   <span className="ml-2 min-w-0 text-left group-data-[state=collapsed]/sidebar-wrapper:hidden">
@@ -121,7 +121,7 @@ export function BaseSidebar({
                       {userSummary.name}
                     </span>
                     {userSummary.meta && (
-                      <span className="block truncate font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+                      <span className="block truncate font-mono text-3xs uppercase tracking-wider text-muted-foreground">
                         {userSummary.meta}
                       </span>
                     )}

@@ -64,7 +64,7 @@ const About: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <PageShell>
+    <PageShell debugLabel="About">
       <FeatureStoryBanner story={getFeatureStory('about')} />
 
       {/* Hero Section */}
@@ -118,7 +118,7 @@ const About: React.FC = () => {
               </CardContent>
             </Card>
           </div>
-          <div className="p-4 rounded-xl border border-status-info/20 bg-status-info/5 flex items-start gap-4">
+          <div className="p-4 rounded-lg border border-status-info/20 bg-status-info/5 flex items-start gap-4">
             <Shield className="size-5 text-status-info shrink-0 mt-0.5" />
             <div className="space-y-1">
               <p className="text-xs font-bold uppercase text-status-info tracking-widest">
@@ -166,7 +166,7 @@ const About: React.FC = () => {
           {projectStory.techStack.map((item: { label: string; value: string }) => (
             <div
               key={item.label}
-              className="group p-4 rounded-2xl border border-border bg-card hover:border-primary/30 transition-all"
+              className="group p-4 rounded-lg border border-border bg-card hover:border-primary/30 transition-all"
             >
               <div className="flex flex-col gap-1">
                 <span className="live-text-3xs font-black text-muted-foreground uppercase tracking-widest">
@@ -184,7 +184,7 @@ const About: React.FC = () => {
       {/* The Story Pillars */}
       <section className="space-y-16">
         {PILLARS.map((pillar) => (
-          <div key={pillar.id} className="space-y-8">
+          <div key={pillar.id} className="space-y-6">
             <div className="border-l-4 border-primary pl-6 py-1">
               <div className="flex items-center gap-3 mb-2">
                 <div className="text-primary">{pillar.icon}</div>
