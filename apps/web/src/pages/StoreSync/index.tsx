@@ -13,14 +13,19 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { PageShell } from '@/components/shared/PageShell';
-import { StatCard } from '@/components/shared/StatCard';
+import { StatCard } from '@/components/ui/cards';
 import { PageHeader } from '@/components/shared/PageHeader';
-import { DataTable } from '@/components/shared/DataTable';
+import { DataTable } from '@/components/ui/data-table';
 import { DatePicker } from '@/components/shared/DatePicker';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { EmptyState } from '@/components/shared/EmptyState';
-import { Modal } from '@/components/shared/Modal';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { formatDate, formatDateTime, formatTime, getWibParts, getWibToday } from '../../lib/date';
 import { getFeatureStory } from '../../data/stories';
 import {
@@ -839,12 +844,11 @@ const StoreSync = () => {
         </BaseSection>
       </div>
 
-      <Modal
-        open={Boolean(historyStore)}
-        onClose={() => setHistoryStore(null)}
-        title="Sync History"
-        maxWidth="max-w-2xl"
-      >
+      <Dialog open={Boolean(historyStore)} onOpenChange={(next) => { if (!next) setHistoryStore(null); }}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Sync History</DialogTitle>
+          </DialogHeader>
         {historyStore && (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
@@ -950,7 +954,8 @@ const StoreSync = () => {
             </div>
           </div>
         )}
-      </Modal>
+      </DialogContent>
+    </Dialog>
     </PageShell>
   );
 };

@@ -10,7 +10,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { PageShell } from '@/components/shared/PageShell';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { Toolbar } from '@/components/shared/Toolbar';
-import { DataTable } from '@/components/shared/DataTable';
+import { DataTable } from '@/components/ui/data-table';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';

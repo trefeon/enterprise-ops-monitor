@@ -23,7 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
-import { DataTable, type Column } from '@/components/shared/DataTable';
+import { DataTable, type Column } from '@/components/ui/data-table';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { EntityActionMenu } from '@/components/shared/EntityActionMenu';
 import {

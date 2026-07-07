@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
-import { DataTable } from '@/components/shared/DataTable';
+import { DataTable } from '@/components/ui/data-table';
 
 // ── Data types ────────────────────────────────────────────────────────────────
 

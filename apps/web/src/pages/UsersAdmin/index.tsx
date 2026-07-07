@@ -11,9 +11,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DataTable } from '@/components/shared/DataTable';
+import { DataTable } from '@/components/ui/data-table';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
-import Modal from '@/components/shared/Modal';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { hasPermission, Permissions } from '../../lib/auth/permissions';
@@ -566,12 +571,11 @@ export default function UsersAdmin() {
         onConfirm={handleDelete}
         confirmDisabled={deleteLoading}
       />
-      <Modal
-        style={{ overscrollBehavior: 'contain' }}
-        open={changePassOpen}
-        onClose={closeChangePasswordModal}
-        title={`Change Password for ${changePassUser?.username || ''}`}
-      >
+      <Dialog open={changePassOpen} onOpenChange={(next) => { if (!next) closeChangePasswordModal(); }}>
+        <DialogContent className="sm:max-w-md" style={{ overscrollBehavior: 'contain' }}>
+          <DialogHeader>
+            <DialogTitle>Change Password for {changePassUser?.username || ''}</DialogTitle>
+          </DialogHeader>
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1.5">New Password</label>
@@ -597,7 +601,8 @@ export default function UsersAdmin() {
             </Button>
           </div>
         </div>
-      </Modal>
+      </DialogContent>
+    </Dialog>
     </PageShell>
   );
 }

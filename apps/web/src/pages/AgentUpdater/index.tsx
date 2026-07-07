@@ -3,8 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Modal } from '@/components/shared/Modal';
 import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -13,13 +18,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { StatusBadge } from '@/components/shared/StatusBadge';
-import { DataTable } from '@/components/shared/DataTable';
+import { DataTable } from '@/components/ui/data-table';
 import { BaseFileUploadControl } from '@/components/base';
 import { formatDateTime } from '../../lib/date';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { PageShell } from '@/components/shared/PageShell';
-import { StatCard } from '@/components/shared/StatCard';
+import { StatCard } from '@/components/ui/cards';
 import { SearchBar } from '@/components/shared/SearchBar';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
@@ -649,11 +654,11 @@ const AgentUpdater = () => {
         />
       </section>
 
-      <Modal
-        open={deployModalOpen}
-        onClose={() => !isDeploying && setDeployModalOpen(false)}
-        title="Deploy New Publisher Version"
-      >
+      <Dialog open={deployModalOpen} onOpenChange={(next) => { if (!next && !isDeploying) setDeployModalOpen(false); }}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Deploy New Publisher Version</DialogTitle>
+          </DialogHeader>
         <form onSubmit={handleDeploy} className="space-y-6 pt-4">
           <div className="space-y-4">
             <div className="space-y-2">
@@ -740,7 +745,8 @@ const AgentUpdater = () => {
             </Button>
           </div>
         </form>
-      </Modal>
+      </DialogContent>
+    </Dialog>
     </PageShell>
   );
 };

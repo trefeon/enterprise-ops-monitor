@@ -2,19 +2,19 @@ import { Loader2 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-export interface BaseLoadingStateProps {
+export interface LoadingStateProps {
   label?: string;
   rows?: number;
   variant?: "spinner" | "skeleton";
   className?: string;
 }
 
-export function BaseLoadingState({
+export function LoadingState({
   label = "Loading...",
   rows = 3,
   variant = "spinner",
   className,
-}: BaseLoadingStateProps) {
+}: LoadingStateProps) {
   if (variant === "skeleton") {
     return (
       <div className={cn("grid gap-3 p-4", className)} aria-label={label}>

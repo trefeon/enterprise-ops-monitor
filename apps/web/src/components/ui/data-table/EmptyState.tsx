@@ -10,7 +10,7 @@ import {
 } from "@/components/ui/empty";
 import { cn } from "@/lib/utils";
 
-export interface BaseEmptyStateProps {
+export interface EmptyStateProps {
   title?: ReactNode;
   description?: ReactNode;
   icon?: ReactNode;
@@ -18,13 +18,13 @@ export interface BaseEmptyStateProps {
   className?: string;
 }
 
-export function BaseEmptyState({
+export function EmptyState({
   title = "No records found",
   description,
   icon = <SearchX className="size-4" />,
   action,
   className,
-}: BaseEmptyStateProps) {
+}: EmptyStateProps) {
   return (
     <Empty className={cn("min-h-32 border border-dashed border-border bg-card/40", className)}>
       <EmptyHeader>
