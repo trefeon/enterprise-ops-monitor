@@ -54,6 +54,12 @@ export const AuthProvider = ({ children }) => {
     return Boolean(getAuthToken());
   });
 
+  // Derive currentOrgId from the stored user object
+  const [currentOrgId, setCurrentOrgId] = useState(() => {
+    const stored = getStoredUser();
+    return stored?.orgId || null;
+  });
+
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
     const token = getAuthToken();
@@ -81,6 +87,9 @@ export const AuthProvider = ({ children }) => {
           };
           localStorage.setItem('user', JSON.stringify(userData));
           setUser(userData);
+          if (userData.orgId) {
+            setCurrentOrgId(userData.orgId);
+          }
         }
       } catch (error) {
         const isUnauthorized =
@@ -120,6 +129,9 @@ export const AuthProvider = ({ children }) => {
         persistAuth({ token, user: userData, persist: Boolean(options?.persist) });
         apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
         setUser(userData);
+        if (userData.orgId) {
+          setCurrentOrgId(userData.orgId);
+        }
         return { success: true };
       }
       return { success: false, error: 'Login failed' };
@@ -129,17 +141,48 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const register = async ({ username, email, password, orgName }) => {
+    try {
+      const res = await apiPost('/auth/register', { username, email, password, orgName });
+
+      if (res.ok) {
+        const { token, user: nextUser } = res.data;
+        const userData = {
+          ...nextUser,
+          effectivePerms: nextUser.effectivePerms || [],
+          roleNames: nextUser.roleNames || [nextUser.role],
+          scopeBranches: nextUser.scopeBranches || [],
+          isAllBranches: nextUser.isAllBranches ?? true,
+        };
+        persistAuth({ token, user: userData, persist: true });
+        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        setUser(userData);
+        if (userData.orgId) {
+          setCurrentOrgId(userData.orgId);
+        }
+        return { success: true };
+      }
+      return { success: false, error: res.error?.message || 'Registration failed' };
+    } catch (error) {
+      console.error('Register error', error);
+      return { success: false, error: error.message || 'Registration failed' };
+    }
+  };
+
   const logout = () => {
     clearAuthStorage();
     delete apiClient.defaults.headers.common['Authorization'];
     setUser(null);
+    setCurrentOrgId(null);
     setLoading(false);
   };
 
   const value = {
     user,
     loading,
+    currentOrgId,
     login,
+    register,
     logout,
     api: apiClient,
   };

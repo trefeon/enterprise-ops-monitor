@@ -361,7 +361,7 @@ export default function UsersAdmin() {
 
   if (!canView) {
     return (
-      <PageShell>
+      <PageShell debugLabel="Users-Admin">
         <FeatureStoryBanner story={getFeatureStory('accounts')} />
         <PageHeader title="Users" subtitle="Account management" />
         <Card className="p-6">
@@ -376,7 +376,7 @@ export default function UsersAdmin() {
   }
 
   return (
-    <PageShell>
+    <PageShell debugLabel="Users-Admin">
       <FeatureStoryBanner story={getFeatureStory('accounts')} />
       <PageHeader
         title="Users"

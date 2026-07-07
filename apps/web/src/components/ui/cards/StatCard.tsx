@@ -14,6 +14,7 @@ export interface StatCardProps {
   footer?: ReactNode;
   className?: string;
   accent?: string;
+  pulseClass?: string;
   status?: StatStatus;
   onClick?: () => void;
   size?: 'sm' | 'default' | 'lg';
@@ -60,15 +61,15 @@ const paddingSizes = {
 };
 
 const titleSizes = {
-  sm: 'text-[10px]',
+  sm: 'text-3xs',
   default: 'text-xs',
   lg: 'text-sm',
 };
 
 const valueSizes = {
   sm: 'text-xl',
-  default: 'text-2xl sm:text-[1.75rem]',
-  lg: 'text-[1.75rem] sm:text-3xl',
+  default: 'text-2xl sm:text-2xl',
+  lg: 'text-2xl sm:text-3xl',
 };
 
 export function StatCard({
@@ -79,6 +80,7 @@ export function StatCard({
   footer,
   className,
   accent: accentProp,
+  pulseClass,
   status = 'default',
   onClick,
   size = 'default',
@@ -107,7 +109,7 @@ export function StatCard({
       <div className="flex items-center gap-1.5 mt-2">
         <span
           className={cn(
-            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold border',
+            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-3xs font-mono font-semibold border',
             trendColors[trend.direction]
           )}
         >
@@ -116,7 +118,7 @@ export function StatCard({
           {trend.value}%
         </span>
         {trend.label && (
-          <span className="text-[10px] text-muted-foreground font-medium">
+          <span className="text-3xs text-muted-foreground font-medium">
             {trend.label}
           </span>
         )}
@@ -183,7 +185,7 @@ export function StatCard({
             {icon ? (
               <span
                 className={cn(
-                  'flex size-9 shrink-0 items-center justify-center rounded-lg border transition-transform duration-200 group-hover:-translate-y-0.5 sm:size-10 [&>svg]:size-4 sm:[&>svg]:size-5',
+                  'flex size-9 shrink-0 items-center justify-center rounded-sm border transition-transform duration-200 sm:size-10 [&>svg]:size-4 sm:[&>svg]:size-5',
                   styles.icon,
                   accentProp
                 )}
@@ -210,11 +212,16 @@ export function StatCard({
 
           <div className="mt-auto pt-2">
             {footer && <div className="mb-2">{footer}</div>}
-            {subtext && (
-              <div className="text-xs text-muted-foreground leading-relaxed break-words">
-                {subtext}
-              </div>
-            )}
+            <div className={cn('flex items-center gap-2', pulseClass && 'justify-between')}>
+              {subtext && (
+                <div className="text-xs text-muted-foreground leading-relaxed break-words">
+                  {subtext}
+                </div>
+              )}
+              {pulseClass && (
+                <span className={cn('inline-flex size-2 rounded-full shrink-0', pulseClass)} />
+              )}
+            </div>
           </div>
         </div>
       </CardContent>

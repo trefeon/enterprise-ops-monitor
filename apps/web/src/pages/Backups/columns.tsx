@@ -39,7 +39,7 @@ export const getBackupColumns = ({
       const file = row.original;
       return (
         <div className="flex items-center gap-3">
-          <div className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-xl bg-muted/50 text-foreground border border-border/60">
+          <div className="flex-shrink-0 flex h-9 w-9 items-center justify-center rounded-lg bg-muted/50 text-foreground border border-border/60">
             <RotateCcw className="size-5" />
           </div>
           <div className="flex flex-col min-w-0">

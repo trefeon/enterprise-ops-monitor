@@ -145,8 +145,8 @@ function NavBar() {
 
 function HeroDashboard() {
   return (
-    <div className="rounded-xl border border-border bg-card/50 p-1">
-      <div className="rounded-lg border border-border bg-background">
+    <div className="rounded-lg border border-border bg-card/50 p-1">
+      <div className="relative overflow-hidden rounded-lg border border-border bg-background">
         {/* Title bar */}
         <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
           <div className="flex items-center gap-2">
@@ -157,7 +157,7 @@ function HeroDashboard() {
             </div>
             <span className="ml-2 font-mono text-xs text-muted-foreground">dash.lmntea.fun/app</span>
           </div>
-          <div className="rounded-full border border-status-success/40 bg-status-success/10 px-2 py-0.5 font-mono text-[10px] font-semibold text-status-success">
+          <div className="rounded-full border border-status-success/40 bg-status-success/10 px-2 py-0.5 font-mono text-3xs font-semibold text-status-success">
             LIVE
           </div>
         </div>
@@ -171,7 +171,7 @@ function HeroDashboard() {
               { label: 'Active Nodes', value: '128', color: 'text-foreground' },
             ].map((kpi) => (
               <div key={kpi.label} className="rounded-lg border border-border bg-card p-3">
-                <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{kpi.label}</div>
+                <div className="font-mono text-3xs uppercase tracking-wider text-muted-foreground">{kpi.label}</div>
                 <div className={`mt-2 text-xl font-bold tabular-nums ${kpi.color}`}>{kpi.value}</div>
               </div>
             ))}
@@ -180,7 +180,7 @@ function HeroDashboard() {
             <div className="rounded-lg border border-border bg-card p-3">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-xs font-semibold text-foreground">Operational Pulse</span>
-                <span className="font-mono text-[10px] text-muted-foreground">60s refresh</span>
+                <span className="font-mono text-3xs text-muted-foreground">60s refresh</span>
               </div>
               <div className="flex h-20 items-end gap-1">
                 {[40, 65, 55, 80, 72, 90, 68, 85, 78, 92, 60, 75].map((h, i) => (
@@ -205,7 +205,7 @@ function HeroDashboard() {
                       <span className={`size-1.5 rounded-full ${evt.status === 'success' ? 'bg-status-success' : 'bg-status-warning'}`} />
                       <span className="text-xs text-foreground">{evt.text}</span>
                     </div>
-                    <span className="font-mono text-[10px] text-muted-foreground">{evt.time}</span>
+                    <span className="font-mono text-3xs text-muted-foreground">{evt.time}</span>
                   </div>
                 ))}
               </div>
@@ -237,7 +237,7 @@ function IconBox({ icon: Icon }: { icon: LucideIcon }) {
 
 export default function Landing() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-background text-foreground" data-debug-component-root="Landing">
       <NavBar />
 
       {/* ── Hero ─────────────────────────────────────── */}
@@ -304,7 +304,7 @@ export default function Landing() {
         </div>
         <div className="mx-auto mt-12 grid max-w-4xl gap-4 md:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
-            <article key={f.title} className="group rounded-xl border border-border bg-card p-5 transition-colors hover:border-muted-foreground/30">
+            <article key={f.title} className="rounded-lg border border-border bg-card p-5 transition-colors hover:border-muted-foreground/30">
               <IconBox icon={f.icon} />
               <h3 className="mt-4 text-sm font-semibold text-foreground">{f.title}</h3>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">{f.description}</p>
@@ -333,7 +333,7 @@ export default function Landing() {
                   <TIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium text-foreground">{t.name}</div>
-                    <div className="text-[10px] text-muted-foreground">{t.category}</div>
+                    <div className="text-3xs text-muted-foreground">{t.category}</div>
                   </div>
                 </div>
               );
@@ -355,9 +355,9 @@ export default function Landing() {
         </div>
         <div className="mx-auto mt-12 max-w-3xl space-y-3">
           {architecture.map((layer, i) => (
-            <div key={layer.layer} className="grid items-center gap-4 rounded-xl border border-border bg-card p-5 sm:grid-cols-[100px_minmax(0,1fr)]">
+            <div key={layer.layer} className="grid items-center gap-4 rounded-lg border border-border bg-card p-5 sm:grid-cols-[100px_minmax(0,1fr)]">
               <div>
-                <div className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">Layer {i + 1}</div>
+                <div className="font-mono text-3xs uppercase tracking-wider text-muted-foreground">Layer {i + 1}</div>
                 <div className="mt-1 text-sm font-bold text-foreground">{layer.layer}</div>
               </div>
               <div>
@@ -380,7 +380,7 @@ export default function Landing() {
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               Docker Compose stack with automated health checks, database migrations, RBAC seeding, and remote deployment with rollback support.
             </p>
-            <div className="mt-8 overflow-hidden rounded-xl border border-border bg-background">
+            <div className="overflow-hidden rounded-lg border border-border bg-background">
               <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
                 <Terminal aria-hidden="true" className="size-3.5 text-muted-foreground" />
                 <span className="font-mono text-xs text-muted-foreground">terminal</span>
@@ -432,7 +432,7 @@ export default function Landing() {
         </div>
         <div className="mx-auto mt-12 max-w-2xl space-y-3">
           {faqs.map((faq) => (
-            <article key={faq.q} className="rounded-xl border border-border bg-card p-5">
+            <article key={faq.q} className="rounded-lg border border-border bg-card p-5">
               <h3 className="text-sm font-semibold text-foreground">{faq.q}</h3>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{faq.a}</p>
             </article>

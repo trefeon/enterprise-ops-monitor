@@ -69,7 +69,7 @@ const keyFeatures = featureStories.slice(0, 8);
 
 export default function CaseStudy() {
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-background text-foreground" data-debug-component-root="Case-Study">
       {/* Nav */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="portfolio-container flex h-14 items-center justify-between">
@@ -166,7 +166,7 @@ export default function CaseStudy() {
 
           <div className="mt-12 space-y-4">
             {architectureLayers.map((layer, i) => (
-              <div key={layer.label} className="rounded-xl border border-border bg-card">
+              <div key={layer.label} className="rounded-lg border border-border bg-card">
                 <div className="flex items-center justify-between border-b border-border px-5 py-4">
                   <div>
                     <div className="flex items-center gap-2">
@@ -205,20 +205,20 @@ export default function CaseStudy() {
 
           <div className="mx-auto mt-12 grid max-w-4xl gap-4 md:grid-cols-2">
             {keyFeatures.map((feature) => (
-              <article key={feature.id} className="rounded-xl border border-border bg-background p-5 transition-colors hover:border-muted-foreground/30">
+              <article key={feature.id} className="rounded-lg border border-border bg-background p-5 transition-colors hover:border-muted-foreground/30">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] uppercase tracking-wider text-primary">{feature.route}</span>
+                  <span className="font-mono text-3xs uppercase tracking-wider text-primary">{feature.route}</span>
                 </div>
                 <h3 className="mt-3 text-sm font-bold text-foreground">{feature.featureName}</h3>
                 <p className="mt-1 text-xs text-muted-foreground">{feature.tagline}</p>
                 <div className="mt-4 border-t border-border pt-4">
-                  <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Solution</div>
+                  <div className="text-3xs font-semibold uppercase tracking-wider text-muted-foreground">Solution</div>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{feature.solution}</p>
                 </div>
                 {feature.metrics && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {feature.metrics.map((m) => (
-                      <span key={m.label} className="rounded-md border border-border bg-card px-2 py-0.5 font-mono text-[10px] text-muted-foreground">
+                      <span key={m.label} className="rounded-md border border-border bg-card px-2 py-0.5 font-mono text-3xs text-muted-foreground">
                         {m.label}: {m.value}
                       </span>
                     ))}
@@ -237,7 +237,7 @@ export default function CaseStudy() {
           <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground">
             Technology choices
           </h2>
-          <div className="mt-8 overflow-hidden rounded-xl border border-border">
+          <div className="mt-8 overflow-hidden rounded-lg border border-border">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border bg-card">

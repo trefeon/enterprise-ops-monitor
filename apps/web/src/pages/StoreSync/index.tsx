@@ -122,7 +122,7 @@ export default function StoreSync() {
   // ── Fatal error state ───────────────────────────────────────
   if (s.fatalError && !s.status && s.stores.length === 0) {
     return (
-      <PageShell>
+      <PageShell debugLabel="Store-Sync">
         <EmptyState
           title="Failed to load sync data"
           description={s.fatalError}
@@ -139,7 +139,7 @@ export default function StoreSync() {
 
   // ── Normal render ────────────────────────────────────────────
   return (
-    <PageShell>
+    <PageShell debugLabel="Store-Sync">
       <FeatureStoryBanner story={getFeatureStory('store-sync')} />
 
       <PageHeader

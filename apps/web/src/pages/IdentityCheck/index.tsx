@@ -408,7 +408,7 @@ const IdentityCheck = () => {
   }, [canManageEmployees]);
 
   return (
-    <PageShell>
+    <PageShell debugLabel="Identity-Check">
       <FeatureStoryBanner story={getFeatureStory('employee-directory')} />
       <PageHeader
         title="Employee Directory"
@@ -439,7 +439,7 @@ const IdentityCheck = () => {
               onKeyDown={handleSearchKeyDown}
               className="flex-1"
             />
-            <div className="grid w-full min-w-0 gap-2 sm:grid-cols-3 md:w-auto">
+            <div className="grid w-full min-w-0 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:w-auto">
               <Select
                 value={filters.branchId}
                 onValueChange={(value) =>

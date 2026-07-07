@@ -346,7 +346,7 @@ const AgentUpdater = () => {
 
   if (error && !loading && monitoring.length === 0) {
     return (
-      <PageShell>
+      <PageShell debugLabel="Agent-Updater">
         <EmptyState
           title="Error Loading Agent Data"
           description={error}
@@ -387,7 +387,7 @@ const AgentUpdater = () => {
   }).length;
 
   return (
-    <PageShell>
+    <PageShell debugLabel="Agent-Updater">
       <FeatureStoryBanner story={getFeatureStory('agent-updater')} />
       <PageHeader
         title="Agent Updater"
@@ -593,7 +593,7 @@ const AgentUpdater = () => {
                 const isLegacyWorker =
                   !node.worker_version || Number.isNaN(workerVersionNum) || workerVersionNum < 4;
                 return isLegacyWorker ? (
-                  <span className="px-1.5 py-0.5 rounded bg-status-warning/10 text-status-warning text-4xs font-black uppercase tracking-widest">
+                  <span className="px-1.5 py-0.5 rounded bg-status-warning/10 text-status-warning text-3xs font-black uppercase tracking-widest">
                     legacy
                   </span>
                 ) : (
@@ -704,7 +704,7 @@ const AgentUpdater = () => {
               />
               <div className="flex items-center gap-3 px-4 pt-1">
                 <div className="flex flex-col">
-                  <span className="text-4xs font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">
+                  <span className="text-3xs font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">
                     Current
                   </span>
                   <span className="text-xs font-bold text-foreground">
@@ -713,7 +713,7 @@ const AgentUpdater = () => {
                 </div>
                 <div className="w-px h-6 bg-border/40" />
                 <div className="flex flex-col">
-                  <span className="text-4xs font-black text-primary uppercase tracking-widest leading-none mb-1">
+                  <span className="text-3xs font-black text-primary uppercase tracking-widest leading-none mb-1">
                     Suggested
                   </span>
                   <span className="text-xs font-bold text-primary">{suggestedVersion}</span>
@@ -727,13 +727,13 @@ const AgentUpdater = () => {
               variant="secondary"
               onClick={() => setDeployModalOpen(false)}
               disabled={isDeploying}
-              className="h-12 rounded-xl font-bold"
+              className="h-12 rounded-sm font-bold"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="h-12 rounded-xl font-black uppercase tracking-widest px-8 shadow-lg shadow-primary/20"
+              className="h-12 rounded-sm font-black uppercase tracking-widest px-8 shadow-lg shadow-primary/20"
               disabled={isDeploying}
             >
               {isDeploying ? (

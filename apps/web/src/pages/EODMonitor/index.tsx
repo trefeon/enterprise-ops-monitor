@@ -52,7 +52,7 @@ export default function EODMonitor() {
   const as = Math.round(AUTO_REFRESH_INTERVAL / 1000);
 
   return (
-    <PageShell>
+    <PageShell debugLabel="EOD-Monitor">
       <FeatureStoryBanner story={getFeatureStory('eod-monitor')} />
       <PageHeader
         title="EOD Monitor"

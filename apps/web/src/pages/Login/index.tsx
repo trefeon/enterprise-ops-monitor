@@ -115,7 +115,7 @@ export default function Login() {
   };
 
   return (
-    <div className="login-shell">
+    <div className="login-shell" data-debug-component-root="Login">
       <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
         <DialogContent className="max-w-sm">
           <DialogHeader>

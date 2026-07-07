@@ -154,7 +154,7 @@ export default function RolesAdmin() {
 
   if (loading) {
     return (
-      <PageShell>
+      <PageShell debugLabel="Roles-Admin">
         <FeatureStoryBanner story={getFeatureStory('roles')} />
         <PageHeader title="Roles Management" subtitle="Manage system and custom roles" />
         <div className="flex justify-center items-center h-64">
@@ -165,7 +165,7 @@ export default function RolesAdmin() {
   }
 
   return (
-    <PageShell>
+    <PageShell debugLabel="Roles-Admin">
       <FeatureStoryBanner story={getFeatureStory('roles')} />
       <PageHeader
         title="Roles Management"

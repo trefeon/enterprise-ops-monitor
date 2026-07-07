@@ -66,22 +66,22 @@ function getHealthConfig(systemHealth: string) {
       return {
         label: 'Healthy',
         dot: 'bg-status-success',
-        pulse: 'bg-status-success/70',
+        pulse: 'bg-status-success/70 animate-status-online',
         subtext: 'All systems normal',
       };
     case 'WARNING':
       return {
         label: 'Warning',
         dot: 'bg-status-warning',
-        pulse: null,
+        pulse: 'bg-status-warning/70 animate-pulse-fast',
         subtext: 'Some services degraded',
       };
     case 'CRITICAL':
       return {
-        label: 'Error',
+        label: 'Critical',
         dot: 'bg-status-error',
-        pulse: null,
-        subtext: 'Immediate attention needed',
+        pulse: 'bg-status-error/70 animate-pulse-alert',
+        subtext: 'Services down',
       };
     default:
       return {
@@ -178,7 +178,7 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <PageShell>
+      <PageShell debugLabel="Dashboard">
         <FeatureStoryBanner story={getFeatureStory('dashboard')} />
         <Skeleton className="h-8 w-64" />
         <div role="status" aria-label="Loading..." className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -192,7 +192,7 @@ export default function DashboardPage() {
 
   if (error) {
     return (
-      <PageShell>
+      <PageShell debugLabel="Dashboard">
         <FeatureStoryBanner story={getFeatureStory('dashboard')} />
         <EmptyState
           title="Failed to load dashboard"
@@ -210,7 +210,7 @@ export default function DashboardPage() {
 
   if (!summary) {
     return (
-      <PageShell>
+      <PageShell debugLabel="Dashboard">
         <FeatureStoryBanner story={getFeatureStory('dashboard')} />
         <EmptyState
           title="No summary data"
@@ -236,7 +236,7 @@ export default function DashboardPage() {
   const health = getHealthConfig(systemHealth);
 
   return (
-    <PageShell>
+    <PageShell debugLabel="Dashboard">
       <FeatureStoryBanner story={getFeatureStory('dashboard')} />
 
       <PageHeader
@@ -275,7 +275,7 @@ export default function DashboardPage() {
 
       <div className="grid min-w-0 grid-cols-1 gap-6 xl:grid-cols-4">
         {/* Left Column: Main Monitor */}
-        <div className="min-w-0 space-y-6 xl:col-span-3">
+        <div className="min-w-0 space-y-4 xl:col-span-3">
           {/* Top KPI Row */}
           <div
             data-e2e="dashboard-kpi-grid"
@@ -288,6 +288,7 @@ export default function DashboardPage() {
               icon={<HeartPulse aria-hidden="true" className="size-5" />}
               accent={health.dot.replace('bg-', 'text-')}
               subtext={health.subtext}
+              pulseClass={health.pulse ?? undefined}
               onClick={() => navigate('/app/system')}
             />
             <StatCard
@@ -343,7 +344,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-xs font-semibold text-foreground">Last EOD Sync</p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-tight">
+                      <p className="text-3xs text-muted-foreground uppercase tracking-tight">
                         Across 8 regions
                       </p>
                     </div>
@@ -360,7 +361,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-xs font-semibold text-foreground">Backup Status</p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-tight">
+                      <p className="text-3xs text-muted-foreground uppercase tracking-tight">
                         Database & Media
                       </p>
                     </div>
@@ -376,7 +377,7 @@ export default function DashboardPage() {
                     >
                       {(backups?.failedCount ?? 0) > 0 ? 'DEGRADED' : 'SUCCESS'}
                     </p>
-                    <p className="text-[10px] uppercase text-muted-foreground">
+                    <p className="text-3xs uppercase text-muted-foreground">
                       {backups?.failedCount ?? 0} Failed
                     </p>
                   </div>
@@ -391,7 +392,7 @@ export default function DashboardPage() {
                       <p className="truncate text-xs font-semibold text-foreground">
                         Worker Interactions
                       </p>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-tight">
+                      <p className="text-3xs text-muted-foreground uppercase tracking-tight">
                         Active sessions today
                       </p>
                     </div>
@@ -412,7 +413,7 @@ export default function DashboardPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-7 text-[10px] font-bold"
+                    className="h-7 text-3xs font-bold"
                     onClick={() => navigate('/app/sync')}
                   >
                     VIEW ALL <ArrowRight aria-hidden="true" className="ml-1 size-3" />
@@ -442,7 +443,7 @@ export default function DashboardPage() {
                             <p className="text-xs font-bold text-foreground leading-none mb-1 break-words">
                               {alert.title}
                             </p>
-                            <p className="text-[10px] text-muted-foreground uppercase break-words">
+                            <p className="text-3xs text-muted-foreground uppercase break-words">
                               {formatAlertType(alert.type)} • {formatDateTime(alert.createdAt)}
                             </p>
                           </div>
@@ -460,7 +461,7 @@ export default function DashboardPage() {
         <div className="min-w-0 space-y-6">
           <Card data-e2e="dashboard-actions" className="border-primary/20 bg-primary/[0.03]">
             <CardHeader className="pb-3">
-              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+              <CardTitle className="text-3xs font-black uppercase tracking-widest-lg text-primary">
                 Quick Actions
               </CardTitle>
             </CardHeader>
@@ -509,7 +510,7 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">
+              <CardTitle className="text-3xs font-black uppercase tracking-widest-lg text-muted-foreground">
                 Resources
               </CardTitle>
             </CardHeader>

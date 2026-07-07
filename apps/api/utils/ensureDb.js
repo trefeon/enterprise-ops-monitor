@@ -805,4 +805,14 @@ module.exports = async function ensureDb(db) {
       console.warn("[ensureDb] Failed to sync SyncAlertState table:", err.message);
     }
   }
+
+  // Ensure User model columns (email, status, invite_token) exist
+  try {
+    const qi = db.sequelize.getQueryInterface();
+    await qi.addColumn('Users', 'email', { type: 'VARCHAR(255)', allowNull: true }).catch(() => {});
+    await qi.addColumn('Users', 'status', { type: 'VARCHAR(50)', defaultValue: 'active' }).catch(() => {});
+    await qi.addColumn('Users', 'invite_token', { type: 'VARCHAR(255)', allowNull: true }).catch(() => {});
+  } catch (_) {
+    // non-fatal — may already exist
+  }
 };

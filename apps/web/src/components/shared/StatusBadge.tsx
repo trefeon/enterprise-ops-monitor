@@ -51,8 +51,8 @@ export function StatusBadge({
   };
 
   const sizes = {
-    sm: 'gap-1 px-1.5 py-0 h-4.5 text-[0.65rem]',
-    md: 'gap-1.5 px-2 py-0.5 h-5.5 text-[0.7rem]',
+    sm: 'gap-1 px-1.5 py-0 h-4.5 text-3xs',
+    md: 'gap-1.5 px-2 py-0.5 h-5.5 text-3xs',
     lg: 'gap-2 px-3 py-1 h-7 text-xs',
   };
 

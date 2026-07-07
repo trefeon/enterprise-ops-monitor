@@ -51,10 +51,10 @@ export function EntityFormDialog({
 }: EntityFormDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(nextOpen) => !submitting && onOpenChange(nextOpen)}>
-      <DialogContent className="max-h-[calc(100vh-2rem)] overflow-hidden p-0 sm:max-w-3xl">
+      <DialogContent className="max-h-[calc(100dvh-2rem)] overflow-hidden p-0 sm:max-w-3xl">
         <BaseAnimatedForm
           onSubmit={onSubmit}
-          className="flex max-h-[calc(100vh-2rem)] min-w-0 flex-col"
+          className="flex max-h-[calc(100dvh-2rem)] min-w-0 flex-col"
         >
           <DialogHeader className="border-b border-border px-5 py-4">
             <DialogTitle className="text-lg">{title}</DialogTitle>

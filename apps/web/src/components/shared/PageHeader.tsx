@@ -37,7 +37,7 @@ export function PageHeader({
       transition={{ duration: 0.3, ease: 'easeOut' }}
     >
       {breadcrumbs && breadcrumbs.length > 0 && (
-        <nav className="flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+        <nav className="flex items-center gap-1.5 font-mono text-3xs uppercase tracking-wider text-muted-foreground">
           {breadcrumbs.map((crumb, idx) => {
             const isLast = idx === breadcrumbs.length - 1;
             return (
@@ -61,7 +61,7 @@ export function PageHeader({
         </nav>
       )}
 
-      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div className="flex flex-col gap-1 min-w-0 flex-1">
           <h1 className="page-title text-2xl font-bold tracking-tight text-foreground break-words">{title}</h1>
           {displayDescription && (
@@ -77,7 +77,7 @@ export function PageHeader({
         </div>
 
         {actions && (
-          <div className="flex w-full flex-col gap-2 shrink-0 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end [&>*]:w-full sm:[&>*]:w-auto">
+          <div className="flex flex-col gap-2 shrink-0 w-auto flex-row flex-wrap items-center justify-end [&>*]:w-auto">
             {actions}
           </div>
         )}

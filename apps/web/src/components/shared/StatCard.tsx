@@ -60,15 +60,15 @@ const paddingSizes = {
 };
 
 const titleSizes = {
-  sm: 'text-[10px]',
+  sm: 'text-3xs',
   default: 'text-xs',
   lg: 'text-sm',
 };
 
 const valueSizes = {
   sm: 'text-xl',
-  default: 'text-2xl sm:text-[1.75rem]',
-  lg: 'text-[1.75rem] sm:text-3xl',
+  default: 'text-2xl sm:text-2xl',
+  lg: 'text-2xl sm:text-3xl',
 };
 
 export function StatCard({
@@ -107,7 +107,7 @@ export function StatCard({
       <div className="flex items-center gap-1.5 mt-2">
         <span
           className={cn(
-            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-semibold border',
+            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-3xs font-mono font-semibold border',
             trendColors[trend.direction]
           )}
         >
@@ -116,7 +116,7 @@ export function StatCard({
           {trend.value}%
         </span>
         {trend.label && (
-          <span className="text-[10px] text-muted-foreground font-medium">
+          <span className="text-3xs text-muted-foreground font-medium">
             {trend.label}
           </span>
         )}

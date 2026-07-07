@@ -113,7 +113,7 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <PageShell>
+    <PageShell debugLabel="Profile">
       <FeatureStoryBanner story={getFeatureStory('profile')} />
 
       <div className="space-y-6 max-w-2xl w-full">

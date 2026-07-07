@@ -93,7 +93,7 @@ function SidebarNavBadge({ item }: { item: BaseNavItem }) {
   return (
     <Badge
       variant={item.badgeVariant ?? 'neutral'}
-      className="ml-auto h-4 max-w-14 px-1.5 text-[9px] group-data-[state=collapsed]/sidebar-wrapper:hidden"
+      className="ml-auto h-4 max-w-14 px-1.5 text-4xs group-data-[state=collapsed]/sidebar-wrapper:hidden"
     >
       <span className="truncate">{item.badge}</span>
     </Badge>
@@ -224,7 +224,7 @@ function SidebarNavCollapsible({
       aria-label={collapsed ? item.title : undefined}
       title={collapsed ? item.title : undefined}
       className={cn(
-        'flex min-h-9 w-full items-center gap-2.5 rounded-md px-3 py-2 text-[13.5px] font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring disabled:pointer-events-none disabled:opacity-50 group-data-[state=collapsed]/sidebar-wrapper:justify-center group-data-[state=collapsed]/sidebar-wrapper:px-2',
+        'flex min-h-9 w-full items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium text-sidebar-foreground/75 transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sidebar-ring disabled:pointer-events-none disabled:opacity-50 group-data-[state=collapsed]/sidebar-wrapper:justify-center group-data-[state=collapsed]/sidebar-wrapper:px-2',
         active && 'bg-sidebar-primary/12 font-semibold text-sidebar-primary',
         getToneClass(item, active)
       )}

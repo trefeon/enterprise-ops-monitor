@@ -14,7 +14,7 @@ export function DataTablePagination<TData>({
   pageSizeOptions = [10, 25, 50, 100],
 }: DataTablePaginationProps<TData>) {
   return (
-    <div className={cn("flex items-center justify-between border-t border-border px-4 py-3")}>
+    <div className={cn("flex items-center justify-between border-t border-border px-card py-3")}>
       <div className="flex items-center gap-2 text-sm text-muted-foreground">
         <span>Rows per page</span>
         <Select

@@ -94,7 +94,7 @@ export default function OfficeAgentsPage() {
   const [labelTarget, setLabelTarget] = useState<AgentMachine | null>(null);
 
   return (
-    <PageShell>
+    <PageShell debugLabel="Office-Agents">
       <FeatureStoryBanner story={getFeatureStory('office-agents')} />
       <PageHeader
         title="Office Agent Monitor"

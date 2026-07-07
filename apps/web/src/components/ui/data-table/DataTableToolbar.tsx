@@ -33,12 +33,12 @@ export function DataTableToolbar<TData>({
   const hasSelection = table.getFilteredSelectedRowModel().rows.length > 0;
 
   return (
-    <div className={cn("flex flex-wrap items-center gap-2 px-4 py-3")}>
+    <div className={cn("flex flex-wrap items-center gap-2 px-card py-3")}>
       {hasSelection && bulkActions ? (
         <div className="flex items-center gap-2">{bulkActions}</div>
       ) : (
         <>
-          <div className="relative flex-1 min-w-[200px]">
+          <div className="relative flex-1 min-w-48">
             <Search className="pointer-events-none absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="search"
