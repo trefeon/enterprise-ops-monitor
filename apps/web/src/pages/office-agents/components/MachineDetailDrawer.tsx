@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/sheet';
 import { Progress } from '@/components/ui/progress';
 import { Separator } from '@/components/ui/separator';
-import { DataTable } from '@/components/shared/DataTable';
+import { DataTable } from '@/components/ui/data-table';
 import { getHealthColor } from '../types';
 import type { AgentMachine } from '../types';
 

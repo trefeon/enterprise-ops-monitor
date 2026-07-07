@@ -1,6 +1,6 @@
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { formatTime } from '@/lib/date';
-import type { Column } from '@/components/shared/DataTable';
+import type { Column } from '@/components/ui/data-table';
 import type { EODStore, StatusStyle } from './types';
 
 const STATUS_STYLES: Record<string, StatusStyle> = {

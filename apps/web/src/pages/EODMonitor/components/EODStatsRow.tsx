@@ -1,5 +1,5 @@
 import { Store, CheckCircle2, Hourglass, CircleAlert } from 'lucide-react';
-import { StatCard } from '@/components/shared/StatCard';
+import { StatCard } from '@/components/ui/cards';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import type { EODStats } from '../types';
 

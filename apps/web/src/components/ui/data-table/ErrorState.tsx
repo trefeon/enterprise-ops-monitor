@@ -4,7 +4,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
-export interface BaseErrorStateProps {
+export interface ErrorStateProps {
   title?: ReactNode;
   description?: ReactNode;
   action?: ReactNode;
@@ -12,13 +12,13 @@ export interface BaseErrorStateProps {
   className?: string;
 }
 
-export function BaseErrorState({
+export function ErrorState({
   title = "Something went wrong",
   description,
   action,
   onRetry,
   className,
-}: BaseErrorStateProps) {
+}: ErrorStateProps) {
   return (
     <Alert variant="destructive" className={cn("items-start", className)}>
       <AlertCircle className="size-4" />

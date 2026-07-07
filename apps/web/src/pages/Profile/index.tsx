@@ -2,10 +2,15 @@ import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import PageHeader from '@/components/shared/PageHeader';
 import PageShell from '@/components/shared/PageShell';
-import { SectionCard } from '@/components/shared/SectionCard';
+import { SectionCard } from '@/components/ui/cards';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import Modal from '@/components/shared/Modal';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useAuth } from '@/context/AuthContext';
 import { hasPermission, Permissions } from '@/lib/auth/permissions';
 import { apiPatch } from '@/lib/api/client';
@@ -161,7 +166,11 @@ const Profile: React.FC = () => {
         </SectionCard>
       </div>
 
-      <Modal style={{ overscrollBehavior: 'contain' }} open={showPasswordModal} onClose={closePasswordModal} title="Change Password">
+      <Dialog open={showPasswordModal} onOpenChange={(next) => { if (!next) closePasswordModal(); }}>
+        <DialogContent className="sm:max-w-md" style={{ overscrollBehavior: 'contain' }}>
+          <DialogHeader>
+            <DialogTitle>Change Password</DialogTitle>
+          </DialogHeader>
         <form onSubmit={handlePasswordChange} className="space-y-4">
           {error && (
             <div className="flex items-center gap-2 rounded-lg border border-status-error/20 bg-status-error/10 p-3 text-sm text-status-error">
@@ -228,7 +237,8 @@ const Profile: React.FC = () => {
             </Button>
           </div>
         </form>
-      </Modal>
+      </DialogContent>
+    </Dialog>
     </PageShell>
   );
 };

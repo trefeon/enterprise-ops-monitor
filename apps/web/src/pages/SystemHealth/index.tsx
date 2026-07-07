@@ -18,7 +18,7 @@ import { ProgressBar } from '@/components/shared/ProgressBar';
 import { PageShell } from '@/components/shared/PageShell';
 import { PageHeader } from '@/components/shared/PageHeader';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
-import { DataTable } from '@/components/shared/DataTable';
+import { DataTable } from '@/components/ui/data-table';
 import { formatDateTime, formatTime } from '../../lib/date';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { getFeatureStory } from '../../data/stories';

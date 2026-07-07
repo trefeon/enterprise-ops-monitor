@@ -14,13 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { StatCard } from '@/components/shared/StatCard';
+import { StatCard } from '@/components/ui/cards';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { DatePicker } from '@/components/shared/DatePicker';
 import { SearchBar } from '@/components/shared/SearchBar';
-import { DataTable } from '@/components/shared/DataTable';
+import { DataTable } from '@/components/ui/data-table';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { getFeatureStory } from '../../data/stories';

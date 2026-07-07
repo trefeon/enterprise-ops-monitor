@@ -1,7 +1,7 @@
 import { Edit3, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { DataTable } from "@/components/shared/DataTable";
+import { DataTable } from "@/components/ui/data-table";
 import { StatusBadge } from "@/components/shared/StatusBadge";
 import { getHealthColor, type AgentMachine } from "../types";
 

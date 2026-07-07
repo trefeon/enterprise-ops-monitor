@@ -28,9 +28,17 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { BaseEmptyState } from "./base-empty-state";
-import { BaseErrorState } from "./base-error-state";
-import { BaseLoadingState } from "./base-loading-state";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { SearchX, AlertCircle, Loader2 } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
 import { BaseDataTablePagination } from "./base-data-table-pagination";
 import { BaseDataTableToolbar } from "./base-data-table-toolbar";
 
@@ -97,6 +105,56 @@ function selectionColumn<TData>(): ColumnDef<TData> {
     enableHiding: false,
     size: 36,
   };
+}
+
+const DefaultEmptyState = () => (
+  <Empty className="min-h-32 border border-dashed border-border bg-card/40">
+    <EmptyHeader>
+      <EmptyMedia variant="icon"><SearchX className="size-4" /></EmptyMedia>
+      <EmptyTitle>No records found</EmptyTitle>
+    </EmptyHeader>
+  </Empty>
+);
+
+function ErrorState({ description }: { description?: React.ReactNode }) {
+  if (!description) return null;
+  return (
+    <Alert variant="destructive" className="items-start">
+      <AlertCircle className="size-4" />
+      <AlertTitle>Something went wrong</AlertTitle>
+      <AlertDescription>{description}</AlertDescription>
+    </Alert>
+  );
+}
+
+function LoadingState({
+  label = "Loading...",
+  variant = "spinner",
+  className,
+}: {
+  label?: string;
+  variant?: "spinner" | "skeleton";
+  className?: string;
+}) {
+  if (variant === "skeleton") {
+    return (
+      <div className={cn("grid gap-3 p-4", className)} aria-label={label}>
+        {Array.from({ length: 3 }).map((_, index) => (
+          <Skeleton key={index} className="h-10 w-full" />
+        ))}
+      </div>
+    );
+  }
+  return (
+    <div
+      className={cn("flex min-h-32 items-center justify-center gap-2 text-sm text-muted-foreground", className)}
+      role="status"
+      aria-live="polite"
+    >
+      <Loader2 className="size-4 animate-spin" />
+      <span>{label}</span>
+    </div>
+  );
 }
 
 export function BaseDataTable<TData, TValue = unknown>({
@@ -207,7 +265,7 @@ export function BaseDataTable<TData, TValue = unknown>({
       return (
         <TableRow>
           <TableCell colSpan={visibleLeafColumns.length}>
-            <BaseErrorState description={error} />
+            <ErrorState description={error} />
           </TableCell>
         </TableRow>
       );
@@ -217,7 +275,7 @@ export function BaseDataTable<TData, TValue = unknown>({
       return (
         <TableRow>
           <TableCell colSpan={visibleLeafColumns.length} className="h-32">
-            {emptyState ?? <BaseEmptyState />}
+            {emptyState ?? <DefaultEmptyState />}
           </TableCell>
         </TableRow>
       );
@@ -245,9 +303,9 @@ export function BaseDataTable<TData, TValue = unknown>({
 
   const renderMobileCards = () => {
     if (!mobileCardView) return null;
-    if (loading && data.length === 0) return <BaseLoadingState variant="skeleton" />;
-    if (error) return <BaseErrorState description={error} />;
-    if (visibleRows.length === 0) return emptyState ?? <BaseEmptyState />;
+    if (loading && data.length === 0) return <LoadingState variant="skeleton" />;
+    if (error) return <ErrorState description={error} />;
+    if (visibleRows.length === 0) return emptyState ?? <DefaultEmptyState />;
 
     return (
       <div className="grid gap-3 sm:hidden">
@@ -297,7 +355,7 @@ export function BaseDataTable<TData, TValue = unknown>({
         <div className="relative">
           {loading && data.length > 0 && (
             <div className="absolute inset-0 z-10 flex items-center justify-center bg-card/60 backdrop-blur-[1px]">
-              <BaseLoadingState label="Refreshing..." className="min-h-20" />
+              <LoadingState label="Refreshing..." className="min-h-20" />
             </div>
           )}
           <div className={cn("hidden overflow-x-auto sm:block", tableClassName)}>

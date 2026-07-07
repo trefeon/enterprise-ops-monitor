@@ -2,25 +2,21 @@ export * from "./base-action-menu";
 export * from "./base-animation";
 export * from "./base-app-frame";
 export * from "./base-app-header";
-export * from "./base-breadcrumbs";
-export * from "./base-card";
-export * from "./base-data-table";
-export * from "./base-data-table-column-header";
-export * from "./base-data-table-pagination";
-export * from "./base-data-table-toolbar";
-export * from "./base-data-table-view-options";
-export * from "./base-date-picker";
-export * from "./base-dialog";
-export * from "./base-empty-state";
-export * from "./base-error-state";
+// DataTable re-exports — consolidated in ui/data-table/
+export {
+  RawDataTable as BaseDataTable,
+  DataTable,
+  type RawDataTableProps as BaseDataTableProps,
+  DataTableColumnHeader,
+  type DataTableColumnHeaderProps,
+  DataTablePagination,
+  type DataTablePaginationProps,
+  DataTableToolbar,
+  type DataTableToolbarProps,
+} from "@/components/ui/data-table";
 export * from "./base-file-upload-control";
-export * from "./base-form-field";
-export * from "./base-loading-state";
 export * from "./base-login-form";
 export * from "./base-page-shell";
 export * from "./base-section";
-export * from "./base-sheet";
 export * from "./base-sidebar";
 export * from "./base-sidebar-nav";
-export * from "./base-tabs";
-export * from "./base-toolbar";

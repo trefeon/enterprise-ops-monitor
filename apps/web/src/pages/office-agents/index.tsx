@@ -18,7 +18,7 @@ import {
 } from '@/components/ui/select';
 import { PageHeader } from '@/components/shared/PageHeader';
 import { SearchBar } from '@/components/shared/SearchBar';
-import { StatCard } from '@/components/shared/StatCard';
+import { StatCard } from '@/components/ui/cards';
 import { PageShell } from '@/components/shared/PageShell';
 import FeatureStoryBanner from '@/components/FeatureStoryBanner';
 import { getFeatureStory } from '@/data/stories';

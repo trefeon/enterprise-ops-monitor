@@ -9,7 +9,13 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
-import { BaseDialog, BaseLoginForm, type BaseLoginDemoAccount } from "@/components/base";
+import { BaseLoginForm, type BaseLoginDemoAccount } from "@/components/base";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "../../context/AuthContext";
 
@@ -110,30 +116,30 @@ export default function Login() {
 
   return (
     <div className="login-shell">
-      <BaseDialog
-        open={helpOpen}
-        onOpenChange={setHelpOpen}
-        title="Need Assistance?"
-        className="max-w-sm"
-      >
-        <div className="grid gap-4">
-          <div className="rounded-lg border border-border bg-muted p-4">
-            <div className="flex gap-4">
-              <Compass aria-hidden="true" className="size-5 text-muted-foreground" />
-              <div>
-                <div className="text-sm font-semibold">How to sign in</div>
-                <div className="mt-1 text-xs text-muted-foreground">
-                  Use the demo quick login button to explore.
+      <Dialog open={helpOpen} onOpenChange={setHelpOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Need Assistance?</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4">
+            <div className="rounded-lg border border-border bg-muted p-4">
+              <div className="flex gap-4">
+                <Compass aria-hidden="true" className="size-5 text-muted-foreground" />
+                <div>
+                  <div className="text-sm font-semibold">How to sign in</div>
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    Use the demo quick login button to explore.
+                  </div>
                 </div>
               </div>
             </div>
+            <Button type="button" onClick={openSupportChannel} variant="secondary" className="h-11 w-full">
+              <Activity aria-hidden="true" data-icon="inline-start" />
+              Contact IT Support
+            </Button>
           </div>
-          <Button type="button" onClick={openSupportChannel} variant="secondary" className="h-11 w-full">
-            <Activity aria-hidden="true" data-icon="inline-start" />
-            Contact IT Support
-          </Button>
-        </div>
-      </BaseDialog>
+        </DialogContent>
+      </Dialog>
 
       <section className="relative hidden overflow-hidden border-r border-border bg-background p-12 md:flex md:flex-col md:justify-between lg:p-16">
         <div className="pointer-events-none absolute inset-0 opacity-100">
