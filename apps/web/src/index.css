@@ -260,7 +260,7 @@
 
   .login-shell {
     @apply dark flex min-h-screen flex-col overflow-hidden bg-background text-foreground md:grid;
-    grid-template-columns: minmax(0, 3fr) minmax(380px, 2fr);
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   }
 
   .login-brand-label {
