@@ -9,7 +9,7 @@ export interface BasePageShellProps {
 
 export function BasePageShell({ children, className, constrained = true }: BasePageShellProps) {
   return (
-    <div className={cn(constrained ? "page-container" : "min-h-full px-page-x py-page-y", className)}>
+    <div className={cn(constrained ? "page-container animate-in" : "min-h-full px-page-x py-page-y animate-in", className)}>
       {children}
     </div>
   );
