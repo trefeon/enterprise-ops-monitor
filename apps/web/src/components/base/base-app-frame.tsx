@@ -54,7 +54,7 @@ export function BaseAppFrame({
         <main
           id="app-main-content"
           aria-label="Application content"
-          className="min-h-0 flex-1 overflow-y-auto scroll-smooth"
+          className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden scroll-smooth"
         >
           {children}
         </main>
