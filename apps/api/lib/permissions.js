@@ -55,6 +55,9 @@ const Permissions = {
 
   // Agent Update
   AGENT_UPDATE: "AGENT_UPDATE",
+
+  // Billing
+  BILLING_VIEW: "BILLING_VIEW",
 };
 
 /**
