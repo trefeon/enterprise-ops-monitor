@@ -65,7 +65,7 @@ export function StatusBadge({
   return (
     <Badge
       variant={badgeVariant}
-      className={cn('font-semibold uppercase tracking-wider', sizes[size], className)}
+      className={cn('font-medium uppercase tracking-wider', sizes[size], className)}
     >
       {dot && (
         <span

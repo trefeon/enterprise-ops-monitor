@@ -126,7 +126,7 @@ export default function Login() {
               <div className="flex gap-4">
                 <Compass aria-hidden="true" className="size-5 text-muted-foreground" />
                 <div>
-                  <div className="text-sm font-semibold">How to sign in</div>
+                  <div className="text-sm font-medium">How to sign in</div>
                   <div className="mt-1 text-xs text-muted-foreground">
                     Use the demo quick login button to explore.
                   </div>
@@ -145,14 +145,14 @@ export default function Login() {
         <div className="pointer-events-none absolute inset-0 opacity-100">
           <div className="absolute left-0 top-0 h-full w-full bg-radial-login" />
         </div>
-        <div className="z-10 flex items-center gap-3 font-display font-bold tracking-normal text-foreground">
+        <div className="z-10 flex items-center gap-3 font-display font-medium tracking-normal text-foreground">
           <div className="flex size-11 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <LineChart aria-hidden="true" className="size-5" />
           </div>
           <span className="login-brand-label">Ops Starter</span>
         </div>
         <div className="z-10 max-w-lg">
-          <h1 className="mb-6 font-display text-5xl font-bold leading-tight tracking-normal text-foreground">
+          <h1 className="mb-6 font-display text-5xl font-medium leading-tight tracking-normal text-foreground">
             Enterprise Ops <br /> Starter
           </h1>
           <p className="mb-10 max-w-md text-base leading-7 text-muted-foreground">
@@ -179,7 +179,7 @@ export default function Login() {
           <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <LineChart aria-hidden="true" className="size-5" />
           </div>
-          <span className="login-brand-label font-display font-bold">Ops Starter</span>
+          <span className="login-brand-label font-display font-medium">Ops Starter</span>
         </div>
         <BaseLoginForm
           username={username}
@@ -207,7 +207,7 @@ export default function Login() {
           <Button
             type="button"
             variant="ghost"
-            className="text-xs font-semibold uppercase tracking-wide text-status-success/80 hover:text-status-success"
+            className="text-xs font-medium uppercase tracking-wide text-status-success/80 hover:text-status-success"
             onClick={() => window.open("/live", "_blank", "noopener")}
             aria-label="Open Live TV in new window"
           >
@@ -217,7 +217,7 @@ export default function Login() {
           <Button
             type="button"
             variant="ghost"
-            className="text-xs font-semibold uppercase tracking-wide text-muted-foreground hover:text-foreground"
+            className="text-xs font-medium uppercase tracking-wide text-muted-foreground hover:text-foreground"
             onClick={() => setHelpOpen(true)}
           >
             <HelpCircle aria-hidden="true" data-icon="inline-start" />

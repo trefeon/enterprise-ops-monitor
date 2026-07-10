@@ -11,159 +11,157 @@
     font-family: var(--font-body);
 
     /* ================================================================
-       Geist Design Tokens — Dark Theme (Vercel-aligned --ds-* scale)
+       Supabase Design Tokens — Dark Theme (border-defined depth)
        ================================================================ */
 
-    /* Typography */
+    /* Typography (Supabase: Circular → Geist Variable fallback) */
     --font-display: 'Geist Variable', system-ui, sans-serif;
     --font-body: 'Geist Variable', 'Inter', system-ui, sans-serif;
     --font-mono: 'JetBrains Mono Variable', 'Geist Mono', ui-monospace, SFMono-Regular, monospace;
 
-    /* ---- Gray scale (dark mode inverted) ---- */
-    --ds-gray-100:  #1a1a1a;
-    --ds-gray-200:  #222222;
-    --ds-gray-300:  #2a2a2a;
-    --ds-gray-400:  #333333;
-    --ds-gray-500:  #444444;
-    --ds-gray-600:  #555555;
-    --ds-gray-700:  #666666;
-    --ds-gray-800:  #888888;
-    --ds-gray-900:  #a1a1a1;
-    --ds-gray-1000: #ededed;
+    /* ---- Background hierarchy (Supabase dark) ---- */
+    --bg-canvas:   #0f0f0f;  /* deepest page background */
+    --bg-base:     #171717;  /* page canvas */
+    --bg-bone:     #141414;  /* inset sections */
+    --bg-surface:  #1a1a1a;  /* default element surface */
+    --bg-card:     #171717;  /* card backgrounds */
+    --bg-dark:     #141414;  /* secondary dark surface */
+    --bg-deep:     #0f0f0f;  /* deepest surface */
+    --bg-elevated: #1a1a1a;
+    --bg-input:    #1a1a1a;
+    --bg-hover:    #242424;
 
-    /* ---- Gray alpha (dark mode) ---- */
-    --ds-gray-alpha-100: rgba(255, 255, 255, 0.06);
-    --ds-gray-alpha-200: rgba(255, 255, 255, 0.09);
-    --ds-gray-alpha-300: rgba(255, 255, 255, 0.12);
-    --ds-gray-alpha-400: rgba(255, 255, 255, 0.08);
-    --ds-gray-alpha-500: rgba(255, 255, 255, 0.14);
-    --ds-gray-alpha-600: rgba(255, 255, 255, 0.16);
-    --ds-gray-alpha-700: rgba(255, 255, 255, 0.18);
-    --ds-gray-alpha-800: rgba(255, 255, 255, 0.22);
-    --ds-gray-alpha-900: rgba(255, 255, 255, 0.30);
-    --ds-gray-alpha-1000: rgba(255, 255, 255, 0.90);
+    /* ---- Borders (Supabase border-defined depth) ---- */
+    --border-hairline: #1e1e1e;
+    --border-subtle:   #242424;
+    --border-default:  #2e2e2e;
+    --border-hover:    #363636;
+    --border-strong:   #393939;
+    --border-accent:   rgba(62, 207, 142, 0.3);
 
-    /* ---- Blue (accent) ---- */
-    --ds-blue-100:  #003366;
-    --ds-blue-200:  #004080;
-    --ds-blue-300:  #00509e;
-    --ds-blue-400:  #0060c0;
-    --ds-blue-500:  #0070e0;
-    --ds-blue-600:  #2080f0;
-    --ds-blue-700:  #40a0ff;
-    --ds-blue-800:  #80c0ff;
-    --ds-blue-900:  #b0d8ff;
-    --ds-blue-1000: #e8f0ff;
+    /* ---- Text (Supabase 5-level contrast) ---- */
+    --text-ink:      #fafafa;  /* primary, headings */
+    --text-body:     #fafafa;  /* long-form body */
+    --text-charcoal: #b4b4b4;  /* secondary labels */
+    --text-muted:    #b4b4b4;  /* supporting */
+    --text-ash:      #898989;  /* tertiary */
+    --text-stone:    #4d4d4d;  /* disabled */
+    --text-primary:  var(--text-ink);
+    --text-secondary: var(--text-charcoal);
+    --text-disabled:  var(--text-stone);
+    --text-inverse:   #171717;
 
-    /* ---- Backgrounds ---- */
-    --ds-background-100: #000000;
-    --ds-background-200: #111111;
+    /* ---- Accent (Supabase emerald green) ---- */
+    --accent-solid: #3ecf8e;
+    --accent-dim:   #2ea06b;
+    --accent-muted: rgba(62, 207, 142, 0.12);
+    --accent-glow:  rgba(62, 207, 142, 0.24);
+    --focus-ring:   2px solid rgba(62, 207, 142, 0.4);
 
-    /* ---- Focus ---- */
-    --ds-focus-ring: 2px solid rgba(0, 112, 243, 0.5);
+    /* ---- Status (Supabase semantic) ---- */
+    --color-success: #3ecf8e;
+    --color-warning: #f5c542;
+    --color-danger:  #e54d2e;
+    --color-info:    #667cdc;
+    --color-neutral: #4d4d4d;
+    --bg-success: rgba(62, 207, 142, 0.12);
+    --bg-warning: rgba(245, 197, 66, 0.12);
+    --bg-danger:  rgba(229, 77, 46, 0.12);
+    --bg-info:    rgba(102, 124, 220, 0.12);
 
-    /* ---- Semantic backgrounds (mapped from Geist gray) ---- */
-    --bg-base: var(--ds-background-100);
-    --bg-surface: var(--ds-background-200);
-    --bg-elevated: var(--ds-gray-200);
-    --bg-input: var(--ds-gray-100);
-    --bg-hover: var(--ds-gray-300);
+    /* ---- Supabase surface tokens ---- */
+    --supabase-surface-default: #1a1a1a;
+    --supabase-surface-hover:   #242424;
+    --supabase-surface-active:  #2e2e2e;
+    --supabase-surface-muted:   #141414;
+    --supabase-surface-card:    #171717;
 
-    /* ---- Borders ---- */
-    --border-subtle: var(--ds-gray-alpha-100);
-    --border-default: var(--ds-gray-400);
-    --border-strong: var(--ds-gray-500);
-    --border-accent: var(--ds-blue-500);
+    /* Supabase accent (native) */
+    --supabase-primary:  #3ecf8e;
+    --supabase-success:  #3ecf8e;
+    --supabase-warning:  #f5c542;
+    --supabase-danger:   #e54d2e;
+    --supabase-info:     #667cdc;
 
-    /* ---- Text ---- */
-    --text-primary: var(--ds-gray-1000);
-    --text-secondary: var(--ds-gray-900);
-    --text-muted: var(--ds-gray-800);
-    --text-disabled: var(--ds-gray-600);
-    --text-inverse: var(--ds-gray-100);
+    /* Border-defined elevation (Supabase — NO shadows, borders only) */
+    --elevation-level0: none;
+    --elevation-level1: 0 0 0 1px #2e2e2e;
+    --elevation-level2: 0 0 0 1px #363636;
+    --elevation-level3: 0 0 0 1px #393939;
+    --elevation-level4: 0 0 0 1px rgba(62, 207, 142, 0.3);
 
-    /* ---- Accent ---- */
-    --accent-solid: var(--ds-blue-600);
-    --accent-dim: var(--ds-blue-400);
-    --accent-muted: rgba(0, 112, 243, 0.12);
-    --accent-glow: rgba(0, 112, 243, 0.24);
-
-    /* ---- Status (Geist-aligned) ---- */
-    --color-success: #22c55e;
-    --color-warning: #f59e0b;
-    --color-danger: #ef4444;
-    --color-info: var(--ds-blue-600);
-    --color-neutral: var(--ds-gray-700);
-    --bg-success: rgb(34 197 94 / 0.12);
-    --bg-warning: rgb(245 158 11 / 0.12);
-    --bg-danger: rgb(239 68 68 / 0.12);
-    --bg-info: rgba(0, 112, 243, 0.12);
+    /* Chart colors — Supabase palette */
+    --supabase-chart-1: var(--supabase-primary);
+    --supabase-chart-2: var(--supabase-info);
+    --supabase-chart-3: var(--supabase-warning);
+    --supabase-chart-4: var(--supabase-danger);
 
     /* ---- Charts ---- */
-    --chart-1: var(--ds-blue-600);
-    --chart-2: #22c55e;
-    --chart-3: #f59e0b;
+    --chart-1: #3ecf8e;
+    --chart-2: #667cdc;
+    --chart-3: #f5c542;
     --chart-4: #60a5fa;
-    --chart-5: #ef4444;
+    --chart-5: #e54d2e;
 
     /* ================================================================
-       shadcn HSL tokens — aligned to Geist dark palette
+       shadcn HSL tokens — aligned to Supabase dark palette
        ================================================================ */
-    --background: 0 0% 0%;
-    --foreground: 0 0% 93%;
-    --card: 0 0% 4%;
-    --card-foreground: 0 0% 93%;
-    --popover: 0 0% 4%;
-    --popover-foreground: 0 0% 93%;
-    --primary: 215 100% 53%;
+    --background: 0 0% 9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 155 76% 53%;
     --primary-foreground: 0 0% 0%;
-    --secondary: 0 0% 7%;
-    --secondary-foreground: 0 0% 93%;
-    --muted: 0 0% 10%;
-    --muted-foreground: 0 0% 53%;
-    --accent: 0 0% 10%;
-    --accent-foreground: 0 0% 93%;
-    --destructive: 0 84% 60%;
+    --secondary: 0 0% 13%;
+    --secondary-foreground: 0 0% 98%;
+    --muted: 0 0% 13%;
+    --muted-foreground: 0 0% 71%;
+    --accent: 0 0% 13%;
+    --accent-foreground: 0 0% 98%;
+    --destructive: 9 76% 54%;
     --destructive-foreground: 0 0% 100%;
-    --border: 0 0% 20%;
+    --border: 0 0% 18%;
     --input: 0 0% 10%;
-    --ring: 215 100% 53%;
-    --success: 142 76% 36%;
-    --warning: 38 92% 50%;
-    --info: 215 100% 53%;
-    --brand: 215 100% 53%;
-    --sidebar: 0 0% 0%;
-    --sidebar-foreground: 0 0% 93%;
-    --sidebar-primary: 215 100% 53%;
+    --ring: 155 76% 53%;
+    --success: 146 64% 49%;
+    --warning: 45 85% 59%;
+    --info: 230 54% 63%;
+    --brand: 155 76% 53%;
+    --sidebar: 0 0% 6%;
+    --sidebar-foreground: 0 0% 98%;
+    --sidebar-primary: 155 76% 53%;
     --sidebar-primary-foreground: 0 0% 0%;
-    --sidebar-accent: 0 0% 10%;
-    --sidebar-accent-foreground: 0 0% 93%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 215 100% 53%;
+    --sidebar-accent: 0 0% 13%;
+    --sidebar-accent-foreground: 0 0% 98%;
+    --sidebar-border: 0 0% 18%;
+    --sidebar-ring: 155 76% 53%;
 
     /* ================================================================
-       Geist Radius & Spacing
+       Supabase Radius & Spacing
        ================================================================ */
-    --ds-radius-sm: 6px;
-    --ds-radius-lg: 12px;
-    --ds-radius-pill: 9999px;
+    --rounded-sm: 6px;
+    --rounded-md: 8px;
+    --rounded-lg: 16px;
+    --rounded-full: 9999px;
 
-    --radius-sm: var(--ds-radius-sm);
-    --radius-md: var(--ds-radius-sm);
-    --radius-lg: var(--ds-radius-lg);
-    --radius-full: var(--ds-radius-pill);
+    --radius-sm: var(--rounded-sm);
+    --radius-md: var(--rounded-sm);
+    --radius-lg: var(--rounded-lg);
+    --radius-full: var(--rounded-full);
     --radius: var(--radius-md);
 
-    /* Page & component spacing */
-    --page-px: 24px;
+    /* Page & component spacing (Supabase 8px base) */
+    --page-px: 32px;
     --page-py: 24px;
     --section-gap: 24px;
-    --card-p: 20px;
+    --card-p: 16px;
     --table-cell-px: 16px;
     --table-cell-py: 12px;
     --row-h: 48px;
 
-    /* Geist motion tokens */
+    /* Motion tokens */
     --transition-fast: 150ms ease;
     --transition-normal: 250ms ease;
     --transition-slow: 350ms ease-out;
@@ -235,7 +233,7 @@
   }
 }
 
-/* ---- Scrollbar (6px Geist-style) ---- */
+/* ---- Scrollbar (Supabase border style) ---- */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -244,17 +242,18 @@
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--ds-gray-alpha-500);
+  background: var(--border-default);
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--ds-gray-alpha-700);
+  background: var(--border-hover);
 }
 
 @layer components {
-  /* Page container — Geist page padding */
+  /* Page container — Supabase uniform padding */
   .page-container {
-    @apply w-full px-4 py-6 sm:px-6 lg:px-8 2xl:px-10 space-y-6;
+    @apply w-full space-y-6;
+    padding-inline: 32px;
   }
 
   .portfolio-container {
@@ -282,13 +281,13 @@
     }
   }
 
-  /* Page header — Geist style */
+  /* Page header — Supabase border-defined */
   .page-header {
     @apply flex flex-col justify-between gap-4 border-b border-border pb-5 md:flex-row md:items-start;
   }
 
   .page-title {
-    @apply font-display text-xl sm:text-2xl md:text-[2rem] font-bold leading-tight tracking-normal text-foreground;
+    @apply font-display text-xl sm:text-2xl md:text-[2rem] font-medium leading-tight tracking-normal text-foreground;
   }
 
   .page-subtitle {
@@ -300,21 +299,29 @@
   }
 
   .section-title {
-    @apply mb-4 font-display text-lg font-semibold tracking-normal text-foreground break-words;
+    @apply mb-4 font-display text-lg font-medium tracking-normal text-foreground break-words;
   }
 
-  /* Surface cards — Geist Card with --ds-gray-400 border, 6px radius */
+  /* Surface cards — Supabase border-defined style (NO shadows) */
   .surface-card {
-    @apply rounded-[var(--ds-radius-sm)] border border-default bg-card p-card transition-colors;
+    border: 1px solid var(--border-default);
+    border-radius: var(--rounded-sm);
+    background: var(--supabase-surface-card);
+    padding: var(--card-p);
+    transition: border-color var(--transition-fast);
   }
 
   .surface-card-compact {
-    @apply rounded-[var(--ds-radius-sm)] border border-default bg-card p-4 transition-colors;
+    border: 1px solid var(--border-default);
+    border-radius: var(--rounded-sm);
+    background: var(--supabase-surface-card);
+    padding: 16px;
+    transition: border-color var(--transition-fast);
   }
 
   .form-label {
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: 0.08em;
     text-transform: uppercase;
     color: var(--text-secondary);
@@ -322,7 +329,8 @@
 
   /* --- Login/auth shell --- */
   .login-shell {
-    @apply dark flex min-h-screen flex-col overflow-hidden bg-background text-foreground md:grid;
+    @apply dark flex min-h-screen flex-col overflow-hidden text-foreground md:grid;
+    background-color: var(--bg-canvas);
     grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
   }
 
@@ -334,33 +342,32 @@
 
   .login-chip {
     font-size: 11px;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: 0.05em;
     text-transform: uppercase;
   }
 
+  /* Login card — border-defined, no shadows */
   .login-card-elevated {
-    box-shadow:
-      0 0 0 1px rgb(255 255 255 / 0.04) inset,
-      0 20px 60px rgb(0 0 0 / 0.4);
+    border: 1px solid var(--border-default);
   }
 
   .login-modal-panel {
-    box-shadow: 0 24px 80px rgb(0 0 0 / 0.6);
+    border: 1px solid var(--border-strong);
   }
 
   .login-input {
     @apply block h-11 w-full rounded-sm border border-input bg-input text-sm font-medium text-foreground outline-none placeholder:text-muted-foreground hover:border-border focus:border-ring focus:ring-2 focus:ring-ring/20;
-    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+    transition: border-color var(--transition-fast);
   }
 
-  /* --- Table base (kept for imperative tables, shadcn Table used for most) --- */
+  /* --- Table base --- */
   .table-base {
     @apply w-full text-left text-sm border-collapse;
   }
 
   .table-head-row {
-    @apply h-row border-b border-border bg-muted text-left text-[11px] font-bold uppercase tracking-wider text-muted-foreground;
+    @apply h-row border-b border-border bg-muted text-left text-[11px] font-medium uppercase tracking-wider text-muted-foreground;
   }
 
   .table-row {
@@ -371,7 +378,7 @@
     @apply px-cell-x py-cell-y align-middle text-left;
   }
 
-  /* --- Geist-style animations --- */
+  /* --- Animations --- */
   .animate-in {
     animation: fadeIn 300ms ease-out;
   }
@@ -381,20 +388,20 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* --- Glass & glow --- */
+  /* --- Glass panel (border-defined, no blur) --- */
   .glass-panel {
-    background: rgb(255 255 255 / 0.03);
-    backdrop-filter: blur(10px);
+    background: var(--bg-elevated);
     border: 1px solid var(--border-subtle);
   }
 
+  /* Glow button — Supabase green accent ring only */
   .glow-button {
-    box-shadow: 0 0 16px var(--accent-glow);
+    border: 1px solid var(--border-accent);
     transition: all var(--transition-fast);
   }
 
   .glow-button:hover {
-    box-shadow: 0 0 20px var(--accent-glow);
+    border-color: var(--accent-solid);
     transform: translateY(-1px);
   }
 
@@ -421,13 +428,13 @@
 
   /* --- Portfolio page utilities --- */
   .portfolio-hero-monitor { width: 400px; height: 400px; }
-  .portfolio-pillar-title { @apply text-2xl font-black tracking-tight uppercase; }
+  .portfolio-pillar-title { @apply text-2xl font-medium tracking-tight uppercase; }
   .portfolio-feature-tag {
-    @apply mb-3 inline-flex items-center gap-2 rounded px-2 py-0.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground;
+    @apply mb-3 inline-flex items-center gap-2 rounded px-2 py-0.5 text-[10px] font-medium uppercase tracking-widest text-muted-foreground;
     background: var(--bg-elevated);
     border: 1px solid var(--border-subtle);
   }
-  .portfolio-story-label { @apply text-[10px] font-black uppercase tracking-widest; }
+  .portfolio-story-label { @apply text-[10px] font-medium uppercase tracking-widest; }
   .portfolio-tech-note {
     @apply flex items-start gap-3 rounded-lg p-3;
     background: var(--accent-muted);

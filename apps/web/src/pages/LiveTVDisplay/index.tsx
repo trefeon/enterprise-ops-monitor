@@ -370,7 +370,7 @@ export default function LiveTVDisplay() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
             </svg>
           </div>
-          <h1 className="mb-2 text-xl font-semibold text-white/80">Invalid Display Code</h1>
+          <h1 className="mb-2 text-xl font-medium text-white/80">Invalid Display Code</h1>
           <p className="text-sm text-white/40">
             This screen code is not recognised. Please check the code and try again, or contact your administrator.
           </p>

@@ -52,7 +52,7 @@ export function ContentSection({
         <div className={cn("flex items-start justify-between gap-4", !noPadding && "px-0")}>
           <div className="min-w-0 space-y-1">
             {title && (
-              <h2 className="text-lg font-semibold tracking-tight">
+              <h2 className="text-lg font-medium tracking-tight">
                 {title}
               </h2>
             )}

@@ -13,8 +13,7 @@ import {
   DEFAULT_WINDOW_START,
 } from './types';
 import { formatMonthLabel, formatWindowLabel } from './utils';
-import PageShell from '@/components/shared/PageShell';
-import PageHeader from '@/components/shared/PageHeader';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 
 export default function AfterHoursReport() {
   const {
@@ -85,8 +84,8 @@ export default function AfterHoursReport() {
   }, [month, selectedBranchLabel, limit, windowStart, normalizedSearch]);
 
   return (
-    <PageShell debugLabel="After-Hours-Report">
-      <PageHeader
+    <DashboardLayout>
+      <DashboardPageHeader
         title="Monthly Report"
         subtitle="After-hours PC monitoring monthly violation report"
       />
@@ -156,6 +155,6 @@ export default function AfterHoursReport() {
         onFormatMonthLabel={formatMonthLabel}
       />
       </div>
-    </PageShell>
+    </DashboardLayout>
   );
 }

@@ -16,10 +16,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PageHeader } from '@/components/shared/PageHeader';
+
 import { SearchBar } from '@/components/shared/SearchBar';
 import { StatCard } from '@/components/ui/cards';
-import { PageShell } from '@/components/shared/PageShell';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import FeatureStoryBanner from '@/components/FeatureStoryBanner';
 import { getFeatureStory } from '@/data/stories';
 import { useOfficeAgents } from './hooks/useOfficeAgents';
@@ -94,11 +94,11 @@ export default function OfficeAgentsPage() {
   const [labelTarget, setLabelTarget] = useState<AgentMachine | null>(null);
 
   return (
-    <PageShell debugLabel="Office-Agents">
+    <DashboardLayout>
       <FeatureStoryBanner story={getFeatureStory('office-agents')} />
-      <PageHeader
+      <DashboardPageHeader
         title="Office Agent Monitor"
-        description="Real-time health monitoring for office laptops. Agents report CPU, RAM, disk, network, process, and heartbeat data every 60 seconds."
+        subtitle="Real-time health monitoring for office laptops. Agents report CPU, RAM, disk, network, process, and heartbeat data every 60 seconds."
         actions={
           <>
             <Button onClick={refreshMetrics}>
@@ -148,7 +148,7 @@ export default function OfficeAgentsPage() {
           >
             <SelectTrigger className="w-full min-h-10 border-border bg-input transition-all hover:border-border md:w-60">
               <span className="flex items-center gap-2">
-                <span className="text-xs font-semibold tracking-wider text-muted-foreground uppercase mr-1">Status:</span>
+                <span className="text-xs font-medium tracking-wider text-muted-foreground uppercase mr-1">Status:</span>
                 {(() => {
                   const details = getStatusLabelAndIcon(statusFilter);
                   return (
@@ -193,6 +193,6 @@ export default function OfficeAgentsPage() {
           onSave={updateLabel}
         />
       )}
-    </PageShell>
+    </DashboardLayout>
   );
 }

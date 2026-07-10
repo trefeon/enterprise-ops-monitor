@@ -58,7 +58,7 @@ export function MachineDetailDrawer({ machine, onClose }: Props) {
         <div className="space-y-6">
           {/* Full Specs */}
           <div>
-            <h4 className="text-sm font-semibold mb-2">Specifications</h4>
+            <h4 className="text-sm font-medium mb-2">Specifications</h4>
             <div className="space-y-1 text-sm text-muted-foreground">
               <p>
                 <span className="text-foreground">CPU:</span> {specs.cpu_model}
@@ -79,7 +79,7 @@ export function MachineDetailDrawer({ machine, onClose }: Props) {
 
           {/* Live Metrics */}
           <div>
-            <h4 className="text-sm font-semibold mb-3">Live Metrics</h4>
+            <h4 className="text-sm font-medium mb-3">Live Metrics</h4>
             <div className="space-y-4">
               <div>
                 <div className="flex justify-between text-sm mb-1">
@@ -128,7 +128,7 @@ export function MachineDetailDrawer({ machine, onClose }: Props) {
 
           {/* Top Processes */}
           <div>
-            <h4 className="text-sm font-semibold mb-3">Top Processes (by CPU)</h4>
+            <h4 className="text-sm font-medium mb-3">Top Processes (by CPU)</h4>
             <DataTable
               columns={[
                 { header: 'Process', className: 'font-mono text-xs', render: (proc) => proc.name },
@@ -145,7 +145,7 @@ export function MachineDetailDrawer({ machine, onClose }: Props) {
 
           {/* Heartbeat History */}
           <div>
-            <h4 className="text-sm font-semibold mb-3">Heartbeat History (last 10)</h4>
+            <h4 className="text-sm font-medium mb-3">Heartbeat History (last 10)</h4>
             <div className="space-y-1">
               {heartbeat_history.map((hb, idx) => (
                 <div key={idx} className="flex items-center gap-2 text-xs text-muted-foreground">

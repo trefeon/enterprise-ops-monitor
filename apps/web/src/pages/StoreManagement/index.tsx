@@ -35,8 +35,7 @@ import {
   EntityFormGrid,
 } from '@/components/shared/EntityFormDialog';
 import { ExportButton } from '@/components/shared/ExportButton';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { PageShell } from '@/components/shared/PageShell';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { Toolbar } from '@/components/shared/Toolbar';
 import { downloadWorkbookExport, type WorkbookExportPayload } from '@/lib/api/downloadExport';
@@ -404,9 +403,8 @@ const StoreManagement = () => {
   }, [canManageStores]);
 
   return (
-    <PageShell debugLabel="Store-Management">
-      <FeatureStoryBanner story={getFeatureStory('store-directory')} />
-      <PageHeader
+    <DashboardLayout>
+      <DashboardPageHeader
         title="Store Directory"
         subtitle="Monitor operational status and manage canonical store data."
         actions={
@@ -424,6 +422,7 @@ const StoreManagement = () => {
           </div>
         }
       />
+      <FeatureStoryBanner story={getFeatureStory('store-directory')} />
       <Toolbar
         left={
           <>
@@ -622,7 +621,7 @@ const StoreManagement = () => {
         onConfirm={handleArchiveStore}
         onClose={() => setArchiveTarget(null)}
       />
-    </PageShell>
+    </DashboardLayout>
   );
 };
 

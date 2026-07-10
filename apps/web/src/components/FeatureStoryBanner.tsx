@@ -100,10 +100,10 @@ export default function FeatureStoryBanner({ story }: FeatureStoryBannerProps) {
             <Icon className="size-5" />
           </span>
           <span className="min-w-0">
-            <span className="block text-3xs font-black uppercase tracking-widest-lg text-primary/70">
+            <span className="block text-3xs font-medium uppercase tracking-widest-lg text-primary/70">
               Feature Narrative
             </span>
-            <span className="line-clamp-2 block text-base font-bold leading-snug text-foreground">
+            <span className="line-clamp-2 block text-base font-medium leading-snug text-foreground">
               {story.tagline}
             </span>
           </span>
@@ -148,10 +148,10 @@ export default function FeatureStoryBanner({ story }: FeatureStoryBannerProps) {
                       key={`${metric.label}-${metric.value}`}
                       className="flex flex-col gap-0.5 rounded-md border border-border bg-background px-3 py-1.5"
                     >
-                      <span className="text-4xs font-black uppercase leading-none tracking-wider text-muted-foreground">
+                      <span className="text-4xs font-medium uppercase leading-none tracking-wider text-muted-foreground">
                         {metric.label}
                       </span>
-                      <span className="text-xs font-bold leading-none text-foreground">
+                      <span className="text-xs font-medium leading-none text-foreground">
                         {metric.value}
                       </span>
                     </div>
@@ -165,7 +165,7 @@ export default function FeatureStoryBanner({ story }: FeatureStoryBannerProps) {
                     <Zap className="size-4" />
                   </div>
                   <p className="text-xs leading-relaxed text-muted-foreground">
-                    <span className="mr-1.5 font-black uppercase tracking-wider text-primary">
+                    <span className="mr-1.5 font-medium uppercase tracking-wider text-primary">
                       Engineering Note:
                     </span>
                     {story.techHighlight}
@@ -185,7 +185,7 @@ function StoryBlock({ label, tone, text, icon }: StoryBlockProps) {
     <div className="space-y-2">
       <div className={cn('flex items-center gap-1.5', tone)}>
         {icon}
-        <p className="text-3xs font-black uppercase tracking-widest">{label}</p>
+        <p className="text-3xs font-medium uppercase tracking-widest">{label}</p>
       </div>
       <p className="break-words text-sm leading-relaxed text-muted-foreground">{text}</p>
     </div>

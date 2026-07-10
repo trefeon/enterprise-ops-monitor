@@ -63,7 +63,7 @@ export function BaseSidebar({
                 <div className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-primary text-primary-foreground">
                   <LineChart className="size-4" />
                 </div>
-                <span className="min-w-0 truncate text-sm font-bold uppercase tracking-widest group-data-[state=collapsed]/sidebar-wrapper:hidden">
+                <span className="min-w-0 truncate text-sm font-medium uppercase tracking-widest group-data-[state=collapsed]/sidebar-wrapper:hidden">
                   {brandLabel}
                 </span>
               </div>
@@ -113,11 +113,11 @@ export function BaseSidebar({
                   aria-label="Open profile"
                   title={isCollapsed ? 'Profile' : undefined}
                 >
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-primary text-xs font-bold text-primary-foreground">
+                  <span className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-primary text-xs font-medium text-primary-foreground">
                     {userSummary.initials}
                   </span>
                   <span className="ml-2 min-w-0 text-left group-data-[state=collapsed]/sidebar-wrapper:hidden">
-                    <span className="block truncate text-sm font-semibold text-foreground">
+                    <span className="block truncate text-sm font-medium text-foreground">
                       {userSummary.name}
                     </span>
                     {userSummary.meta && (

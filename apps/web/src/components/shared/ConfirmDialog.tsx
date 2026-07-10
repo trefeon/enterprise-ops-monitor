@@ -59,13 +59,13 @@ export function ConfirmDialog({
     >
       <DialogContent className="sm:max-w-md border-border bg-popover text-popover-foreground">
         <DialogHeader>
-          <DialogTitle className="text-lg font-semibold tracking-tight text-foreground">{title}</DialogTitle>
+          <DialogTitle className="text-lg font-medium tracking-tight text-foreground">{title}</DialogTitle>
           {desc && <DialogDescription className="text-sm text-muted-foreground">{desc}</DialogDescription>}
         </DialogHeader>
 
         {needsMatch && (
           <div className="space-y-2 py-2">
-            <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{confirmLabel}</label>
+            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{confirmLabel}</label>
             <Input
               value={confirmValue || ''}
               onChange={(e) => onConfirmValueChange && onConfirmValueChange(e.target.value)}
@@ -79,14 +79,14 @@ export function ConfirmDialog({
         {confirmHint && <div className="text-xs text-muted-foreground py-1">{confirmHint}</div>}
 
         <DialogFooter className="flex flex-col sm:flex-row gap-2 mt-4">
-          <Button variant="secondary" onClick={onClose} disabled={loading} className="w-full sm:w-auto font-semibold">
+          <Button variant="secondary" onClick={onClose} disabled={loading} className="w-full sm:w-auto font-medium">
             Cancel
           </Button>
           <Button
             variant={danger ? 'destructive' : 'default'}
             onClick={onConfirm}
             disabled={confirmDisabled || !canConfirm || loading}
-            className="w-full sm:w-auto font-semibold gap-1.5"
+            className="w-full sm:w-auto font-medium gap-1.5"
           >
             {loading && <Loader2 className="size-4 animate-spin shrink-0" />}
             {confirmText}

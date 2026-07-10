@@ -109,8 +109,8 @@ function NavBar() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
       <div className="portfolio-container flex h-14 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5 font-display text-sm font-bold tracking-tight text-foreground">
-          <span className="flex size-7 items-center justify-center rounded-md bg-foreground font-mono text-xs font-black text-background">
+        <Link to="/" className="flex items-center gap-2.5 font-display text-sm font-medium tracking-tight text-foreground">
+          <span className="flex size-7 items-center justify-center rounded-md bg-foreground font-mono text-xs font-medium text-background">
             E
           </span>
           Enterprise Ops
@@ -157,7 +157,7 @@ function HeroDashboard() {
             </div>
             <span className="ml-2 font-mono text-xs text-muted-foreground">dash.lmntea.fun/app</span>
           </div>
-          <div className="rounded-full border border-status-success/40 bg-status-success/10 px-2 py-0.5 font-mono text-3xs font-semibold text-status-success">
+          <div className="rounded-full border border-status-success/40 bg-status-success/10 px-2 py-0.5 font-mono text-3xs font-medium text-status-success">
             LIVE
           </div>
         </div>
@@ -172,14 +172,14 @@ function HeroDashboard() {
             ].map((kpi) => (
               <div key={kpi.label} className="rounded-lg border border-border bg-card p-3">
                 <div className="font-mono text-3xs uppercase tracking-wider text-muted-foreground">{kpi.label}</div>
-                <div className={`mt-2 text-xl font-bold tabular-nums ${kpi.color}`}>{kpi.value}</div>
+                <div className={`mt-2 text-xl font-medium tabular-nums ${kpi.color}`}>{kpi.value}</div>
               </div>
             ))}
           </div>
           <div className="mt-3 grid gap-3 lg:grid-cols-2">
             <div className="rounded-lg border border-border bg-card p-3">
               <div className="mb-3 flex items-center justify-between">
-                <span className="text-xs font-semibold text-foreground">Operational Pulse</span>
+                <span className="text-xs font-medium text-foreground">Operational Pulse</span>
                 <span className="font-mono text-3xs text-muted-foreground">60s refresh</span>
               </div>
               <div className="flex h-20 items-end gap-1">
@@ -193,7 +193,7 @@ function HeroDashboard() {
               </div>
             </div>
             <div className="rounded-lg border border-border bg-card p-3">
-              <div className="text-xs font-semibold text-foreground">Recent Events</div>
+              <div className="text-xs font-medium text-foreground">Recent Events</div>
               <div className="mt-3 space-y-1.5">
                 {[
                   { text: 'Backup verified', time: '2m ago', status: 'success' },
@@ -219,7 +219,7 @@ function HeroDashboard() {
 
 function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <div className="mb-4 font-mono text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+    <div className="mb-4 font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
       {children}
     </div>
   );
@@ -247,7 +247,7 @@ export default function Landing() {
             <span className="size-1.5 rounded-full bg-status-success" />
             Production-grade operations dashboard
           </div>
-          <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
+          <h1 className="font-display text-4xl font-medium leading-tight tracking-tight text-foreground sm:text-5xl lg:text-6xl">
             Monitor branch operations
             <br />
             <span className="text-muted-foreground">with confidence</span>
@@ -284,7 +284,7 @@ export default function Landing() {
         <div className="portfolio-container grid grid-cols-2 divide-x divide-border lg:grid-cols-4">
           {metrics.map((m) => (
             <div key={m.label} className="px-6 py-8 text-center">
-              <div className="font-display text-3xl font-bold tabular-nums text-foreground">{m.value}</div>
+              <div className="font-display text-3xl font-medium tabular-nums text-foreground">{m.value}</div>
               <div className="mt-1 text-xs text-muted-foreground">{m.label}</div>
             </div>
           ))}
@@ -295,7 +295,7 @@ export default function Landing() {
       <section className="portfolio-container py-20">
         <div className="mx-auto max-w-2xl text-center">
           <SectionLabel>Features</SectionLabel>
-          <h2 className="font-display text-3xl font-bold tracking-tight text-foreground">
+          <h2 className="font-display text-3xl font-medium tracking-tight text-foreground">
             Everything an ops team needs
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -306,7 +306,7 @@ export default function Landing() {
           {features.map((f) => (
             <article key={f.title} className="rounded-lg border border-border bg-card p-5 transition-colors hover:border-muted-foreground/30">
               <IconBox icon={f.icon} />
-              <h3 className="mt-4 text-sm font-semibold text-foreground">{f.title}</h3>
+              <h3 className="mt-4 text-sm font-medium text-foreground">{f.title}</h3>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">{f.description}</p>
               <Link to={f.route} className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
                 Explore <ArrowRight aria-hidden="true" className="size-3" />
@@ -321,7 +321,7 @@ export default function Landing() {
         <div className="portfolio-container py-20">
           <div className="mx-auto max-w-2xl text-center">
             <SectionLabel>Tech Stack</SectionLabel>
-            <h2 className="font-display text-3xl font-bold tracking-tight text-foreground">
+            <h2 className="font-display text-3xl font-medium tracking-tight text-foreground">
               Modern, proven technologies
             </h2>
           </div>
@@ -346,7 +346,7 @@ export default function Landing() {
       <section className="portfolio-container py-20">
         <div className="mx-auto max-w-2xl text-center">
           <SectionLabel>Architecture</SectionLabel>
-          <h2 className="font-display text-3xl font-bold tracking-tight text-foreground">
+          <h2 className="font-display text-3xl font-medium tracking-tight text-foreground">
             Clean separation of concerns
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -358,7 +358,7 @@ export default function Landing() {
             <div key={layer.layer} className="grid items-center gap-4 rounded-lg border border-border bg-card p-5 sm:grid-cols-[100px_minmax(0,1fr)]">
               <div>
                 <div className="font-mono text-3xs uppercase tracking-wider text-muted-foreground">Layer {i + 1}</div>
-                <div className="mt-1 text-sm font-bold text-foreground">{layer.layer}</div>
+                <div className="mt-1 text-sm font-medium text-foreground">{layer.layer}</div>
               </div>
               <div>
                 <div className="font-mono text-xs text-primary">{layer.tech}</div>
@@ -374,7 +374,7 @@ export default function Landing() {
         <div className="portfolio-container py-20">
           <div className="mx-auto max-w-3xl">
             <SectionLabel>Deployment</SectionLabel>
-            <h2 className="font-display text-3xl font-bold tracking-tight text-foreground">
+            <h2 className="font-display text-3xl font-medium tracking-tight text-foreground">
               One command to deploy
             </h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -412,7 +412,7 @@ export default function Landing() {
                 <div key={item.label} className="rounded-lg border border-border bg-background p-4">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 aria-hidden="true" className="size-3.5 text-status-success" />
-                    <span className="text-xs font-semibold text-foreground">{item.label}</span>
+                    <span className="text-xs font-medium text-foreground">{item.label}</span>
                   </div>
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.detail}</p>
                 </div>
@@ -426,14 +426,14 @@ export default function Landing() {
       <section className="portfolio-container py-20">
         <div className="mx-auto max-w-2xl text-center">
           <SectionLabel>FAQ</SectionLabel>
-          <h2 className="font-display text-3xl font-bold tracking-tight text-foreground">
+          <h2 className="font-display text-3xl font-medium tracking-tight text-foreground">
             Common questions
           </h2>
         </div>
         <div className="mx-auto mt-12 max-w-2xl space-y-3">
           {faqs.map((faq) => (
             <article key={faq.q} className="rounded-lg border border-border bg-card p-5">
-              <h3 className="text-sm font-semibold text-foreground">{faq.q}</h3>
+              <h3 className="text-sm font-medium text-foreground">{faq.q}</h3>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{faq.a}</p>
             </article>
           ))}
@@ -443,7 +443,7 @@ export default function Landing() {
       {/* ── CTA ───────────────────────────────────────── */}
       <section className="border-t border-border">
         <div className="portfolio-container py-20 text-center">
-          <h2 className="font-display text-3xl font-bold tracking-tight text-foreground">
+          <h2 className="font-display text-3xl font-medium tracking-tight text-foreground">
             See it in action
           </h2>
           <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground">

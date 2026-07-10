@@ -7,15 +7,14 @@ import {
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { PageShell } from '@/components/shared/PageShell';
-import { PageHeader } from '@/components/shared/PageHeader';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { Toolbar } from '@/components/shared/Toolbar';
 import { DataTable } from '@/components/ui/data-table';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
-import { formatDate } from '../../lib/date';
+import { formatDate, getWibToday } from '../../lib/date';
 import { hasPermission } from '../../lib/auth/permissions';
 import { useAuth } from '../../context/AuthContext';
 import { useEODMonitor } from './hooks/useEODMonitor';
@@ -52,18 +51,11 @@ export default function EODMonitor() {
   const as = Math.round(AUTO_REFRESH_INTERVAL / 1000);
 
   return (
-    <PageShell debugLabel="EOD-Monitor">
+    <DashboardLayout>
       <FeatureStoryBanner story={getFeatureStory('eod-monitor')} />
-      <PageHeader
+      <DashboardPageHeader
         title="EOD Monitor"
-        subtitle="Real-time EOD status by store."
-        meta={
-          <div className="flex flex-wrap items-center gap-2 mt-1.5">
-            <span className={badgeClass}><Clock aria-hidden="true" className="size-3.5" /> Last: <span className="tabular">{eod.lastUpdatedLabel}</span></span>
-            <span className={badgeClass}><User aria-hidden="true" className="size-3.5" /> {user?.username || 'Admin'}</span>
-            <span className={badgeClass}><Shield aria-hidden="true" className="size-3.5" /> {user?.role ? String(user.role).replace(/_/g, ' ') : 'IT Ops'}</span>
-          </div>
-        }
+        subtitle={formatDate(getWibToday())}
         actions={
           <>
             <Button variant={eod.autoRefresh ? 'default' : 'secondary'} onClick={() => eod.setAutoRefresh((p) => !p)}>
@@ -86,6 +78,12 @@ export default function EODMonitor() {
           </>
         }
       />
+
+      <div className="flex flex-wrap items-center gap-2">
+        <span className={badgeClass}><Clock aria-hidden="true" className="size-3.5" /> Last: <span className="tabular">{eod.lastUpdatedLabel}</span></span>
+        <span className={badgeClass}><User aria-hidden="true" className="size-3.5" /> {user?.username || 'Admin'}</span>
+        <span className={badgeClass}><Shield aria-hidden="true" className="size-3.5" /> {user?.role ? String(user.role).replace(/_/g, ' ') : 'IT Ops'}</span>
+      </div>
 
       <EODStatsRow stats={eod.stats} statsLoading={eod.statsLoading} statsError={eod.statsError}
         completionRate={eod.completionRate} pendingRate={eod.pendingRate} onStatusClick={handleStatusClick} />
@@ -147,6 +145,6 @@ export default function EODMonitor() {
 
       <EODBranchModal branch={eod.branchModal} stores={eod.branchStores} loading={eod.branchStoresLoading}
         pagination={eod.branchStoresPagination} onPageChange={handleBranchPageChange} onClose={eod.closeBranchModal} />
-    </PageShell>
+    </DashboardLayout>
   );
 }

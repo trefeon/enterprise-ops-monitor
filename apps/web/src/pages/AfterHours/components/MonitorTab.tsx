@@ -178,7 +178,7 @@ export default function MonitorTab({
               <NotificationsActive className="size-5" aria-hidden="true" />
             </div>
             <div>
-              <h2 className="flex items-center gap-2 text-sm font-semibold tracking-wide text-foreground">
+              <h2 className="flex items-center gap-2 text-sm font-medium tracking-wide text-foreground">
                 Automation & Notification Settings
                 <StatusBadge
                   variant={notifyEnabled ? 'success' : 'neutral'}
@@ -197,7 +197,7 @@ export default function MonitorTab({
 
           <div className="flex flex-wrap items-center gap-4">
             <div className="flex items-center gap-2.5 rounded-md border border-border bg-secondary px-3 py-1.5">
-              <span className="text-3xs font-bold uppercase tracking-wider text-muted-foreground">
+              <span className="text-3xs font-medium uppercase tracking-wider text-muted-foreground">
                 Status
               </span>
               <Button
@@ -222,7 +222,7 @@ export default function MonitorTab({
                 />
               </Button>
               <span
-                className={`text-xs font-bold uppercase tracking-wider transition-colors ${
+                className={`text-xs font-medium uppercase tracking-wider transition-colors ${
                   notifyEnabled
                     ? 'text-status-success'
                     : 'text-muted-foreground'
@@ -278,7 +278,7 @@ export default function MonitorTab({
                   }
                   size="sm"
                   onClick={() => setNotificationEditorMode('branch')}
-                  className={`h-8 rounded-sm px-3 text-xs font-semibold transition-colors ${
+                  className={`h-8 rounded-sm px-3 text-xs font-medium transition-colors ${
                     notificationEditorMode === 'branch'
                       ? 'bg-secondary text-foreground'
                       : 'text-muted-foreground hover:text-foreground'
@@ -296,7 +296,7 @@ export default function MonitorTab({
                   }
                   size="sm"
                   onClick={() => setNotificationEditorMode('advanced')}
-                  className={`h-8 rounded-sm px-3 text-xs font-semibold transition-colors ${
+                  className={`h-8 rounded-sm px-3 text-xs font-medium transition-colors ${
                     notificationEditorMode === 'advanced'
                       ? 'bg-secondary text-foreground'
                       : 'text-muted-foreground hover:text-foreground'
@@ -311,7 +311,7 @@ export default function MonitorTab({
             {/* Telegram + WhatsApp columns */}
             <div className="grid grid-cols-1 gap-6 px-5 py-5 lg:grid-cols-2">
               <div className="space-y-4">
-                <h4 className="mb-4 flex items-center gap-2.5 border-b border-border/40 pb-3 text-sm font-bold tracking-wider uppercase text-foreground">
+                <h4 className="mb-4 flex items-center gap-2.5 border-b border-border/40 pb-3 text-sm font-medium tracking-wider uppercase text-foreground">
                   <span className="rounded-md border border-status-info/20 bg-status-info/10 p-1.5 text-status-info">
                     <Send className="size-4" aria-hidden="true" />
                   </span>
@@ -382,7 +382,7 @@ export default function MonitorTab({
                       : 'Early';
                   return (
                     <div key={`telegram-template-stage-${idx}`}>
-                      <label className="mb-1.5 block text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                      <label className="mb-1.5 block text-xs font-medium tracking-wider text-muted-foreground uppercase">
                         {`Telegram Stage ${idx + 1} Template (${stageLabel} - ${timeValue})`}
                       </label>
                       <Textarea
@@ -415,7 +415,7 @@ export default function MonitorTab({
               </div>
 
               <div className="space-y-4">
-                <h4 className="mb-4 flex items-center gap-2.5 border-b border-border/40 pb-3 text-sm font-bold tracking-wider uppercase text-foreground">
+                <h4 className="mb-4 flex items-center gap-2.5 border-b border-border/40 pb-3 text-sm font-medium tracking-wider uppercase text-foreground">
                   <span className="rounded-md border border-status-success/20 bg-status-success/10 p-1.5 text-status-success">
                     <MessageSquare className="size-4" aria-hidden="true" />
                   </span>
@@ -545,7 +545,7 @@ export default function MonitorTab({
                       : 'Early';
                   return (
                     <div key={`whatsapp-template-stage-${idx}`}>
-                      <label className="mb-1.5 block text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                      <label className="mb-1.5 block text-xs font-medium tracking-wider text-muted-foreground uppercase">
                         {`WhatsApp Stage ${idx + 1} Template (${stageLabel} - ${timeValue})`}
                       </label>
                       <Textarea
@@ -584,7 +584,7 @@ export default function MonitorTab({
                 <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                   {normalizedScheduleTimes.map((timeValue, idx) => (
                     <div key={`schedule-stage-${idx}`} className="w-full">
-                      <label className="mb-2 flex items-center gap-1.5 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                      <label className="mb-2 flex items-center gap-1.5 text-xs font-medium tracking-wider text-muted-foreground uppercase">
                         <Clock
                           className="size-3.5 text-primary"
                           aria-hidden="true"
@@ -616,13 +616,13 @@ export default function MonitorTab({
                 <Button
                   variant="ghost"
                   onClick={handleDiscardSettings}
-                  className="h-10 px-5 text-xs font-semibold"
+                  className="h-10 px-5 text-xs font-medium"
                 >
                   Discard
                 </Button>
                 <Button
                   onClick={handleSaveSettings}
-                  className="h-10 px-5 text-xs font-semibold"
+                  className="h-10 px-5 text-xs font-medium"
                 >
                   {savingSettings ? (
                     <Loader2
@@ -733,7 +733,7 @@ export default function MonitorTab({
         <Card className="py-3">
           <CardContent>
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <h3 className="text-sm font-semibold text-foreground">
+              <h3 className="text-sm font-medium text-foreground">
                 Violations by Branch
               </h3>
               <span className="text-xs text-muted-foreground">

@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageHeader from '@/components/shared/PageHeader';
-import PageShell from '@/components/shared/PageShell';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { SectionCard } from '@/components/ui/cards';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -113,19 +112,19 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <PageShell debugLabel="Profile">
+    <DashboardLayout>
       <FeatureStoryBanner story={getFeatureStory('profile')} />
 
       <div className="space-y-6 max-w-2xl w-full">
-        <PageHeader title="Profile" subtitle="Basic account information" />
+        <DashboardPageHeader title="Profile" subtitle="Basic account information" />
 
         <SectionCard>
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-lg font-bold text-primary-foreground ring-2 ring-ring/20">
+            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-lg font-medium text-primary-foreground ring-2 ring-ring/20">
               {initials}
             </div>
             <div className="min-w-0">
-              <div className="text-base font-semibold text-foreground break-words">
+              <div className="text-base font-medium text-foreground break-words">
                 {username || 'Admin'}
               </div>
               <div className="text-xs text-muted-foreground uppercase tracking-wide">{role}</div>
@@ -239,7 +238,7 @@ const Profile: React.FC = () => {
         </form>
       </DialogContent>
     </Dialog>
-    </PageShell>
+    </DashboardLayout>
   );
 };
 

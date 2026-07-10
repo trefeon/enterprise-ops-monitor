@@ -42,7 +42,7 @@ export function BaseAppHeader({
           <Menu />
           <span className="sr-only">{mobileMenuLabel}</span>
         </Button>
-        <div className="hidden min-w-0 truncate font-mono text-3xs font-semibold uppercase tracking-widest text-muted-foreground sm:block">
+        <div className="hidden min-w-0 truncate font-mono text-3xs font-medium uppercase tracking-widest text-muted-foreground sm:block">
           {title}
         </div>
       </div>
@@ -51,7 +51,7 @@ export function BaseAppHeader({
         <Button
           type="button"
           onClick={onProfileClick}
-          className="size-9 min-h-0 rounded-lg bg-primary p-0 text-xs font-bold text-primary-foreground ring-2 ring-ring/20"
+          className="size-9 min-h-0 rounded-lg bg-primary p-0 text-xs font-medium text-primary-foreground ring-2 ring-ring/20"
           aria-label="Open profile"
           title="Profile"
         >

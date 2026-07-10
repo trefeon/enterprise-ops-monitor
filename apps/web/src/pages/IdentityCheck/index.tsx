@@ -32,8 +32,7 @@ import {
   EntityFormGrid,
 } from '@/components/shared/EntityFormDialog';
 import { ExportButton } from '@/components/shared/ExportButton';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { PageShell } from '@/components/shared/PageShell';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { Toolbar } from '@/components/shared/Toolbar';
 import { downloadWorkbookExport, type WorkbookExportPayload } from '@/lib/api/downloadExport';
@@ -408,9 +407,8 @@ const IdentityCheck = () => {
   }, [canManageEmployees]);
 
   return (
-    <PageShell debugLabel="Identity-Check">
-      <FeatureStoryBanner story={getFeatureStory('employee-directory')} />
-      <PageHeader
+    <DashboardLayout>
+      <DashboardPageHeader
         title="Employee Directory"
         subtitle="Search employees and manage canonical production employee data."
         actions={
@@ -428,6 +426,7 @@ const IdentityCheck = () => {
           </div>
         }
       />
+      <FeatureStoryBanner story={getFeatureStory('employee-directory')} />
       <Toolbar
         left={
           <>
@@ -621,7 +620,7 @@ const IdentityCheck = () => {
         onConfirm={handleArchiveEmployee}
         onClose={() => setArchiveTarget(null)}
       />
-    </PageShell>
+    </DashboardLayout>
   );
 };
 

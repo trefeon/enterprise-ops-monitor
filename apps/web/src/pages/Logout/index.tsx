@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { PageShell } from '@/components/shared/PageShell';
+
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { SectionCard } from '@/components/ui/cards';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
@@ -31,11 +31,11 @@ const Logout: React.FC = () => {
   };
 
   return (
-    <PageShell debugLabel="Logout">
+    <DashboardLayout>
       <FeatureStoryBanner story={getFeatureStory('logout')} />
 
       <div className="space-y-6 max-w-2xl w-full">
-        <PageHeader title="Logout" subtitle="End your current session safely." />
+        <DashboardPageHeader title="Logout" subtitle="End your current session safely." />
         <SectionCard>
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
@@ -64,7 +64,7 @@ const Logout: React.FC = () => {
         onClose={() => setOpen(false)}
         confirmDisabled={loading}
       />
-    </PageShell>
+    </DashboardLayout>
   );
 };
 

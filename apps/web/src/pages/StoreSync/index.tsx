@@ -10,8 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { PageShell } from '@/components/shared/PageShell';
-import { PageHeader } from '@/components/shared/PageHeader';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { DataTable } from '@/components/ui/data-table';
 import { SearchBar } from '@/components/shared/SearchBar';
 import { BaseSection } from '@/components/base';
@@ -122,7 +121,7 @@ export default function StoreSync() {
   // ── Fatal error state ───────────────────────────────────────
   if (s.fatalError && !s.status && s.stores.length === 0) {
     return (
-      <PageShell debugLabel="Store-Sync">
+      <DashboardLayout>
         <EmptyState
           title="Failed to load sync data"
           description={s.fatalError}
@@ -133,19 +132,18 @@ export default function StoreSync() {
             </Button>
           }
         />
-      </PageShell>
+      </DashboardLayout>
     );
   }
 
   // ── Normal render ────────────────────────────────────────────
   return (
-    <PageShell debugLabel="Store-Sync">
+    <DashboardLayout>
       <FeatureStoryBanner story={getFeatureStory('store-sync')} />
 
-      <PageHeader
+      <DashboardPageHeader
         title="Store Sync Monitor"
-        description="Real-time store data synchronization status. Stores sync from their computers every ~3 minutes."
-        meta={`Updated ${s.updatedLabel} • Auto-refresh ${s.countdown}s${s.sourceMeta ? ` • ${s.sourceMeta}` : ''}`}
+        subtitle="Real-time store data synchronization status. Stores sync from their computers every ~3 minutes."
         actions={
           <Button onClick={s.handleRefresh}>
             {s.refreshing && <Loader2 aria-hidden="true" className="animate-spin mr-2" />}
@@ -154,6 +152,11 @@ export default function StoreSync() {
           </Button>
         }
       />
+
+      {/* Meta info */}
+      <p className="text-xs text-muted-foreground">
+        Updated {s.updatedLabel} • Auto-refresh {s.countdown}s{s.sourceMeta ? ` • ${s.sourceMeta}` : ''}
+      </p>
 
       {/* Error banner */}
       {(s.summaryError || s.statusError || s.storesError) && (
@@ -337,6 +340,6 @@ export default function StoreSync() {
         onModeChange={(val) => s.setHistoryMode(val)}
         onDateChange={(val) => s.setHistoryDate(val)}
       />
-    </PageShell>
+    </DashboardLayout>
   );
 }

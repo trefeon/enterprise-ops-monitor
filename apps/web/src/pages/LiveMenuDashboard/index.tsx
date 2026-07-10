@@ -40,8 +40,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { PageShell } from "@/components/shared/PageShell";
+
+import { DashboardLayout, DashboardPageHeader } from "@/components/base/dashboard-layout";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { EntityFormDialog, EntityField, EntityFormGrid } from "@/components/shared/EntityFormDialog";
@@ -490,7 +490,7 @@ export default function LiveMenuDashboard() {
   const renderAssetsTab = () => (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground">Media Assets</h2>
+        <h2 className="text-sm font-medium text-foreground">Media Assets</h2>
         <div>
           <input
             ref={fileInputRef}
@@ -665,7 +665,7 @@ export default function LiveMenuDashboard() {
   const renderPlaylistsTab = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground">Playlists</h2>
+        <h2 className="text-sm font-medium text-foreground">Playlists</h2>
         <Button size="sm" onClick={openCreatePlaylist}>
           <Plus className="mr-1.5 size-4" />
           Create Playlist
@@ -695,7 +695,7 @@ export default function LiveMenuDashboard() {
               <div className="flex items-center justify-between p-4">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-semibold text-foreground">
+                    <h3 className="text-sm font-medium text-foreground">
                       {playlist.name}
                     </h3>
                     <Badge
@@ -884,7 +884,7 @@ export default function LiveMenuDashboard() {
   const renderScreensTab = () => (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-foreground">
+        <h2 className="text-sm font-medium text-foreground">
           Screens{" "}
           <span className="font-normal text-muted-foreground">
             ({screens.length})
@@ -920,7 +920,7 @@ export default function LiveMenuDashboard() {
                     size={160}
                   />
                   <div className="text-center">
-                    <p className="mb-2 text-sm font-bold text-foreground">
+                    <p className="mb-2 text-sm font-medium text-foreground">
                       Screen Token
                     </p>
                     <div className="flex items-center gap-2 rounded-lg border border-border bg-muted px-3 py-2">
@@ -1045,7 +1045,7 @@ export default function LiveMenuDashboard() {
                         getStatusColor(screen.status)
                       )}
                     />
-                    <h3 className="text-sm font-semibold text-foreground">
+                    <h3 className="text-sm font-medium text-foreground">
                       {screen.name}
                     </h3>
                     <Badge
@@ -1145,10 +1145,10 @@ export default function LiveMenuDashboard() {
   // ── Confirm delete asset ─────────────────────────────────────────────
 
   return (
-    <PageShell debugLabel="Live-Menu">
-      <PageHeader
+    <DashboardLayout>
+      <DashboardPageHeader
         title="Live TV"
-        description="Manage digital signage — media assets, playlists, and screens."
+        subtitle="Manage digital signage — media assets, playlists, and screens."
       />
 
       {/* Delete asset confirmation */}
@@ -1204,6 +1204,6 @@ export default function LiveMenuDashboard() {
           {renderScreensTab()}
         </TabsContent>
       </Tabs>
-    </PageShell>
+    </DashboardLayout>
   );
 }

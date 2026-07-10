@@ -41,7 +41,7 @@ export default function PrivateRoute({ requiredPerm, children }: PrivateRoutePro
           <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-destructive/10">
             <Lock className="size-8 text-destructive" aria-hidden="true" />
           </div>
-          <h1 className="mb-2 text-xl font-semibold">Access Denied</h1>
+          <h1 className="mb-2 text-xl font-medium">Access Denied</h1>
           <p className="mb-4 text-muted-foreground">
             You don't have permission to access this page.
           </p>

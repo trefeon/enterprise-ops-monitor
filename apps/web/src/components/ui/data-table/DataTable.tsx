@@ -327,7 +327,7 @@ export function RawDataTable<TData, TValue = unknown>({
                     const header = typeof cell.column.columnDef.header === "string" ? cell.column.columnDef.header : cell.column.id;
                     return (
                       <div key={cell.id} className="grid gap-1 border-b border-border/50 pb-2 last:border-0 last:pb-0">
-                        <span className="text-3xs font-semibold uppercase tracking-wider text-muted-foreground">{header}</span>
+                        <span className="text-3xs font-medium uppercase tracking-wider text-muted-foreground">{header}</span>
                         <div className="break-words text-sm">{flexRender(cell.column.columnDef.cell, cell.getContext())}</div>
                       </div>
                     );
@@ -427,7 +427,7 @@ export function SimpleDataTable<T>({
             column.sortable ? (
               <DataTableColumnHeader column={tableColumn} title={column.header} className={column.className} />
             ) : (
-              <span className={cn("text-xs font-semibold text-muted-foreground", column.className)}>
+              <span className={cn("text-xs font-medium text-muted-foreground", column.className)}>
                 {column.header}
               </span>
             ),

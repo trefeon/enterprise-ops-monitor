@@ -109,7 +109,7 @@ export function StatCard({
       <div className="flex items-center gap-1.5 mt-2">
         <span
           className={cn(
-            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-3xs font-mono font-semibold border',
+            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-3xs font-mono font-medium border',
             trendColors[trend.direction]
           )}
         >
@@ -176,7 +176,7 @@ export function StatCard({
           <div className="flex min-w-0 items-start justify-between gap-3">
             <span
               className={cn(
-                'min-w-0 font-semibold text-muted-foreground uppercase tracking-wider break-words',
+                'min-w-0 font-medium text-muted-foreground uppercase tracking-wider break-words',
                 titleSizes[size]
               )}
             >
@@ -200,7 +200,7 @@ export function StatCard({
           <div className="mt-2 flex flex-col justify-start">
             <div
               className={cn(
-                'font-mono font-bold leading-tight tracking-normal break-words',
+                'font-mono font-medium leading-tight tracking-normal break-words',
                 valueSizes[size],
                 accent
               )}

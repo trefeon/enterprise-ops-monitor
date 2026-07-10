@@ -1,8 +1,7 @@
 // @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiGet, apiPost, apiPut, apiDelete } from '../../lib/api/client';
-import { PageShell } from '@/components/shared/PageShell';
-import { PageHeader } from '@/components/shared/PageHeader';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -154,21 +153,21 @@ export default function RolesAdmin() {
 
   if (loading) {
     return (
-      <PageShell debugLabel="Roles-Admin">
+      <DashboardLayout>
         <FeatureStoryBanner story={getFeatureStory('roles')} />
-        <PageHeader title="Roles Management" subtitle="Manage system and custom roles" />
+        <DashboardPageHeader title="Roles" subtitle="Manage system and custom roles" />
         <div className="flex justify-center items-center h-64">
           <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
         </div>
-      </PageShell>
+      </DashboardLayout>
     );
   }
 
   return (
-    <PageShell debugLabel="Roles-Admin">
+    <DashboardLayout>
       <FeatureStoryBanner story={getFeatureStory('roles')} />
-      <PageHeader
-        title="Roles Management"
+      <DashboardPageHeader
+        title="Roles"
         subtitle="Create and manage roles with permissions"
         actions={
           <Guard user={user} permission="ROLES_EDIT">
@@ -185,7 +184,7 @@ export default function RolesAdmin() {
           <Card className="w-full max-w-2xl max-h-screen overflow-y-auto m-4">
             <CardContent>
               <div className="p-6">
-                <h2 className="text-lg font-semibold mb-4">
+                <h2 className="text-lg font-medium mb-4">
                   {selectedRole ? `Edit Role: ${selectedRole.label}` : 'Create New Role'}
                 </h2>
 
@@ -240,7 +239,7 @@ export default function RolesAdmin() {
                     <div className="max-h-64 space-y-4 overflow-y-auto rounded-lg border border-border p-3">
                       {Object.entries(PermissionGroups).map(([group, perms]) => (
                         <div key={group}>
-                          <div className="text-xs font-semibold text-muted-foreground uppercase mb-1">
+                          <div className="text-xs font-medium text-muted-foreground uppercase mb-1">
                             {group}
                           </div>
                           <div className="flex flex-wrap gap-2">
@@ -286,7 +285,7 @@ export default function RolesAdmin() {
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-semibold text-foreground">{role.label}</h3>
+                    <h3 className="font-medium text-foreground">{role.label}</h3>
                     {role.is_system && (
                       <span className="px-1.5 py-0.5 text-xs rounded bg-primary/10 text-primary">
                         System
@@ -336,6 +335,6 @@ export default function RolesAdmin() {
           </Card>
         ))}
       </div>
-    </PageShell>
+    </DashboardLayout>
   );
 }

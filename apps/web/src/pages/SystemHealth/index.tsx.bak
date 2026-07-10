@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
+
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { DataTable } from '@/components/ui/data-table';
 import { formatDateTime, formatTime } from '../../lib/date';
@@ -401,7 +402,7 @@ const SystemHealth = () => {
     logs.length === 0
   ) {
     return (
-      <PageShell debugLabel="System-Health">
+      <DashboardLayout>
         <EmptyState
           title="Failed to load system health"
           description={error}
@@ -412,23 +413,21 @@ const SystemHealth = () => {
             </Button>
           }
         />
-      </PageShell>
+      </DashboardLayout>
     );
   }
 
   return (
-    <div>
-      <PageShell debugLabel="System-Health">
-        <FeatureStoryBanner story={getFeatureStory('system')} />
+    <>
+    <DashboardLayout>
+      <FeatureStoryBanner story={getFeatureStory('system')} />
 
-        <div className="flex flex-col gap-4">
-          <PageHeader
-            title="System Health"
-            subtitle="Real-time server performance metrics and application logs."
-            meta={`Updated ${formatDateTime(overview?.generatedAt)}`}
-            actions={
-              <>
-                <Button
+      <DashboardPageHeader
+        title="System Health"
+        subtitle="Real-time server performance metrics and application logs."
+        actions={
+          <>
+            <Button
                   variant="secondary"
                   onClick={refreshAll}
                   disabled={loadingOverview || loadingServices || loadingLogs}
@@ -465,7 +464,7 @@ const SystemHealth = () => {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <p className="text-muted-foreground text-sm font-medium mb-1">Operating System</p>
-                  <h3 className="text-foreground text-xl font-medium break-words">
+                  <h3 className="text-foreground text-xl font-bold break-words">
                     {overview?.platform || '-'}
                   </h3>
                 </div>
@@ -482,7 +481,7 @@ const SystemHealth = () => {
               <div className="flex justify-between items-start mb-4">
                 <div>
                   <p className="text-muted-foreground text-sm font-medium mb-1">System Uptime</p>
-                  <h3 className="text-foreground text-xl font-medium">
+                  <h3 className="text-foreground text-xl font-bold">
                     {formatUptime(overview?.uptimeSeconds)}
                   </h3>
                 </div>
@@ -499,7 +498,7 @@ const SystemHealth = () => {
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <p className="text-muted-foreground text-sm font-medium mb-1">CPU Usage</p>
-                  <h3 className="text-foreground text-xl font-medium tabular-nums">
+                  <h3 className="text-foreground text-xl font-bold tabular-nums">
                     {overview?.cpuUsage != null ? `${overview.cpuUsage.toFixed(1)}%` : '-'}
                   </h3>
                 </div>
@@ -527,7 +526,7 @@ const SystemHealth = () => {
               <div className="flex justify-between items-start mb-2">
                 <div>
                   <p className="text-muted-foreground text-sm font-medium mb-1">Memory Usage</p>
-                  <h3 className="text-foreground text-xl font-medium tabular-nums">
+                  <h3 className="text-foreground text-xl font-bold tabular-nums">
                     {memoryUsedPercent != null ? `${memoryUsedPercent.toFixed(1)}%` : '-'}
                   </h3>
                 </div>
@@ -557,7 +556,7 @@ const SystemHealth = () => {
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                 <div>
                   <p className="text-sm text-muted-foreground">Disk Usage</p>
-                  <p className="text-lg font-medium text-foreground tabular-nums">
+                  <p className="text-lg font-semibold text-foreground tabular-nums">
                     {diskUsedPercent != null ? `${diskUsedPercent.toFixed(1)}%` : '-'}
                   </p>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -599,7 +598,7 @@ const SystemHealth = () => {
                 return (
                   <Card
                     key={service.name}
-                    className="group relative overflow-hidden transition-[border-color,transform] duration-150 hover:border-primary/50"
+                    className="group relative overflow-hidden transition-[box-shadow,border-color,transform] hover:border-primary/50"
                   >
                     <CardContent className="p-4 flex flex-col gap-3">
                       <div className="flex items-start justify-between gap-3">
@@ -609,7 +608,7 @@ const SystemHealth = () => {
                         <div className="flex items-center gap-1.5">
                           <StatusBadge
                             variant={status.variant}
-                            className="h-4 px-1.5 live-text-3xs uppercase font-medium tracking-wider"
+                            className="h-4 px-1.5 live-text-3xs uppercase font-bold tracking-wider"
                           >
                             {status.label}
                           </StatusBadge>
@@ -618,7 +617,7 @@ const SystemHealth = () => {
                       </div>
 
                       <div className="flex min-w-0 flex-col">
-                        <span className="break-words text-sm font-medium text-foreground tracking-tight">
+                        <span className="break-words text-sm font-semibold text-foreground tracking-tight">
                           {service.name}
                         </span>
                         <span className="break-words live-text-3xs text-muted-foreground uppercase font-medium tracking-wide">
@@ -709,9 +708,8 @@ const SystemHealth = () => {
             }
             keyExtractor={(row) => row.id}
           />
-        </div>
-      </PageShell>
-      <ConfirmDialog
+        </DashboardLayout>
+        <ConfirmDialog
         style={{ overscrollBehavior: 'contain' }}
         open={Boolean(restartTarget)}
         title={restartTarget ? `Restart ${restartTarget.name}` : 'Restart Service'}

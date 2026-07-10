@@ -1,8 +1,7 @@
 import React from 'react';
 import { Play, Hourglass } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import PageShell from '@/components/shared/PageShell';
-import PageHeader from '@/components/shared/PageHeader';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
 import { useAfterHours } from './hooks/useAfterHours';
@@ -14,10 +13,10 @@ export default function AfterHours() {
   const { handleRunCheck } = actions;
 
   return (
-    <PageShell debugLabel="After-Hours">
+    <DashboardLayout>
       <FeatureStoryBanner story={getFeatureStory('after-hours')} />
-      <PageHeader
-        title="After-Hours PC Monitor"
+      <DashboardPageHeader
+        title="Daily Monitor"
         subtitle="Detect store computers still online after operational hours"
         actions={
           <Button onClick={handleRunCheck}>
@@ -31,6 +30,6 @@ export default function AfterHours() {
         }
       />
       <MonitorTab state={state} derived={derived} actions={actions} />
-    </PageShell>
+    </DashboardLayout>
   );
 }

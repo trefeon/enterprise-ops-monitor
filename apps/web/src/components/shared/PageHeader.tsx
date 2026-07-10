@@ -50,7 +50,7 @@ export function PageHeader({
                     {crumb.label}
                   </a>
                 ) : (
-                  <span className={isLast ? 'text-foreground font-semibold' : ''}>
+                  <span className={isLast ? 'text-foreground font-medium' : ''}>
                     {crumb.label}
                   </span>
                 )}
@@ -63,7 +63,7 @@ export function PageHeader({
 
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div className="flex flex-col gap-1 min-w-0 flex-1">
-          <h1 className="page-title text-2xl font-bold tracking-tight text-foreground break-words">{title}</h1>
+          <h1 className="page-title text-2xl font-medium tracking-tight text-foreground break-words">{title}</h1>
           {displayDescription && (
             <p className="page-subtitle text-sm text-muted-foreground leading-relaxed break-words">
               {displayDescription}

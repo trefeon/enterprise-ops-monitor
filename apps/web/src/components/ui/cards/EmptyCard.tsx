@@ -41,7 +41,7 @@ export function EmptyCard({
         )}
         <h3
           className={cn(
-            'font-display font-semibold tracking-normal text-foreground',
+            'font-display font-medium tracking-normal text-foreground',
             compact ? 'text-sm mb-1' : 'text-lg mb-2'
           )}
         >

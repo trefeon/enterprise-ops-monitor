@@ -87,7 +87,7 @@ export class ErrorBoundary extends React.Component<
           <CardContent className="space-y-4 pt-6">
             <div className="flex items-center gap-3">
               <AlertTriangle className="size-5 text-destructive shrink-0" />
-              <h1 className="text-lg font-semibold">Something went wrong</h1>
+              <h1 className="text-lg font-medium">Something went wrong</h1>
             </div>
 
             <p className="text-sm text-muted-foreground">
