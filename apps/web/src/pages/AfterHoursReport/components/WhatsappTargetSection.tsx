@@ -28,11 +28,11 @@ export function WhatsappTargetSection({
       <CardContent className="p-5">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
-            <div className="inline-flex items-center gap-2 rounded-sm border border-border bg-background/70 px-3 py-1 text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+            <div className="inline-flex items-center gap-2 rounded-sm border border-border bg-background/70 px-3 py-1 text-xs font-medium uppercase tracking-widest text-muted-foreground">
               <FileText className="size-3 text-status-info" />
               Monthly Report Delivery
             </div>
-            <h2 className="text-lg font-semibold tracking-normal text-foreground">
+            <h2 className="text-lg font-medium tracking-normal text-foreground">
               WhatsApp broadcast target
             </h2>
             <p className="max-w-3xl text-sm leading-6 text-muted-foreground">

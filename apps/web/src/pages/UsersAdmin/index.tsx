@@ -1,7 +1,6 @@
 // @ts-nocheck
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import PageShell from '@/components/shared/PageShell';
-import PageHeader from '@/components/shared/PageHeader';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -361,9 +360,9 @@ export default function UsersAdmin() {
 
   if (!canView) {
     return (
-      <PageShell debugLabel="Users-Admin">
+      <DashboardLayout>
         <FeatureStoryBanner story={getFeatureStory('accounts')} />
-        <PageHeader title="Users" subtitle="Account management" />
+        <DashboardPageHeader title="Accounts" subtitle="Account management" />
         <Card className="p-6">
           <CardContent>
             <div className="text-sm text-muted-foreground">
@@ -371,15 +370,15 @@ export default function UsersAdmin() {
             </div>
           </CardContent>
         </Card>
-      </PageShell>
+      </DashboardLayout>
     );
   }
 
   return (
-    <PageShell debugLabel="Users-Admin">
+    <DashboardLayout>
       <FeatureStoryBanner story={getFeatureStory('accounts')} />
-      <PageHeader
-        title="Users"
+      <DashboardPageHeader
+        title="Accounts"
         subtitle="Manage accounts, roles, and access permissions"
         actions={
           canCreate ? (
@@ -603,6 +602,6 @@ export default function UsersAdmin() {
         </div>
       </DialogContent>
     </Dialog>
-    </PageShell>
+    </DashboardLayout>
   );
 }

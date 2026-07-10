@@ -62,7 +62,7 @@ export function StoreSyncBranchHealth({
                   onBranchClick(branchId);
                 }
               }}
-              className={`transition-[transform,box-shadow,border-color] hover:border-primary/50 hover:shadow-md active:scale-95 cursor-pointer ${isBranchSelected ? 'ring-2 ring-ring' : ''}`}
+              className={`transition-[border-color,transform] duration-150 hover:border-primary/50 active:scale-95 cursor-pointer ${isBranchSelected ? 'ring-2 ring-ring' : ''}`}
             >
               <div className="flex flex-col gap-3 p-4">
                 <div className="flex items-center justify-between">

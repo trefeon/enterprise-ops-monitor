@@ -36,7 +36,7 @@ export function EODBranchModal({
             <p className="text-sm text-muted-foreground">
               {branch.storesTotal || 0} stores &bull; {branch.done || 0} done &bull;{' '}
               {branch.pending || 0} pending &bull;
-              <span className={(branch.failed || 0) > 0 ? ' text-status-error font-semibold' : ''}>
+              <span className={(branch.failed || 0) > 0 ? ' text-status-error font-medium' : ''}>
                 {' '}
                 {branch.failed || 0} failed
               </span>

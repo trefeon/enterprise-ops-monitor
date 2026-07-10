@@ -5,12 +5,11 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { PageHeader } from '@/components/shared/PageHeader';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { StatCard } from '@/components/ui/cards';
 import { DataTable } from '@/components/ui/data-table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/EmptyState';
-import PageShell from '@/components/shared/PageShell';
 import { Guard } from '@/components/auth/Guard';
 import { hasPermission, Permissions } from '@/lib/auth/permissions';
 import { cn } from '@/lib/utils';
@@ -207,20 +206,20 @@ export default function BillingPage() {
 
   if (loading) {
     return (
-      <PageShell debugLabel="Billing">
+      <DashboardLayout>
         <Skeleton className="h-8 w-48" />
         <div className="mt-6 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 3 }).map((_, i) => (
             <Skeleton key={i} className="h-32" />
           ))}
         </div>
-      </PageShell>
+      </DashboardLayout>
     );
   }
 
   if (error) {
     return (
-      <PageShell debugLabel="Billing">
+      <DashboardLayout>
         <EmptyState
           title="Failed to load billing"
           description={error}
@@ -231,15 +230,15 @@ export default function BillingPage() {
             </Button>
           }
         />
-      </PageShell>
+      </DashboardLayout>
     );
   }
 
   return (
-    <PageShell debugLabel="Billing">
-      <PageHeader
+    <DashboardLayout>
+      <DashboardPageHeader
         title="Subscription & Billing"
-        description="Manage your plan, usage, and invoices"
+        subtitle="Manage your plan, usage, and invoices"
         actions={
           <Guard permission={Permissions.BILLING_VIEW}>
             <Button onClick={fetchBilling} variant="outline" size="sm" disabled={loading}>
@@ -286,7 +285,7 @@ export default function BillingPage() {
       {subscription && (
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+            <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
               Subscription Details
             </CardTitle>
           </CardHeader>
@@ -340,7 +339,7 @@ export default function BillingPage() {
       {/* Invoice History */}
       <Card className="mt-6">
         <CardHeader>
-          <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+          <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
             Invoice History
           </CardTitle>
           <CardDescription>
@@ -369,7 +368,7 @@ export default function BillingPage() {
       {/* Need Help */}
       <Card className="mt-6 border-primary/20 bg-primary/[0.03]">
         <CardHeader>
-          <CardTitle className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
+          <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">
             Need Help?
           </CardTitle>
           <CardDescription>
@@ -383,6 +382,6 @@ export default function BillingPage() {
           </p>
         </CardFooter>
       </Card>
-    </PageShell>
+    </DashboardLayout>
   );
 }

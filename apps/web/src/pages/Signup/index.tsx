@@ -89,14 +89,14 @@ export default function Signup() {
         <div className="pointer-events-none absolute inset-0 opacity-100">
           <div className="absolute left-0 top-0 h-full w-full bg-radial-login" />
         </div>
-        <div className="z-10 flex items-center gap-3 font-display font-bold tracking-normal text-foreground">
+        <div className="z-10 flex items-center gap-3 font-display font-medium tracking-normal text-foreground">
           <div className="flex size-11 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <LineChart aria-hidden="true" className="size-5" />
           </div>
           <span className="login-brand-label">Ops Starter</span>
         </div>
         <div className="z-10 max-w-lg">
-          <h1 className="mb-6 font-display text-5xl font-bold leading-tight tracking-normal text-foreground">
+          <h1 className="mb-6 font-display text-5xl font-medium leading-tight tracking-normal text-foreground">
             Enterprise Ops <br /> Starter
           </h1>
           <p className="mb-10 max-w-md text-base leading-7 text-muted-foreground">
@@ -113,7 +113,7 @@ export default function Signup() {
           <div className="flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             <LineChart aria-hidden="true" className="size-5" />
           </div>
-          <span className="login-brand-label font-display font-bold">Ops Starter</span>
+          <span className="login-brand-label font-display font-medium">Ops Starter</span>
         </div>
 
         <Card className="w-full max-w-md">
@@ -258,7 +258,7 @@ export default function Signup() {
               Already have an account?{" "}
               <Link
                 to="/login"
-                className="font-semibold text-primary hover:text-primary/80 underline underline-offset-2"
+                className="font-medium text-primary hover:text-primary/80 underline underline-offset-2"
               >
                 Sign in
               </Link>

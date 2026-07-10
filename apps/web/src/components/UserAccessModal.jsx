@@ -221,7 +221,7 @@ export default function UserAccessModal({
       <Card className="w-full max-w-2xl max-h-screen overflow-hidden m-4 flex flex-col">
         <CardContent className="p-0">
           <div className="p-4 border-b border-border flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Edit Access: {user?.username}</h2>
+            <h2 className="text-lg font-medium">Edit Access: {user?.username}</h2>
             <Button
               type="button"
               variant="ghost"
@@ -349,7 +349,7 @@ export default function UserAccessModal({
                     <div className="space-y-4 max-h-80 overflow-y-auto pr-2">
                       {Object.entries(PermissionGroups).map(([group, perms]) => (
                         <div key={group}>
-                          <div className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 mb-2">
+                          <div className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/60 mb-2">
                             {group}
                           </div>
                           <div className="flex flex-wrap gap-1.5">

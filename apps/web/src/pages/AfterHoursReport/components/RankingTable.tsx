@@ -75,7 +75,7 @@ export function RankingTable({
                   item.rank <= 3 ? (
                     <Trophy className={cn('size-4', medalClasses[item.rank - 1])} />
                   ) : (
-                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-sm bg-secondary text-xs font-bold text-secondary-foreground">
+                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-sm bg-secondary text-xs font-medium text-secondary-foreground">
                       {item.rank}
                     </span>
                   ),
@@ -103,7 +103,7 @@ export function RankingTable({
                   <span className="flex items-center gap-1.5">
                     <span
                       className={cn(
-                        'text-sm font-bold',
+                        'text-sm font-medium',
                         item.violation_count >= 20
                           ? 'text-destructive'
                           : item.violation_count >= 10

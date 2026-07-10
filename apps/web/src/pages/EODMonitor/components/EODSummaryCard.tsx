@@ -32,16 +32,16 @@ export function EODSummaryCard({ branch, onBranchClick }: EODSummaryCardProps) {
           onBranchClick(branch);
         }
       }}
-      className="transition-[box-shadow,transform] hover:shadow-md hover:ring-1 hover:ring-ring cursor-pointer min-h-36 justify-between border border-border/50"
+      className="transition-[border-color,transform] duration-150 hover:border-primary/50 focus-visible:ring-2 focus-visible:ring-ring/50 cursor-pointer min-h-36 justify-between border border-border"
       onClick={() => onBranchClick(branch)}
     >
         <CardContent className="p-4 flex flex-col gap-3.5 h-full justify-between">
           <div className="flex items-center justify-between gap-2">
-            <div className="font-semibold text-foreground tracking-tight break-words">
+            <div className="font-medium text-foreground tracking-tight break-words">
               {branch.areaName}
             </div>
             <div
-              className={`px-2 py-0.5 rounded live-text-3xs uppercase tracking-wider font-semibold ${
+              className={`px-2 py-0.5 rounded live-text-3xs uppercase tracking-wider font-medium ${
                 hasFailed
                   ? 'bg-status-error/10 text-status-error border border-status-error/20'
                   : 'bg-secondary text-muted-foreground border border-border/30'
@@ -66,7 +66,7 @@ export function EODSummaryCard({ branch, onBranchClick }: EODSummaryCardProps) {
             <span className="text-muted-foreground/30">&bull;</span>
             <span>{pending} pending</span>
             <span className="text-muted-foreground/30">&bull;</span>
-            <span className={failed > 0 ? 'text-status-error font-semibold' : ''}>
+            <span className={failed > 0 ? 'text-status-error font-medium' : ''}>
               {failed} failed
             </span>
           </div>

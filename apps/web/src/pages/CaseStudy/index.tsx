@@ -73,8 +73,8 @@ export default function CaseStudy() {
       {/* Nav */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="portfolio-container flex h-14 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 font-display text-sm font-bold tracking-tight text-foreground">
-            <span className="flex size-7 items-center justify-center rounded-md bg-foreground font-mono text-xs font-black text-background">
+          <Link to="/" className="flex items-center gap-2.5 font-display text-sm font-medium tracking-tight text-foreground">
+            <span className="flex size-7 items-center justify-center rounded-md bg-foreground font-mono text-xs font-medium text-background">
               E
             </span>
             Enterprise Ops
@@ -101,7 +101,7 @@ export default function CaseStudy() {
             <Code2 aria-hidden="true" className="size-3" />
             Portfolio Case Study
           </div>
-          <h1 className="font-display text-4xl font-bold leading-tight tracking-tight text-foreground sm:text-5xl">
+          <h1 className="font-display text-4xl font-medium leading-tight tracking-tight text-foreground sm:text-5xl">
             From IT support workflow to
             <br />
             <span className="text-muted-foreground">production operations platform</span>
@@ -133,7 +133,7 @@ export default function CaseStudy() {
             },
           ].map((item) => (
             <article key={item.title} className="px-6 py-8">
-              <div className="font-mono text-xs font-semibold uppercase tracking-wider text-muted-foreground">{item.title}</div>
+              <div className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">{item.title}</div>
               <p className="mt-3 text-sm leading-6 text-foreground">{item.body}</p>
             </article>
           ))}
@@ -145,7 +145,7 @@ export default function CaseStudy() {
         <div className="portfolio-container grid grid-cols-2 divide-x divide-border lg:grid-cols-4">
           {challengeMetrics.map((m) => (
             <div key={m.label} className="px-6 py-8 text-center">
-              <div className="font-display text-2xl font-bold tabular-nums text-foreground">{m.value}</div>
+              <div className="font-display text-2xl font-medium tabular-nums text-foreground">{m.value}</div>
               <div className="mt-1 text-xs text-muted-foreground">{m.label}</div>
             </div>
           ))}
@@ -155,8 +155,8 @@ export default function CaseStudy() {
       {/* Architecture */}
       <section className="portfolio-container py-20">
         <div className="mx-auto max-w-3xl">
-          <div className="font-mono text-xs font-semibold uppercase tracking-wider text-muted-foreground">Architecture</div>
-          <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground">
+          <div className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">Architecture</div>
+          <h2 className="mt-3 font-display text-3xl font-medium tracking-tight text-foreground">
             Four-layer separation of concerns
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -171,7 +171,7 @@ export default function CaseStudy() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span className="font-mono text-xs text-muted-foreground">0{i + 1}</span>
-                      <h3 className="text-sm font-bold text-foreground">{layer.label}</h3>
+                      <h3 className="text-sm font-medium text-foreground">{layer.label}</h3>
                     </div>
                     <div className="mt-1 font-mono text-xs text-primary">{layer.tech}</div>
                   </div>
@@ -194,8 +194,8 @@ export default function CaseStudy() {
       <section className="border-y border-border bg-card/30">
         <div className="portfolio-container py-20">
           <div className="mx-auto max-w-3xl">
-            <div className="font-mono text-xs font-semibold uppercase tracking-wider text-muted-foreground">Features</div>
-            <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground">
+            <div className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">Features</div>
+            <h2 className="mt-3 font-display text-3xl font-medium tracking-tight text-foreground">
               Production feature coverage
             </h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
@@ -209,10 +209,10 @@ export default function CaseStudy() {
                 <div className="flex items-center justify-between">
                   <span className="font-mono text-3xs uppercase tracking-wider text-primary">{feature.route}</span>
                 </div>
-                <h3 className="mt-3 text-sm font-bold text-foreground">{feature.featureName}</h3>
+                <h3 className="mt-3 text-sm font-medium text-foreground">{feature.featureName}</h3>
                 <p className="mt-1 text-xs text-muted-foreground">{feature.tagline}</p>
                 <div className="mt-4 border-t border-border pt-4">
-                  <div className="text-3xs font-semibold uppercase tracking-wider text-muted-foreground">Solution</div>
+                  <div className="text-3xs font-medium uppercase tracking-wider text-muted-foreground">Solution</div>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{feature.solution}</p>
                 </div>
                 {feature.metrics && (
@@ -233,22 +233,22 @@ export default function CaseStudy() {
       {/* Tech Stack */}
       <section className="portfolio-container py-20">
         <div className="mx-auto max-w-3xl">
-          <div className="font-mono text-xs font-semibold uppercase tracking-wider text-muted-foreground">Stack</div>
-          <h2 className="mt-3 font-display text-3xl font-bold tracking-tight text-foreground">
+          <div className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">Stack</div>
+          <h2 className="mt-3 font-display text-3xl font-medium tracking-tight text-foreground">
             Technology choices
           </h2>
           <div className="mt-8 overflow-hidden rounded-lg border border-border">
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border bg-card">
-                  <th className="px-5 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">Layer</th>
-                  <th className="px-5 py-3 text-xs font-bold uppercase tracking-wider text-muted-foreground">Technologies</th>
+                  <th className="px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Layer</th>
+                  <th className="px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Technologies</th>
                 </tr>
               </thead>
               <tbody>
                 {projectStory.techStack.map((row) => (
                   <tr key={row.label} className="border-b border-border last:border-0">
-                    <td className="px-5 py-3 text-xs font-semibold text-foreground">{row.label}</td>
+                    <td className="px-5 py-3 text-xs font-medium text-foreground">{row.label}</td>
                     <td className="px-5 py-3 text-xs text-muted-foreground">{row.value}</td>
                   </tr>
                 ))}
@@ -261,7 +261,7 @@ export default function CaseStudy() {
       {/* CTA */}
       <section className="border-t border-border">
         <div className="portfolio-container py-16 text-center">
-          <h2 className="font-display text-3xl font-bold tracking-tight text-foreground">
+          <h2 className="font-display text-3xl font-medium tracking-tight text-foreground">
             Explore the live demo
           </h2>
           <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground">

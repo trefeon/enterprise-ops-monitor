@@ -43,10 +43,10 @@ export const getBackupColumns = ({
             <RotateCcw className="size-5" />
           </div>
           <div className="flex flex-col min-w-0">
-            <span className="font-bold text-foreground text-sm break-all" title={file.fileName}>
+            <span className="font-medium text-foreground text-sm break-all" title={file.fileName}>
               {file.fileName}
             </span>
-            <span className="text-3xs text-muted-foreground uppercase font-black tracking-widest">
+            <span className="text-3xs text-muted-foreground uppercase font-medium tracking-widest">
               {file.typeLabel}
             </span>
           </div>
@@ -70,7 +70,7 @@ export const getBackupColumns = ({
     header: 'Date Created',
     cell: ({ row }) => (
       <div className="flex flex-col gap-0.5">
-        <span className="font-bold text-foreground/90">{formatDate(row.original.modifiedAt)}</span>
+        <span className="font-medium text-foreground/90">{formatDate(row.original.modifiedAt)}</span>
         <span className="text-3xs uppercase font-medium">{formatTime(row.original.modifiedAt)}</span>
       </div>
     ),

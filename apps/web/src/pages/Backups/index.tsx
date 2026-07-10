@@ -3,8 +3,7 @@ import type { PaginationState } from '@tanstack/react-table';
 import { RefreshCw, Play, Loader2, Database, Clock, HardDrive, AlertCircle, CheckCircle2, PauseCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { PageShell } from '@/components/shared/PageShell';
-import { PageHeader } from '@/components/shared/PageHeader';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { BaseDataTable } from '@/components/ui/data-table';
 import { StatCard } from '@/components/ui/cards';
 import { SectionCard } from '@/components/ui/cards';
@@ -123,7 +122,7 @@ export default function Backups() {
 
   if (b.error && !b.isLoading && b.hasNoData) {
     return (
-      <PageShell debugLabel="Backups">
+      <DashboardLayout>
         <EmptyState
           title="Failed to load backups"
           description={b.error}
@@ -135,7 +134,7 @@ export default function Backups() {
             </Button>
           }
         />
-      </PageShell>
+      </DashboardLayout>
     );
   }
 
@@ -144,19 +143,12 @@ export default function Backups() {
   // -----------------------------------------------------------------------
 
   return (
-    <PageShell debugLabel="Backups">
+    <DashboardLayout>
       <FeatureStoryBanner story={getFeatureStory('backups')} />
 
-      <PageHeader
+      <DashboardPageHeader
         title="Backups Management"
-        description="Manage database snapshots, schedule automated tasks, and restore points."
-        meta={
-          b.summary?.latestBackupAt ? (
-            <span className="text-xs text-muted-foreground">
-              Latest backup {formatDateTime(b.summary.latestBackupAt)}
-            </span>
-          ) : undefined
-        }
+        subtitle="Manage database snapshots, schedule automated tasks, and restore points."
         actions={
           <>
             <Button variant="outline" onClick={b.handleRefresh} disabled={b.isLoading}>
@@ -176,6 +168,11 @@ export default function Backups() {
           </>
         }
       />
+      {b.summary?.latestBackupAt ? (
+        <span className="text-xs text-muted-foreground -mt-4 block">
+          Latest backup {formatDateTime(b.summary.latestBackupAt)}
+        </span>
+      ) : undefined}
 
       {/* Inline error banner when data partially loaded */}
       {b.error && !b.hasNoData && (
@@ -191,20 +188,20 @@ export default function Backups() {
           title={
             <div className="flex items-center gap-2">
               <HardDrive className="size-5 text-muted-foreground" />
-              <span className="text-sm font-bold uppercase tracking-wider">Storage Usage</span>
+              <span className="text-sm font-medium uppercase tracking-wider">Storage Usage</span>
             </div>
           }
           right={<StatusBadge variant={storageStatus.variant}>{storageStatus.label}</StatusBadge>}
         >
           <div className="space-y-4">
             <div className="flex items-end justify-between">
-              <span className="text-3xl font-black tabular-nums text-foreground">
+              <span className="text-3xl font-medium tabular-nums text-foreground">
                 {diskUsed != null ? formatBytes(diskUsed) : '-'}{' '}
                 <span className="text-sm font-normal text-muted-foreground">
                   / {diskTotal != null ? formatBytes(diskTotal) : '-'}
                 </span>
               </span>
-              <span className="tabular-nums text-sm font-bold text-foreground">
+              <span className="tabular-nums text-sm font-medium text-foreground">
                 {diskPercent != null ? `${diskPercent.toFixed(0)}%` : '-'}
               </span>
             </div>
@@ -225,7 +222,7 @@ export default function Backups() {
                   <code className="text-foreground lowercase font-mono break-all">{b.summary.storagePath}</code>
                 </p>
               )}
-              <p className="text-3xs font-bold text-primary uppercase tracking-widest pt-1">
+              <p className="text-3xs font-medium text-primary uppercase tracking-widest pt-1">
                 Snapshot volume: <span className="tabular-nums">{formatBytes(b.summary?.totalSizeBytes ?? 0)}</span>
               </p>
             </div>
@@ -236,7 +233,7 @@ export default function Backups() {
           title={
             <div className="flex items-center gap-2">
               <Clock className="size-5 text-muted-foreground" />
-              <span className="text-sm font-bold uppercase tracking-wider">Backup Schedule</span>
+              <span className="text-sm font-medium uppercase tracking-wider">Backup Schedule</span>
             </div>
           }
           right={
@@ -249,8 +246,8 @@ export default function Backups() {
             <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Schedule</p>
-                  <p className="mt-1 text-2xl font-black text-foreground">
+                  <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Schedule</p>
+                  <p className="mt-1 text-2xl font-medium text-foreground">
                     {formatBackupSchedule(backupSchedule)}
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground">TZ: {backupSchedule.tz || 'Asia/Jakarta'}</p>
@@ -265,10 +262,10 @@ export default function Backups() {
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="rounded-lg border border-border/60 bg-card/60 p-3">
-                <p className="text-3xs font-bold uppercase tracking-widest text-muted-foreground">
+                <p className="text-3xs font-medium uppercase tracking-widest text-muted-foreground">
                   Latest Backup
                 </p>
-                <p className="mt-1 text-sm font-bold text-foreground">
+                <p className="mt-1 text-sm font-medium text-foreground">
                   {formatDateTime(b.summary?.latestBackupAt)}
                 </p>
                 <p className="mt-1 truncate text-xs font-medium text-muted-foreground" title={b.summary?.latestFileName || undefined}>
@@ -276,8 +273,8 @@ export default function Backups() {
                 </p>
               </div>
               <div className="rounded-lg border border-border/60 bg-card/60 p-3">
-                <p className="text-3xs font-bold uppercase tracking-widest text-muted-foreground">Scheduler</p>
-                <div className="mt-2 flex items-center gap-2 text-sm font-bold text-foreground">
+                <p className="text-3xs font-medium uppercase tracking-widest text-muted-foreground">Scheduler</p>
+                <div className="mt-2 flex items-center gap-2 text-sm font-medium text-foreground">
                   {scheduleEnabled ? (
                     <CheckCircle2 className="size-4 text-status-success" />
                   ) : (
@@ -286,7 +283,7 @@ export default function Backups() {
                   {scheduleEnabled ? 'Scheduler ready' : 'Scheduler unavailable'}
                 </div>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Total snapshots <span className="font-bold text-foreground">{snapshotCount}</span>
+                  Total snapshots <span className="font-medium text-foreground">{snapshotCount}</span>
                 </p>
               </div>
             </div>
@@ -296,7 +293,7 @@ export default function Backups() {
 
       {/* Snapshots table */}
       <section className="pt-2">
-        <SectionCard title={<span className="text-lg font-bold tracking-tight uppercase">Recent Snapshots</span>}>
+        <SectionCard title={<span className="text-lg font-medium tracking-tight uppercase">Recent Snapshots</span>}>
           <BaseDataTable
             columns={columns}
             data={b.files}
@@ -354,6 +351,6 @@ export default function Backups() {
           confirmLabel="Type RESTORE"
         />
       </div>
-    </PageShell>
+    </DashboardLayout>
   );
 }

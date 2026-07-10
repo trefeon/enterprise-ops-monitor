@@ -106,20 +106,20 @@ function PricingCard({ plan, index: _index }: { plan: Plan; index: number }) {
     >
       {plan.popular && (
         <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-          <Badge variant="default" className="bg-primary text-primary-foreground text-3xs font-semibold px-3 py-1">
+          <Badge variant="default" className="bg-primary text-primary-foreground text-3xs font-medium px-3 py-1">
             Most Popular
           </Badge>
         </div>
       )}
 
       <CardHeader className={cn(plan.popular && 'pt-8')}>
-        <CardTitle className="text-lg font-bold">{plan.name}</CardTitle>
+        <CardTitle className="text-lg font-medium">{plan.name}</CardTitle>
         <CardDescription>{plan.description}</CardDescription>
       </CardHeader>
 
       <CardContent className="flex-1 space-y-6">
         <div>
-          <span className="text-3xl font-bold tabular-nums text-foreground">{plan.price}</span>
+          <span className="text-3xl font-medium tabular-nums text-foreground">{plan.price}</span>
           <span className="ml-1.5 text-sm text-muted-foreground">{plan.unit}</span>
         </div>
 
@@ -168,9 +168,9 @@ export default function PricingPage() {
         <div className="portfolio-container flex h-14 items-center justify-between">
           <Link
             to="/"
-            className="flex items-center gap-2.5 font-display text-sm font-bold tracking-tight text-foreground"
+            className="flex items-center gap-2.5 font-display text-sm font-medium tracking-tight text-foreground"
           >
-            <span className="flex size-7 items-center justify-center rounded-md bg-foreground font-mono text-xs font-black text-background">
+            <span className="flex size-7 items-center justify-center rounded-md bg-foreground font-mono text-xs font-medium text-background">
               E
             </span>
             Enterprise Ops
@@ -200,7 +200,7 @@ export default function PricingPage() {
             <CreditCard aria-hidden="true" className="size-3" />
             Simple, transparent pricing
           </div>
-          <h1 className="font-display text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+          <h1 className="font-display text-4xl font-medium tracking-tight text-foreground sm:text-5xl">
             Pricing that scales
             <br />
             <span className="text-muted-foreground">with your operations</span>
@@ -225,7 +225,7 @@ export default function PricingPage() {
       <section className="border-t border-border bg-card/30">
         <div className="portfolio-container py-16">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
+            <h2 className="font-display text-2xl font-medium tracking-tight text-foreground">
               Add-ons
             </h2>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -247,7 +247,7 @@ export default function PricingPage() {
                       </div>
                     </div>
                     <div className="shrink-0 text-right">
-                      <div className="text-lg font-bold tabular-nums text-foreground">
+                      <div className="text-lg font-medium tabular-nums text-foreground">
                         {addon.price}
                       </div>
                       <div className="text-3xs uppercase tracking-wide text-muted-foreground">
@@ -264,7 +264,7 @@ export default function PricingPage() {
 
       {/* CTA */}
       <section className="portfolio-container py-16 text-center">
-        <h2 className="font-display text-2xl font-bold tracking-tight text-foreground">
+        <h2 className="font-display text-2xl font-medium tracking-tight text-foreground">
           Ready to get started?
         </h2>
         <p className="mx-auto mt-3 max-w-md text-sm text-muted-foreground">

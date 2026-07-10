@@ -22,8 +22,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { BaseFileUploadControl } from '@/components/base';
 import { formatDateTime } from '../../lib/date';
 import { EmptyState } from '@/components/shared/EmptyState';
-import { PageHeader } from '@/components/shared/PageHeader';
-import { PageShell } from '@/components/shared/PageShell';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { StatCard } from '@/components/ui/cards';
 import { SearchBar } from '@/components/shared/SearchBar';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
@@ -346,7 +345,7 @@ const AgentUpdater = () => {
 
   if (error && !loading && monitoring.length === 0) {
     return (
-      <PageShell debugLabel="Agent-Updater">
+      <DashboardLayout>
         <EmptyState
           title="Error Loading Agent Data"
           description={error}
@@ -358,7 +357,7 @@ const AgentUpdater = () => {
             </Button>
           }
         />
-      </PageShell>
+      </DashboardLayout>
     );
   }
 
@@ -387,11 +386,11 @@ const AgentUpdater = () => {
   }).length;
 
   return (
-    <PageShell debugLabel="Agent-Updater">
+    <DashboardLayout>
       <FeatureStoryBanner story={getFeatureStory('agent-updater')} />
-      <PageHeader
+      <DashboardPageHeader
         title="Agent Updater"
-        description="One-way update flow: worker checks server version, downloads publisher if outdated, then replaces and restarts DemoAgentPublisher.exe."
+        subtitle="One-way update flow: worker checks server version, downloads publisher if outdated, then replaces and restarts DemoAgentPublisher.exe."
         actions={
           <>
             <Button
@@ -442,7 +441,7 @@ const AgentUpdater = () => {
           subtext={
             <div className="flex justify-between items-center w-full">
               <span>{runningPublisherCount} node(s) synced</span>
-              <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-sm font-bold live-text-3xs uppercase tracking-widest flex items-center gap-1">
+              <span className="bg-primary/10 text-primary px-1.5 py-0.5 rounded-sm font-medium live-text-3xs uppercase tracking-widest flex items-center gap-1">
                 <span className="relative flex h-1.5 w-1.5">
                   {activeDownloads > 0 && (
                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
@@ -471,7 +470,7 @@ const AgentUpdater = () => {
                       ? 'success'
                       : 'warning'
                 }
-                className="h-4 live-text-3xs font-bold"
+                className="h-4 live-text-3xs font-medium"
               >
                 {metricsLoading
                   ? 'Loading'
@@ -563,7 +562,7 @@ const AgentUpdater = () => {
 
       <section className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-bold tracking-tight uppercase">Deployment Monitoring</h2>
+          <h2 className="text-lg font-medium tracking-tight uppercase">Deployment Monitoring</h2>
           {publisherOutdatedCount > 0 && (
             <StatusBadge variant="warning">
               {publisherOutdatedCount} Node(s) Need Update
@@ -573,9 +572,9 @@ const AgentUpdater = () => {
 
         <DataTable
           columns={[
-            { header: 'Store Code', className: 'text-xs font-bold tabular-nums', render: (node) => node.store_id || 'Unknown' },
+            { header: 'Store Code', className: 'text-xs font-medium tabular-nums', render: (node) => node.store_id || 'Unknown' },
             { header: 'Store Name', className: 'text-foreground/90 font-medium', render: (node) => node.store_name || node.hostname || '-' },
-            { header: 'Branch', className: 'live-text-3xs uppercase font-black text-muted-foreground tracking-widest', render: (node) => node.branch_name || '-' },
+            { header: 'Branch', className: 'live-text-3xs uppercase font-medium text-muted-foreground tracking-widest', render: (node) => node.branch_name || '-' },
             {
               header: 'Publisher',
               className: 'text-center',
@@ -593,7 +592,7 @@ const AgentUpdater = () => {
                 const isLegacyWorker =
                   !node.worker_version || Number.isNaN(workerVersionNum) || workerVersionNum < 4;
                 return isLegacyWorker ? (
-                  <span className="px-1.5 py-0.5 rounded bg-status-warning/10 text-status-warning text-3xs font-black uppercase tracking-widest">
+                  <span className="px-1.5 py-0.5 rounded bg-status-warning/10 text-status-warning text-3xs font-medium uppercase tracking-widest">
                     legacy
                   </span>
                 ) : (
@@ -662,7 +661,7 @@ const AgentUpdater = () => {
         <form onSubmit={handleDeploy} className="space-y-6 pt-4">
           <div className="space-y-4">
             <div className="space-y-2">
-              <label className="text-3xs font-black uppercase tracking-widest-lg text-muted-foreground/60 ml-4">
+              <label className="text-3xs font-medium uppercase tracking-widest-lg text-muted-foreground/60 ml-4">
                 Publisher Binary (.exe)
               </label>
               <div className="flex items-center justify-center w-full">
@@ -671,7 +670,7 @@ const AgentUpdater = () => {
                     <div className="mb-4 flex size-12 items-center justify-center rounded-lg border border-border bg-muted transition-colors group-hover/upload:bg-primary/10 group-hover/upload:text-primary">
                       <FileUp className="size-6" aria-hidden="true" />
                     </div>
-                    <p className="text-sm font-bold text-foreground">
+                    <p className="text-sm font-medium text-foreground">
                       {file ? (
                         <span className="text-primary">{file.name}</span>
                       ) : (
@@ -692,7 +691,7 @@ const AgentUpdater = () => {
             </div>
 
             <div className="space-y-2">
-              <label className="text-3xs font-black uppercase tracking-widest-lg text-muted-foreground/60 ml-4">
+              <label className="text-3xs font-medium uppercase tracking-widest-lg text-muted-foreground/60 ml-4">
                 Release Version
               </label>
               <Input
@@ -700,23 +699,23 @@ const AgentUpdater = () => {
                 value={version}
                 onChange={(e) => setVersion(e.target.value)}
                 required
-                className="h-12 rounded-sm pl-5 font-semibold"
+                className="h-12 rounded-sm pl-5 font-medium"
               />
               <div className="flex items-center gap-3 px-4 pt-1">
                 <div className="flex flex-col">
-                  <span className="text-3xs font-black text-muted-foreground uppercase tracking-widest leading-none mb-1">
+                  <span className="text-3xs font-medium text-muted-foreground uppercase tracking-widest leading-none mb-1">
                     Current
                   </span>
-                  <span className="text-xs font-bold text-foreground">
+                  <span className="text-xs font-medium text-foreground">
                     {currentVersion || 'None'}
                   </span>
                 </div>
                 <div className="w-px h-6 bg-border/40" />
                 <div className="flex flex-col">
-                  <span className="text-3xs font-black text-primary uppercase tracking-widest leading-none mb-1">
+                  <span className="text-3xs font-medium text-primary uppercase tracking-widest leading-none mb-1">
                     Suggested
                   </span>
-                  <span className="text-xs font-bold text-primary">{suggestedVersion}</span>
+                  <span className="text-xs font-medium text-primary">{suggestedVersion}</span>
                 </div>
               </div>
             </div>
@@ -727,13 +726,13 @@ const AgentUpdater = () => {
               variant="secondary"
               onClick={() => setDeployModalOpen(false)}
               disabled={isDeploying}
-              className="h-12 rounded-sm font-bold"
+              className="h-12 rounded-sm font-medium"
             >
               Cancel
             </Button>
             <Button
               type="submit"
-              className="h-12 rounded-sm font-black uppercase tracking-widest px-8 shadow-lg shadow-primary/20"
+              className="h-12 rounded-sm font-medium uppercase tracking-widest px-8 shadow-lg shadow-primary/20"
               disabled={isDeploying}
             >
               {isDeploying ? (
@@ -747,7 +746,7 @@ const AgentUpdater = () => {
         </form>
       </DialogContent>
     </Dialog>
-    </PageShell>
+    </DashboardLayout>
   );
 };
 

@@ -42,7 +42,7 @@ export function MachineTable({ machines, onView, onEditLabel }: MachineTableProp
           header: "Hostname",
           render: (machine) => (
             <div>
-              <div className="font-semibold">{machine.hostname}</div>
+              <div className="font-medium">{machine.hostname}</div>
               <div className="text-xs text-muted-foreground">{machine.label ?? "No label"}</div>
             </div>
           ),

@@ -150,7 +150,7 @@ export function BaseLoginForm({
           <>
             <Separator className="my-6" />
             <div className="grid gap-3">
-              <p className="text-center text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="text-center text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 Portfolio showcase
               </p>
               {demoAccounts.map((account) => {
@@ -169,7 +169,7 @@ export function BaseLoginForm({
                         <Icon className="size-4" />
                       </span>
                       <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold">{account.label}</span>
+                        <span className="block truncate text-sm font-medium">{account.label}</span>
                         <span className="block truncate font-mono text-xs text-muted-foreground">
                           Login: {account.username}
                         </span>

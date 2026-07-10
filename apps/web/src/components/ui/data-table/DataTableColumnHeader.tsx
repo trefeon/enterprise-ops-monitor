@@ -14,13 +14,13 @@ export function DataTableColumnHeader<TData, TValue>({
   className,
 }: DataTableColumnHeaderProps<TData, TValue>) {
   if (!column.getCanSort()) {
-    return <span className={cn("text-xs font-semibold text-muted-foreground", className)}>{title}</span>;
+    return <span className={cn("text-xs font-medium text-muted-foreground", className)}>{title}</span>;
   }
 
   return (
     <button
       type="button"
-      className={cn("-mx-1 inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground", className)}
+      className={cn("-mx-1 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground hover:text-foreground", className)}
       onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
     >
       <span>{title}</span>

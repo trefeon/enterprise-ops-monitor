@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { PageShell } from '@/components/shared/PageShell';
+import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { StatCard } from '@/components/ui/cards';
 import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { featureStories, getFeatureStory, projectStory } from '../../data/stories';
@@ -64,16 +64,16 @@ const About: React.FC = () => {
   const navigate = useNavigate();
 
   return (
-    <PageShell debugLabel="About">
+    <DashboardLayout>
       <FeatureStoryBanner story={getFeatureStory('about')} />
 
       {/* Hero Section */}
       <section className="relative mb-8 overflow-hidden rounded-lg border border-primary/10 bg-primary/5 p-8 md:p-12">
         <div className="relative z-10 max-w-3xl">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-xs bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-widest text-primary">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-xs bg-primary/10 px-3 py-1 text-xs font-medium uppercase tracking-widest text-primary">
             <Rocket className="size-3" /> Portfolio Case Study
           </div>
-          <h1 className="text-4xl md:text-5xl font-black text-foreground tracking-tight mb-4">
+          <h1 className="text-4xl md:text-5xl font-medium text-foreground tracking-tight mb-4">
             {projectStory.name}
           </h1>
           <p className="text-lg text-muted-foreground leading-relaxed mb-6">
@@ -99,7 +99,7 @@ const About: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card className="bg-muted/20 border-none">
               <CardContent className="pt-6">
-                <h3 className="text-sm font-bold uppercase text-primary mb-2 flex items-center gap-2">
+                <h3 className="text-sm font-medium uppercase text-primary mb-2 flex items-center gap-2">
                   <GanttChart className="size-4" /> Context
                 </h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
@@ -109,7 +109,7 @@ const About: React.FC = () => {
             </Card>
             <Card className="bg-muted/20 border-none">
               <CardContent className="pt-6">
-                <h3 className="text-sm font-bold uppercase text-primary mb-2 flex items-center gap-2">
+                <h3 className="text-sm font-medium uppercase text-primary mb-2 flex items-center gap-2">
                   <CheckCircle2 className="size-4" /> Outcome
                 </h3>
                 <p className="text-sm leading-relaxed text-muted-foreground">
@@ -121,7 +121,7 @@ const About: React.FC = () => {
           <div className="p-4 rounded-lg border border-status-info/20 bg-status-info/5 flex items-start gap-4">
             <Shield className="size-5 text-status-info shrink-0 mt-0.5" />
             <div className="space-y-1">
-              <p className="text-xs font-bold uppercase text-status-info tracking-widest">
+              <p className="text-xs font-medium uppercase text-status-info tracking-widest">
                 Demo Disclosure
               </p>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -160,7 +160,7 @@ const About: React.FC = () => {
           <div className="p-2 rounded-lg bg-primary/10 text-primary">
             <Code2 className="size-5" />
           </div>
-          <h2 className="text-xl font-bold tracking-tight">The Modern Stack</h2>
+          <h2 className="text-xl font-medium tracking-tight">The Modern Stack</h2>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-5 gap-4">
           {projectStory.techStack.map((item: { label: string; value: string }) => (
@@ -169,10 +169,10 @@ const About: React.FC = () => {
               className="group p-4 rounded-lg border border-border bg-card hover:border-primary/30 transition-all"
             >
               <div className="flex flex-col gap-1">
-                <span className="live-text-3xs font-black text-muted-foreground uppercase tracking-widest">
+                <span className="live-text-3xs font-medium text-muted-foreground uppercase tracking-widest">
                   {item.label}
                 </span>
-                <span className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                <span className="text-sm font-medium text-foreground group-hover:text-primary transition-colors">
                   {item.value}
                 </span>
               </div>
@@ -220,7 +220,7 @@ const About: React.FC = () => {
                               <div className="portfolio-feature-tag">
                                 {story.id.replace('-', ' ')}
                               </div>
-                              <h3 className="text-xl font-black text-foreground mb-1 group-hover:text-primary transition-colors">
+                              <h3 className="text-xl font-medium text-foreground mb-1 group-hover:text-primary transition-colors">
                                 {story.featureName}
                               </h3>
                               <p className="text-sm text-muted-foreground font-medium italic">
@@ -260,7 +260,7 @@ const About: React.FC = () => {
                           <div className="flex flex-col md:flex-row md:items-center gap-4 pt-4 border-t border-border/40">
                             <div className="flex-1 space-y-1">
                               <p className="portfolio-story-label text-primary">Business Impact</p>
-                              <p className="text-sm font-semibold text-foreground leading-relaxed">
+                              <p className="text-sm font-medium text-foreground leading-relaxed">
                                 {story.impact}
                               </p>
                             </div>
@@ -270,10 +270,10 @@ const About: React.FC = () => {
                                   key={m.label}
                                   className="px-2.5 py-1 rounded-lg bg-background border border-border flex flex-col gap-0.5"
                                 >
-                                  <span className="live-text-3xs font-black text-muted-foreground uppercase tracking-widest leading-none">
+                                  <span className="live-text-3xs font-medium text-muted-foreground uppercase tracking-widest leading-none">
                                     {m.label}
                                   </span>
-                                  <span className="text-xs font-bold text-foreground leading-none">
+                                  <span className="text-xs font-medium text-foreground leading-none">
                                     {m.value}
                                   </span>
                                 </div>
@@ -287,7 +287,7 @@ const About: React.FC = () => {
                                 <Zap className="size-4" />
                               </div>
                               <p className="text-xs text-muted-foreground">
-                                <span className="font-black text-primary mr-1 uppercase">
+                                <span className="font-medium text-primary mr-1 uppercase">
                                   Engineering Note:
                                 </span>
                                 {story.techHighlight}
@@ -306,7 +306,7 @@ const About: React.FC = () => {
 
       {/* Footer CTA */}
       <section className="mt-24 mb-16 text-center py-16 border-t border-border/40">
-        <h2 className="text-3xl font-black text-foreground mb-4 italic">
+        <h2 className="text-3xl font-medium text-foreground mb-4 italic">
           Ready to see it in action?
         </h2>
         <p className="text-muted-foreground max-w-xl mx-auto mb-8">
@@ -315,13 +315,13 @@ const About: React.FC = () => {
         </p>
         <Button
           size="lg"
-          className="h-12 px-8 text-base font-semibold"
+          className="h-12 px-8 text-base font-medium"
               onClick={() => navigate('/app')}
         >
               Launch Ops Starter <ChevronRight className="ml-2 size-5" />
         </Button>
       </section>
-    </PageShell>
+    </DashboardLayout>
   );
 };
 

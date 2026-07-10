@@ -146,7 +146,7 @@ interface KpiCardProps {
 
 const KpiCard = ({ icon: Icon, title, value, subtitle, color = 'default', pulse = false }: KpiCardProps) => {
   return (
-    <div className="relative overflow-hidden rounded-lg border border-border/40 bg-card p-5 transition-[transform,box-shadow] duration-300 hover:border-primary/40 hover:bg-muted/10 group">
+    <div className="relative overflow-hidden rounded-lg border border-border bg-card p-5 transition-[border-color,transform] duration-150 hover:border-primary/40 hover:bg-muted/10 group">
       {pulse && (
         <div className="absolute inset-0 animate-pulse-slow bg-destructive/5 rounded-lg" />
       )}
@@ -166,12 +166,12 @@ const KpiCard = ({ icon: Icon, title, value, subtitle, color = 'default', pulse 
           <Icon className="size-7" aria-hidden="true" />
         </div>
         <div className="flex-1 min-w-0">
-          <div className="text-3xs font-black uppercase tracking-widest-lg text-muted-foreground/60">
+          <div className="text-3xs font-medium uppercase tracking-widest-lg text-muted-foreground/60">
             {title}
           </div>
           <div
             className={cn(
-              'text-4xl font-black tabular-nums tracking-tighter mt-0.5',
+              'text-4xl font-medium tabular-nums tracking-tighter mt-0.5',
               color === 'success'
                 ? 'text-status-success'
                 : color === 'warning'
@@ -183,7 +183,7 @@ const KpiCard = ({ icon: Icon, title, value, subtitle, color = 'default', pulse 
           >
             {value ?? '-'}
           </div>
-          <div className="text-3xs font-bold text-muted-foreground/40 mt-1 truncate uppercase">
+          <div className="text-3xs font-medium text-muted-foreground/40 mt-1 truncate uppercase">
             {subtitle}
           </div>
         </div>
@@ -232,17 +232,17 @@ const BranchCard = ({ name, synced, stale, problem, total }: BranchCardProps) =>
           : 'bg-muted';
 
   return (
-    <div className="rounded-lg border border-border/40 bg-card p-4 transition-[transform,box-shadow] duration-300 hover:border-primary/30 hover:bg-muted/5 group">
+    <div className="rounded-lg border border-border bg-card p-4 transition-[border-color,transform] duration-150 hover:border-primary/30 hover:bg-muted/5 group">
       <div className="flex items-center justify-between mb-4">
         <span
-          className="font-bold text-foreground text-xs uppercase tracking-tight truncate pr-2"
+          className="font-medium text-foreground text-xs uppercase tracking-tight truncate pr-2"
           title={name}
         >
           {name}
         </span>
         <span
           className={cn(
-            'text-3xs font-black uppercase tracking-widest px-2 py-0.5 rounded-full border leading-none shrink-0',
+            'text-3xs font-medium uppercase tracking-widest px-2 py-0.5 rounded-full border leading-none shrink-0',
             badgeColor
           )}
         >
@@ -256,7 +256,7 @@ const BranchCard = ({ name, synced, stale, problem, total }: BranchCardProps) =>
           style={{ width: `${Math.min(100, healthPct)}%` }}
         />
       </div>
-      <div className="flex items-center justify-between text-3xs font-black uppercase tracking-tighter text-muted-foreground/50">
+      <div className="flex items-center justify-between text-3xs font-medium uppercase tracking-tighter text-muted-foreground/50">
         <span>{synced} OK</span>
         <span className="text-muted-foreground/20">•</span>
         <span>{stale} WARN</span>
@@ -388,35 +388,35 @@ const LiveSync = () => {
             <Radio className="size-5" aria-hidden="true" />
           </div>
           <div>
-            <h1 className="text-xl font-black uppercase tracking-tight text-foreground">
+            <h1 className="text-xl font-medium uppercase tracking-tight text-foreground">
               Operational <span className="text-muted-foreground/40 font-medium">Radar</span>
-              <span className="ml-3 inline-block align-middle animate-pulse rounded-full border border-status-success/30 bg-status-success/20 px-3 py-0.5 text-3xs font-black uppercase tracking-widest-lg text-status-success">
+              <span className="ml-3 inline-block align-middle animate-pulse rounded-full border border-status-success/30 bg-status-success/20 px-3 py-0.5 text-3xs font-medium uppercase tracking-widest-lg text-status-success">
                 LIVE
               </span>
             </h1>
-            <p className="text-3xs font-bold uppercase tracking-widest text-muted-foreground/60">
+            <p className="text-3xs font-medium uppercase tracking-widest text-muted-foreground/60">
               {getCurrentWibDate()}
             </p>
           </div>
         </div>
         <div className="flex items-center gap-8">
           {error && (
-            <span className="flex items-center gap-2 px-3 py-1 rounded-lg bg-status-error/10 border border-status-error/20 text-3xs font-black uppercase tracking-widest text-status-error">
+            <span className="flex items-center gap-2 px-3 py-1 rounded-lg bg-status-error/10 border border-status-error/20 text-3xs font-medium uppercase tracking-widest text-status-error">
               <AlertCircle className="size-3.5" aria-hidden="true" />
               {error}
             </span>
           )}
           <div className="text-right">
-            <div className="font-mono text-3xl font-black tabular-nums tracking-tighter text-foreground">
+            <div className="font-mono text-3xl font-medium tabular-nums tracking-tighter text-foreground">
               {clock}
             </div>
-            <div className="text-3xs font-black uppercase tracking-widest-2xl text-muted-foreground/40 pr-1">
+            <div className="text-3xs font-medium uppercase tracking-widest-2xl text-muted-foreground/40 pr-1">
               WIB LOCAL TIME
             </div>
           </div>
           <div className="flex flex-col items-center gap-1 border-l border-border/40 pl-8">
-            <div className="text-xl font-black tabular-nums text-primary/60">{countdown}s</div>
-            <div className="text-3xs font-black uppercase tracking-widest text-muted-foreground/40">
+            <div className="text-xl font-medium tabular-nums text-primary/60">{countdown}s</div>
+            <div className="text-3xs font-medium uppercase tracking-widest text-muted-foreground/40">
               NEXT REFRESH
             </div>
           </div>
@@ -477,7 +477,7 @@ const LiveSync = () => {
       {/* ── Branch Network Health ──────────────────────────────── */}
       <section className="px-6">
         <div className="flex items-center gap-3 mb-4">
-          <h2 className="text-3xs font-black text-muted-foreground uppercase tracking-widest-xl">
+          <h2 className="text-3xs font-medium text-muted-foreground uppercase tracking-widest-xl">
             Regional Network Status
           </h2>
           <div className="h-px flex-1 bg-border/20" />
@@ -501,16 +501,16 @@ const LiveSync = () => {
         {/* Left: Late Sync Stores */}
         <div className="flex flex-col min-h-0">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="flex items-center text-3xs font-black text-muted-foreground uppercase tracking-widest-xl">
+            <h2 className="flex items-center text-3xs font-medium text-muted-foreground uppercase tracking-widest-xl">
               <RefreshCw className="mr-2 size-3 text-status-error" aria-hidden="true" />
               Live Latency Monitor
               {lateStores.length > 0 && (
-                <span className="ml-3 px-2 py-0.5 rounded bg-status-error/10 text-status-error font-black border border-status-error/20">
+                <span className="ml-3 px-2 py-0.5 rounded bg-status-error/10 text-status-error font-medium border border-status-error/20">
                   ({lateStores.length})
                 </span>
               )}
             </h2>
-            <div className="text-3xs font-bold text-muted-foreground/30 uppercase tracking-widest">
+            <div className="text-3xs font-medium text-muted-foreground/30 uppercase tracking-widest">
               Last Polled: {lastFetchAt ? formatTime(lastFetchAt.toISOString()) : '-'}
             </div>
           </div>
@@ -522,7 +522,7 @@ const LiveSync = () => {
             {lateStores.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 gap-4">
                 <CheckCircle2 className="size-12 text-status-success/20" aria-hidden="true" />
-                <span className="text-xs font-black uppercase tracking-widest">
+                <span className="text-xs font-medium uppercase tracking-widest">
                   All regions perfectly synced
                 </span>
               </div>
@@ -530,22 +530,22 @@ const LiveSync = () => {
               <DataTable
                 columns={[
                   { header: '#', className: 'w-8 text-right text-muted-foreground/40', render: (_store, idx) => idx + 1 },
-                  { header: 'Code', className: 'w-24 text-right font-mono text-xs font-bold text-muted-foreground', render: (store) => store.storeCode },
-                  { header: 'Endpoint Name', className: 'max-w-cell-md truncate text-sm font-bold text-foreground', render: (store) => store.storeName || '-' },
-                  { header: 'Branch', className: 'text-3xs font-black uppercase tracking-widest text-muted-foreground/60', render: (store) => store.branchName },
+                  { header: 'Code', className: 'w-24 text-right font-mono text-xs font-medium text-muted-foreground', render: (store) => store.storeCode },
+                  { header: 'Endpoint Name', className: 'max-w-cell-md truncate text-sm font-medium text-foreground', render: (store) => store.storeName || '-' },
+                  { header: 'Branch', className: 'text-3xs font-medium uppercase tracking-widest text-muted-foreground/60', render: (store) => store.branchName },
                   {
                     header: 'Latency',
                     className: 'text-right',
                     render: (store) => {
                       const isCritical = store.lastSyncAgoSec != null && store.lastSyncAgoSec > 3600;
                       return (
-                        <span className={cn('text-sm font-black tabular-nums tracking-tighter', isCritical ? 'text-status-error' : 'text-status-warning')}>
+                        <span className={cn('text-sm font-medium tabular-nums tracking-tighter', isCritical ? 'text-status-error' : 'text-status-warning')}>
                           {formatDuration(store.lastSyncAgoSec)}
                         </span>
                       );
                     },
                   },
-                  { header: 'Last Sync', className: 'text-right text-3xs font-bold text-muted-foreground/40 tabular-nums', render: (store) => store.lastSyncAt ? formatTime(store.lastSyncAt) : 'Never' },
+                  { header: 'Last Sync', className: 'text-right text-3xs font-medium text-muted-foreground/40 tabular-nums', render: (store) => store.lastSyncAt ? formatTime(store.lastSyncAt) : 'Never' },
                 ]}
                 data={lateStores}
                 keyExtractor={(store) => store.storeCode}
@@ -559,16 +559,16 @@ const LiveSync = () => {
         {/* Right: EOD Failure Ranking */}
         <div className="flex flex-col min-h-0">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="flex items-center text-3xs font-black text-muted-foreground uppercase tracking-widest-xl">
+            <h2 className="flex items-center text-3xs font-medium text-muted-foreground uppercase tracking-widest-xl">
               <TrendingDown className="mr-2 size-3 text-status-warning" aria-hidden="true" />
               Integrity Performance Ranking
               {eodRanking.length > 0 && (
-                <span className="ml-3 px-2 py-0.5 rounded bg-status-warning/10 text-status-warning font-black border border-status-warning/20">
+                <span className="ml-3 px-2 py-0.5 rounded bg-status-warning/10 text-status-warning font-medium border border-status-warning/20">
                   ({eodSummary.totalStoresWithFailures || eodRanking.length})
                 </span>
               )}
             </h2>
-            <div className="text-3xs font-bold text-muted-foreground/30 uppercase tracking-widest">
+            <div className="text-3xs font-medium text-muted-foreground/30 uppercase tracking-widest">
               Range:{' '}
               {eodSummary.dateRange?.from && eodSummary.dateRange?.to
                 ? `${eodSummary.dateRange.from} – ${eodSummary.dateRange.to}`
@@ -583,7 +583,7 @@ const LiveSync = () => {
             {eodRanking.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 gap-4">
                 <CheckCircle2 className="size-12 text-status-success/20" aria-hidden="true" />
-                <span className="text-xs font-black uppercase tracking-widest">
+                <span className="text-xs font-medium uppercase tracking-widest">
                   Zero EOD integrity violations
                 </span>
               </div>
@@ -591,17 +591,17 @@ const LiveSync = () => {
               <DataTable
                 columns={[
                   { header: '#', className: 'w-8 text-right text-muted-foreground/40', render: (_store, idx) => idx + 1 },
-                  { header: 'Code', className: 'w-24 text-right font-mono text-xs font-bold text-muted-foreground', render: (store) => store.storeCode },
-                  { header: 'Endpoint Name', className: 'max-w-cell-sm truncate text-sm font-bold text-foreground', render: (store) => store.storeName || '-' },
-                  { header: 'Branch', className: 'text-3xs font-black uppercase tracking-widest text-muted-foreground/60', render: (store) => store.branchName },
+                  { header: 'Code', className: 'w-24 text-right font-mono text-xs font-medium text-muted-foreground', render: (store) => store.storeCode },
+                  { header: 'Endpoint Name', className: 'max-w-cell-sm truncate text-sm font-medium text-foreground', render: (store) => store.storeName || '-' },
+                  { header: 'Branch', className: 'text-3xs font-medium uppercase tracking-widest text-muted-foreground/60', render: (store) => store.branchName },
                   {
                     header: 'Failure / Success',
                     className: 'text-center',
                     render: (store) => (
                       <>
-                        <span className="text-status-error font-black text-xs tabular-nums">{store.failedDays}</span>
+                        <span className="text-status-error font-medium text-xs tabular-nums">{store.failedDays}</span>
                         <span className="text-muted-foreground/20 mx-1">/</span>
-                        <span className="text-status-success font-bold text-xs tabular-nums">{store.okDays}</span>
+                        <span className="text-status-success font-medium text-xs tabular-nums">{store.okDays}</span>
                       </>
                     ),
                   },
@@ -609,7 +609,7 @@ const LiveSync = () => {
                     header: 'Fail Rate',
                     className: 'text-right',
                     render: (store) => (
-                      <span className={cn('text-sm font-black tabular-nums tracking-tighter', store.failRate > 30 ? 'text-status-error' : 'text-status-warning')}>
+                      <span className={cn('text-sm font-medium tabular-nums tracking-tighter', store.failRate > 30 ? 'text-status-error' : 'text-status-warning')}>
                         {store.failRate}%
                       </span>
                     ),
