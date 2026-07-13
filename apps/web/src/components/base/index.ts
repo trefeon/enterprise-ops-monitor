@@ -2,6 +2,7 @@ export * from "./base-action-menu";
 export * from "./base-animation";
 export * from "./base-app-frame";
 export * from "./base-app-header";
+export * from "./dashboard-layout";
 // DataTable re-exports — consolidated in ui/data-table/
 export {
   RawDataTable as BaseDataTable,
