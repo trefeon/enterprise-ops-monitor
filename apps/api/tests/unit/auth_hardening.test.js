@@ -49,8 +49,19 @@ const mockModels = {
     findOne: async () => null,
     create: async () => ({}),
   },
+  RefreshToken: {
+    create: mock.fn(async () => ({})),
+    findOne: async () => null,
+    update: async () => [0],
+  },
   sequelize: {
     query: mock.fn(async () => []),
+    // issueRefreshToken wraps the INSERT in a tenant-context transaction
+    // (issue #12 + strict RLS): provide the transaction plumbing the mock
+    // sequelize lacks, with a stub query for the set_config call.
+    transaction: mock.fn(async (callback) =>
+      callback({ sequelize: { query: mock.fn(async () => []) } })
+    ),
   },
   Sequelize: {},
 };
@@ -256,6 +267,7 @@ describe("ADR-5 cookie issuance (login) + cookie-to-Bearer bridge", () => {
         ? {
             id: "u-1",
             username: "alice",
+            org_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
             password_hash: bcrypt.hashSync("s3cret!Pass", 10),
             role: "viewer",
             update: async () => {},
@@ -276,6 +288,10 @@ describe("ADR-5 cookie issuance (login) + cookie-to-Bearer bridge", () => {
 
     assert.equal(res.status, 200);
     assert.ok(res.body.data.token, "body token must still be present (backward compat)");
+    assert.ok(
+      res.body.data.refreshToken,
+      "login for a DB user must issue a refresh token (issue #12)"
+    );
 
     const cookieHeader = (res.headers["set-cookie"] || []).find((c) => c.startsWith("auth_token="));
     assert.ok(cookieHeader, "auth_token cookie must be set");
@@ -283,6 +299,14 @@ describe("ADR-5 cookie issuance (login) + cookie-to-Bearer bridge", () => {
     assert.match(cookieHeader, /SameSite=Strict/i);
     assert.match(cookieHeader, /Path=\//i);
     assert.match(cookieHeader, /Max-Age=86400/i, "cookie lives 24h like the JWT");
+
+    const refreshCookie = (res.headers["set-cookie"] || []).find((c) =>
+      c.startsWith("refresh_token=")
+    );
+    assert.ok(refreshCookie, "refresh_token cookie must be set alongside the JWT");
+    assert.match(refreshCookie, /HttpOnly/i);
+    assert.match(refreshCookie, /SameSite=Strict/i);
+    assert.match(refreshCookie, /Path=\//i);
   });
 
   it("/me restores the session from the auth_token cookie alone (no Bearer header)", async () => {

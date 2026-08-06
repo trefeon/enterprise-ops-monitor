@@ -38,6 +38,9 @@ db.UserRole = require("./UserRole")(sequelize, Sequelize);
 db.UserPermissionOverride = require("./UserPermissionOverride")(sequelize, Sequelize);
 db.UserBranchScope = require("./UserBranchScope")(sequelize, Sequelize);
 
+// Auth / refresh tokens (issue #12)
+db.RefreshToken = require("./RefreshToken")(sequelize, Sequelize);
+
 // Associations
 db.Store.hasMany(db.EODLog, { foreignKey: "store_code", sourceKey: "store_code", as: "eodLogs" });
 db.EODLog.belongsTo(db.Store, { foreignKey: "store_code", targetKey: "store_code", as: "store" });
@@ -67,5 +70,9 @@ db.UserPermissionOverride.belongsTo(db.User, { foreignKey: "user_id", as: "user"
 
 db.User.hasMany(db.UserBranchScope, { foreignKey: "user_id", as: "branchScopes" });
 db.UserBranchScope.belongsTo(db.User, { foreignKey: "user_id", as: "user" });
+
+// Refresh token associations (issue #12)
+db.User.hasMany(db.RefreshToken, { foreignKey: "user_id", as: "refreshTokens" });
+db.RefreshToken.belongsTo(db.User, { foreignKey: "user_id", as: "user" });
 
 module.exports = db;

@@ -10,11 +10,13 @@ const asyncHandler = require("../utils/asyncHandler");
 const { fail } = require("../utils/response");
 const env = require("../config/env");
 const { passwordSchema } = require("../utils/validators");
+const { signOAuthState, verifyOAuthState } = require("../utils/oauthState");
 
-// Security: Strict rate limiter for login to prevent brute force
+// Security: Strict rate limiter for login to prevent brute force.
+// Production limit: 10 attempts per 15 minutes.
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Relaxed for demo: 100 attempts per 15 minutes
+  max: 10, // 10 attempts per 15 minutes
   message: {
     ok: false,
     error: {
@@ -69,6 +71,28 @@ function cookieToBearer(req, _res, next) {
 
 router.use(cookieToBearer);
 
+/**
+ * Manual refresh_token cookie extraction (issue #12). The app has no
+ * cookie-parser — mirror the cookieToBearer pattern above: split the Cookie
+ * header and pull the `refresh_token=` value. Returns null when absent or
+ * malformed.
+ */
+function refreshTokenFromCookie(req) {
+  const cookieHeader = req.headers.cookie || "";
+  const part = cookieHeader
+    .split(";")
+    .map((p) => p.trim())
+    .find((p) => p.startsWith("refresh_token="));
+  if (!part) return null;
+  try {
+    const raw = decodeURIComponent(part.slice("refresh_token=".length));
+    return raw || null;
+  } catch {
+    // Malformed cookie value — treat as absent; auth will 401.
+    return null;
+  }
+}
+
 const loginBody = z.object({
   username: z.string().min(1),
   password: z.string().min(1),
@@ -122,10 +146,24 @@ router.post(
   validate({ body: acceptInviteBody }),
   asyncHandler(authController.acceptInvite)
 );
+// /refresh intentionally runs WITHOUT authMiddleware (issue #12): the DB-backed
+// refresh token from the body or the httpOnly refresh_token cookie is the
+// primary credential. The controller itself re-verifies a Bearer JWT (bridged
+// from the auth_token cookie by cookieToBearer above) for the backward-compat
+// JWT-refresh fallback path.
+const refreshBody = z.object({ refreshToken: z.string().optional() }).passthrough().default({});
+
 router.post(
   "/refresh",
-  authMiddleware,
-  validate({ body: emptyBody }),
+  validate({ body: refreshBody }),
+  (req, _res, next) => {
+    // Cookie fallback: if the body carried no refreshToken, adopt the one from
+    // the httpOnly refresh_token cookie (manual parse — no cookie-parser).
+    if (!req.body.refreshToken) {
+      req.body.refreshToken = refreshTokenFromCookie(req);
+    }
+    return next();
+  },
   asyncHandler(authController.refresh)
 );
 router.post(
@@ -155,12 +193,29 @@ function googleNotConfigured(_req, res, next) {
 }
 
 router.get("/google", googleNotConfigured, (req, res, next) => {
-  passport.authenticate("google", { scope: ["profile", "email"], session: false })(req, res, next);
+  // Stateless HMAC-signed OAuth state (issue #5): the value sent to Google is
+  // verified on the callback before passport.authenticate runs. No
+  // express-session storage is involved.
+  const state = signOAuthState();
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    state,
+    session: false,
+  })(req, res, next);
 });
 
 router.get(
   "/google/callback",
   googleNotConfigured,
+  (req, res, next) => {
+    // OAuth state validation MUST happen before passport.authenticate: the
+    // state returned by Google must be one we signed (HMAC + expiry check), or
+    // the callback is a forged/CSRF attempt — redirect instead of proceeding.
+    if (!verifyOAuthState(req.query.state)) {
+      return res.redirect("/login?error=invalid_oauth_state");
+    }
+    return next();
+  },
   (req, res, next) => {
     passport.authenticate("google", { session: false }, (err, user, info) => {
       if (err) return next(err);

@@ -94,13 +94,20 @@ function buildApp() {
 const ORG_UUID = "11111111-1111-4111-8111-111111111111";
 const OTHER_UUID = "22222222-2222-4222-8222-222222222222";
 
+// Minimal JPEG magic bytes (FF D8 FF) — the upload handler now sniffs the file
+// content (utils/magicMime.js, issue #14), so test uploads must carry a real
+// signature or they are rejected as "content does not match declared type".
+const JPEG_SIGNATURE = Buffer.from([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
+
 const app = buildApp();
 
 function postUpload(url, bodyFields = {}) {
-  const req = request(app).post(url).attach("file", Buffer.from("fake-jpeg-content"), {
-    filename: "menu-pic.jpg",
-    contentType: "image/jpeg",
-  });
+  const req = request(app)
+    .post(url)
+    .attach("file", Buffer.concat([JPEG_SIGNATURE, Buffer.from("fake-jpeg-content")]), {
+      filename: "menu-pic.jpg",
+      contentType: "image/jpeg",
+    });
   for (const [name, value] of Object.entries(bodyFields)) {
     req.field(name, value);
   }
@@ -122,10 +129,13 @@ test("upload derives orgId from the JWT orgId claim (legacy path)", async () => 
 
   assert.equal(mediaServiceMock.upload.mock.calls.length, 1);
   assert.equal(mediaServiceMock.upload.mock.calls[0].arguments[0], ORG_UUID);
+  // The DETECTED (magic-byte) MIME type is authoritative (issue #14).
+  assert.equal(mediaServiceMock.upload.mock.calls[0].arguments[2], "image/jpeg");
 
   const createArgs = dbMock.MediaAsset.create.mock.calls[0].arguments[0];
   assert.equal(createArgs.org_id, ORG_UUID);
   assert.equal(createArgs.uploaded_by, "user-1");
+  assert.equal(createArgs.mime_type, "image/jpeg");
 });
 
 test("upload rejects a client-supplied orgId that mismatches the authenticated org", async () => {
@@ -197,4 +207,22 @@ test("env_admin upload stores uploaded_by NULL instead of the FK-violating id", 
   const createArgs = dbMock.MediaAsset.create.mock.calls[0].arguments[0];
   assert.equal(createArgs.org_id, ORG_UUID);
   assert.equal(createArgs.uploaded_by, null);
+});
+
+test("upload rejects content that does not match its declared MIME type (magic bytes)", async () => {
+  authState.user = { id: "user-1", username: "alice", role: "org_admin", orgId: ORG_UUID };
+  // Declared image/jpeg but the body is plain text — no JPEG magic bytes.
+  const res = await request(app)
+    .post("/api/media/upload")
+    .attach("file", Buffer.from("this is definitely not a jpeg"), {
+      filename: "fake.jpg",
+      contentType: "image/jpeg",
+    });
+
+  assert.equal(res.status, 400);
+  assert.equal(res.body.ok, false);
+  assert.equal(res.body.error.code, "UPLOAD_ERROR");
+  assert.match(res.body.error.message, /does not match/i);
+  assert.equal(mediaServiceMock.upload.mock.calls.length, 0, "upload must never reach the service");
+  assert.equal(dbMock.MediaAsset.create.mock.calls.length, 0);
 });

@@ -10,6 +10,7 @@ const { requirePermission } = require("../middleware/rbac");
 const validate = require("../middleware/validate");
 const db = require("../models");
 const mediaService = require("../services/mediaService");
+const { detectMimeFromBuffer } = require("../utils/magicMime");
 
 // ---------------------------------------------------------------------------
 // Multer config — store incoming files to a temp uploads/ dir
@@ -29,6 +30,9 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   limits: { fileSize: 200 * 1024 * 1024 }, // 200 MB global limit
+  // FIRST-PASS gate only: file.mimetype is client-controlled and untrusted.
+  // The authoritative check is the magic-byte sniff (detectMimeFromBuffer)
+  // performed after the file is read in the upload handler below.
   fileFilter(_req, file, cb) {
     const allowedImages = ["image/jpeg", "image/png", "image/webp"];
     const allowedVideos = ["video/mp4", "video/webm"];
@@ -151,21 +155,30 @@ router.post(
       return fail(res, 403, "TENANT_MISMATCH", "Organization mismatch");
     }
 
-    // Server‑side validation
-    const validation = validateUpload(mimetype, size);
+    // Read temp file into buffer (needed for the magic-byte sniff — the
+    // client-declared mimetype is only a first-pass gate).
+    const fs = require("node:fs");
+    const buffer = fs.readFileSync(tmpPath);
+
+    // Magic-byte verification (issue #14): the declared MIME type must match
+    // the file's actual content, or the upload is rejected.
+    const detected = detectMimeFromBuffer(buffer);
+    if (!detected || detected !== mimetype) {
+      return fail(res, 400, "UPLOAD_ERROR", "File content does not match its declared type");
+    }
+
+    // Server-side validation against the DETECTED (content-derived) type, so
+    // size limits apply to the real file type — not the client's claim.
+    const validation = validateUpload(detected, size);
     if (!validation.valid) {
       return fail(res, 400, "VALIDATION_ERROR", validation.message);
     }
 
-    // Read temp file into buffer
-    const fs = require("node:fs");
-    const buffer = fs.readFileSync(tmpPath);
-
-    // Store via service
+    // Store via service — the detected MIME type is authoritative.
     const { storagePath, filename } = await mediaService.upload(
       orgId,
       buffer,
-      mimetype,
+      detected,
       originalname
     );
 
@@ -185,7 +198,7 @@ router.post(
       uploaded_by: uploadedBy,
       filename,
       original_name: originalname,
-      mime_type: mimetype,
+      mime_type: detected,
       file_size_bytes: size,
       storage_path: storagePath,
     });

@@ -74,18 +74,13 @@ passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
       const bcrypt = require("bcryptjs");
-      const crypto = require("crypto");
 
-      // Check env admin first
+      // Check env admin first. Only bcrypt hashes are accepted (issue #15 —
+      // SHA256 password support was removed); anything else fails closed.
       if (env.ADMIN_USERNAME && username === env.ADMIN_USERNAME) {
         const hash = env.ADMIN_PASSWORD_HASH;
-        let valid = false;
-        if (hash.startsWith("$2")) {
-          valid = bcrypt.compareSync(password, hash);
-        } else if (hash.length === 64) {
-          const sha256 = crypto.createHash("sha256").update(password).digest("hex");
-          valid = crypto.timingSafeEqual(Buffer.from(sha256), Buffer.from(hash));
-        }
+        const valid =
+          typeof hash === "string" && hash.startsWith("$2") && bcrypt.compareSync(password, hash);
         if (valid) {
           return done(null, {
             id: "env_admin",
@@ -102,26 +97,15 @@ passport.use(
         return done(null, false, { message: "Invalid credentials" });
       }
 
+      // Only bcrypt hashes are accepted (issue #15); SHA256 legacy hashes no
+      // longer verify and are rejected without a timing side-channel.
       let valid = false;
-      if (user.password_hash.startsWith("$2")) {
+      if (typeof user.password_hash === "string" && user.password_hash.startsWith("$2")) {
         valid = bcrypt.compareSync(password, user.password_hash);
-      } else if (user.password_hash.length === 64) {
-        const sha256 = crypto.createHash("sha256").update(password).digest("hex");
-        valid = crypto.timingSafeEqual(Buffer.from(sha256), Buffer.from(user.password_hash));
       }
 
       if (!valid) {
         return done(null, false, { message: "Invalid credentials" });
-      }
-
-      // Migrate legacy hash if needed
-      if (!user.password_hash.startsWith("$2")) {
-        try {
-          const newHash = await bcrypt.hash(password, 10);
-          await user.update({ password_hash: newHash });
-        } catch (_) {
-          // non-fatal
-        }
       }
 
       return done(null, {
@@ -170,13 +154,11 @@ if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
         clientSecret: env.GOOGLE_CLIENT_SECRET,
         callbackURL: env.GOOGLE_CALLBACK_URL || "/api/auth/google/callback",
         passReqToCallback: true,
-        // state:false — the OAuth `state` parameter would need server-side
-        // storage (express-session) to validate, and this app is deliberately
-        // session-less (ARCHITECTURE.md). CSRF trade-off: the issued
-        // auth_token cookie is SameSite=Strict + httpOnly, and login CSRF
-        // impact here is limited to linking a Google identity the user
-        // controls themselves. Re-enable with a stateless HMAC-signed state
-        // if cross-site flows are added later.
+        // OAuth `state` is now a stateless HMAC-signed payload (utils/oauthState.js,
+        // issue #5): authRoutes.js signs it on GET /google and verifies it on the
+        // callback BEFORE passport.authenticate runs. `state: false` keeps the
+        // strategy's session-based state store disabled — the app is deliberately
+        // session-less, so state validation lives in our own middleware instead.
         state: false,
       },
       // NOTE: passReqToCallback shifts the argument order — (req, accessToken,

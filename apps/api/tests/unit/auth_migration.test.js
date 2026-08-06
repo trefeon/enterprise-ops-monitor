@@ -81,12 +81,11 @@ describe("Auth Controller - Password Migration", () => {
     mockUser.findOne = async () => null;
   });
 
-  it("should migrate SHA256 password to Bcrypt on successful login", async () => {
+  it("rejects SHA256 password login (legacy hashes no longer verify)", async () => {
     const password = "mysecretpassword";
     const sha256Hash = crypto.createHash("sha256").update(password).digest("hex");
 
     let updateCalled = false;
-    let updatedFields = null;
 
     mockUser.findOne = async ({ where }) => {
       if (where.username === "legacy_user") {
@@ -95,9 +94,8 @@ describe("Auth Controller - Password Migration", () => {
           username: "legacy_user",
           password_hash: sha256Hash,
           role: "viewer",
-          update: async (fields) => {
+          update: async () => {
             updateCalled = true;
-            updatedFields = fields;
           },
         };
       }
@@ -107,15 +105,13 @@ describe("Auth Controller - Password Migration", () => {
     req.body = { username: "legacy_user", password };
     await authController.login(req, res);
 
-    assert.strictEqual(statusCode, 200, "Login should succeed");
-    assert.strictEqual(updateCalled, true, "User.update should be called");
-    assert.ok(
-      updatedFields.password_hash.startsWith("$2"),
-      "Password should be updated to Bcrypt hash"
-    );
+    // Issue #15: SHA256 password support was removed — only bcrypt ($2...) hashes
+    // verify, so a legacy hash must fail closed (401) and never be migrated.
+    assert.strictEqual(statusCode, 401, "SHA256-only login must be rejected");
+    assert.strictEqual(updateCalled, false, "User.update must NOT be called");
   });
 
-  it("should NOT migrate Bcrypt password on successful login", async () => {
+  it("succeeds for a Bcrypt password without touching the hash", async () => {
     const password = "mysecretpassword";
     const bcryptHash = await bcrypt.hash(password, 10);
 

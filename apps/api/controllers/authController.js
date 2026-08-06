@@ -1,23 +1,126 @@
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
-const { User } = require("../models");
+const db = require("../models");
+const { User } = db;
 const { ok, fail } = require("../utils/response");
 const { normalizeRole } = require("../utils/roleMap");
 const { loadUserAuthz } = require("../services/authzService");
-const { setAuthTokenCookie } = require("../utils/jwtCookie");
+const {
+  setAuthTokenCookie,
+  setRefreshTokenCookie,
+  REFRESH_COOKIE_NAME,
+} = require("../utils/jwtCookie");
+const { applyTenantContext } = require("../middleware/tenantContext");
 const env = require("../config/env");
 
-const verifyPassword = (password, hash) => {
-  // Check if bcrypt
-  if (hash.startsWith("$2")) {
-    return bcrypt.compareSync(password, hash);
+// ── Refresh tokens (issue #12) ────────────────────────────────────────────
+// 30-day lifetime — must match REFRESH_COOKIE_MAX_AGE_MS in utils/jwtCookie.js.
+const REFRESH_TOKEN_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+const sha256hex = (value) => crypto.createHash("sha256").update(String(value)).digest("hex");
+
+/**
+ * Extract the raw refresh token from a request: body first, then the httpOnly
+ * refresh_token cookie. The app has no cookie-parser, so the cookie is parsed
+ * manually (same pattern as cookieToBearer in authRoutes.js).
+ */
+function extractRefreshToken(req) {
+  const fromBody = req.body?.refreshToken;
+  if (fromBody) return fromBody;
+  const cookieHeader = req.headers.cookie || "";
+  const part = cookieHeader
+    .split(";")
+    .map((p) => p.trim())
+    .find((p) => p.startsWith(`${REFRESH_COOKIE_NAME}=`));
+  if (!part) return null;
+  try {
+    const raw = decodeURIComponent(part.slice(REFRESH_COOKIE_NAME.length + 1));
+    return raw || null;
+  } catch {
+    return null;
   }
-  // Check SHA256 (64 hex chars)
-  if (hash.length === 64) {
-    const sha256 = crypto.createHash("sha256").update(password).digest("hex");
-    // Use timingSafeEqual to prevent timing attacks
-    return crypto.timingSafeEqual(Buffer.from(sha256), Buffer.from(hash));
+}
+
+/**
+ * Issue a new refresh token for a user. Only the SHA-256 hash of the raw token
+ * is persisted. Non-fatal: a failed DB write must never fail login/register —
+ * it returns null and the caller simply omits the refresh token.
+ *
+ * @param {object} user - DB user instance (id, org_id) or passport user object
+ *   (id, orgId — Google callback).
+ * @returns {Promise<string|null>} raw refresh token, or null on failure.
+ */
+async function issueRefreshToken(user) {
+  if (!user || !user.id) return null;
+  const orgId = user.org_id ?? user.orgId ?? null;
+  // A tenant-less token row is meaningless under the strict RLS policies, so
+  // without an org we fail closed (no token) rather than store an unscoped one.
+  if (!orgId) return null;
+  try {
+    const raw = crypto.randomBytes(32).toString("hex");
+    // Run the INSERT inside a transaction that first establishes the RLS tenant
+    // context. Legacy /api/auth* mounts run NO mount-level tenantMiddleware
+    // (app.js mounts authRoutes via mountLegacyOnly), so without this the strict
+    // `WITH CHECK (org_id = current_setting('app.tenant_id', TRUE))` policy would
+    // reject the row (unset GUC → NULL → false) and refresh tokens would silently
+    // never be issued in production. set_config(..., true) scopes the value to
+    // this transaction, so the pooled connection cannot leak tenant context.
+    await db.sequelize.transaction(async (transaction) => {
+      await transaction.sequelize.query(
+        "SELECT set_config('app.tenant_id', $1, true), set_config('app.is_super_admin', 'false', true)",
+        { bind: [orgId], transaction }
+      );
+      await db.RefreshToken.create(
+        {
+          user_id: user.id,
+          org_id: orgId,
+          token_hash: sha256hex(raw),
+          expires_at: new Date(Date.now() + REFRESH_TOKEN_TTL_MS),
+        },
+        { transaction }
+      );
+    });
+    return raw;
+  } catch (err) {
+    // Non-fatal by design: refresh-token persistence must not break auth.
+    // eslint-disable-next-line no-console
+    console.warn("[auth] failed to issue refresh token (non-fatal):", err.message);
+    return null;
+  }
+}
+
+/**
+ * Revoke a refresh token (rotation/logout). Non-fatal.
+ */
+async function revokeRefreshToken(raw) {
+  if (!raw) return;
+  try {
+    await db.RefreshToken.update(
+      { revoked_at: new Date() },
+      { where: { token_hash: sha256hex(raw), revoked_at: null } }
+    );
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.warn("[auth] failed to revoke refresh token (non-fatal):", err.message);
+  }
+}
+
+/**
+ * Rotate a refresh token: revoke the presented one and issue a fresh one for
+ * the same user. Returns the new raw token (null if issuance failed — the old
+ * token is already revoked in that case).
+ */
+async function rotateRefreshToken(raw, user) {
+  await revokeRefreshToken(raw);
+  return issueRefreshToken(user);
+}
+
+const verifyPassword = (password, hash) => {
+  // Only bcrypt hashes are accepted (issue #15): SHA256 password hashes are no
+  // longer supported for security — any non-bcrypt hash fails closed.
+  if (typeof hash === "string" && hash.startsWith("$2")) {
+    return bcrypt.compareSync(password, hash);
   }
   return false;
 };
@@ -50,21 +153,6 @@ exports.login = async (req, res) => {
       if (dbUser && verifyPassword(password, dbUser.password_hash)) {
         user = dbUser;
         role = normalizeRole(dbUser.role);
-
-        // Legacy hash migration: Migrate legacy SHA256 hashes to Bcrypt
-        if (!dbUser.password_hash.startsWith("$2")) {
-          try {
-            const newHash = await bcrypt.hash(password, 10);
-            await dbUser.update({ password_hash: newHash });
-            // eslint-disable-next-line no-console
-            console.log(`Migrated legacy password hash for user ${dbUser.username}`);
-          } catch (err) {
-            console.error(
-              `Failed to migrate password hash for user ${dbUser.username}:`,
-              err.message
-            );
-          }
-        }
       }
     }
 
@@ -120,8 +208,19 @@ exports.login = async (req, res) => {
       };
     }
 
+    // Issue a DB-backed refresh token (issue #12). env_admin is a synthetic
+    // non-DB account — it gets no refresh token (refreshToken: null).
+    let refreshToken = null;
+    if (!isEnvAdmin) {
+      refreshToken = await issueRefreshToken(user);
+    }
+    if (refreshToken) {
+      setRefreshTokenCookie(res, refreshToken);
+    }
+
     return ok(res, {
       token,
+      refreshToken,
       user: {
         id: user.id,
         username: user.username,
@@ -136,7 +235,13 @@ exports.login = async (req, res) => {
   }
 };
 
-exports.logout = (req, res) => {
+exports.logout = async (req, res) => {
+  // Revoke the presented refresh token (issue #12) so a stolen token cannot be
+  // rotated after logout. Body first, then the httpOnly refresh_token cookie.
+  const raw = extractRefreshToken(req);
+  if (raw) {
+    await revokeRefreshToken(raw);
+  }
   return ok(res, { message: "Logout successful" });
 };
 
@@ -300,8 +405,15 @@ exports.register = async (req, res) => {
     // ADR-5: dual issuance — set the JWT as an httpOnly cookie too.
     setAuthTokenCookie(res, token);
 
+    // Issue a DB-backed refresh token (issue #12).
+    const refreshToken = await issueRefreshToken(user);
+    if (refreshToken) {
+      setRefreshTokenCookie(res, refreshToken);
+    }
+
     return ok(res, {
       token,
+      refreshToken,
       user: {
         id: user.id,
         username: user.username,
@@ -435,8 +547,15 @@ exports.acceptInvite = async (req, res) => {
     // ADR-5: dual issuance — also set the JWT as an httpOnly cookie.
     setAuthTokenCookie(res, jwtToken);
 
+    // Issue a DB-backed refresh token (issue #12).
+    const refreshToken = await issueRefreshToken(user);
+    if (refreshToken) {
+      setRefreshTokenCookie(res, refreshToken);
+    }
+
     return ok(res, {
       token: jwtToken,
+      refreshToken,
       user: {
         id: user.id,
         username: user.username,
@@ -454,14 +573,110 @@ exports.acceptInvite = async (req, res) => {
 // ───────────────────────────── Refresh Token ─────────────────────────────
 exports.refresh = async (req, res) => {
   try {
-    const currentUser = req.user;
+    // 1. Credentials: DB-backed refresh token (body first, then the httpOnly
+    //    refresh_token cookie — no cookie-parser, parsed manually). The Bearer
+    //    JWT (bridged from the auth_token cookie by cookieToBearer) is only
+    //    used for the backward-compat fallback and RLS tenant context.
+    const raw = extractRefreshToken(req);
+
+    // 2. Re-verify a Bearer JWT if one is present (mirrors authMiddleware's
+    //    payload extraction). Non-fatal when absent or invalid — the refresh
+    //    token (if any) carries the session on its own.
+    let currentUser = null;
+    const header = req.headers.authorization || "";
+    const bearer = header.startsWith("Bearer ") ? header.slice("Bearer ".length) : null;
+    if (bearer) {
+      try {
+        const payload = jwt.verify(bearer, env.JWT_SECRET);
+        currentUser = {
+          id: payload.id,
+          username: payload.username,
+          role: normalizeRole(payload.role),
+          orgId: payload.orgId || null,
+        };
+        if (payload.id === "env_admin") {
+          currentUser.role = "super_admin";
+        }
+      } catch (_) {
+        // Invalid/expired JWT — proceed on the refresh token alone.
+      }
+    }
+
+    // 3. DB-backed rotation path (issue #12): the presented token is
+    //    validated, revoked, and replaced with a fresh one + a fresh JWT.
+    if (raw) {
+      // Establish RLS tenant context from the verified JWT (when present) so
+      // the lookup below is visible under the strict RLS policies. Without a
+      // JWT and under forced RLS the lookup fails closed → 401.
+      if (currentUser) {
+        await applyTenantContext(res, {
+          tenantId: currentUser.orgId,
+          isSuperAdmin: currentUser.id === "env_admin",
+        });
+      }
+
+      const row = await db.RefreshToken.findOne({
+        where: { token_hash: sha256hex(raw) },
+        include: [{ model: db.User, as: "user" }],
+      });
+
+      const now = Date.now();
+      if (!row || row.revoked_at || new Date(row.expires_at).getTime() <= now || !row.user) {
+        return fail(res, 401, "INVALID_REFRESH_TOKEN", "Refresh token is invalid or expired", {
+          requestId: req.id || null,
+        });
+      }
+
+      const user = row.user;
+
+      // Re-scope RLS to the token's own org so the revoke+create below pass
+      // the WITH CHECK policy even for cookie-only requests (covers the case
+      // where the row was reached without a JWT-derived context).
+      await applyTenantContext(res, {
+        tenantId: row.org_id ?? user.org_id ?? null,
+        isSuperAdmin: false,
+      });
+
+      // Rotate: revoke the old row, insert a fresh one for the same user.
+      const newRaw = await rotateRefreshToken(raw, user);
+
+      const token = jwt.sign(
+        {
+          id: user.id,
+          username: user.username,
+          role: normalizeRole(user.role),
+          orgId: user.org_id || null,
+        },
+        env.JWT_SECRET,
+        { expiresIn: "24h" }
+      );
+      setAuthTokenCookie(res, token);
+
+      // If the new token could not be persisted the old one is already
+      // revoked — hand back a JWT-only response rather than a dead token.
+      if (newRaw) {
+        setRefreshTokenCookie(res, newRaw);
+      }
+      return ok(res, {
+        token,
+        refreshToken: newRaw,
+        user: {
+          id: user.id,
+          username: user.username,
+          role: normalizeRole(user.role),
+          orgId: user.org_id || null,
+        },
+      });
+    }
+
+    // 4. Backward-compat fallback: no refresh token — refresh the JWT itself
+    //    (only when a valid Bearer JWT was presented).
     if (!currentUser) {
       return fail(res, 401, "UNAUTHORIZED", "Not authenticated", {
         requestId: req.id || null,
       });
     }
 
-    // Issue new JWT with same payload + new 24h expiry
     const token = jwt.sign(
       {
         id: currentUser.id,
@@ -476,7 +691,7 @@ exports.refresh = async (req, res) => {
     // ADR-5: dual issuance — refresh the httpOnly cookie as well.
     setAuthTokenCookie(res, token);
 
-    return ok(res, { token });
+    return ok(res, { token, refreshToken: null });
   } catch (error) {
     console.error("Refresh error:", error);
     return fail(res, 500, "INTERNAL_ERROR", "Internal server error", { requestId: req.id || null });
@@ -508,9 +723,17 @@ exports.googleCallback = async (req, res) => {
     // browser carries the session even if the ?token= URL is stripped.
     setAuthTokenCookie(res, token);
 
+    // Issue a DB-backed refresh token (issue #12) — user.id is a real DB id
+    // here, so the row can be persisted alongside the user's org.
+    const refreshToken = await issueRefreshToken(user);
+    if (refreshToken) {
+      setRefreshTokenCookie(res, refreshToken);
+    }
+
     // Redirect to frontend with token
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
-    return res.redirect(`${frontendUrl}/auth/callback?token=${token}`);
+    const refreshQuery = refreshToken ? `&refreshToken=${encodeURIComponent(refreshToken)}` : "";
+    return res.redirect(`${frontendUrl}/auth/callback?token=${token}${refreshQuery}`);
   } catch (error) {
     console.error("Google callback error:", error);
     return res.redirect("/login?error=internal_error");

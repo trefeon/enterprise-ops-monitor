@@ -15,9 +15,12 @@ const excel = require("../utils/excel");
 const EOD_EXPORT_MIME = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
 
 // ─── EOD Ranking Cache (for live TV dashboard) ───────────────────────────────
+// Per-tenant cache (issue #7): the live query is RLS-scoped per tenant, so a
+// single global cache would leak tenant A's ranking to tenant B. Keyed by the
+// request's tenant (req.tenantId from the URL, else the JWT orgId claim, else
+// "legacy" for the pre-tenant TV-dashboard path).
 const EOD_RANKING_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
-let _eodRankingCache = null;
-let _eodRankingCacheAt = 0;
+const _eodRankingCache = new Map(); // tenantKey -> { data, meta, at }
 
 function isBazarStore(name) {
   if (!name) return false;
@@ -33,10 +36,12 @@ function isBazarStore(name) {
 exports.getLiveEodRanking = async (req, res, next) => {
   try {
     const now = Date.now();
+    const cacheKey = req.tenantId || req.user?.orgId || "legacy";
 
-    // Serve from cache if fresh
-    if (_eodRankingCache && now - _eodRankingCacheAt < EOD_RANKING_CACHE_TTL_MS) {
-      return ok(res, _eodRankingCache.data, _eodRankingCache.meta);
+    // Serve from cache if fresh (per tenant — no cross-tenant leaks)
+    const cached = _eodRankingCache.get(cacheKey);
+    if (cached && now - cached.at < EOD_RANKING_CACHE_TTL_MS) {
+      return ok(res, cached.data, cached.meta);
     }
 
     const db = require("../models").sequelize;
@@ -127,8 +132,15 @@ exports.getLiveEodRanking = async (req, res, next) => {
       },
     };
 
-    _eodRankingCache = cachePayload;
-    _eodRankingCacheAt = now;
+    // Opportunistic prune: drop expired entries as we go so the Map never grows
+    // unbounded no matter how many tenants hit the endpoint.
+    for (const [key, entry] of _eodRankingCache) {
+      if (now - entry.at >= EOD_RANKING_CACHE_TTL_MS) {
+        _eodRankingCache.delete(key);
+      }
+    }
+
+    _eodRankingCache.set(cacheKey, { data: cachePayload.data, meta: cachePayload.meta, at: now });
 
     return ok(res, cachePayload.data, cachePayload.meta);
   } catch (error) {
