@@ -21,21 +21,23 @@ function isEnabled(value, defaultValue = true) {
   return !isExplicitFalse(value);
 }
 
-async function syncDataToDb({ includeEmployees = true, reason = "scheduled" } = {}) {
+async function syncDataToDb({ includeEmployees = true, reason = "scheduled", orgId } = {}) {
   const persistEnabled = isEnabled(process.env.DATA_PERSIST_ENABLED, true);
   const startedAt = new Date();
 
   // Always fetch live for a sync; DB reads are for serving.
+  // When an orgId is provided the fetch + invalidation keys are org-scoped;
+  // otherwise (scheduler / legacy) they follow dataClient's active org.
   const [{ rows: eodRows, businessDate }, { rows: employeeRows }] = await Promise.all([
-    dataClient.fetchEodAllBranches({ bypassCache: true }),
+    dataClient.fetchEodAllBranches({ bypassCache: true, orgId }),
     includeEmployees
-      ? dataClient.fetchEmployeesAllBranches({ bypassCache: true })
+      ? dataClient.fetchEmployeesAllBranches({ bypassCache: true, orgId })
       : Promise.resolve({ rows: [] }),
   ]);
 
   // Refresh in-memory caches so API reads stay hot too.
-  invalidateEodCache();
-  invalidateEmployeeCache();
+  invalidateEodCache(orgId);
+  invalidateEmployeeCache(orgId);
 
   const recordedDate = toWibDate();
 

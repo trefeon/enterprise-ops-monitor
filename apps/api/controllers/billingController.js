@@ -1,7 +1,6 @@
 "use strict";
 
 const { ok, fail } = require("../utils/response");
-const db = require("../models");
 const { createBillingProvider, PLANS } = require("../services/billingService");
 
 const billingProvider = createBillingProvider();
@@ -96,10 +95,8 @@ exports.updateSubscription = async (req, res) => {
   // Create invoice on plan change (when plan or counts change)
   const planChanged =
     (plan && plan !== existing.subscription.plan) ||
-    (branchCount !== undefined &&
-      branchCount !== existing.subscription.branch_count) ||
-    (screenCount !== undefined &&
-      screenCount !== existing.subscription.screen_count);
+    (branchCount !== undefined && branchCount !== existing.subscription.branch_count) ||
+    (screenCount !== undefined && screenCount !== existing.subscription.screen_count);
 
   let invoice = null;
   if (planChanged) {

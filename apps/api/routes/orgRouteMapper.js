@@ -19,10 +19,12 @@ const tenantMiddleware = require("../middleware/tenantMiddleware");
  * @param {string} legacyPath - Legacy path e.g. "/api/stores"
  * @param {import('express').Router} router - Express router
  * @param {Object} [options]
- * @param {boolean} [options.skipTenantMwOnLegacy=true] - Don't apply tenant middleware on legacy path
+ * @param {boolean} [options.skipTenantMwOnLegacy=false] - Opt out of tenant middleware on
+ *   the legacy path (only for routes that must stay auth-free / boot-time, e.g. public
+ *   agent version endpoints). Default applies tenant isolation to legacy paths too (ADR-4).
  */
 function mountOrgRoute(app, legacyPath, router, options = {}) {
-  const { skipTenantMwOnLegacy = true } = options;
+  const { skipTenantMwOnLegacy = false } = options;
 
   // Legacy path (backward compat)
   if (skipTenantMwOnLegacy) {
@@ -38,10 +40,11 @@ function mountOrgRoute(app, legacyPath, router, options = {}) {
   // but /api/stores becomes /api/orgs/:orgId/stores
   app.use(basePath, tenantMiddleware, router);
 
-  // NOTE: Legacy path intentionally OMITS tenantMiddleware because all
-  // new code should use the org-scoped path. The legacy path is for
-  // backward compat only and will be deprecated.
-  // RLS provides a safety net on boot-time tables for any missing filters.
+  // NOTE: The legacy path now runs tenantMiddleware too (default). Every legacy request
+  // explicitly (re)writes app.tenant_id / app.is_super_admin at request start, so a
+  // pooled connection can never carry a previous org-scoped request's tenant context
+  // into a legacy request. Routes that must remain auth-free / boot-time (agent version,
+  // TV dashboards, media display) can opt out via { skipTenantMwOnLegacy: true }.
 }
 
 /**

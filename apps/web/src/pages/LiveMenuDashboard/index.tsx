@@ -288,14 +288,10 @@ export default function LiveMenuDashboard() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch(`/api/orgs/${orgId}/media/upload`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: formData,
-      });
-      const json = await res.json();
+      // Use the shared axios client: it carries the in-memory Bearer token and
+      // credentials ('include') — a raw fetch would need localStorage access,
+      // which ADR-5 removes.
+      const json = await api.post(`/orgs/${orgId}/media/upload`, formData);
 
       if (json.ok) {
         toast.success("Asset uploaded");

@@ -192,11 +192,23 @@ function requirePermission(permission, options = {}) {
     }
 
     // If we have a branch_id, check access
-    if (branchId && !canAccessBranch(authz, branchId)) {
-      return fail(res, 403, "FORBIDDEN", "Access denied for this branch", { branchId });
+    if (branchId) {
+      if (!canAccessBranch(authz, branchId)) {
+        return fail(res, 403, "FORBIDDEN", "Access denied for this branch", { branchId });
+      }
+      return next();
     }
 
-    return next();
+    // Fail closed (ADR-4): a branch-scoped permission with no resolvable
+    // branch must not pass. isAllBranches users (and env_admin) already
+    // returned above; anyone else needs a concrete branch scope.
+    return fail(
+      res,
+      403,
+      "BRANCH_SCOPE_REQUIRED",
+      "A branch scope is required for this operation but no branch could be resolved",
+      { branchId: null }
+    );
   };
 }
 

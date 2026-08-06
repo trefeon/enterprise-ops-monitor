@@ -24,10 +24,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       tableName: "user_identities",
       timestamps: true,
-      indexes: [
-        { unique: true, fields: ["provider", "provider_id"] },
-        { fields: ["user_id"] },
-      ],
+      indexes: [{ unique: true, fields: ["provider", "provider_id"] }, { fields: ["user_id"] }],
     }
   );
 

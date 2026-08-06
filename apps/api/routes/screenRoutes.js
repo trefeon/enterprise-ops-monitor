@@ -18,14 +18,22 @@ const createScreenBody = z.object({
   name: z.string().min(1).max(255),
   branch_id: z.number().int().optional(),
   logo_url: z.string().url().optional().nullable(),
-  primary_color: z.string().regex(/^#[0-9a-fA-F]{6}$/, "Must be hex color").optional().nullable(),
+  primary_color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/, "Must be hex color")
+    .optional()
+    .nullable(),
 });
 
 const updateScreenBody = z.object({
   name: z.string().min(1).max(255).optional(),
   is_active: z.boolean().optional(),
   logo_url: z.string().url().optional().nullable(),
-  primary_color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
+  primary_color: z
+    .string()
+    .regex(/^#[0-9a-fA-F]{6}$/)
+    .optional()
+    .nullable(),
 });
 
 const createPlaylistBody = z.object({
@@ -188,7 +196,13 @@ router.get(
   asyncHandler(async (req, res) => {
     const playlists = await db.Playlist.findAll({
       where: { org_id: req.params.orgId },
-      include: [{ model: db.PlaylistItem, as: "items", include: [{ model: db.MediaAsset, as: "mediaAsset" }] }],
+      include: [
+        {
+          model: db.PlaylistItem,
+          as: "items",
+          include: [{ model: db.MediaAsset, as: "mediaAsset" }],
+        },
+      ],
       order: [["name", "ASC"]],
     });
     return ok(res, { playlists });
@@ -203,7 +217,13 @@ router.get(
   validate({ params: uuidParam }),
   asyncHandler(async (req, res) => {
     const playlist = await db.Playlist.findByPk(req.params.id, {
-      include: [{ model: db.PlaylistItem, as: "items", include: [{ model: db.MediaAsset, as: "mediaAsset" }] }],
+      include: [
+        {
+          model: db.PlaylistItem,
+          as: "items",
+          include: [{ model: db.MediaAsset, as: "mediaAsset" }],
+        },
+      ],
     });
     if (!playlist) return fail(res, 404, "NOT_FOUND", "Playlist not found");
     return ok(res, { playlist });

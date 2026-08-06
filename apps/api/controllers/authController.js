@@ -5,6 +5,7 @@ const { User } = require("../models");
 const { ok, fail } = require("../utils/response");
 const { normalizeRole } = require("../utils/roleMap");
 const { loadUserAuthz } = require("../services/authzService");
+const { setAuthTokenCookie } = require("../utils/jwtCookie");
 const env = require("../config/env");
 
 const verifyPassword = (password, hash) => {
@@ -75,10 +76,19 @@ exports.login = async (req, res) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { id: user.id, username: user.username, role: normalizeRole(role) },
+      {
+        id: user.id,
+        username: user.username,
+        role: normalizeRole(role),
+        orgId: user.org_id || null,
+      },
       env.JWT_SECRET,
       { expiresIn: "24h" }
     );
+
+    // ADR-5: dual issuance — also set the JWT as an httpOnly cookie
+    // (the body token remains for backward-compatible clients).
+    setAuthTokenCookie(res, token);
 
     // RBAC v2: Load authorization data for login response (for DB users)
     let authzData = {};
@@ -116,6 +126,7 @@ exports.login = async (req, res) => {
         id: user.id,
         username: user.username,
         role: normalizeRole(role),
+        orgId: user.org_id || null,
         ...authzData,
       },
     });
@@ -133,12 +144,27 @@ exports.me = async (req, res) => {
   // RBAC v2: Return full authorization data
   const authz = req.authz;
 
+  // ADR-5: mint a fresh token so cookie-only clients (e.g. the web app after
+  // a boot restore via the httpOnly auth_token cookie) can re-attach the
+  // Bearer header for non-auth routes. Additive — existing clients ignore it.
+  const token = jwt.sign(
+    {
+      id: req.user.id,
+      username: req.user.username,
+      role: req.user.role,
+      orgId: req.user.orgId || null,
+    },
+    env.JWT_SECRET,
+    { expiresIn: "24h" }
+  );
+
   if (!authz) {
     // Fallback to basic user info
-    return ok(res, { user: req.user });
+    return ok(res, { token, user: req.user });
   }
 
   return ok(res, {
+    token,
     user: {
       id: req.user.id,
       username: req.user.username,
@@ -211,6 +237,23 @@ exports.register = async (req, res) => {
       return fail(res, 409, "CONFLICT", "Email already exists", { requestId: req.id || null });
     }
 
+    // The org_owner role MUST be seeded before any registration can proceed.
+    // Checked BEFORE creating the tenant/user so a misconfigured DB never
+    // produces a silently escalated account (the old super_admin/admin
+    // fallback is removed by design).
+    const orgOwnerRole = await require("../models").Role.findOne({
+      where: { name: "org_owner" },
+    });
+    if (!orgOwnerRole) {
+      return fail(
+        res,
+        503,
+        "ROLE_NOT_SEEDED",
+        'The "org_owner" role is not seeded. Run the seed script before allowing registrations.',
+        { requestId: req.id || null }
+      );
+    }
+
     // 1. Create Tenant
     const tenantName = orgName || `${username}'s Org`;
     const tenantSlug = `${username}-org-${Date.now()}`;
@@ -240,31 +283,12 @@ exports.register = async (req, res) => {
       provider_id: username,
     });
 
-    // 4. Assign org_owner role
-    const orgOwnerRole = await require("../models").Role.findOne({
-      where: { name: "org_owner" },
+    // 4. Assign org_owner role (verified seeded above)
+    await require("../models").UserRole.create({
+      user_id: user.id,
+      role_id: orgOwnerRole.id,
+      org_id: tenantId,
     });
-    if (orgOwnerRole) {
-      await require("../models").UserRole.create({
-        user_id: user.id,
-        role_id: orgOwnerRole.id,
-        org_id: tenantId,
-      });
-    } else {
-      // Fallback: try super_admin or admin
-      const fallbackRole = await require("../models").Role.findOne({
-        where: { name: "super_admin" },
-      }) || await require("../models").Role.findOne({
-        where: { name: "admin" },
-      });
-      if (fallbackRole) {
-        await require("../models").UserRole.create({
-          user_id: user.id,
-          role_id: fallbackRole.id,
-          org_id: tenantId,
-        });
-      }
-    }
 
     // 5. Generate JWT
     const token = jwt.sign(
@@ -272,6 +296,9 @@ exports.register = async (req, res) => {
       env.JWT_SECRET,
       { expiresIn: "24h" }
     );
+
+    // ADR-5: dual issuance — set the JWT as an httpOnly cookie too.
+    setAuthTokenCookie(res, token);
 
     return ok(res, {
       token,
@@ -293,7 +320,10 @@ exports.register = async (req, res) => {
 exports.invite = async (req, res) => {
   try {
     const { email, roleName } = req.body;
-    const orgId = req.user?.orgId;
+    // orgId comes from the JWT claim (req.user.orgId, now populated by
+    // authMiddleware); req.tenantId is the tenant resolved by tenantMiddleware
+    // as a fallback. A user without an org cannot invite.
+    const orgId = req.user?.orgId || req.tenantId || null;
 
     if (!orgId) {
       return fail(res, 400, "BAD_REQUEST", "User does not belong to an organization", {
@@ -402,6 +432,9 @@ exports.acceptInvite = async (req, res) => {
       { expiresIn: "24h" }
     );
 
+    // ADR-5: dual issuance — also set the JWT as an httpOnly cookie.
+    setAuthTokenCookie(res, jwtToken);
+
     return ok(res, {
       token: jwtToken,
       user: {
@@ -440,6 +473,9 @@ exports.refresh = async (req, res) => {
       { expiresIn: "24h" }
     );
 
+    // ADR-5: dual issuance — refresh the httpOnly cookie as well.
+    setAuthTokenCookie(res, token);
+
     return ok(res, { token });
   } catch (error) {
     console.error("Refresh error:", error);
@@ -467,6 +503,10 @@ exports.googleCallback = async (req, res) => {
       env.JWT_SECRET,
       { expiresIn: "24h" }
     );
+
+    // ADR-5: dual issuance — set the cookie before the redirect so the
+    // browser carries the session even if the ?token= URL is stripped.
+    setAuthTokenCookie(res, token);
 
     // Redirect to frontend with token
     const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";

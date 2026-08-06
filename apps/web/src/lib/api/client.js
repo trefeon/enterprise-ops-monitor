@@ -13,40 +13,15 @@ const API_BASE_URL = normalizedBase
 
 export const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: false,
+  // ADR-5: the auth_token cookie (httpOnly, SameSite=Strict) must be sent with
+  // every request so the session survives browser refreshes; the in-memory
+  // Bearer header is attached by AuthProvider after login/register.
+  withCredentials: true,
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
-
-// Request interceptor attaches the stored bearer token for authenticated calls.
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('token') || sessionStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    // Auto-prefix orgId for non-auth, non-org routes when the user has an orgId
-    if (config.url && !config.url.startsWith('/auth/') && !config.url.startsWith('/orgs/')) {
-      try {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-          const user = JSON.parse(storedUser);
-          if (user?.orgId) {
-            config.url = `/orgs/${user.orgId}${config.url.startsWith('/') ? config.url : `/${config.url}`}`;
-          }
-        }
-      } catch {
-        // ignore parse errors
-      }
-    }
-
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 // Response interceptor for standard error handling
 apiClient.interceptors.response.use(

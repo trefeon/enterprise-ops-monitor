@@ -2,90 +2,51 @@ import React, { useEffect, useState } from 'react';
 import { apiClient, apiGet, apiPost } from '../lib/api/client';
 import { AuthContext } from './AuthContext';
 
-const TOKEN_KEY = 'token';
-const USER_KEY = 'user';
+// ADR-5: the JWT lives in memory ONLY — never in localStorage/sessionStorage
+// (XSS can steal a stored token; the httpOnly auth_token cookie is the
+// durable session). On boot, the session is restored from the cookie via
+// /api/auth/me, which mints a fresh in-memory token.
 
-const getAuthToken = () => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(TOKEN_KEY) || sessionStorage.getItem(TOKEN_KEY);
-};
-
-const getAuthUserRaw = () => {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem(USER_KEY) || sessionStorage.getItem(USER_KEY);
-};
-
-const clearAuthStorage = () => {
-  if (typeof window === 'undefined') return;
-  localStorage.removeItem(TOKEN_KEY);
-  localStorage.removeItem(USER_KEY);
-  sessionStorage.removeItem(TOKEN_KEY);
-  sessionStorage.removeItem(USER_KEY);
-};
-
-const persistAuth = ({ token, user, persist }) => {
-  if (typeof window === 'undefined') return;
-  const storage = persist ? localStorage : sessionStorage;
-  const other = persist ? sessionStorage : localStorage;
-
-  storage.setItem(TOKEN_KEY, token);
-  storage.setItem(USER_KEY, JSON.stringify(user));
-
-  other.removeItem(TOKEN_KEY);
-  other.removeItem(USER_KEY);
-};
-
-const getStoredUser = () => {
-  if (typeof window === 'undefined') return null;
-  const token = getAuthToken();
-  const storedUser = getAuthUserRaw();
-  if (!token || !storedUser) return null;
-  try {
-    return JSON.parse(storedUser);
-  } catch {
-    return null;
+const setAuthHeader = (token) => {
+  if (token) {
+    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete apiClient.defaults.headers.common['Authorization'];
   }
 };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => getStoredUser());
-  const [loading, setLoading] = useState(() => {
-    if (typeof window === 'undefined') return false;
-    return Boolean(getAuthToken());
-  });
+const normalizeUser = (rawUser) => ({
+  ...rawUser,
+  // Ensure these fields are present
+  effectivePerms: rawUser.effectivePerms || [],
+  roleNames: rawUser.roleNames || [rawUser.role],
+  scopeBranches: rawUser.scopeBranches || [],
+  isAllBranches: rawUser.isAllBranches ?? true,
+});
 
-  // Derive currentOrgId from the stored user object
-  const [currentOrgId, setCurrentOrgId] = useState(() => {
-    const stored = getStoredUser();
-    return stored?.orgId || null;
-  });
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(() => typeof window !== 'undefined');
+
+  // Derive currentOrgId from the in-memory user object
+  const [currentOrgId, setCurrentOrgId] = useState(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined;
-    const token = getAuthToken();
-    if (!token) {
-      setLoading(false);
-      return undefined;
-    }
-
-    apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
 
     let active = true;
-    const refreshUser = async () => {
+    const restoreSession = async () => {
       setLoading(true);
       try {
+        // No token in memory → the httpOnly auth_token cookie is the only
+        // credential. /me accepts the cookie via the API's cookie-to-Bearer
+        // bridge and mints a fresh token for subsequent requests.
         const res = await apiGet('/auth/me');
         if (res.ok && res.data?.user) {
-          // RBAC v2: Store full user object with effectivePerms, roleNames, scopeBranches
-          const userData = {
-            ...res.data.user,
-            // Ensure these fields are present
-            effectivePerms: res.data.user.effectivePerms || [],
-            roleNames: res.data.user.roleNames || [res.data.user.role],
-            scopeBranches: res.data.user.scopeBranches || [],
-            isAllBranches: res.data.user.isAllBranches ?? true,
-          };
-          localStorage.setItem('user', JSON.stringify(userData));
+          if (res.data.token) {
+            setAuthHeader(res.data.token);
+          }
+          const userData = normalizeUser(res.data.user);
           setUser(userData);
           if (userData.orgId) {
             setCurrentOrgId(userData.orgId);
@@ -95,8 +56,7 @@ export const AuthProvider = ({ children }) => {
         const isUnauthorized =
           error?.code === 'UNAUTHORIZED' || error?.code === 'INVALID_CREDENTIALS';
         if (isUnauthorized) {
-          clearAuthStorage();
-          delete apiClient.defaults.headers.common['Authorization'];
+          setAuthHeader(null);
           setUser(null);
         }
       } finally {
@@ -106,31 +66,22 @@ export const AuthProvider = ({ children }) => {
       }
     };
 
-    refreshUser();
+    restoreSession();
     return () => {
       active = false;
     };
   }, []);
 
-  const login = async (username, password, options = {}) => {
+  const login = async (username, password) => {
     try {
       const res = await apiPost('/auth/login', { username, password });
 
       if (res.ok) {
         const { token, user: nextUser } = res.data;
-        // RBAC v2: Enhance user data
-        const userData = {
-          ...nextUser,
-          effectivePerms: nextUser.effectivePerms || [],
-          roleNames: nextUser.roleNames || [nextUser.role],
-          scopeBranches: nextUser.scopeBranches || [],
-          isAllBranches: nextUser.isAllBranches ?? true,
-        };
-        persistAuth({ token, user: userData, persist: Boolean(options?.persist) });
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        setUser(userData);
-        if (userData.orgId) {
-          setCurrentOrgId(userData.orgId);
+        setAuthHeader(token);
+        setUser(normalizeUser(nextUser));
+        if (nextUser.orgId) {
+          setCurrentOrgId(nextUser.orgId);
         }
         return { success: true };
       }
@@ -147,18 +98,10 @@ export const AuthProvider = ({ children }) => {
 
       if (res.ok) {
         const { token, user: nextUser } = res.data;
-        const userData = {
-          ...nextUser,
-          effectivePerms: nextUser.effectivePerms || [],
-          roleNames: nextUser.roleNames || [nextUser.role],
-          scopeBranches: nextUser.scopeBranches || [],
-          isAllBranches: nextUser.isAllBranches ?? true,
-        };
-        persistAuth({ token, user: userData, persist: true });
-        apiClient.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-        setUser(userData);
-        if (userData.orgId) {
-          setCurrentOrgId(userData.orgId);
+        setAuthHeader(token);
+        setUser(normalizeUser(nextUser));
+        if (nextUser.orgId) {
+          setCurrentOrgId(nextUser.orgId);
         }
         return { success: true };
       }
@@ -170,8 +113,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
-    clearAuthStorage();
-    delete apiClient.defaults.headers.common['Authorization'];
+    setAuthHeader(null);
     setUser(null);
     setCurrentOrgId(null);
     setLoading(false);

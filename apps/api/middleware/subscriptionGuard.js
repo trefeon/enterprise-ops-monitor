@@ -12,13 +12,16 @@ const DISPLAY_PATHS = ["/display"];
  */
 module.exports = async function subscriptionGuard(req, res, next) {
   // Skip guard for display endpoints
-  if (DISPLAY_PATHS.some((p) => req.path.startsWith(p))) {
+  if (DISPLAY_PATHS.some((p) => (req.path || "").startsWith(p))) {
     return next();
   }
 
-  // Identify the org
-  const orgId =
-    req.params?.orgId || req.query?.orgId || req.body?.orgId || req.authz?.orgId;
+  // Identify the org from trusted request context only: the :orgId URL param
+  // (org-scoped paths), the tenant resolved by tenantMiddleware, or the JWT
+  // (req.user.orgId / req.authz). Query/body-supplied orgIds are
+  // attacker-controlled and MUST NOT be used to pick which subscription to
+  // check (guard bypass).
+  const orgId = req.params?.orgId || req.tenantId || req.user?.orgId || req.authz?.orgId;
 
   if (!orgId) {
     // No org context — let it pass (some routes don't need it)
@@ -48,9 +51,7 @@ module.exports = async function subscriptionGuard(req, res, next) {
 
     // Trial — check if still within trial period
     if (status === "trial") {
-      const trialEnd = new Date(
-        subscription.billing_period_end || subscription.created_at
-      );
+      const trialEnd = new Date(subscription.billing_period_end || subscription.created_at);
       const trialEndMs = trialEnd.getTime() + 14 * 24 * 60 * 60 * 1000;
 
       if (Date.now() <= trialEndMs) {
@@ -58,18 +59,30 @@ module.exports = async function subscriptionGuard(req, res, next) {
       }
 
       // Trial expired
-      return fail(res, 402, "PAYMENT_REQUIRED", "Trial period has expired. Please subscribe to continue.", {
-        subscriptionId: subscription.id,
-        status: "trial_expired",
-      });
+      return fail(
+        res,
+        402,
+        "PAYMENT_REQUIRED",
+        "Trial period has expired. Please subscribe to continue.",
+        {
+          subscriptionId: subscription.id,
+          status: "trial_expired",
+        }
+      );
     }
 
     // Cancelled or past_due
     if (status === "cancelled" || status === "past_due") {
-      return fail(res, 402, "PAYMENT_REQUIRED", "Subscription is inactive. Please renew to continue.", {
-        subscriptionId: subscription.id,
-        status,
-      });
+      return fail(
+        res,
+        402,
+        "PAYMENT_REQUIRED",
+        "Subscription is inactive. Please renew to continue.",
+        {
+          subscriptionId: subscription.id,
+          status,
+        }
+      );
     }
 
     return next();

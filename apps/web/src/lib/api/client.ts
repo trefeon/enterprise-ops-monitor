@@ -11,24 +11,15 @@ const API_BASE_URL = normalizedBase
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: false,
+  // ADR-5: the auth_token cookie (httpOnly, SameSite=Strict) must be sent with
+  // every request so the session survives browser refreshes; the in-memory
+  // Bearer header is attached by AuthProvider after login/register.
+  withCredentials: true,
   timeout: 30000,
   headers: {
     "Content-Type": "application/json",
   },
 });
-
-// Request interceptor attaches the stored bearer token for authenticated calls.
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
 
 interface CustomError {
   ok: false;

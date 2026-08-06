@@ -25,7 +25,9 @@ async function ensureDefaultTenant() {
     );
     defaultTenantId = created?.[0]?.id;
     if (defaultTenantId) {
-      logger.info(`[ensureDefaultTenant] Created default tenant "${tenantName}" (${defaultTenantId})`);
+      logger.info(
+        `[ensureDefaultTenant] Created default tenant "${tenantName}" (${defaultTenantId})`
+      );
     }
   } else {
     defaultTenantId = tenantRows[0].id;
@@ -60,7 +62,9 @@ async function ensureDefaultTenant() {
         { bind: [defaultTenantId] }
       );
       if (result?.rowCount && result.rowCount > 0) {
-        logger.info(`[ensureDefaultTenant] Backfilled ${result.rowCount} rows in ${table} with org_id`);
+        logger.info(
+          `[ensureDefaultTenant] Backfilled ${result.rowCount} rows in ${table} with org_id`
+        );
       }
     } catch (err) {
       const msg = String(err?.message || "").toLowerCase();

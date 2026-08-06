@@ -88,9 +88,6 @@ class ManualBillingProvider {
     const invoiceNumber = generateInvoiceNumber();
     const dueAt = new Date(Date.now() + TRIAL_DAYS * 24 * 60 * 60 * 1000);
 
-    // Free screens first screen is free
-    const billableScreens = Math.max(0, screenCount - (planConfig.freeScreensPerOrg || 0));
-
     await db.sequelize.query(
       `INSERT INTO billing_invoices (subscription_id, amount, status, due_at, invoice_number, payment_method)
        VALUES (:subscriptionId, :amount, 'pending', :dueAt, :invoiceNumber, 'qris_manual')`,
@@ -263,10 +260,9 @@ class ManualBillingProvider {
 
     if (setClauses.length > 0) {
       setClauses.push("updated_at = NOW()");
-      await db.sequelize.query(
-        `UPDATE subscriptions SET ${setClauses.join(", ")} WHERE id = :id`,
-        { replacements: params }
-      );
+      await db.sequelize.query(`UPDATE subscriptions SET ${setClauses.join(", ")} WHERE id = :id`, {
+        replacements: params,
+      });
     }
 
     return { updated: true };
@@ -294,8 +290,7 @@ class ManualBillingProvider {
 
     const sub = existing[0];
     const finalAmount =
-      amount ||
-      this.calculateAmount(sub.plan, sub.branch_count, sub.screen_count);
+      amount || this.calculateAmount(sub.plan, sub.branch_count, sub.screen_count);
 
     const invoiceNumber = generateInvoiceNumber();
     const dueAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
@@ -333,10 +328,7 @@ class ManualBillingProvider {
     if (!planConfig) return 0;
 
     const branchAmount = planConfig.monthlyPerBranch * branchCount;
-    const billableScreens = Math.max(
-      0,
-      screenCount - (planConfig.freeScreensPerOrg || 0)
-    );
+    const billableScreens = Math.max(0, screenCount - (planConfig.freeScreensPerOrg || 0));
     const screenAmount = planConfig.screenAddonPerScreen * billableScreens;
 
     return branchAmount + screenAmount;

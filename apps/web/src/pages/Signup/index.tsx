@@ -58,13 +58,10 @@ export default function Signup() {
       const data = res as any;
 
       if (data.ok) {
-        const { token, user } = data.data || {};
+        const { token } = data.data || {};
         if (token) {
-          localStorage.setItem("token", token);
-          if (user) {
-            localStorage.setItem("user", JSON.stringify(user));
-          }
-          // Set auth header for subsequent requests
+          // ADR-5: token stays in memory only — the durable session is the
+          // httpOnly auth_token cookie set by the API.
           apiClient.defaults.headers.common["Authorization"] = `Bearer ${token}`;
         }
         toast.success("Account created", {

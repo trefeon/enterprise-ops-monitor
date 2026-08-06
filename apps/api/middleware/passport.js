@@ -137,9 +137,31 @@ passport.use(
 );
 
 // ───────────────────────────── Google OAuth 2.0 Strategy ─────────────────────────────
+// Registered ONLY when Google credentials are configured. Without creds the
+// strategy is never registered, so passport.authenticate("google") fails
+// gracefully via the GOOGLE_NOT_CONFIGURED guard in authRoutes.js instead of
+// a 500 "Unknown authentication strategy".
 
 if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
   const GoogleStrategy = require("passport-google-oauth20").Strategy;
+
+  // Fail-closed auto-register allowlist (Slice 6): auto-registration is only
+  // permitted for emails whose domain is listed in GOOGLE_ALLOWED_DOMAINS
+  // (comma-separated). If GOOGLE_AUTO_REGISTER is enabled but the allowlist
+  // is unset/empty, auto-registration stays disabled — an unseeded or
+  // misconfigured allowlist never opens the door to arbitrary sign-ups.
+  const allowedDomains = String(env.GOOGLE_ALLOWED_DOMAINS || "")
+    .split(",")
+    .map((d) => d.trim().toLowerCase())
+    .filter(Boolean);
+  const autoRegisterEnabled = Boolean(env.GOOGLE_AUTO_REGISTER);
+  if (autoRegisterEnabled && allowedDomains.length === 0) {
+    // eslint-disable-next-line no-console
+    console.warn(
+      "[passport] GOOGLE_AUTO_REGISTER is enabled but GOOGLE_ALLOWED_DOMAINS is not set — " +
+        "Google auto-registration is DISABLED (fail closed)."
+    );
+  }
 
   passport.use(
     new GoogleStrategy(
@@ -148,9 +170,19 @@ if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
         clientSecret: env.GOOGLE_CLIENT_SECRET,
         callbackURL: env.GOOGLE_CALLBACK_URL || "/api/auth/google/callback",
         passReqToCallback: true,
-        state: true, // CSRF protection via OAuth state parameter
+        // state:false — the OAuth `state` parameter would need server-side
+        // storage (express-session) to validate, and this app is deliberately
+        // session-less (ARCHITECTURE.md). CSRF trade-off: the issued
+        // auth_token cookie is SameSite=Strict + httpOnly, and login CSRF
+        // impact here is limited to linking a Google identity the user
+        // controls themselves. Re-enable with a stateless HMAC-signed state
+        // if cross-site flows are added later.
+        state: false,
       },
-      async (_accessToken, _refreshToken, profile, done) => {
+      // NOTE: passReqToCallback shifts the argument order — (req, accessToken,
+      // refreshToken, profile, done). The pre-fix signature (no req) silently
+      // misaligned profile/done and made the whole Google flow throw.
+      async (req, accessToken, refreshToken, profile, done) => {
         try {
           // Look for existing user_identity
           const identity = await db.UserIdentity?.findOne({
@@ -169,9 +201,19 @@ if (env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET) {
             });
           }
 
-          // Auto-register if enabled
-          if (env.GOOGLE_AUTO_REGISTER) {
+          // Auto-register if enabled AND the email domain is allowlisted.
+          if (autoRegisterEnabled) {
             const email = profile.emails?.[0]?.value;
+            if (!email) {
+              // No email to verify the domain against — fail closed.
+              return done(null, false, { message: "no_email_in_profile" });
+            }
+            const domain = email.split("@")[1]?.toLowerCase() || "";
+            if (!allowedDomains.includes(domain)) {
+              // Domain not allowlisted — never create the user.
+              return done(null, false, { message: "domain_not_allowed" });
+            }
+
             const username = email ? email.split("@")[0] : `google_${profile.id}`;
             const [user, created] = await db.User.findOrCreate({
               where: { username },
@@ -217,7 +259,12 @@ passport.serializeUser((user, done) => done(null, user.id));
 passport.deserializeUser(async (id, done) => {
   try {
     if (id === "env_admin") {
-      return done(null, { id: "env_admin", username: "env_admin", role: "super_admin", orgId: null });
+      return done(null, {
+        id: "env_admin",
+        username: "env_admin",
+        role: "super_admin",
+        orgId: null,
+      });
     }
     const user = await db.User.findByPk(id, { attributes: ["id", "username", "role", "org_id"] });
     if (!user) return done(null, false);

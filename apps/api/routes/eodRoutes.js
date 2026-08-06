@@ -7,9 +7,15 @@ const { requirePermission, requireAllBranchScope } = require("../middleware/rbac
 const validate = require("../middleware/validate");
 const asyncHandler = require("../utils/asyncHandler");
 
-// --- Public routes (no auth) ---
-// GET /api/eod/live - TV dashboard EOD failure ranking (public, read-only)
-router.get("/live", asyncHandler(eodController.getLiveEodRanking));
+// GET /api/eod/live - TV dashboard EOD failure ranking.
+// ADR-4: no longer public — authenticated + EOD_VIEW, tenant-scoped via
+// tenantMiddleware (mountOrgRoute in app.js).
+router.get(
+  "/live",
+  authMiddleware,
+  requirePermission("EOD_VIEW"),
+  asyncHandler(eodController.getLiveEodRanking)
+);
 
 const dateStr = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "date must be YYYY-MM-DD");
 

@@ -19,10 +19,10 @@ async function getScreenPlaylist(screenToken) {
   if (!screen) return null;
 
   // Resolve org via raw query (tenants table is not a Sequelize model)
-  const org = await db.sequelize.query(
-    `SELECT id, name FROM tenants WHERE id = :orgId LIMIT 1`,
-    { replacements: { orgId: screen.org_id }, type: db.Sequelize.QueryTypes.SELECT }
-  );
+  const org = await db.sequelize.query(`SELECT id, name FROM tenants WHERE id = :orgId LIMIT 1`, {
+    replacements: { orgId: screen.org_id },
+    type: db.Sequelize.QueryTypes.SELECT,
+  });
 
   if (!org || org.length === 0) return null;
 
