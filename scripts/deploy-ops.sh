@@ -20,6 +20,7 @@ strategy="git"
 dry_run=0
 preserve_remote_env=1
 bootstrap=0
+skip_checks=0
 ssh_key=""
 ssh_port="22"
 target_sha=""
@@ -37,6 +38,7 @@ Options:
   --ref <branch|sha>          Origin branch or commit SHA to deploy (default: master)
   --strategy <git|rsync>      Git deploy by default; rsync is explicit fallback only
   --dry-run                   Run checks only; no checkout, upload, restart, or volume change
+  --skip-checks               Skip local pnpm check:all (faster repeat deploys; CI should run checks)
   --preserve-remote-env       Preserve remote .env (default; accepted for explicitness)
   --bootstrap                 Allow rsync strategy to clone missing remote repo first
   --key <file>                SSH private key
@@ -99,6 +101,10 @@ parse_args() {
         ;;
       --dry-run)
         dry_run=1
+        shift
+        ;;
+      --skip-checks)
+        skip_checks=1
         shift
         ;;
       --preserve-remote-env)
@@ -209,8 +215,12 @@ run_local_preflight() {
 
   require_clean_local_worktree
 
-  info "Running pnpm check:all before deploy..."
-  pnpm check:all
+  if [ "$skip_checks" -eq 1 ]; then
+    info "Skipping pnpm check:all (--skip-checks)"
+  else
+    info "Running pnpm check:all before deploy..."
+    pnpm check:all
+  fi
 
   target_sha=$(resolve_target_sha "$deploy_ref")
   require_sha_on_origin "$target_sha"
@@ -360,6 +370,13 @@ rollback_sha="$3"
 
 cd "$remote_dir"
 
+# Speed up image layer export: zstd compresses far faster than gzip on slow
+# CPUs and reduces bytes written to disk. BuildKit honors these env vars for
+# the default exporter (docker buildx bake / compose --build).
+export BUILDKIT_COMPRESSION=zstd
+export BUILDKIT_COMPRESSION_LEVEL=3
+export DOCKER_BUILDKIT=1
+
 wait_for_container() {
   local name="$1"
   local attempts="${2:-60}"
@@ -453,6 +470,7 @@ main() {
   echo "ref=$deploy_ref"
   echo "strategy=$strategy"
   echo "dry_run=$dry_run"
+  echo "skip_checks=$skip_checks"
 
   run_local_preflight
   acquire_remote_lock

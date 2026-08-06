@@ -2,11 +2,16 @@ FROM node:22-alpine AS build
 
 WORKDIR /app
 
-RUN corepack enable
+RUN corepack enable \
+ && corepack prepare pnpm@10.33.0 --activate
 
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml tsconfig.base.json ./
 COPY apps/web/package.json ./apps/web/package.json
-RUN pnpm install --frozen-lockfile --filter web
+
+# BuildKit cache mount keeps the pnpm store between builds.
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store \
+    --mount=type=cache,target=/root/.cache/node/corepack \
+    pnpm install --frozen-lockfile --filter web
 
 COPY apps/web ./apps/web
 
