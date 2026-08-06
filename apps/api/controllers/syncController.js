@@ -757,7 +757,9 @@ async function getSyncHistorySummary(req, res, next) {
  */
 async function refreshSync(req, res, next) {
   try {
-    invalidateSyncCache();
+    // Invalidate the requesting org's sync cache (legacy key when no org).
+    const orgId = req.user?.orgId || req.tenantId || null;
+    invalidateSyncCache(orgId);
 
     const run = await pollAndPersistSync();
     const snapshot = await loadCachedSyncSnapshotFromDb();

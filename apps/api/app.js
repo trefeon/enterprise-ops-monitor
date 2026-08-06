@@ -17,6 +17,7 @@ const requestId = require("./middleware/requestId");
 const notFound = require("./middleware/notFound");
 const errorHandler = require("./middleware/errorHandler");
 const logger = require("./utils/logger");
+const passport = require("./middleware/passport");
 
 const app = express();
 
@@ -88,6 +89,10 @@ app.use(
     legacyHeaders: false,
   })
 );
+
+// Passport (stateless strategies: JWT/local/Google OAuth). All authenticate calls use
+// session: false, so initialize() alone is sufficient — no session middleware required.
+app.use(passport.initialize());
 
 // Routes that don't require JSON parsing can be mounted before express.json().
 // This prevents strict JSON parsing errors for endpoints like POST /api/sync/refresh

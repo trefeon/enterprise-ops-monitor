@@ -334,7 +334,12 @@ exports.getDashboardSummary = async (req, res) => {
 exports.syncDashboard = async (req, res) => {
   try {
     const allowedBranches = getAllowedBranches(req.authz);
-    const sync = await syncDataToDb({ includeEmployees: true, reason: "manual_dashboard_sync" });
+    const orgId = req.user?.orgId || req.tenantId || null;
+    const sync = await syncDataToDb({
+      includeEmployees: true,
+      reason: "manual_dashboard_sync",
+      orgId,
+    });
     const { _sourceData, ...summary } = await buildDashboardSummary({
       bypassCache: false,
       allowedBranches,

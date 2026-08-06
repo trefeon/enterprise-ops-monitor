@@ -24,6 +24,10 @@ The app has **two parallel mount paths** via `orgRouteMapper`:
 
 **Severity: HIGH** — Data on Sequelize model tables via legacy `/api/` path has no tenant filtering.
 
+**FIXED 2026-08-06** — `routes/orgRouteMapper.js` now defaults `skipTenantMwOnLegacy: false`, so the
+legacy `/api/*` paths also run `tenantMiddleware` (only display/media surface routes opt out
+explicitly). Sequelize model tables additionally gained strict RLS — see CRIT-1 below.
+
 ### 1.2 Session/Tenant Mismatch
 
 | Attack | Defense | Verdict |
@@ -31,6 +35,11 @@ The app has **two parallel mount paths** via `orgRouteMapper`:
 | Org A's JWT used to call `/api/orgs/:orgBId/stores` | `tenantMiddleware` sets `SET LOCAL app.tenant_id = req.params.orgId` from URL param. The tenant filter is URL-sourced, not JWT-sourced. | **FINDING TENANT-1: The tenant ID from the URL param is used directly without verifying it matches the user's JWT orgId.** A user with org A's JWT could manually change `:orgId` in the URL to org B's ID and the middleware would set org B's tenant context. |
 | Org A's JWT used to call `/api/orgs/:orgBId/eod` | Same issue. The route sets tenant context from `req.params.orgId`, not from `req.user.orgId` | **Same finding.** |
 | RLS protection | RLS blocks access to org B's data... BUT RLS is NOT enabled on Sequelize model tables (see 1.4) | **HIGH** |
+
+**FIXED 2026-08-06** — `middleware/tenantMiddleware.js` returns `403 TENANT_MISMATCH` whenever
+`req.params.orgId` exists and differs from `req.user.orgId` (JWT claim). DB-user logins now carry
+`orgId` in the JWT (`controllers/authController.js` `login`), and `middleware/authMiddleware.js`
+maps the claim to `req.user.orgId`, so the mismatch guard is live.
 
 ### 1.3 Tenant Resolution in Middleware
 
@@ -50,6 +59,13 @@ if (req.params?.orgId && req.user?.orgId && req.params.orgId !== req.user.orgId)
   return res.status(403).json({ error: 'Tenant mismatch' });
 }
 ```
+
+**FIXED 2026-08-06** — `middleware/tenantMiddleware.js` implements the check above (403
+`TENANT_MISMATCH`) and validates the tenant id as a UUID before use. The tenant context is applied
+via parameterized `SELECT set_config('app.tenant_id', $1, false)` (ADR-1, session-scoped) — the old
+`SET LOCAL app.tenant_id = '${tenantId}'` interpolation that allowed multi-statement SQL injection
+is gone (no raw string concatenation remains). Context is reset on `res.on('finish')` and at request
+start when no tenant applies; `app.is_super_admin = 'true'` is set for `env_admin`.
 
 ### 1.4 RLS Coverage Gap — Sequelize Model Tables
 
@@ -76,6 +92,20 @@ RLS migration `20260707_002_enable_rls.js` covers **8 boot-time tables only**:
 
 **Severity: CRITICAL** — All Sequelize model tables (12+ tables) and new Live Menu Display tables (5 tables) and billing tables (2 tables) have no RLS protection. Data on these tables is accessible via legacy `/api/` path with only coarse auth checks.
 
+**FIXED 2026-08-06** — Two migrations, run in filename order by `migrations/run.js`:
+- `migrations/20260806_001_backfill_org_id.js` — backfills NULL `org_id` rows on every table in the
+  list above to the default tenant (`SELECT id FROM tenants ORDER BY created_at LIMIT 1`), one
+  transaction, per-table row counts logged; tables without an `org_id` column are skipped
+  (screen_playlists, playlist_items, billing_invoices).
+- `migrations/20260806_002_strict_tenant_policies.js` — drops the old `org_id IS NULL OR …`
+  permissive policy and installs `tenant_isolation_policy` (`org_id IS NOT NULL AND org_id::text =
+  current_setting('app.tenant_id', TRUE)`, WITH CHECK same) plus `super_admin_policy`
+  (`current_setting('app.is_super_admin', TRUE) = 'true'`), keeping `FORCE ROW LEVEL SECURITY`
+  (ADR-2).
+
+The RLS context comes from the session-scoped `set_config` (ADR-1, see §1.3), and the legacy path
+now runs `tenantMiddleware` (ORG-1), so RLS applies end-to-end.
+
 ---
 
 ## 2. Auth Bypass Checks
@@ -88,6 +118,13 @@ RLS migration `20260707_002_enable_rls.js` covers **8 boot-time tables only**:
 | Account linking: can user link multiple Google accounts? | Only one identity per `(provider, provider_id)` pair. Multiple Google accounts with different emails → different `user_identities` rows. No protection against one person having multiple identities. |
 | OAuth callback without state/CSRF | **Unverified** — the Google strategy does not show `state` parameter in the current config. CSRF protection on OAuth callback is missing. |
 
+**FIXED 2026-08-06 (Google auto-register allowlist)** — `middleware/passport.js` gates
+auto-account-creation behind `GOOGLE_ALLOWED_DOMAINS` (comma-separated env, added to
+`config/env.js`): a Google login only auto-registers when the email domain is allowlisted; when
+`GOOGLE_AUTO_REGISTER` is enabled but the allowlist is unset/empty, auto-registration is DISABLED
+(fail closed); a disallowed domain is redirected with `error=domain_not_allowed`. (The OAuth
+`state` parameter itself remains deliberately off — see AUTH-1 below.)
+
 **Finding AUTH-1: No OAuth state parameter.** The Google OAuth strategy does not pass a state parameter. This makes the callback vulnerable to CSRF-based account linking attacks.
 
 ### 2.2 Invite Link Security
@@ -95,6 +132,11 @@ RLS migration `20260707_002_enable_rls.js` covers **8 boot-time tables only**:
 Invite-by-email endpoint was **scheduled but appears not yet implemented** in authRoutes.js / authController.js. The invite flow was documented in ARCHITECTURE.md but not created in Phase 3.
 
 **Finding AUTH-2: Invite endpoint not implemented.** `POST /api/auth/invite` and `POST /api/auth/accept-invite` are missing from the codebase. The architecture spec exists but the routes were never wired.
+
+→ **FIXED 2026-08-06** — `POST /api/auth/invite` and `POST /api/auth/accept-invite` are implemented
+(`controllers/authController.js`, wired in `routes/authRoutes.js`). `orgId` comes from the JWT claim
+(`req.user.orgId`), the invited user is created under the inviter's org with a `user_roles` row
+carrying `org_id`, and the NULL fallback was removed.
 
 ### 2.3 JWT Validation
 
@@ -119,6 +161,12 @@ isAllBranches: true,
 
 **Finding AUTH-4: env_admin has null orgId and all-branch access.** When this user accesses an org-scoped route via `/api/orgs/:orgId/`, the tenantMiddleware prioritizes `req.params.orgId` which becomes the active tenant context. The env_admin can access ANY org's data by changing the `:orgId` in the URL. This is by design (super admin), but the RLS gap on Sequelize tables means the env_admin has unrestricted read access to all orgs' data via the legacy path.
 
+→ **FIXED 2026-08-06 (super-admin access preserved by policy, not by NULL escape)** —
+`tenantMiddleware` sets `app.is_super_admin = 'true'` for `env_admin`; the `super_admin_policy`
+(20260806_002) keeps cross-tenant admin access working under strict RLS. Regular users get no
+super-admin fallback: `register` returns `503 ROLE_NOT_SEEDED` instead of escalating when the
+`org_owner` role is not seeded.
+
 ---
 
 ## 3. Leftover Single-Tenant Assumptions
@@ -142,6 +190,11 @@ const isAllBranches = isSuperAdmin || isOrgAdmin;
 
 **Severity: HIGH** — Every org_member with no explicit branch scopes currently gets unrestricted branch access within their org.
 
+→ **FIXED (verified 2026-08-06)** — `services/authzService.js` now computes
+`const isAllBranches = isOrgAdmin;` (the `scopeBranches.length === 0` escape is removed), and
+`middleware/rbac.js` branch-scope checks fail closed by default (403 "Branch scope could not be
+resolved" instead of `next()`).
+
 ### 3.2 Hardcoded Branch Values
 
 | File | Issue | Status |
@@ -154,6 +207,15 @@ const isAllBranches = isSuperAdmin || isOrgAdmin;
 
 **Severity: MEDIUM** — Works if RLS is fully deployed, but is fragile. A bug in RLS config or an RLS-not-enabled table would leak data.
 
+→ **PARTIALLY FIXED 2026-08-06** — `services/dataClient.js` now scopes all cache keys per org
+(`data:{orgId}:{prefix}`; `data:legacy:{prefix}` when no org is active) and exposes `setOrgId()`
+(wired in `middleware/authMiddleware.js` after JWT verification, alongside `applyTenantContext`:
+each authenticated request loads the JWT org's branches and activates the org-scoped cache keys;
+`tenantMiddleware` itself only writes the RLS context, it does not call `setOrgId`), so org A can
+never read org B's cached branches/EOD data. `dataDb.js` service queries remain unscoped and still
+rely on RLS; the full request-scoped refactor of the global branch cache remains **open /
+follow-up** (PRD N2, §9).
+
 ### 3.3 Public Endpoint `GET /api/eod/live`
 
 From Phase 0 audit: `getLiveEodRanking()` is a **public (no auth) endpoint** that does a full-table join on `data_store_eod_history` and `data_stores`.
@@ -165,6 +227,10 @@ From Phase 0 audit: `getLiveEodRanking()` is a **public (no auth) endpoint** tha
 - **BUT:** no tenantMiddleware runs for this endpoint on the legacy path → RLS has no context → returns **empty result set**
 
 **Finding ST-3: Public EOD ranking endpoint.** In single-tenant mode returning data. In multi-tenant mode: RLS blocks it (returns empty). The legacy `/api/eod/live` path is silently broken unless migrated to org-scoped routing.
+
+→ **FIXED 2026-08-06** — `routes/eodRoutes.js` `GET /live` now requires `authMiddleware` +
+`requirePermission("EOD_VIEW")` (no longer public); the controller stays org-scoped via
+`tenantMiddleware`, which also runs on the legacy path (ORG-1).
 
 ---
 
@@ -185,6 +251,11 @@ origin(origin, cb) {
 
 **Severity: MEDIUM** — mitigated by the fact that JWT is in Authorization header (not cookies), so browser CORS + credentials mismatch doesn't leak tokens directly. Still, any reflecting CORS with credentials is a CSRF risk if token is ever stored in a cookie.
 
+→ **FIXED (verified 2026-08-06)** — `app.js` now returns `cb(null, false)` (deny) when
+`CORS_ORIGINS` is unset instead of reflecting the request origin. The ADR-5 cookie hardening removes
+the residual CSRF concern: the `auth_token` cookie is `httpOnly`, `SameSite=Strict` (`secure` in
+production), and the frontend no longer persists the JWT in `localStorage`.
+
 ### 4.2 Rate Limiting
 
 ```js
@@ -198,6 +269,9 @@ loginLimiter = rateLimit({ windowMs: 15*60*1000, max: 100 })
 **Finding SEC-2: Login rate limit is relaxed.** 100 attempts per 15 minutes (1 attempt per 9 seconds) is generous for a real production system. Standard recommendation: 5-10 attempts per 15 minutes. Current rate is intended for demo purposes.
 
 **Finding SEC-3: No rate limiting on signup/register endpoint.** The signup flow (`POST /api/auth/register`) was documented in the PRD but the endpoint check shows it may not have individual rate limiting. If present, 100 req/15min from global limit applies.
+
+→ **FIXED 2026-08-06** — `routes/authRoutes.js` mounts a dedicated `registerLimiter`
+(10 registrations per IP per 15 minutes) on `POST /api/auth/register`, mirroring `loginLimiter`.
 
 ### 4.3 Security Headers
 
@@ -263,6 +337,14 @@ The playlist items return `mediaService.getUrl(asset.storage_path)` which resolv
 
 **Finding DISPLAY-2: Media files are publicly accessible.** Anyone with a direct URL to `/api/media/:orgId/:filename` can access any uploaded media file. The URL contains the orgId, but there's no auth check.
 
+→ **FIXED 2026-08-06 (endpoint stays public by design, but hardened — ADR-4)** —
+`routes/mediaRoutes.js` validates `orgId` as a UUID and `filename` as a bare basename (no `/`, `\`,
+`..`) with an allowlisted extension (`jpg|jpeg|png|webp|mp4|webm`), returning 400 before any `fs`
+access; `services/mediaService.js` `resolvePath` resolves and verifies containment under
+`MEDIA_ROOT`, returning `null` for any path that escapes the root — traversal variants
+(`..%2F`, backslashes, absolute paths) get 400/404, never a stream. Uploads derive `orgId` from
+`req.tenantId`/`req.user.orgId` only (ADR-3), and `uploaded_by` is set NULL for `env_admin` (FK fix).
+
 **Severity: LOW** — Media assets are menu slides and promotional videos. They're intended for public display. Not sensitive data. If user uploads private content, it would be exposed.
 
 ### 5.4 Display Client Resilience
@@ -309,15 +391,15 @@ function validateUpload(mimetype, size) {
 
 | # | Finding | File | Fix |
 |---|---------|------|-----|
-| **CRIT-1** | **RLS not enabled on 17 Sequelize model tables + Live Menu + billing tables** | `migrations/20260707_002_enable_rls.js` | Extend RLS migration to cover: Stores, EODLogs, Employees, SyncLogs, SyncSummaries, SyncAlertStates, BackupLogs, SystemLogs, agent_monitoring, Users, Roles, RolePermissions, UserRoles, UserPermissionOverrides, UserBranchScopes, screens, playlists, playlist_items, media_assets, screen_playlists, subscriptions, billing_invoices |
-| **CRIT-2** | **Tenant ID from URL not validated against JWT orgId** | `middleware/tenantMiddleware.js` | Add check: `if (req.params.orgId !== req.user.orgId) return 403` |
+| **CRIT-1** | **RLS not enabled on 17 Sequelize model tables + Live Menu + billing tables** | `migrations/20260707_002_enable_rls.js` | Extend RLS migration to cover: Stores, EODLogs, Employees, SyncLogs, SyncSummaries, SyncAlertStates, BackupLogs, SystemLogs, agent_monitoring, Users, Roles, RolePermissions, UserRoles, UserPermissionOverrides, UserBranchScopes, screens, playlists, playlist_items, media_assets, screen_playlists, subscriptions, billing_invoices **FIXED 2026-08-06** — backfill `20260806_001_backfill_org_id.js` + strict policies `20260806_002_strict_tenant_policies.js` (ADR-2); context via session-scoped `set_config` (ADR-1). |
+| **CRIT-2** | **Tenant ID from URL not validated against JWT orgId** | `middleware/tenantMiddleware.js` | Add check: `if (req.params.orgId !== req.user.orgId) return 403` **FIXED 2026-08-06** — 403 `TENANT_MISMATCH`; tenantId validated as UUID; parameterized `set_config` (SQLi closed). |
 
 ### High
 
 | # | Finding | File | Fix |
 |---|---------|------|-----|
-| **HIGH-1** | **`isAllBranches` fix incomplete — `scopeBranches.length === 0` still grants all-branch access** | `services/authzService.js:87` | Remove `\|\| scopeBranches.length === 0` condition. Only `isSuperAdmin` or `isOrgAdmin` should get `isAllBranches`. |
-| **HIGH-2** | **Legacy `/api/` path skips tenant middleware. All data from Sequelize model tables exposed to any authenticated user.** | `routes/orgRouteMapper.js:28` | Remove `skipTenantMwOnLegacy` option. Apply tenant middleware to legacy path too, or deprecate the legacy path. |
+| **HIGH-1** | **`isAllBranches` fix incomplete — `scopeBranches.length === 0` still grants all-branch access** | `services/authzService.js:87` | Remove `\|\| scopeBranches.length === 0` condition. Only `isSuperAdmin` or `isOrgAdmin` should get `isAllBranches`. **FIXED (verified 2026-08-06)** — `authzService.js` `isAllBranches = isOrgAdmin` only; `rbac.js` branch scope fail-closed (403). |
+| **HIGH-2** | **Legacy `/api/` path skips tenant middleware. All data from Sequelize model tables exposed to any authenticated user.** | `routes/orgRouteMapper.js:28` | Remove `skipTenantMwOnLegacy` option. Apply tenant middleware to legacy path too, or deprecate the legacy path. **FIXED 2026-08-06** — `orgRouteMapper` `skipTenantMwOnLegacy` defaults `false`; legacy path runs tenant middleware; model tables now RLS-protected. |
 
 ### Medium
 
@@ -325,9 +407,9 @@ function validateUpload(mimetype, size) {
 |---|---------|------|-----|
 | **MED-1** | **No OAuth state parameter in Google OAuth flow** | `middleware/passport.js:149` | Add `state: true` to GoogleStrategy config. Passport supports state. |
 | **MED-2** | **CORS reflects origin when CORS_ORIGINS not set** | `app.js:61` | Default to deny when no origins configured, or at minimum add `Access-Control-Allow-Origin: https://app.branchops.com` |
-| **MED-3** | **Public EOD ranking endpoint (`/api/eod/live`) silently returns empty in multi-tenant mode** | `controllers/eodController.js:33-57` | Either org-scope this endpoint or remove it for SaaS mode |
-| **MED-4** | **dataClient.js and dataDb.js still use hardcoded single-org BRANCHES array** | `services/dataClient.js`, `services/dataDb.js` | Refactor to pull dynamic branches from org-scoped query |
-| **MED-5** | **No signup/register endpoint exists in authRoutes** | `routes/authRoutes.js` | The signup/register endpoint from PRD/ARCHITECTURE.md was not implemented in Phase 3 |
+| **MED-3** | **Public EOD ranking endpoint (`/api/eod/live`) silently returns empty in multi-tenant mode** | `controllers/eodController.js:33-57` | Either org-scope this endpoint or remove it for SaaS mode **FIXED 2026-08-06** — `/live` requires auth + `EOD_VIEW`; org-scoped via tenant middleware. |
+| **MED-4** | **dataClient.js and dataDb.js still use hardcoded single-org BRANCHES array** | `services/dataClient.js`, `services/dataDb.js` | Refactor to pull dynamic branches from org-scoped query **PARTIALLY FIXED 2026-08-06** — org-scoped cache keys + `setOrgId`; request-scoped refactor open / follow-up (N2). |
+| **MED-5** | **No signup/register endpoint exists in authRoutes** | `routes/authRoutes.js` | The signup/register endpoint from PRD/ARCHITECTURE.md was not implemented in Phase 3 **FIXED 2026-08-06** — register endpoint implemented + `registerLimiter` (10/15min/IP). |
 
 ### Low
 
@@ -362,6 +444,51 @@ The following fixes were identified and should be applied before Phase 5 deploym
 2. **Tenant validation in tenantMiddleware.js** — Add `req.params.orgId` vs `req.user.orgId` check
 3. **RLS migration extension** — Apply RLS to all Sequelize model tables
 4. **Deprecate legacy `/api/` path** or add tenant middleware to it
+
+All four were applied in the 2026-08-06 remediation (slices 1-6 of `docs/prd.md`); per-finding
+status in §9 below.
+
+---
+
+## 9. Remediation Status (2026-08-06)
+
+Remediation of the Phase 4 findings plus the 2026-08-06 full-project re-review (PRD `docs/prd.md`,
+slices 1-6). Each fix ships with unit tests under `apps/api/tests/` (media_traversal,
+media_service, media_upload_org, authMiddleware_orgid, authMiddleware_tenantcontext,
+auth_login_orgid, tenantMiddleware, tenantContext, usersController_org_scope, eod_live_auth,
+rbac_branch_scope, auth_hardening, billing_guard).
+
+| Finding | Status | References |
+|---------|--------|------------|
+| DISPLAY-2 — media traversal + public media hardening | **FIXED** | `routes/mediaRoutes.js` (UUID orgId, basename + allowlist, 400 before fs), `services/mediaService.js` (`resolvePath` root containment) |
+| SQL injection via `orgId` (tenantMiddleware) | **FIXED** | `middleware/tenantMiddleware.js` — parameterized `set_config('app.tenant_id', $1, false)` + UUID validation (ADR-1) |
+| Tenant isolation end-to-end (JWT orgId → middleware → RLS) | **FIXED** | JWT orgId claim (`authController.login`), `authMiddleware` → `req.user.orgId`; strict policies + super_admin policy (`20260806_002`), backfill (`20260806_001`); legacy path tenant middleware (`orgRouteMapper`) |
+| Tenant mismatch / URL-sourced tenant (CRIT-2, TENANT-1) | **FIXED** | `tenantMiddleware` 403 `TENANT_MISMATCH` |
+| RLS coverage gap (CRIT-1) | **FIXED** | `migrations/20260806_001_backfill_org_id.js`, `migrations/20260806_002_strict_tenant_policies.js` |
+| Users list/detail IDOR | **FIXED** | `controllers/usersController.js` — org_id filter from `req.tenantId`/`req.user.orgId` (env_admin excepted via super-admin policy) |
+| Public `GET /api/eod/live` (ST-3, MED-3) | **FIXED** | `routes/eodRoutes.js` — auth + `EOD_VIEW` |
+| RBAC branch-scope fail-open (ST-1/HIGH-1) | **FIXED** | `services/authzService.js` (`isAllBranches = isOrgAdmin`), `middleware/rbac.js` (fail closed, 403) |
+| Register limiter (SEC-3) | **FIXED** | `routes/authRoutes.js` — `registerLimiter` 10/15min per IP |
+| super_admin fallback on register | **FIXED** | `controllers/authController.js` — 503 `ROLE_NOT_SEEDED` instead of escalation |
+| `subscriptionGuard` mounted | **FIXED** | `routes/billingRoutes.js` (org-scoped billing routes) |
+| Google auto-register allowlist | **FIXED** | `middleware/passport.js` + `config/env.js` `GOOGLE_ALLOWED_DOMAINS` (fail closed, `error=domain_not_allowed`) |
+| JWT cookie hardening (ADR-5, SEC-1 residual) | **FIXED** | `utils/jwtCookie.js` httpOnly `auth_token` cookie (SameSite=Strict, secure in prod); web keeps JWT in memory only (`apps/web/src/context/AuthProvider.jsx`, `apps/web/src/lib/api/client.js`) |
+| Invite flow (AUTH-2) | **FIXED** | `controllers/authController.js` invite/accept-invite, org from JWT claim |
+| Legacy path tenant middleware (ORG-1, HIGH-2) | **FIXED** | `routes/orgRouteMapper.js` — `skipTenantMwOnLegacy` defaults `false` |
+| CORS reflect-when-unset (SEC-1, MED-2) | **FIXED** (pre-existing commit) | `app.js` — `cb(null, false)` deny when `CORS_ORIGINS` unset |
+
+**Still open / follow-up** (not regressed by this pass):
+- dataClient request-scoped branch refactor (PRD N2, MED-4 residual) — cache keys are org-scoped,
+  the global mutable branch cache remains.
+- Mutation-endpoint org scoping follow-ups (legacy mutation paths not yet org-scoped in controllers).
+- `subscriptionGuard` DB-error fail-open — `middleware/subscriptionGuard.js` catch → `next()`;
+  mounted, but a DB error still lets the request through.
+- AUTH-1 / MED-1 OAuth `state` parameter — intentionally off (`passport.js`, HMAC-state noted as
+  future work).
+- AUTH-3 no refresh/rotation; SEC-2 relaxed login limiter (demo intent); LOW-1 CSP; LOW-4 wake
+  lock; LOW-5 MIME magic bytes; LOW-6 SHA256 removal; DISPLAY-1/3.
+
+Verified by the 2026-08-06 gate: `pnpm check:all` green (lint + typecheck + format:check + tests).
 
 ---
 

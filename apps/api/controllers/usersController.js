@@ -27,6 +27,24 @@ function sanitizeUser(user, extraData = {}) {
   };
 }
 
+/**
+ * ADR-3 (org derived from auth): true cross-tenant admins — env_admin or a
+ * DB user holding the super_admin role — keep unfiltered access. org_owner /
+ * org_admin are NOT cross-tenant: isAllBranches only relaxes the branch
+ * dimension, never the tenant dimension.
+ */
+function isCrossTenantAdmin(req) {
+  return req.user?.id === "env_admin" || (req.authz?.roleNames || []).includes("super_admin");
+}
+
+/**
+ * Resolve the actor's org for tenant-scoped queries: the tenant resolved by
+ * tenantMiddleware (req.tenantId) wins, then the JWT orgId claim.
+ */
+function resolveOrgId(req) {
+  return req.tenantId || req.user?.orgId || null;
+}
+
 exports.listUsers = async (req, res) => {
   const { page, pageSize, offset, limit } = getPagination(req.query, {
     pageSize: 25,
@@ -37,6 +55,19 @@ exports.listUsers = async (req, res) => {
   const where = {};
   if (q) {
     where.username = { [Op.iLike]: `%${q}%` };
+  }
+
+  // ADR-3: tenant-scoped user list. Cross-tenant admins (env_admin /
+  // super_admin role) list everyone; everyone else only their own org.
+  if (!isCrossTenantAdmin(req)) {
+    const orgId = resolveOrgId(req);
+    if (!orgId) {
+      // Fail closed: an unscoped actor must not see NULL-org or other-org users.
+      return fail(res, 403, "FORBIDDEN", "Organization context missing for user list", {
+        requestId: req.id || null,
+      });
+    }
+    where.org_id = orgId;
   }
 
   const result = await User.findAndCountAll({
@@ -86,26 +117,39 @@ exports.listUsers = async (req, res) => {
 exports.getUser = async (req, res) => {
   const userId = req.params.id;
 
-  const user = await User.findByPk(userId, {
-    include: [
-      {
-        model: Role,
-        as: "roles",
-        attributes: ["id", "name", "label"],
-        through: { attributes: [] },
-      },
-      {
-        model: UserPermissionOverride,
-        as: "permissionOverrides",
-        attributes: ["permission", "effect"],
-      },
-      {
-        model: UserBranchScope,
-        as: "branchScopes",
-        attributes: ["branch_id"],
-      },
-    ],
-  });
+  const include = [
+    {
+      model: Role,
+      as: "roles",
+      attributes: ["id", "name", "label"],
+      through: { attributes: [] },
+    },
+    {
+      model: UserPermissionOverride,
+      as: "permissionOverrides",
+      attributes: ["permission", "effect"],
+    },
+    {
+      model: UserBranchScope,
+      as: "branchScopes",
+      attributes: ["branch_id"],
+    },
+  ];
+
+  let user;
+  if (isCrossTenantAdmin(req)) {
+    user = await User.findByPk(userId, { include });
+  } else {
+    // ADR-3: scope the lookup to the actor's org. Other-org users are
+    // indistinguishable from missing ones (404, no existence leak).
+    const orgId = resolveOrgId(req);
+    if (!orgId) {
+      return fail(res, 403, "FORBIDDEN", "Organization context missing", {
+        requestId: req.id || null,
+      });
+    }
+    user = await User.findOne({ where: { id: userId, org_id: orgId }, include });
+  }
 
   if (!user) {
     return fail(res, 404, "NOT_FOUND", "User not found");
@@ -137,6 +181,13 @@ exports.createUser = async (req, res) => {
   const password = String(req.body?.password || "");
   const role = normalizeRole(req.body?.role || "viewer");
 
+  // ADR-3: the new user is created under the ACTOR's org — never from client
+  // input. env_admin (cross-tenant super admin) creates unscoped users
+  // (org_id NULL) by design: the super-admin RLS policy keeps them visible to
+  // env_admin, and no tenant sees them until an org is assigned.
+  const crossTenant = isCrossTenantAdmin(req);
+  const orgId = resolveOrgId(req);
+
   if (!username || !password) {
     return fail(res, 400, "VALIDATION_ERROR", "Username and password are required", {
       requestId: req.id || null,
@@ -146,6 +197,13 @@ exports.createUser = async (req, res) => {
   const roleCheck = assertCanManageTarget({ actorRole, targetRole: "viewer", nextRole: role });
   if (!roleCheck.ok) {
     return fail(res, roleCheck.status, roleCheck.code, roleCheck.message, {
+      requestId: req.id || null,
+    });
+  }
+
+  if (!crossTenant && !orgId) {
+    // Fail closed: an org actor without an org must not create an unscoped user.
+    return fail(res, 400, "VALIDATION_ERROR", "Cannot determine organization for the new user", {
       requestId: req.id || null,
     });
   }
@@ -161,7 +219,12 @@ exports.createUser = async (req, res) => {
   try {
     const passwordHash = await bcrypt.hash(password, 10);
     const created = await User.create(
-      { username, role, password_hash: passwordHash },
+      {
+        username,
+        role,
+        password_hash: passwordHash,
+        org_id: crossTenant ? null : orgId,
+      },
       { transaction }
     );
 

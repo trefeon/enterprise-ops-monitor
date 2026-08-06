@@ -12,6 +12,7 @@ const envSchema = z
     DB_NAME: z.string().optional(),
     DB_USER: z.string().optional(),
     DB_PASS: z.string().optional(),
+    DB_PORT: z.coerce.number().int().positive().optional(),
 
     BACKUP_DIR: z.string().optional(),
     BACKUP_CRON: z.string().optional(),
@@ -36,6 +37,10 @@ const envSchema = z
     GOOGLE_CLIENT_SECRET: z.string().optional(),
     GOOGLE_CALLBACK_URL: z.string().optional(),
     GOOGLE_AUTO_REGISTER: z.string().optional(),
+    // Comma-separated list of email domains allowed to auto-register via
+    // Google OAuth (e.g. "acme.com,corp.example"). Required for
+    // GOOGLE_AUTO_REGISTER to have any effect — see middleware/passport.js.
+    GOOGLE_ALLOWED_DOMAINS: z.string().optional(),
   })
   .superRefine((val, ctx) => {
     const hasDatabaseUrl = Boolean(val.DATABASE_URL);

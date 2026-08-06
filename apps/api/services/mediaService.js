@@ -1,4 +1,3 @@
-const fs = require("node:fs");
 const fsp = require("node:fs/promises");
 const path = require("node:path");
 const { v4: uuidv4 } = require("uuid");
@@ -60,10 +59,38 @@ class LocalDiskMediaService {
 
   /**
    * Return the absolute filesystem path for a relative storage path.
+   *
+   * SECURITY: the resolved path must stay inside MEDIA_ROOT. Any `..`
+   * traversal, absolute path, or resolution that escapes the root returns
+   * null so callers treat it as "not found" before touching the filesystem.
+   *
+   * @param {string} relativePath Relative storage path (e.g. `{orgId}/assets/{file}`)
+   * @returns {string|null} Absolute path guaranteed inside MEDIA_ROOT, or null when unsafe
    */
   resolvePath(relativePath) {
-    if (!relativePath) return null;
-    return path.join(MEDIA_ROOT, relativePath);
+    if (!relativePath || typeof relativePath !== "string") return null;
+    if (path.isAbsolute(relativePath)) return null;
+
+    const root = path.resolve(MEDIA_ROOT);
+    const fullPath = path.resolve(root, relativePath);
+
+    // path.relative performs a case-insensitive comparison on win32 (and is
+    // case-sensitive elsewhere), so lowercasing here is belt-and-suspenders.
+    const rel = path.relative(root, fullPath);
+    const relForCompare = process.platform === "win32" ? rel.toLowerCase() : rel;
+
+    // rel === "" means fullPath IS the root directory (never a file to serve).
+    // rel ".." / "../…" / "..\…" or a different drive means the path escapes.
+    if (
+      relForCompare === "" ||
+      relForCompare === ".." ||
+      relForCompare.startsWith(".." + path.sep) ||
+      path.isAbsolute(rel)
+    ) {
+      return null;
+    }
+
+    return fullPath;
   }
 
   /**

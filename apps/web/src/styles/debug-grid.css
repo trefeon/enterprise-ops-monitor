@@ -13,46 +13,45 @@
 }
 
 /* ─── Base Grid Overlay ─── */
-html[data-debug-grid="true"]::after,
-body[data-debug-grid="true"]::after,
-[data-debug-grid="true"] > .debug-grid-overlay {
+html[data-debug-grid='true']::after,
+body[data-debug-grid='true']::after,
+[data-debug-grid='true'] > .debug-grid-overlay {
   content: '';
   position: fixed;
   inset: 0;
   z-index: 99999;
   pointer-events: none;
   background-image:
-    /* Vertical columns */
-    repeating-linear-gradient(
-      to right,
-      transparent 0,
-      transparent var(--debug-grid-margin),
-      var(--debug-grid-color) var(--debug-grid-margin),
-      var(--debug-grid-color) calc(var(--debug-grid-margin) + 1px),
-      transparent calc(var(--debug-grid-margin) + 1px),
-      transparent 100%
-    );
+    /* Vertical columns */ repeating-linear-gradient(
+    to right,
+    transparent 0,
+    transparent var(--debug-grid-margin),
+    var(--debug-grid-color) var(--debug-grid-margin),
+    var(--debug-grid-color) calc(var(--debug-grid-margin) + 1px),
+    transparent calc(var(--debug-grid-margin) + 1px),
+    transparent 100%
+  );
   background-size: calc(
-    (100% - var(--debug-grid-margin) * 2) / var(--debug-grid-columns) + var(--debug-grid-gap)
-  ) 100%;
+      (100% - var(--debug-grid-margin) * 2) / var(--debug-grid-columns) + var(--debug-grid-gap)
+    )
+    100%;
 }
 
 /* ─── Center Column Guides (every 4th column = major) ─── */
-html[data-debug-grid="true"] body::before {
+html[data-debug-grid='true'] body::before {
   content: '';
   position: fixed;
   inset: 0;
   z-index: 99998;
   pointer-events: none;
   background-image:
-    /* Center line */
-    linear-gradient(
-      to right,
-      transparent calc(50% - 0.5px),
-      rgb(255 255 255 / 0.04) calc(50% - 0.5px),
-      rgb(255 255 255 / 0.04) calc(50% + 0.5px),
-      transparent calc(50% + 0.5px)
-    );
+    /* Center line */ linear-gradient(
+    to right,
+    transparent calc(50% - 0.5px),
+    rgb(255 255 255 / 0.04) calc(50% - 0.5px),
+    rgb(255 255 255 / 0.04) calc(50% + 0.5px),
+    transparent calc(50% + 0.5px)
+  );
 }
 
 /* ─── Horizontal Baseline Grid ─── */
@@ -77,7 +76,7 @@ html[data-debug-grid="true"] body::before {
 
 /* ─── Per-Component Outlines ─── */
 [data-debug-component] {
-  outline: 1px solid rgb(255 255 255 / 0.10);
+  outline: 1px solid rgb(255 255 255 / 0.1);
   outline-offset: -1px;
   position: relative;
 }
@@ -150,14 +149,22 @@ html[data-debug-grid="true"] body::before {
 
 /* ─── Responsive Breakpoint Indicator ─── */
 @media (max-width: 639px) {
-  html[data-debug-grid="true"]::after { background-color: rgb(255 0 0 / 0.02); }
+  html[data-debug-grid='true']::after {
+    background-color: rgb(255 0 0 / 0.02);
+  }
 }
 @media (min-width: 640px) and (max-width: 1023px) {
-  html[data-debug-grid="true"]::after { background-color: rgb(0 255 0 / 0.02); }
+  html[data-debug-grid='true']::after {
+    background-color: rgb(0 255 0 / 0.02);
+  }
 }
 @media (min-width: 1024px) and (max-width: 1279px) {
-  html[data-debug-grid="true"]::after { background-color: rgb(0 0 255 / 0.02); }
+  html[data-debug-grid='true']::after {
+    background-color: rgb(0 0 255 / 0.02);
+  }
 }
 @media (min-width: 1280px) {
-  html[data-debug-grid="true"]::after { background-color: rgb(255 255 0 / 0.02); }
+  html[data-debug-grid='true']::after {
+    background-color: rgb(255 255 0 / 0.02);
+  }
 }

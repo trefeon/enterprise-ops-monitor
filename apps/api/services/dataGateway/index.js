@@ -6,6 +6,17 @@ const { BRANCHES, getBranchNameById, listBranchIds } = require("./branches");
 
 const cache = new TTLCache();
 
+/**
+ * Build an org-scoped gateway cache key: `data-gw:{orgId}:{prefix}`. When no
+ * org is available (legacy mode) the key is `data-gw:legacy:{prefix}` so
+ * different tenants can never share cached payloads once callers pass orgId.
+ * @param {string} prefix
+ * @param {string|null|undefined} orgId
+ */
+function orgCacheKey(prefix, orgId) {
+  return `data-gw:${orgId || "legacy"}:${prefix}`;
+}
+
 function branchErrorsToWarnings(branchErrors, prefix) {
   const errs = Array.isArray(branchErrors) ? branchErrors : [];
   return errs
@@ -19,7 +30,7 @@ function branchErrorsToWarnings(branchErrors, prefix) {
 async function fetchEodAllBranches(options = {}) {
   const ttlMs = eodTtlMsNow();
   const { value, source } = await cache.cached(
-    "data-gw:eod:all",
+    orgCacheKey("eod:all", options?.orgId),
     ttlMs,
     async () => {
       // Bypass live service cache so TTL is controlled here.
@@ -46,7 +57,7 @@ async function fetchEmployeesAllBranches(options = {}) {
   // Employees change rarely; keep it long.
   const ttlMs = 12 * 60 * 60 * 1000;
   const { value, source } = await cache.cached(
-    "data-gw:employees:all",
+    orgCacheKey("employees:all", options?.orgId),
     ttlMs,
     async () => {
       return live.fetchEmployeesAllBranches({ ...options, bypassCache: true });
@@ -72,7 +83,7 @@ async function fetchSyncAllBranches(options = {}) {
   // sync_aud is flaky under parallel load; dataClient already fetches sequentially.
   const ttlMs = 30 * 1000;
   const { value, source } = await cache.cached(
-    "data-gw:sync:all",
+    orgCacheKey("sync:all", options?.orgId),
     ttlMs,
     async () => {
       return live.fetchStoreSyncAllBranches({ ...options, bypassCache: true });
@@ -94,10 +105,16 @@ async function fetchSyncAllBranches(options = {}) {
   };
 }
 
-function invalidateAll() {
-  cache.delete("data-gw:eod:all");
-  cache.delete("data-gw:employees:all");
-  cache.delete("data-gw:sync:all");
+/**
+ * Invalidate the gateway cache for an org (or the legacy keys when orgId is
+ * absent). Callers that resolved a tenant should pass options.orgId so stale
+ * org-scoped entries are dropped.
+ * @param {string|null|undefined} orgId
+ */
+function invalidateAll(orgId) {
+  cache.delete(orgCacheKey("eod:all", orgId));
+  cache.delete(orgCacheKey("employees:all", orgId));
+  cache.delete(orgCacheKey("sync:all", orgId));
 }
 
 module.exports = {

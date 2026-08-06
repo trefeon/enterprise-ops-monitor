@@ -25,6 +25,21 @@ const BRANCH_IDS = LEGACY_BRANCHES.map((b) => b.id);
 let _branchById = new Map(LEGACY_BRANCHES.map((b) => [String(b.id), b]));
 let _branchByCode = new Map(LEGACY_BRANCHES.map((b) => [String(b.code), b]));
 
+// Active org for cache-key scoping (updated by setOrgId — lazy, see PRD N2).
+// Cache entries are keyed per-org so tenants never share cached payloads.
+let _activeOrgId = null;
+
+/**
+ * Build an org-scoped cache key: `data:{orgId}:{prefix}`. When no org is active
+ * (legacy mode / setOrgId never called) the key is `data:legacy:{prefix}` so
+ * different tenants can never share cached data once setOrgId is wired.
+ * @param {string} prefix
+ * @param {string|null|undefined} orgId - defaults to the module's active org
+ */
+function orgCacheKey(prefix, orgId = _activeOrgId) {
+  return `data:${orgId || "legacy"}:${prefix}`;
+}
+
 function _rebuildLookups() {
   BRANCH_IDS.length = 0;
   BRANCH_IDS.push(...BRANCHES.map((b) => b.id));
@@ -70,6 +85,9 @@ async function fetchBranches(orgId) {
  * @param {string} orgId - UUID of the organization
  */
 async function setOrgId(orgId) {
+  // Record the active org FIRST so cache keys are scoped even if the branch
+  // fetch below fails (and so a failed fetch falls back without mixing orgs).
+  _activeOrgId = orgId || null;
   const branches = await fetchBranches(orgId);
   if (branches && branches.length > 0) {
     // Mutate the exported BRANCHES array in-place so existing references see changes
@@ -453,7 +471,7 @@ function inferBusinessDate(rows) {
 
 async function fetchEodAllBranches(options = {}) {
   return cachedFetch(
-    "data:eod:all",
+    orgCacheKey("eod:all", options?.orgId),
     EOD_CACHE_TTL_MS,
     async () => {
       const branchErrors = [];
@@ -508,7 +526,7 @@ async function fetchEodAllBranches(options = {}) {
 
 async function fetchEmployeesAllBranches(options = {}) {
   return cachedFetch(
-    "data:employees:all",
+    orgCacheKey("employees:all", options?.orgId),
     EMPLOYEE_CACHE_TTL_MS,
     async () => {
       const branchErrors = [];
@@ -561,12 +579,12 @@ async function fetchEmployeesAllBranches(options = {}) {
   );
 }
 
-function invalidateEodCache() {
-  cache.delete("data:eod:all");
+function invalidateEodCache(orgId) {
+  cache.delete(orgCacheKey("eod:all", orgId));
 }
 
-function invalidateEmployeeCache() {
-  cache.delete("data:employees:all");
+function invalidateEmployeeCache(orgId) {
+  cache.delete(orgCacheKey("employees:all", orgId));
 }
 
 // ─── Store Sync Audit ────────────────────────────────────────────────────────
@@ -601,7 +619,7 @@ function normalizeStoreSyncRow(raw, branchId, branchName) {
 
 async function fetchStoreSyncAllBranches(options = {}) {
   return cachedFetch(
-    "data:sync:all",
+    orgCacheKey("sync:all", options?.orgId),
     SYNC_CACHE_TTL_MS,
     async () => {
       const branchErrors = [];
@@ -651,8 +669,8 @@ async function fetchStoreSyncAllBranches(options = {}) {
   );
 }
 
-function invalidateSyncCache() {
-  cache.delete("data:sync:all");
+function invalidateSyncCache(orgId) {
+  cache.delete(orgCacheKey("sync:all", orgId));
 }
 
 module.exports = {

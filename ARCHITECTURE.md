@@ -110,9 +110,23 @@ app.use(async (req, res, next) => {
 ```
 
 **Key rules:**
-- Use `SET LOCAL` (not `SET`) — scoped to the connection/transaction
+- Use `SET LOCAL` (not `SET`) — scoped to the connection/transaction (superseded by ADR-1 below)
 - Migrations run as a role with `BYPASSRLS`
 - Composite indexes lead with `tenant_id` for RLS filter performance
+
+> **ADR-1 (2026-08-06): session-scoped `set_config` instead of `SET LOCAL`.** `SET LOCAL` outside a
+> transaction is a Postgres no-op, and interpolating the tenant id into SQL was an injection vector.
+> Tenant context is now applied with parameterized `SELECT set_config('app.tenant_id', $1, false)`,
+> reset at request start (NULL when no tenant applies) and on `res.on('finish')` so pooled
+> connections never leak context (`middleware/tenantContext.js` + `middleware/tenantMiddleware.js`);
+> `app.is_super_admin` is set for `env_admin`.
+>
+> **ADR-2 (2026-08-06): strict policy + `super_admin` policy.** The permissive
+> `org_id IS NULL OR …` policy leaked every NULL-org row to every tenant; migration
+> `20260806_002_strict_tenant_policies.js` replaces it with `tenant_isolation_policy`
+> (`org_id IS NOT NULL AND org_id::text = current_setting('app.tenant_id', TRUE)`) plus
+> `super_admin_policy` (`current_setting('app.is_super_admin', TRUE) = 'true'`), after
+> `20260806_001_backfill_org_id.js` backfills legacy NULL rows to the default tenant (FORCE RLS kept).
 
 ### 2.3 Tenant Resolution Strategy
 
@@ -404,6 +418,14 @@ Phase 3 (Seed):
   017-seed-live-menu-display-data.js
 ```
 
+**Status (2026-08-06):** the plan's backfill / strict-policy steps (003-backfill-tenant-id-for-org-1
+and the strict policies intended for 005/006) are delivered as
+`migrations/20260806_001_backfill_org_id.js` (backfill NULL `org_id` rows on all tenant tables to the
+default tenant — one transaction, idempotent, per-table row counts) and
+`migrations/20260806_002_strict_tenant_policies.js` (strict `tenant_isolation_policy` +
+`super_admin_policy`, FORCE RLS — ADR-2). Filename order (001 < 002) guarantees backfill runs before
+strict policies; execute `node apps/api/migrations/run.js` on first deploy.
+
 ### 6.2 Existing Data → Org 1
 
 The `ensureDb.js` boot-time schema (data_branches, data_stores, etc.) created for the original single-tenant demo must be migrated:
@@ -414,6 +436,10 @@ The `ensureDb.js` boot-time schema (data_branches, data_stores, etc.) created fo
 4. SET `tenant_id NOT NULL`
 5. The existing 8 hardcoded branches in `data_branches` become the branches for Org 1
 6. Enable RLS on all tables
+
+**Status (2026-08-06):** the backfill (step 3) and RLS enforcement (steps 5-6) are delivered by
+`20260806_001_backfill_org_id.js` and `20260806_002_strict_tenant_policies.js` (see §6.1), with the
+default-tenant rule matching `utils/ensureDefaultTenant.js` (oldest tenant by creation).
 
 ---
 

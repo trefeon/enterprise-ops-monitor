@@ -75,6 +75,31 @@ const idParams = z.object({
 });
 
 // ---------------------------------------------------------------------------
+// Params schema for GET /:orgId/:filename (public display route, hardened)
+//
+// The route stays public per ADR-4, so the inputs are the only defense before
+// resolvePath. orgId must be a UUID and filename must be a bare basename with
+// an allowlisted extension mirroring mediaService._extFromMime().
+// ---------------------------------------------------------------------------
+const getMediaParams = z.object({
+  orgId: z.string().uuid("Invalid organization ID"),
+  filename: z
+    .string("Invalid filename")
+    .min(1, "Invalid filename")
+    .max(255, "Invalid filename")
+    // Basename only: no path separators (raw or encoded), no dotfiles.
+    .regex(/^[^/\\]+$/, "Invalid filename")
+    .refine((value) => !value.startsWith("."), "Invalid filename")
+    // Reject `..` outright — storage filenames are always `{uuid}.{ext}`.
+    .refine((value) => !value.includes(".."), "Invalid filename")
+    // Defense in depth: reject encoded separators in case a proxy forwards
+    // the raw segment without percent-decoding.
+    .refine((value) => !/%2f|%5c/i.test(value), "Invalid filename")
+    // Allowlist must mirror mediaService._extFromMime.
+    .refine((value) => /\.(jpe?g|png|webp|mp4|webm)$/i.test(value), "Unsupported file type"),
+});
+
+// ---------------------------------------------------------------------------
 // POST /api/media/upload  —  Upload a media file (auth required)
 // ---------------------------------------------------------------------------
 router.post(
@@ -98,10 +123,32 @@ router.post(
     }
 
     const { mimetype, size, originalname, path: tmpPath } = req.file;
-    const orgId = req.params.orgId || req.body.orgId || req.authz?.orgId;
+
+    // ADR-3: orgId comes from authenticated context ONLY — the tenant
+    // middleware result (req.tenantId) or the JWT claim (req.user.orgId).
+    // Client-supplied orgId (params/body/authz) is never the source of truth.
+    const orgId = req.tenantId || req.user?.orgId || null;
 
     if (!orgId) {
-      return fail(res, 400, "VALIDATION_ERROR", "orgId is required");
+      return fail(
+        res,
+        400,
+        "VALIDATION_ERROR",
+        "Cannot determine organization: upload requires an org-scoped endpoint or an account with an organization"
+      );
+    }
+
+    // The org id is stored against the media_assets.org_id UUID FK and used in
+    // the on-disk path — reject anything that is not a UUID before fs access.
+    if (!z.string().uuid().safeParse(orgId).success) {
+      return fail(res, 400, "VALIDATION_ERROR", "Invalid organization ID");
+    }
+
+    // ADR-3 cross-check: if the client supplied an orgId anywhere, it must
+    // match the derived org — reject mismatches before any filesystem work.
+    const claimedOrgId = req.params.orgId || req.body.orgId || req.authz?.orgId || null;
+    if (claimedOrgId && claimedOrgId !== orgId) {
+      return fail(res, 403, "TENANT_MISMATCH", "Organization mismatch");
     }
 
     // Server‑side validation
@@ -130,9 +177,12 @@ router.post(
     }
 
     // Save to database
+    // Note: env_admin is a synthetic non-UUID id that cannot satisfy the
+    // media_assets.uploaded_by FK — store NULL for it.
+    const uploadedBy = req.user?.id === "env_admin" ? null : req.user?.id || null;
     const asset = await db.MediaAsset.create({
       org_id: orgId,
-      uploaded_by: req.user?.id || null,
+      uploaded_by: uploadedBy,
       filename,
       original_name: originalname,
       mime_type: mimetype,
@@ -149,6 +199,7 @@ router.post(
 // ---------------------------------------------------------------------------
 router.get(
   "/:orgId/:filename",
+  validate({ params: getMediaParams }),
   asyncHandler(async (req, res) => {
     const { orgId, filename } = req.params;
     const relativePath = `${orgId}/assets/${filename}`;

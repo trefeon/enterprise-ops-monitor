@@ -74,6 +74,8 @@ describe("Auth Controller - Password Migration", () => {
         return res;
       },
       setHeader: () => {},
+      // ADR-5: login issues the auth_token httpOnly cookie — no-op in tests.
+      cookie: () => {},
     };
     // Reset mocks
     mockUser.findOne = async () => null;

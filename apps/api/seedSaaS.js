@@ -18,9 +18,27 @@ const db = require("./models");
 // Constants
 // ---------------------------------------------------------------------------
 const ORGS = {
-  A: { name: "Warung Kita",          slug: "warung-kita",          branchCount: 3,  storeCount: 3,  employeePerStore: 5 },
-  B: { name: "Toko Makmur",         slug: "toko-makmur",         branchCount: 8,  storeCount: 8,  employeePerStore: 5 },
-  C: { name: "SuperStore Indonesia", slug: "superstore-indonesia", branchCount: 15, storeCount: 15, employeePerStore: 5 },
+  A: {
+    name: "Warung Kita",
+    slug: "warung-kita",
+    branchCount: 3,
+    storeCount: 3,
+    employeePerStore: 5,
+  },
+  B: {
+    name: "Toko Makmur",
+    slug: "toko-makmur",
+    branchCount: 8,
+    storeCount: 8,
+    employeePerStore: 5,
+  },
+  C: {
+    name: "SuperStore Indonesia",
+    slug: "superstore-indonesia",
+    branchCount: 15,
+    storeCount: 15,
+    employeePerStore: 5,
+  },
 };
 
 const DAYS_BACKFILL = 90;
@@ -28,14 +46,14 @@ const DAYS_BACKFILL = 90;
 // Reliability profile per org (on-time completion % range, failure %)
 const RELIABILITY = {
   A: { doneMin: 85, doneMax: 95, failRate: 0.05 },
-  B: { doneMin: 75, doneMax: 90, failRate: 0.10 },
+  B: { doneMin: 75, doneMax: 90, failRate: 0.1 },
   C: { doneMin: 70, doneMax: 88, failRate: 0.15 },
 };
 
 // Live Menu Display config for Org A
 const SCREENS_A = [
-  { name: "Dining Room Display",  branchIndex: 0 },
-  { name: "Drive-Thru Display",   branchIndex: 1 },
+  { name: "Dining Room Display", branchIndex: 0 },
+  { name: "Drive-Thru Display", branchIndex: 1 },
 ];
 
 const PLAYLISTS_A = [
@@ -46,23 +64,22 @@ const PLAYLISTS_A = [
 ];
 
 const MEDIA_ITEMS = [
-  { file: "menu-item-1.jpg",         mime: "image/jpeg",      w: 1920, h: 1080, dur: 10 },
-  { file: "menu-item-2.jpg",         mime: "image/jpeg",      w: 1920, h: 1080, dur: 10 },
-  { file: "menu-item-3.jpg",         mime: "image/jpeg",      w: 1920, h: 1080, dur: 10 },
-  { file: "promo-banner-1.jpg",      mime: "image/jpeg",      w: 1920, h: 1080, dur: 8  },
-  { file: "promo-banner-2.jpg",      mime: "image/jpeg",      w: 1920, h: 1080, dur: 8  },
-  { file: "specials-drinks.mp4",     mime: "video/mp4",        w: 1920, h: 1080, dur: 15 },
-  { file: "daily-special.jpg",       mime: "image/jpeg",      w: 1920, h: 1080, dur: 10 },
-  { file: "testimonial-loop.mp4",    mime: "video/mp4",        w: 1920, h: 1080, dur: 20 },
-  { file: "signature-dish.jpg",      mime: "image/jpeg",      w: 1920, h: 1080, dur: 12 },
-  { file: "happy-hour-banner.jpg",   mime: "image/jpeg",      w: 1920, h: 1080, dur: 8  },
+  { file: "menu-item-1.jpg", mime: "image/jpeg", w: 1920, h: 1080, dur: 10 },
+  { file: "menu-item-2.jpg", mime: "image/jpeg", w: 1920, h: 1080, dur: 10 },
+  { file: "menu-item-3.jpg", mime: "image/jpeg", w: 1920, h: 1080, dur: 10 },
+  { file: "promo-banner-1.jpg", mime: "image/jpeg", w: 1920, h: 1080, dur: 8 },
+  { file: "promo-banner-2.jpg", mime: "image/jpeg", w: 1920, h: 1080, dur: 8 },
+  { file: "specials-drinks.mp4", mime: "video/mp4", w: 1920, h: 1080, dur: 15 },
+  { file: "daily-special.jpg", mime: "image/jpeg", w: 1920, h: 1080, dur: 10 },
+  { file: "testimonial-loop.mp4", mime: "video/mp4", w: 1920, h: 1080, dur: 20 },
+  { file: "signature-dish.jpg", mime: "image/jpeg", w: 1920, h: 1080, dur: 12 },
+  { file: "happy-hour-banner.jpg", mime: "image/jpeg", w: 1920, h: 1080, dur: 8 },
 ];
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 const BCRYPT_ROUNDS = 6; // fast for demo
-const WIB_OFFSET = 7;    // WIB is UTC+7
 
 function randomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -117,33 +134,88 @@ async function seedSaaS() {
     console.log("✓ Database synced\n");
 
     // 1b. Ensure boot-time schema columns exist (mirrors ensureDb.js)
-    const qi = db.sequelize.getQueryInterface();
     // data_stores boot-time columns
-    await db.sequelize.query(`ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;`);
+    await db.sequelize.query(
+      `ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS is_active BOOLEAN NOT NULL DEFAULT TRUE;`
+    );
     await db.sequelize.query(`ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS address TEXT;`);
-    await db.sequelize.query(`ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS pic_name VARCHAR(255);`);
-    await db.sequelize.query(`ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS contact_number VARCHAR(50);`);
-    await db.sequelize.query(`ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS source VARCHAR(20) NOT NULL DEFAULT 'sync';`);
-    await db.sequelize.query(`ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS manual_created_at TIMESTAMPTZ;`);
-    await db.sequelize.query(`ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS manual_updated_at TIMESTAMPTZ;`);
-    await db.sequelize.query(`ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS manual_updated_by INTEGER;`);
-    await db.sequelize.query(`ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;`);
+    await db.sequelize.query(
+      `ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS pic_name VARCHAR(255);`
+    );
+    await db.sequelize.query(
+      `ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS contact_number VARCHAR(50);`
+    );
+    await db.sequelize.query(
+      `ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS source VARCHAR(20) NOT NULL DEFAULT 'sync';`
+    );
+    await db.sequelize.query(
+      `ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS manual_created_at TIMESTAMPTZ;`
+    );
+    await db.sequelize.query(
+      `ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS manual_updated_at TIMESTAMPTZ;`
+    );
+    await db.sequelize.query(
+      `ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS manual_updated_by INTEGER;`
+    );
+    await db.sequelize.query(
+      `ALTER TABLE data_stores ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;`
+    );
     // data_employees boot-time columns
-    await db.sequelize.query(`ALTER TABLE data_employees ADD COLUMN IF NOT EXISTS source VARCHAR(20) NOT NULL DEFAULT 'sync';`);
-    await db.sequelize.query(`ALTER TABLE data_employees ADD COLUMN IF NOT EXISTS manual_created_at TIMESTAMPTZ;`);
-    await db.sequelize.query(`ALTER TABLE data_employees ADD COLUMN IF NOT EXISTS manual_updated_at TIMESTAMPTZ;`);
-    await db.sequelize.query(`ALTER TABLE data_employees ADD COLUMN IF NOT EXISTS manual_updated_by INTEGER;`);
-    await db.sequelize.query(`ALTER TABLE data_employees ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;`);
+    await db.sequelize.query(
+      `ALTER TABLE data_employees ADD COLUMN IF NOT EXISTS source VARCHAR(20) NOT NULL DEFAULT 'sync';`
+    );
+    await db.sequelize.query(
+      `ALTER TABLE data_employees ADD COLUMN IF NOT EXISTS manual_created_at TIMESTAMPTZ;`
+    );
+    await db.sequelize.query(
+      `ALTER TABLE data_employees ADD COLUMN IF NOT EXISTS manual_updated_at TIMESTAMPTZ;`
+    );
+    await db.sequelize.query(
+      `ALTER TABLE data_employees ADD COLUMN IF NOT EXISTS manual_updated_by INTEGER;`
+    );
+    await db.sequelize.query(
+      `ALTER TABLE data_employees ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;`
+    );
     // Sequelize model tables — add org_id where missing (migration ran before tables existed)
-    for (const tbl of ['"Stores"', '"EODLogs"', '"BackupLogs"', '"SystemLogs"', '"Employees"', '"SyncLogs"', '"SyncSummaries"', '"SyncAlertStates"']) {
+    for (const tbl of [
+      '"Stores"',
+      '"EODLogs"',
+      '"BackupLogs"',
+      '"SystemLogs"',
+      '"Employees"',
+      '"SyncLogs"',
+      '"SyncSummaries"',
+      '"SyncAlertStates"',
+    ]) {
       await db.sequelize.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS org_id UUID;`);
     }
     // RBAC tables use lowercased names
-    for (const tbl of ['roles', 'role_permissions', 'user_roles']) {
+    for (const tbl of ["roles", "role_permissions", "user_roles"]) {
       await db.sequelize.query(`ALTER TABLE ${tbl} ADD COLUMN IF NOT EXISTS org_id UUID;`);
     }
 
-    const counts = { tenants: 0, branches: 0, stores: 0, employees: 0, eodCurrent: 0, eodHistory: 0, syncSnapshot: 0, eodLogs: 0, syncLogs: 0, backupLogs: 0, systemLogs: 0, users: 0, roles: 0, rolePerms: 0, userRoles: 0, screens: 0, playlists: 0, media: 0, playlistItems: 0, screenPlaylists: 0 };
+    const counts = {
+      tenants: 0,
+      branches: 0,
+      stores: 0,
+      employees: 0,
+      eodCurrent: 0,
+      eodHistory: 0,
+      syncSnapshot: 0,
+      eodLogs: 0,
+      syncLogs: 0,
+      backupLogs: 0,
+      systemLogs: 0,
+      users: 0,
+      roles: 0,
+      rolePerms: 0,
+      userRoles: 0,
+      screens: 0,
+      playlists: 0,
+      media: 0,
+      playlistItems: 0,
+      screenPlaylists: 0,
+    };
 
     for (const [orgKey, org] of Object.entries(ORGS)) {
       // ---- Check idempotency ----
@@ -186,9 +258,26 @@ async function seedSaaS() {
 
       for (let i = 0; i < org.branchCount; i++) {
         const bid = branchStartId + i;
-        const bname = orgKey === "A"
-          ? pick(["Bandung", "Jakarta", "Surabaya", "Yogyakarta", "Semarang", "Medan", "Makassar", "Denpasar", "Palembang", "Balikpapan", "Manado", "Padang", "Pontianak", "Banjarmasin", "Pekanbaru"])
-          : `${org.name.split(" ")[0]} ${pick(BRANCH_SUFFIXES)} ${i + 1}`;
+        const bname =
+          orgKey === "A"
+            ? pick([
+                "Bandung",
+                "Jakarta",
+                "Surabaya",
+                "Yogyakarta",
+                "Semarang",
+                "Medan",
+                "Makassar",
+                "Denpasar",
+                "Palembang",
+                "Balikpapan",
+                "Manado",
+                "Padang",
+                "Pontianak",
+                "Banjarmasin",
+                "Pekanbaru",
+              ])
+            : `${org.name.split(" ")[0]} ${pick(BRANCH_SUFFIXES)} ${i + 1}`;
         const src = String(100 + bid);
         branchNames.push(bname);
 
@@ -291,7 +380,23 @@ async function seedSaaS() {
 
         for (let e = 1; e <= employeeCount; e++) {
           const nik = `${sc}${String(e).padStart(3, "0")}`;
-          const names = ["Ahmad", "Sari", "Budi", "Dewi", "Rudi", "Maya", "Hendra", "Fitri", "Agus", "Wulan", "Bayu", "Rina", "Dedi", "Nina", "Eko"];
+          const names = [
+            "Ahmad",
+            "Sari",
+            "Budi",
+            "Dewi",
+            "Rudi",
+            "Maya",
+            "Hendra",
+            "Fitri",
+            "Agus",
+            "Wulan",
+            "Bayu",
+            "Rina",
+            "Dedi",
+            "Nina",
+            "Eko",
+          ];
           const jobs = ["Manager", "Staff", "Cashier", "Supervisor", "Stock Keeper"];
           const fname = pick(names);
           const lname = pick(names);
@@ -348,8 +453,15 @@ async function seedSaaS() {
              source_synced_at = NOW();`,
           {
             bind: [
-              sc, bizDate, statusSales, uploadPct, `${uploadPct}%`,
-              eodAt, eodAt, eodAt, tenantId,
+              sc,
+              bizDate,
+              statusSales,
+              uploadPct,
+              `${uploadPct}%`,
+              eodAt,
+              eodAt,
+              eodAt,
+              tenantId,
             ],
           }
         );
@@ -361,7 +473,9 @@ async function seedSaaS() {
           date.setDate(date.getDate() - d);
           const dateStr = formatDate(date);
 
-          const hDone = randomBool(randomFloat(reliability.doneMin / 100, reliability.doneMax / 100));
+          const hDone = randomBool(
+            randomFloat(reliability.doneMin / 100, reliability.doneMax / 100)
+          );
           const hStatus = hDone ? "ok" : randomBool(reliability.failRate) ? "failed" : "pending";
           const hPct = hDone ? randomInt(95, 100) : randomInt(0, 94);
           const hEodAt = hDone ? randomWIBEvening(dateStr) : null;
@@ -372,8 +486,17 @@ async function seedSaaS() {
              ON CONFLICT (store_code, recorded_date) DO NOTHING;`,
             {
               bind: [
-                sc, dateStr, dateStr, hEodAt || `${dateStr}T12:00:00Z`,
-                hStatus, hPct, `${hPct}%`, hEodAt, hEodAt, hEodAt, tenantId,
+                sc,
+                dateStr,
+                dateStr,
+                hEodAt || `${dateStr}T12:00:00Z`,
+                hStatus,
+                hPct,
+                `${hPct}%`,
+                hEodAt,
+                hEodAt,
+                hEodAt,
+                tenantId,
               ],
             }
           );
@@ -398,7 +521,12 @@ async function seedSaaS() {
             message = "Synced successfully";
           } else if (r < reliability.doneMin / 100 + reliability.failRate) {
             status = "FAILED";
-            message = pick(["Connection Timeout", "Auth Error", "Network failure", "Server unreachable"]);
+            message = pick([
+              "Connection Timeout",
+              "Auth Error",
+              "Network failure",
+              "Server unreachable",
+            ]);
           } else {
             status = "PENDING";
             message = "Awaiting sync";
@@ -455,7 +583,8 @@ async function seedSaaS() {
         const bname = branchNames[idx % branchNames.length];
         const sname = `${bname} Store ${sc}`;
 
-        for (let d = DAYS_BACKFILL - 1; d >= 0; d -= 3) { // Every 3 days to reduce volume
+        for (let d = DAYS_BACKFILL - 1; d >= 0; d -= 3) {
+          // Every 3 days to reduce volume
           const date = new Date();
           date.setDate(date.getDate() - d);
           const dateStr = formatDate(date);
@@ -471,8 +600,16 @@ async function seedSaaS() {
              ON CONFLICT DO NOTHING;`,
             {
               bind: [
-                String(sc), sname, String(bi), bname, polledAt,
-                isStale, isProblem, isMissingToday, polledAt, tenantId,
+                String(sc),
+                sname,
+                String(bi),
+                bname,
+                polledAt,
+                isStale,
+                isProblem,
+                isMissingToday,
+                polledAt,
+                tenantId,
               ],
             }
           );
@@ -517,10 +654,14 @@ async function seedSaaS() {
       // 2k. SystemLogs (Sequelize model)
       // ==================================================================
       const sysLogEntries = [
-        { level: "INFO",    component: "API",        message: `Org ${org.name} onboarded` },
-        { level: "INFO",    component: "SCHEDULER",   message: "Backup scheduler initialized" },
-        { level: "WARNING", component: "BOT",         message: pick(["Bot latency high", "Retry on sync timeout", "Memory usage above 80%"]) },
-        { level: "INFO",    component: "DATABASE",    message: "Connection pool established" },
+        { level: "INFO", component: "API", message: `Org ${org.name} onboarded` },
+        { level: "INFO", component: "SCHEDULER", message: "Backup scheduler initialized" },
+        {
+          level: "WARNING",
+          component: "BOT",
+          message: pick(["Bot latency high", "Retry on sync timeout", "Memory usage above 80%"]),
+        },
+        { level: "INFO", component: "DATABASE", message: "Connection pool established" },
       ];
       for (const entry of sysLogEntries) {
         await db.sequelize.query(
@@ -536,7 +677,6 @@ async function seedSaaS() {
       for (let d = DAYS_BACKFILL - 1; d >= 0; d -= 7) {
         const date = new Date();
         date.setDate(date.getDate() - d);
-        const dateStr = formatDate(date);
 
         await db.sequelize.query(
           `INSERT INTO "SystemLogs" (level, component, message, metadata, org_id, "createdAt", "updatedAt")
@@ -565,16 +705,42 @@ async function seedSaaS() {
           label: "Org Owner",
           description: `Owner of ${org.name}`,
           perms: [
-            "DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "EOD_SYNC", "EOD_RETRY",
-            "STORES_VIEW", "STORES_EDIT", "EMPLOYEES_VIEW", "NIK_LOOKUP", "EMPLOYEES_EDIT",
-            "BACKUPS_VIEW", "BACKUPS_RUN", "BACKUPS_DELETE", "BACKUPS_RESTORE",
-            "SYSTEM_VIEW", "SYSTEM_HEALTHCHECK", "SYSTEM_RESTART", "AGENT_UPDATE",
-            "ACCOUNTS_VIEW", "USERS_VIEW", "USERS_CREATE", "USERS_EDIT",
-            "USERS_RESET_PASSWORD", "USERS_CHANGE_PASSWORD", "USERS_ROLE_EDIT",
-            "USERS_PERMISSION_EDIT", "USERS_SCOPE_EDIT", "USERS_DELETE",
-            "ROLES_VIEW", "ROLES_EDIT",
+            "DASHBOARD_VIEW",
+            "SYNC_VIEW",
+            "EOD_VIEW",
+            "EOD_SYNC",
+            "EOD_RETRY",
+            "STORES_VIEW",
+            "STORES_EDIT",
+            "EMPLOYEES_VIEW",
+            "NIK_LOOKUP",
+            "EMPLOYEES_EDIT",
+            "BACKUPS_VIEW",
+            "BACKUPS_RUN",
+            "BACKUPS_DELETE",
+            "BACKUPS_RESTORE",
+            "SYSTEM_VIEW",
+            "SYSTEM_HEALTHCHECK",
+            "SYSTEM_RESTART",
+            "AGENT_UPDATE",
+            "ACCOUNTS_VIEW",
+            "USERS_VIEW",
+            "USERS_CREATE",
+            "USERS_EDIT",
+            "USERS_RESET_PASSWORD",
+            "USERS_CHANGE_PASSWORD",
+            "USERS_ROLE_EDIT",
+            "USERS_PERMISSION_EDIT",
+            "USERS_SCOPE_EDIT",
+            "USERS_DELETE",
+            "ROLES_VIEW",
+            "ROLES_EDIT",
             "AFTERHOURS_VIEW",
-            "SCREENS_VIEW", "SCREENS_EDIT", "PLAYLISTS_VIEW", "PLAYLISTS_EDIT", "MEDIA_EDIT",
+            "SCREENS_VIEW",
+            "SCREENS_EDIT",
+            "PLAYLISTS_VIEW",
+            "PLAYLISTS_EDIT",
+            "MEDIA_EDIT",
             "BILLING_VIEW",
           ],
         },
@@ -583,15 +749,35 @@ async function seedSaaS() {
           label: "Org Admin",
           description: `Administrator of ${org.name}`,
           perms: [
-            "DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "EOD_SYNC", "EOD_RETRY",
-            "STORES_VIEW", "STORES_EDIT", "EMPLOYEES_VIEW", "NIK_LOOKUP", "EMPLOYEES_EDIT",
-            "BACKUPS_VIEW", "BACKUPS_RUN", "BACKUPS_DELETE",
-            "SYSTEM_VIEW", "SYSTEM_HEALTHCHECK", "AGENT_UPDATE",
-            "ACCOUNTS_VIEW", "USERS_VIEW", "USERS_CREATE", "USERS_EDIT",
-            "USERS_RESET_PASSWORD", "USERS_CHANGE_PASSWORD",
+            "DASHBOARD_VIEW",
+            "SYNC_VIEW",
+            "EOD_VIEW",
+            "EOD_SYNC",
+            "EOD_RETRY",
+            "STORES_VIEW",
+            "STORES_EDIT",
+            "EMPLOYEES_VIEW",
+            "NIK_LOOKUP",
+            "EMPLOYEES_EDIT",
+            "BACKUPS_VIEW",
+            "BACKUPS_RUN",
+            "BACKUPS_DELETE",
+            "SYSTEM_VIEW",
+            "SYSTEM_HEALTHCHECK",
+            "AGENT_UPDATE",
+            "ACCOUNTS_VIEW",
+            "USERS_VIEW",
+            "USERS_CREATE",
+            "USERS_EDIT",
+            "USERS_RESET_PASSWORD",
+            "USERS_CHANGE_PASSWORD",
             "ROLES_VIEW",
             "AFTERHOURS_VIEW",
-            "SCREENS_VIEW", "SCREENS_EDIT", "PLAYLISTS_VIEW", "PLAYLISTS_EDIT", "MEDIA_EDIT",
+            "SCREENS_VIEW",
+            "SCREENS_EDIT",
+            "PLAYLISTS_VIEW",
+            "PLAYLISTS_EDIT",
+            "MEDIA_EDIT",
             "BILLING_VIEW",
           ],
         },
@@ -600,12 +786,19 @@ async function seedSaaS() {
           label: "Org Member",
           description: `Member of ${org.name}`,
           perms: [
-            "DASHBOARD_VIEW", "SYNC_VIEW", "EOD_VIEW", "EOD_SYNC",
-            "STORES_VIEW", "EMPLOYEES_VIEW", "NIK_LOOKUP",
-            "BACKUPS_VIEW", "BACKUPS_RUN",
+            "DASHBOARD_VIEW",
+            "SYNC_VIEW",
+            "EOD_VIEW",
+            "EOD_SYNC",
+            "STORES_VIEW",
+            "EMPLOYEES_VIEW",
+            "NIK_LOOKUP",
+            "BACKUPS_VIEW",
+            "BACKUPS_RUN",
             "SYSTEM_VIEW",
             "AFTERHOURS_VIEW",
-            "SCREENS_VIEW", "PLAYLISTS_VIEW",
+            "SCREENS_VIEW",
+            "PLAYLISTS_VIEW",
           ],
         },
       ];
@@ -625,10 +818,9 @@ async function seedSaaS() {
         if (roleDef.name === `org_owner_${org.slug}`) ownerRoleId = roleId;
 
         // Clear and re-add permissions
-        await db.sequelize.query(
-          `DELETE FROM "RolePermissions" WHERE role_id = $1;`,
-          { bind: [roleId] }
-        );
+        await db.sequelize.query(`DELETE FROM "RolePermissions" WHERE role_id = $1;`, {
+          bind: [roleId],
+        });
 
         for (const perm of roleDef.perms) {
           await db.sequelize.query(
@@ -664,7 +856,6 @@ async function seedSaaS() {
         for (let si = 0; si < SCREENS_A.length; si++) {
           const scr = SCREENS_A[si];
           const branchId = branchIds[scr.branchIndex];
-          const token = db.sequelize.fn("gen_random_uuid");
 
           const [screenRows] = await db.sequelize.query(
             `INSERT INTO screens (org_id, branch_id, name, is_active, branding_primary_color)
@@ -672,7 +863,9 @@ async function seedSaaS() {
              RETURNING id;`,
             {
               bind: [
-                tenantId, branchId, scr.name,
+                tenantId,
+                branchId,
+                scr.name,
                 pick(["#1a73e8", "#e84393", "#00b894", "#6c5ce7"]),
               ],
             }
@@ -685,7 +878,9 @@ async function seedSaaS() {
             `UPDATE screens SET token = gen_random_uuid() WHERE id = $1 RETURNING token;`,
             { bind: [screenRows[0].id] }
           );
-          console.log(`    → Screen "${scr.name}" created (token=${tokenRows[0].token.slice(0, 8)}...)`);
+          console.log(
+            `    → Screen "${scr.name}" created (token=${tokenRows[0].token.slice(0, 8)}...)`
+          );
         }
         console.log(`  ✓ 2 screens created`);
 
@@ -697,11 +892,7 @@ async function seedSaaS() {
              VALUES ($1, $2, $3, TRUE, '{"enabled": false}'::jsonb)
              RETURNING id;`,
             {
-              bind: [
-                tenantId,
-                branchIds[SCREENS_A[pl.screenIndex].branchIndex],
-                pl.name,
-              ],
+              bind: [tenantId, branchIds[SCREENS_A[pl.screenIndex].branchIndex], pl.name],
             }
           );
           playlistIds.push(plRows[0].id);
@@ -714,9 +905,9 @@ async function seedSaaS() {
         // Screen 1 gets playlists 2,3 (indices 2,3)
         for (let si = 0; si < screenIds.length; si++) {
           const screenId = screenIds[si];
-          const thesePlaylists = PLAYLISTS_A
-            .map((pl, idx) => ({ ...pl, idx }))
-            .filter(pl => pl.screenIndex === si);
+          const thesePlaylists = PLAYLISTS_A.map((pl, idx) => ({ ...pl, idx })).filter(
+            (pl) => pl.screenIndex === si
+          );
 
           for (const pl of thesePlaylists) {
             const plId = playlistIds[pl.idx];
@@ -770,7 +961,9 @@ async function seedSaaS() {
             counts.playlistItems++;
           }
         }
-        console.log(`  ✓ ${counts.media} media assets and ${counts.playlistItems} playlist items created`);
+        console.log(
+          `  ✓ ${counts.media} media assets and ${counts.playlistItems} playlist items created`
+        );
       }
 
       console.log(""); // blank line between orgs
