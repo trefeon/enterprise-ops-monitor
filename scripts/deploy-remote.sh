@@ -28,7 +28,7 @@ usage() {
   echo "  --preserve-remote-env"
   echo "                  Reuse existing remote .env instead of requiring/uploading a local env file"
   echo "  --drop-demo-volumes"
-  echo "                  Remove demo stack volumes when switching to production (default: preserve)"
+  echo "                  Remove volumes from the default (demo) stack when switching to the full stack (default: preserve)"
   exit 1
 }
 
@@ -249,8 +249,8 @@ if [ "$dry_run" -eq 1 ]; then
       else
         echo '  ⚠ Remote production compose file not found yet.'
       fi
-      if [ -f docker-compose.demo-db.yml ]; then
-        docker compose -f docker-compose.demo-db.yml config -q && echo '  ✓ Remote demo compose config is valid.'
+      if [ -f docker-compose.full.yml ]; then
+        docker compose -f docker-compose.full.yml config -q && echo '  ✓ Remote full-stack (reference) compose config is valid.'
       fi
     else
       echo '  ⚠ Remote directory does not exist yet; deploy would create it.'
@@ -306,12 +306,9 @@ ssh "${ssh_opts[@]}" "$ssh_target" "
   echo '  Extracting release package...'
   tar -xzf release-remote.tar.gz && rm release-remote.tar.gz
 
-  echo '  Stopping conflicting demo stacks (if running)...'
-  if [ -f docker-compose.demo-db.yml ]; then
-    docker compose -f docker-compose.demo-db.yml down $demo_down_flags &>/dev/null
-  fi
-  if [ -f docker-compose.demo.yml ]; then
-    docker compose -f docker-compose.demo.yml down $demo_down_flags &>/dev/null
+  echo '  Stopping conflicting default (demo) stack (if running)...'
+  if [ -f docker-compose.yml ]; then
+    docker compose -f docker-compose.yml down $demo_down_flags &>/dev/null
   fi
 
   echo '  Provisioning external volume eom_postgres_data if missing...'
@@ -319,9 +316,9 @@ ssh "${ssh_opts[@]}" "$ssh_target" "
     docker volume create eom_postgres_data >/dev/null
   fi
 
-  echo '  Building and starting production container stack...'
+  echo '  Building and starting full-stack (reference) container stack...'
   start_time=\$(date +%s)
-  docker compose up -d --build --remove-orphans
+  docker compose -f docker-compose.full.yml up -d --build --remove-orphans
   build_res=\$?
   end_time=\$(date +%s)
   build_time=\$((end_time - start_time))

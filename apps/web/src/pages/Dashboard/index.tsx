@@ -25,9 +25,9 @@ import {
   DashboardLayout,
   DashboardSection,
   DashboardWelcome,
-  DashboardStatCard,
   DashboardPageHeader,
 } from '@/components/base/dashboard-layout';
+import { StatCard } from '@/components/ui/cards/StatCard';
 import type { DashboardSummary, Alert } from './types';
 import { useDashboard } from './hooks/useDashboard';
 
@@ -177,32 +177,51 @@ export default function DashboardPage() {
       />
 
       {/* ── KPI Stats Grid ── */}
-      <DashboardSection columns={4}>
-        <DashboardStatCard
-          label="Global Health" value={health.label}
-          icon={<HeartPulse className="size-4" />}
-          trend={health.label === 'Healthy' ? 'up' : 'down'}
+      <div
+        data-e2e="dashboard-kpi-grid"
+        className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
+      >
+        <StatCard
+          className="min-h-32"
+          title="Global Health"
+          value={health.label}
+          icon={<HeartPulse aria-hidden="true" className="size-5" />}
+          accent={health.dot.replace('bg-', 'text-')}
+          subtext={health.subtext}
+          pulseClass={health.pulse ?? undefined}
+          onClick={() => navigate('/app/system')}
         />
-        <DashboardStatCard
-          label="Sync Status"
+        <StatCard
+          className="min-h-32"
+          title="Sync Status"
           value={sync ? `${sync.healthyPercentage}%` : '--'}
-          icon={<Wifi className="size-4" />}
-          trend={(sync?.staleCount || 0) + (sync?.problemCount || 0) > 0 ? 'down' : 'up'}
+          icon={<Wifi aria-hidden="true" className="size-5" />}
+          accent={
+            (sync?.staleCount || 0) + (sync?.problemCount || 0) > 0
+              ? 'text-status-warning'
+              : 'text-status-success'
+          }
+          subtext={`${(sync?.staleCount || 0) + (sync?.problemCount || 0)} active alerts`}
+          onClick={() => navigate('/app/sync')}
         />
-        <DashboardStatCard
-          label="EOD Completion"
+        <StatCard
+          className="min-h-32"
+          title="EOD Completion"
           value={`${completionRate}%`}
-          icon={<BadgeCheck className="size-4" />}
-          delta={`${eod?.done ?? 0} of ${storesTotal ?? 0} stores`}
-          trend={completionRate === 100 ? 'up' : 'neutral'}
+          icon={<BadgeCheck aria-hidden="true" className="size-5" />}
+          accent={completionRate === 100 ? 'text-status-success' : 'text-primary'}
+          subtext={`${eod?.done ?? 0} of ${storesTotal ?? 0} stores`}
+          onClick={() => navigate('/app/eod')}
         />
-        <DashboardStatCard
-          label="Active Nodes"
+        <StatCard
+          className="min-h-32"
+          title="Active Nodes"
           value={`${agents?.onlineCount ?? 0}/${agents?.activeCount ?? 0}`}
-          icon={<Monitor className="size-4" />}
-          delta={`${agents?.updatePending ?? 0} need update`}
+          icon={<Monitor aria-hidden="true" className="size-5" />}
+          subtext={`${agents?.updatePending ?? 0} need update`}
+          onClick={() => navigate('/app/office-agents')}
         />
-      </DashboardSection>
+      </div>
 
       {/* ── Charts + Alerts Row (3-col grid) ── */}
       <DashboardSection columns={3}>
@@ -280,7 +299,7 @@ export default function DashboardPage() {
 
       {/* ── Quick Actions ── */}
       <DashboardSection gridTemplateColumns="1fr" className="mt-2">
-        <Card className="border-border">
+        <Card data-e2e="dashboard-actions" className="border-border">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Quick Actions</CardTitle>
           </CardHeader>

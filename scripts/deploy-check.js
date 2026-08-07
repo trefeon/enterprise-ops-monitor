@@ -1,15 +1,16 @@
 /**
  * Deployment Verification & Diagnostics Script
  * 
- * Verifies all services in the containerized stack:
+ * Verifies services of the deployed container stack:
  * - Docker container health & statuses
- * - Database connectivity & data presence (counts of tables/seeds)
- * - Production API status (3000)
- * - Mock API live fake data serving (4000)
+ * - Database connectivity & data presence (counts of tables/seeds; prod only)
+ * - Production API status (3000; prod only)
+ * - Mock API live fake data serving (4000; demo)
  * - Web app SPA availability (5173)
  * - Container log analyzer for warning/error patterns
  * 
- * Run with: node scripts/deploy-check.js
+ * Run with: node scripts/deploy-check.js [--demo | --prod]
+ * (mode auto-detects from running containers; --demo = light web + mock-api)
  */
 
 const { execSync } = require("child_process");
@@ -36,11 +37,12 @@ args.forEach((arg) => {
   }
 });
 
-// Auto-detect mode if not provided by checking running Docker containers
+// Auto-detect mode if not provided by checking running Docker containers.
+// The light demo stack is the only one that runs eom-mock-api.
 if (!mode) {
   try {
     const checkPs = execSync("docker ps --format '{{.Names}}'", { encoding: "utf8" });
-    if (checkPs.includes("eom-web-demo")) {
+    if (checkPs.includes("eom-mock-api")) {
       mode = "demo";
     } else {
       mode = "prod";
@@ -111,12 +113,7 @@ async function checkDockerContainers() {
   console.log(`${BOLD}[1/6] Checking Docker Containers...${RESET}`);
   let expectedContainers;
   if (mode === "demo") {
-    const checkApi = runCmd("docker ps -a --format '{{.Names}}'");
-    if (checkApi.ok && checkApi.stdout.includes("eom-demo-api")) {
-      expectedContainers = ["eom-demo-api", "eom-web-demo", "eom-demo-db", "eom-mock-api"];
-    } else {
-      expectedContainers = ["eom-mock-api", "eom-web-demo"];
-    }
+    expectedContainers = ["eom-mock-api", "eom-web"];
   } else {
     expectedContainers = ["eom-api", "eom-web", "eom-db", "eom-autoheal"];
   }
@@ -162,7 +159,8 @@ async function checkDockerContainers() {
 async function checkDatabaseData() {
   console.log(`\n${BOLD}[2/6] Checking Database connectivity & data presence...${RESET}`);
   
-  const dbContainer = mode === "demo" ? "eom-demo-db" : "eom-db";
+  // Only meaningful for the prod (reference full stack) branch.
+  const dbContainer = "eom-db";
   const actualDbName = dbName;
   // Test connection to postgres container by running a query
   const testConn = runCmd(`docker exec ${dbContainer} pg_isready -U ${dbUser} -d ${actualDbName}`);
@@ -325,9 +323,8 @@ async function checkMockApi() {
 // 6. Inspect logs of api and web containers for errors and warnings
 async function inspectContainerLogs() {
   console.log(`\n${BOLD}[6/6] Scanning Container Logs for warnings & errors...${RESET}`);
-  const isDemoDb = mode === "demo" && runCmd("docker ps -a --format '{{.Names}}'").stdout.includes("eom-demo-api");
   const logsToScan = mode === "demo"
-    ? (isDemoDb ? ["eom-demo-api", "eom-web-demo", "eom-mock-api"] : ["eom-mock-api", "eom-web-demo"])
+    ? ["eom-mock-api", "eom-web"]
     : ["eom-api", "eom-web"];
   const anomalies = [];
 
@@ -382,8 +379,7 @@ async function run() {
   const summary = [];
 
   const docker = await checkDockerContainers();
-  const isDemoDb = mode === "demo" && docker.results["eom-demo-db"] !== undefined;
-  const totalExpected = mode === "demo" ? (isDemoDb ? 4 : 2) : 4;
+  const totalExpected = mode === "demo" ? 2 : 4;
   summary.push({ 
     check: "Docker Containers Running", 
     status: docker.ok ? "PASS" : "FAIL", 
@@ -392,11 +388,11 @@ async function run() {
 
   let dbStatus = "FAIL";
   let dbDetails = "Unavailable";
-  if (mode === "demo" && !isDemoDb) {
-    console.log(`\n[2/6] Skipping Database checks (N/A in standalone Client-only Demo Mode).`);
+  if (mode === "demo") {
+    console.log(`\n[2/6] Skipping Database checks (N/A in light Demo Mode — no database).`);
     dbStatus = "SKIP";
     dbDetails = "N/A (Demo mode)";
-  } else if (docker.results["eom-db"]?.running || (isDemoDb && docker.results["eom-demo-db"]?.running)) {
+  } else if (docker.results["eom-db"]?.running) {
     const db = await checkDatabaseData();
     dbStatus = db.ok ? (db.hasData ? "PASS" : "WARN") : "FAIL";
     dbDetails = db.ok ? (db.hasData ? "Seeded" : "Empty") : "Error";
@@ -410,8 +406,8 @@ async function run() {
 
   let apiStatus = "FAIL";
   let apiDetails = "Unreachable";
-  if (mode === "demo" && !isDemoDb) {
-    console.log(`\n[4/6] Skipping Production API checks (N/A in standalone Client-only Demo Mode).`);
+  if (mode === "demo") {
+    console.log(`\n[4/6] Skipping Production API checks (N/A in light Demo Mode — mock-api on port 4000 serves the demo).`);
     apiStatus = "SKIP";
     apiDetails = "N/A (Demo mode)";
   } else {

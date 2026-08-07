@@ -57,15 +57,11 @@ fi
 echo -e "  ✓ Environment secrets validated successfully."
 
 echo -e "\n${BOLD}[3/6] Cleaning up conflicting demo containers...${RESET}"
-if [ -f docker-compose.demo-db.yml ]; then
-  echo "  Stopping conflicting demo-db stack..."
-  docker compose -f docker-compose.demo-db.yml down -v --remove-orphans &>/dev/null
+if [ -f docker-compose.yml ]; then
+  echo "  Stopping conflicting default (demo) stack..."
+  docker compose -f docker-compose.yml down --remove-orphans &>/dev/null
 fi
-if [ -f docker-compose.demo.yml ]; then
-  echo "  Stopping conflicting standalone demo stack..."
-  docker compose -f docker-compose.demo.yml down -v --remove-orphans &>/dev/null
-fi
-echo -e "  ✓ Conflicting demo stacks cleaned up."
+echo -e "  ✓ Conflicting stacks cleaned up."
 
 echo -e "\n${BOLD}[4/6] Provisioning production Docker volumes...${RESET}"
 if ! docker volume inspect eom_postgres_data &> /dev/null; then
@@ -74,9 +70,9 @@ if ! docker volume inspect eom_postgres_data &> /dev/null; then
 fi
 echo -e "  ✓ Volume eom_postgres_data is ready."
 
-echo -e "\n${BOLD}[5/6] Building and launching production containers...${RESET}"
+echo -e "\n${BOLD}[5/6] Building and launching full-stack (reference) containers...${RESET}"
 start_time=$(date +%s)
-docker compose up -d --build
+docker compose -f docker-compose.full.yml up -d --build
 build_res=$?
 end_time=$(date +%s)
 build_time=$((end_time - start_time))

@@ -2,15 +2,20 @@
  * Container Deployment & Orchestration Script
  * 
  * Automates building and launching the containerized stack:
- * - Parses options for Demo (mock API) vs Production (full Postgres + API)
+ * - Parses options for Demo (light web + mock-api) vs Production
+ *   (full Postgres + API stack — reference only)
  * - Verifies Docker daemon connectivity
  * - Instantiates and validates .env file configuration
- * - Automatically provisions external database volumes if missing
+ * - Automatically provisions external database volumes if missing (prod only)
  * - Runs docker compose with error catching and troubleshooting output
  * - Triggers post-deploy diagnostics check
  * 
  * Usage:
  *   pnpm deploy [--demo | --prod] [--rebuild]
+ * 
+ * The DEFAULT is the portfolio demo (docker-compose.yml: web + mock-api,
+ * no DB, no secrets). --prod deploys the reference full stack
+ * (docker-compose.full.yml: api + web + Postgres + autoheal).
  */
 
 const { spawnSync, execSync } = require("child_process");
@@ -63,18 +68,18 @@ if (fs.existsSync(envPath)) {
   });
 }
 
-// Default mode detection if not specified
+// Default mode detection if not specified (demo is the default deploy path)
 if (!mode) {
   if (env.SEED_DEMO_DATA === "true" || env.NODE_ENV === "development") {
     mode = "demo";
     console.log(`${YELLOW}No mode specified. Defaulting to DEMO mode based on .env config.${RESET}`);
   } else {
-    mode = "prod";
-    console.log(`${CYAN}No mode specified. Defaulting to PRODUCTION mode.${RESET}`);
+    mode = "demo";
+    console.log(`${CYAN}No mode specified. Defaulting to DEMO mode (light web + mock-api stack).${RESET}`);
   }
 }
 
-console.log(`Target Mode: ${BOLD}${mode === "demo" ? YELLOW + "DEMO (Mock API)" : GREEN + "PRODUCTION (Full Stack)"}${RESET}`);
+console.log(`Target Mode: ${BOLD}${mode === "demo" ? YELLOW + "DEMO (light web + mock-api)" : GREEN + "PRODUCTION (full stack — reference)"}${RESET}`);
 console.log(`Force Rebuild: ${BOLD}${rebuild ? GREEN + "YES" : YELLOW + "NO"}${RESET}\n`);
 
 // 2. Validate Docker Daemon
@@ -111,7 +116,11 @@ if (!fs.existsSync(envPath)) {
   if (fs.existsSync(envExamplePath)) {
     fs.copyFileSync(envExamplePath, envPath);
     console.log(`  ✓ Created .env file from .env.example.`);
-    console.log(`  ${YELLOW}Please verify/configure DB_PASS and JWT_SECRET in .env!${RESET}`);
+    if (mode === "prod") {
+      console.log(`  ${YELLOW}Please verify/configure DB_PASS and JWT_SECRET in .env!${RESET}`);
+    } else {
+      console.log(`  Demo mode: the light stack reads no DB/JWT vars from .env.`);
+    }
   } else {
     console.error(`${RED}✗ .env.example not found in root. Cannot seed environment.${RESET}`);
     process.exit(1);
@@ -173,8 +182,10 @@ if (mode === "prod") {
 // 4. Run Docker Compose
 console.log(`\n${BOLD}[3/5] Launching Containers...${RESET}`);
 
-const composeFile = mode === "demo" ? "docker-compose.demo.yml" : "docker-compose.yml";
-const opposingFile = mode === "demo" ? "docker-compose.yml" : "docker-compose.demo.yml";
+// Demo (default) = docker-compose.yml (light web + mock-api).
+// Prod = docker-compose.full.yml (real full stack — reference only).
+const composeFile = mode === "demo" ? "docker-compose.yml" : "docker-compose.full.yml";
+const opposingFile = mode === "demo" ? "docker-compose.full.yml" : "docker-compose.yml";
 
 console.log(`  Ensuring no conflicting stacks are running...`);
 const downArgs = ["-f", opposingFile, "down"];

@@ -20,7 +20,7 @@ export const publicRoutes: RouteCase[] = [
   {
     path: '/',
     name: 'Landing',
-    expectedText: /Enterprise Ops Starter|Open Demo/i,
+    expectedText: /Monitor branch operations|Open Live Demo/i,
   },
   {
     path: '/case-study',
@@ -58,11 +58,11 @@ export const authenticatedRoutes: RouteCase[] = [
   { path: '/app/backups', name: 'Backups', expectedText: /Backups Management/i },
   { path: '/app/system', name: 'System Health', expectedText: /System Health/i },
   { path: '/app/admin/users', name: 'Users', expectedText: /Users/i },
-  { path: '/app/admin/roles', name: 'Roles', expectedText: /Roles Management/i },
+  { path: '/app/admin/roles', name: 'Roles', expectedText: /Create and manage roles/i },
   {
     path: '/app/admin/afterhours',
     name: 'After Hours',
-    expectedText: /After-Hours PC Monitor/i,
+    expectedText: /Detect store computers still online/i,
   },
   { path: '/app/agent-updater', name: 'Agent Updater', expectedText: /Agent Updater/i },
   {
@@ -107,7 +107,7 @@ export const redirectRoutes: RouteCase[] = [
   {
     path: '/not-a-real-route',
     name: 'Unknown route redirect',
-    expectedText: /Enterprise Ops Starter/i,
+    expectedText: /Monitor branch operations|Open Live Demo/i,
     finalPath: /\/$/,
   },
 ];

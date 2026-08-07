@@ -1,191 +1,134 @@
-# PRD — Security & Multi-Tenant Isolation Remediation (Phase 2 Wave A follow-up)
+# PRD — Portfolio Demo-First Conversion
 
-**Date:** 2026-08-06
-**Status:** Approved for implementation
-**Base:** `master` @ `417e513` (working tree was clean)
-**Owner:** Orchestrator (planning/acceptance), implementor (slices), verifier (gates)
+Status: **In progress** · Owner: trefeon · Date: 2026-08-07
 
----
+## 1. Goal
 
-## 1. Problem Statement
+Convert `enterprise-ops-monitor` from a full-stack application (web + API + PostgreSQL)
+into a **portfolio demo** that:
 
-A full-project security review (verifier, 2026-08-06, forest findings at `docs/` baseline of
-`SECURITY_AUDIT.md`) found the multi-tenant SaaS refactor of Phase 2 is **not actually
-tenant-isolated and contains two critical remote-code-class vulnerabilities**:
+- shows the existing, fully-built dashboards as the deliverable,
+- runs on **dummy data only** (existing `mock-api` with faker-generated records),
+- deploys **light**: a web container + one tiny mock API container, **no PostgreSQL,
+  no Sequelize API, no autoheal, no secrets required**,
+- keeps the **real full-stack code in the repo as clearly-marked reference only**
+  (visible on GitHub for credibility, never built or deployed by the default path).
 
-1. **Critical — Unauthenticated arbitrary file read (path traversal).**
-   `GET /api/media/:orgId/:filename` has no auth, and `mediaService.resolvePath` does a bare
-   `path.join(MEDIA_ROOT, relativePath)` with no containment check. Express percent-decodes
-   params, so `..%2F` sequences escape `MEDIA_ROOT` and can stream `.env` (JWT_SECRET, DB creds).
-2. **Critical — SQL injection via `orgId`.**
-   `tenantMiddleware.js:40` interpolates the unvalidated URL param into
-   `SET LOCAL app.tenant_id = '${tenantId}'`. node-postgres simple-query protocol allows
-   multi-statement execution when no bindings are used → arbitrary SQL.
-3. **Critical — No working tenant isolation end-to-end.**
-   - JWT never carries `orgId` for DB-user logins (`authController.login:77-81`) → the
-     `TENANT_MISMATCH` guard in `tenantMiddleware` is dead code.
-   - `SET LOCAL` outside a transaction is a Postgres **no-op** → RLS context never applies.
-   - RLS policy `org_id IS NULL OR …` (`migrations/20260707_002_enable_rls.js:67-68`) exposes
-     every NULL-org row to every tenant; no backfill migration exists
-     (ARCHITECTURE.md §6 required 003/004), so Users/Stores/EODLogs/RBAC rows stay NULL → shared.
-   - Legacy `/api/*` paths skip `tenantMiddleware` (`orgRouteMapper.js:24-45`).
-4. **High-risk IDORs and fail-open paths** (users list/detail, media upload orgId derivation,
-   public `/api/eod/live`, global branch state in `dataClient`, RBAC branch fail-open, broken
-   invite flow).
-5. **Medium hardening gaps** (`subscriptionGuard` unmounted, unthrottled `register`,
-   super_admin fallback, Google auto-register, JWT in localStorage).
-6. **Environment/baseline defects:** `passport*` required but missing from `apps/api/package.json`
-   (2 failing test files), `DB_PORT` missing from `config/env.js` zod schema, `mime-types`
-   missing from package.json, 22 files failing `format:check`.
+The repo documentation suite is rebuilt from scratch for **AI-agent-driven
+development**: every doc an agent needs to understand, run, extend, and verify this
+project without asking a human.
 
-**Also discovered during planning:** repo was relocated from `D:\enterprise-ops-monitor` →
-`D:\github_repo\enterprise-ops-monitor` with 673 dead `node_modules` junctions. **Fixed**
-(orchestrator): links removed + `pnpm install --force` re-created them from the intact store.
-`typecheck` is green. API lint has 160 errors (153 auto-fixable prettier).
+## 2. Context (current state)
 
-**Deferred by environment:** No local Postgres/Docker → migrations and DB-backed tests are
-syntax/schema-reviewed and **must be executed on first deployment** (documented per migration).
+| Layer                                     | Today                                                                                   | Target                                                                                |
+| ----------------------------------------- | --------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Default `docker compose up`               | `docker-compose.yml` = api + web + **Postgres** + autoheal                              | `docker-compose.yml` = **web + mock-api only**                                        |
+| Heavy compose                             | —                                                                                       | moved to `docker-compose.full.yml`, banner: _reference only, not deployed_            |
+| `docker-compose.demo.yml` / `demo-db.yml` | redundant / semi-heavy                                                                  | **deleted** (folded into the two files above)                                         |
+| `scripts/deploy-ops.sh`                   | modes `demo-db` / `prod`, remote preflight **requires** `DB_PASS` + `JWT_SECRET`        | default mode `demo` (no secrets needed); full-stack modes kept but gated as reference |
+| `scripts/deploy.js` / `deploy-check.js`   | reference `docker-compose.demo.yml` etc.                                                | point at the new light default; prod path points at `docker-compose.full.yml`         |
+| `.env.example`                            | DB/JWT/seed-first                                                                       | demo-first; real-stack vars in a commented "reference" block                          |
+| Root docs                                 | **all deleted** (PRD, ARCHITECTURE, PORTFOLIO, RESEARCH, SECURITY_AUDIT, TODO, docs/\*) | full suite recreated (see §5)                                                         |
+| `README.md`                               | **missing** (bad for portfolio)                                                         | portfolio-first README with screenshot, demo creds, quickstart                        |
 
----
+Already in place (do not rebuild): `mock-api/server.js` (~95 endpoints, faker data,
+single `demo` / `demo123` account), demo login quick-select, `/about` portfolio page,
+`isDemoMode` flag (`apps/web/src/lib/appMode.ts`, `VITE_APP_MODE=demo`), nginx
+`/api` → `api:3000` proxy (satisfied by the mock-api network alias `api`),
+`apps/web/nginx.conf`, web Dockerfile, `apps/api/AGENTS.md`.
 
-## 2. Goals & Non-Goals
+## 3. User stories
 
-### Goals
-- G1. Eliminate the two critical vulnerabilities (path traversal, SQL injection).
-- G2. Make tenant isolation actually work: JWT orgId → middleware → RLS context → strict policies,
-      with existing data backfilled to a default tenant.
-- G3. Close all High IDOR / fail-open findings.
-- G4. Apply the Medium hardening items and package/config fixes.
-- G5. Restore a green baseline: `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm format:check`.
-- G6. Update `SECURITY_AUDIT.md` / `ARCHITECTURE.md` to reflect verified fixes.
+1. As a **recruiter**, I open the live demo URL and land on a polished ops dashboard
+   with realistic dummy data; a demo banner/credentials are obvious; login is
+   `demo` / `demo123`.
+2. As a **developer cloning the repo**, `docker compose up -d --build` boots the
+   whole demo (web + mock-api) with **no .env, no DB, no secrets**.
+3. As an **AI agent**, I read `AGENTS.md` + `docs/` and know exactly: what this
+   project is, what is demo vs real, every command, every convention, and how to
+   verify a change — without asking the human.
+4. As the **author**, my GitHub repo still shows the real full-stack code
+   (`apps/api`, migrations, RBAC, security work) as reference, and the docs explain
+   that the deployed demo intentionally runs light.
 
-### Non-Goals
-- N1. Schema-per-tenant or subdomain routing (documented Phase 2 decision, unchanged).
-- N2. Full request-scoped refactor of `dataClient` global branch cache (see Slice D residual risk).
-- N3. S3 media backend, payment gateway integration, production email sending.
-- N4. Browser-side migration of all UI pages to org-scoped URLs (API contract preserved on legacy paths).
+## 4. Non-goals (out of scope)
 
----
+- No deploy this round (user deploys later; target stays acerblue).
+- No rewrite of the mock-api or the frontend data layer.
+- No deletion of `apps/api`, `packages/`, or real-stack history.
+- No new features; no UI redesign; no dependency upgrades.
+- `.gemini/settings.json` is tool config, not a doc — not recreated.
 
-## 3. Architectural Decisions (ADRs)
+## 5. Deliverables
 
-### ADR-1: Tenant context via `set_config(..., false)` (session-scoped) with per-request cleanup
-- **Decision:** Replace `SET LOCAL app.tenant_id = '…'` with parameterized
-  `SELECT set_config('app.tenant_id', $1, false)`; reset to NULL on response finish
-  (`res.on('finish')`), and ALWAYS reset at request start when no tenant applies.
-- **Why:** `SET LOCAL` outside a transaction is a no-op; wrapping every request in a managed
-  transaction (`models/index.js` sequelize.transaction) would require rewriting every controller
-  to use `{ transaction }`. Session-scoped `set_config` is immediate, works for all existing
-  queries, and is safe with pool reuse thanks to the reset-on-finish + reset-on-request discipline.
-- **Risk:** pooled connection state — mitigated by unconditional reset at request start (NULL when
-  no tenant, tenant value otherwise) and cleanup on finish.
+### 5.1 Code/config changes
 
-### ADR-2: RLS strict policy + env_admin escape
-- **Decision:** Replace the `org_id IS NULL OR …` escape with the documented strict policy:
-  `USING (org_id::text = current_setting('app.tenant_id', TRUE))` **and** a second policy
-  `USING (current_setting('app.is_super_admin', TRUE) = 'true')` for the `.env` admin.
-  Backfill NULL `org_id` rows on tenant tables to the default tenant (migration 20260806_001).
-- **Why:** "NULL-safe: if app.tenant_id is not set, return zero rows" per ARCHITECTURE.md §2.2.
-  The super-admin policy preserves cross-tenant admin (env_admin) while removing the NULL leak.
+- `docker-compose.yml` → **light demo** (web + mock-api), copy of current
+  `docker-compose.demo.yml` content (keep mock-api network alias `api` so
+  nginx.conf works unchanged). Healthchecks retained.
+- `docker-compose.full.yml` → current `docker-compose.yml` (api + web + Postgres +
+  autoheal) with a large banner comment: _REAL FULL STACK — REFERENCE ONLY, NOT
+  DEPLOYED FOR THE PORTFOLIO DEMO_.
+- Delete `docker-compose.demo.yml` and `docker-compose.demo-db.yml`.
+- `scripts/deploy-ops.sh`:
+  - add `demo` mode (default): compose file `docker-compose.yml`, **skip**
+    `DB_PASS`/`JWT_SECRET` preflight requirements (mock-api needs no secrets),
+    wait for `eom-web` + `eom-mock-api` containers, run `deploy-check.js --demo`.
+  - remove the old `demo-db` mode (its compose file is deleted); keep `prod`
+    (reference full stack) with a loud warning that it deploys the reference
+    stack; update mode validation + usage text.
+- `scripts/deploy.js`: default + `--demo` → `docker-compose.yml`; `--prod` →
+  `docker-compose.full.yml`; fix any stale compose file references.
+- `scripts/deploy-check.js`: update container detection/checks to the light stack
+  names (`eom-web`, `eom-mock-api`); prod branch → `docker-compose.full.yml`.
+- `.env.example`: demo-first; DB/JWT/scheduler sections moved under a commented
+  `# ─── REAL STACK (reference only) ───` block. Keep `VITE_API_URL`, support vars.
+- `package.json`: `deploy` defaults to demo; `deploy:prod` explicitly names the
+  reference full stack; add `demo:up` convenience; update `deploy:ops`/`deploy:ops:prod`
+  script values to the new modes.
+- Verify: `node -e` YAML parse of both compose files; `pnpm --filter web build`
+  green; `pnpm --filter web typecheck` green; mock-api boots and serves
+  `/api/auth/login` + a data endpoint locally; web e2e demo suite green.
 
-### ADR-3: Org derived from auth, never from user input for write paths
-- Upload/media endpoints resolve `orgId` exclusively from `req.user.orgId` (JWT) /
-  `req.tenantId` (after tenant middleware). Client-supplied `orgId` in path/body is validated
-  against JWT and rejected on mismatch.
+### 5.2 Documentation suite (recreated)
 
-### ADR-4: Public surface minimalism
-- `GET /api/eod/live` becomes authenticated + permission-gated (`EOD_VIEW`).
-- `GET /api/media/:orgId/:filename` remains public (documented SECURITY_AUDIT DISPLAY-2 design)
-  but is hardened: UUID `orgId` validation, basename-only `filename` with allowlisted
-  extensions, and a root-containment check in `resolvePath`.
+| File                                    | Purpose                                                                                                                                                                                |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `README.md` (root)                      | Portfolio-first entry: screenshot, one-liner, demo disclosure, demo creds, 2-command quickstart, tech stack (demo runtime + real stack reference), links to `docs/`                    |
+| `AGENTS.md` (root)                      | The agent contract: project identity, demo-first stance, commands, architecture map (demo vs real), conventions, verification workflow, do/don't rules                                 |
+| `docs/prd.md`                           | This file — product brief, stories, acceptance criteria                                                                                                                                |
+| `docs/architecture.md`                  | Both architectures: deployed demo runtime (web → mock-api, nginx proxy) and real full stack (reference), repo layout, data flow, decision notes                                        |
+| `docs/portfolio.md`                     | The portfolio story (recreate from the deleted `PORTFOLIO.md` content — all 18 feature surfaces, routes, metrics, technical notes)                                                     |
+| `docs/security.md`                      | Demo boundaries (no real data, no secrets, single demo account) + summary of the completed security remediation (media traversal, SQLi, tenant isolation, auth hardening) as reference |
+| `docs/development.md`                   | Human + agent dev guide: run demo locally (dev server + mock-api), add a page, add a mock endpoint (faker patterns), run tests/e2e, build, deploy light, debug                         |
+| `docs/research.md`                      | Concise research log: build-speed audit findings (zstd/BuildKit, slow layer export on acerblue), security audit outcomes, why demo-first                                               |
+| `docs/adr/0001-portfolio-demo-first.md` | ADR: context, decision (demo default, real stack reference), alternatives (static Vercel export, full deletion), consequences                                                          |
+| `TODO.md` (root)                        | This conversion's checkable task list (agent-driven development artifact)                                                                                                              |
 
-### ADR-5: Cookie + token dual issuance (auth hardening)
-- Login/register/refresh/google-callback set an `auth_token` **httpOnly, SameSite=Strict, secure**
-  cookie in addition to returning the token in the body (backward-compatible clients).
-- Frontend stops persisting the JWT in `localStorage`; keeps it in memory using the body token;
-  all requests use `credentials: 'include'`. No CSRF token required for SameSite=Strict. (If a
-  later requirement adds cross-site calls, re-introduce a CSRF token.)
+All docs must be **accurate against the final code state** (scripts, commands,
+container names, creds) — docs are written _after_ the code slice lands.
 
----
+## 6. Acceptance criteria
 
-## 4. User Journeys & Acceptance
+1. `docker compose -f docker-compose.yml config -q` passes and shows only
+   `web` + `mock-api` services; no Postgres, no api container, no env secrets.
+2. `docker-compose.full.yml` exists, parses, and carries the "reference only" banner.
+3. `deploy-ops.sh --mode demo` is the default; its remote preflight does not
+   require `DB_PASS`/`JWT_SECRET`; `--help` documents all modes.
+4. `pnpm --filter web typecheck` and `pnpm --filter web build` are green.
+5. Mock-api boots standalone (`node mock-api/server.js`) and serves
+   `POST /api/auth/login` (demo/demo123) + `GET /api/dashboard/summary`.
+6. Web demo e2e suite (`pnpm test:e2e:demo`) is green against mock-api.
+7. `README.md`, `AGENTS.md`, and all `docs/*` exist, are internally consistent,
+   and every command/path/cred they mention works as documented.
+8. No reference to deleted compose files remains anywhere in scripts or docs
+   (grep for `docker-compose.demo` returns nothing).
+9. Real stack untouched: `apps/api`, `packages/`, git history intact.
 
-### J1. Tenant user sees only their org's data
-- Login as a DB user of tenant A → list users / stores / EOD → only tenant A rows appear.
-- Requests with `:orgId` of tenant B → `403 TENANT_MISMATCH`.
-- **AC:** verified via unit tests mocking `req.tenantId` and via RLS policy SQL assertions.
+## 7. Risks / notes
 
-### J2. Attacker cannot escape media root
-- `GET /api/media/<uuid>/..%2F..%2F.env` and variants → `400`/`404`, never a file stream.
-- **AC:** automated tests assert non-UUID orgId and `..`-bearing filenames are rejected before
-  any `fs` access, and `resolvePath` returns `null` for any resolved path outside `MEDIA_ROOT`.
-
-### J3. Registered users can be invited (invite flow works)
-- An org admin with an org (JWT orgId claim present) invites an email → user created under their
-  org, invite link returned.
-- **AC:** invitation no longer 400s; created user has correct `org_id`; NULL fallback removed.
-
-### J4. Baseline is green
-- `pnpm typecheck`, `pnpm lint`, `pnpm test`, `pnpm format:check` all pass.
-- **AC:** `check:all` passes; the 2 passport-blocked test files run green (or skip cleanly).
-
----
-
-## 5. Implied schemas (migrations)
-
-### 20260806_001_backfill_org_id.js (data-only)
-- For each org-scoped table with NULL `org_id` rows (Users, Stores/EODLvs/data_* stores,
-  EODLogs, SyncLogs, SyncSummaries/SystemLogs?, employees, RBAC rows, screens/playlists/media/
-  subscriptions/billing): `UPDATE … SET org_id = (SELECT id FROM tenants ORDER BY created_at
-  LIMIT 1) WHERE org_id IS NULL`.
-- Use raw SQL, single transaction; log row counts per table (same shape as
-  `utils/ensureDefaultTenant.js`). Skip tables without meaningful legacy data if unavoidable,
-  but business tables MUST be backfilled.
-- `BYPASSRLS` note: with policies not yet strict, migration runs before 002 in the same run —
-  order matters (001 before 002) — the runner sorts by filename so `001_…_backfill` < `002_…_strict`.
-
-### 20260806_002_strict_tenant_policies.js (DDL)
-- Iterate the same table list as 20260707_002; drop `tenant_isolation_policy`; create:
-  - policy `tenant_isolation_policy`: `USING (org_id IS NOT NULL AND org_id::text =
-    current_setting('app.tenant_id', TRUE))` (WITH CHECK same).
-  - policy `super_admin_policy`: `USING (current_setting('app.is_super_admin', TRUE) = 'true')`.
-- Keep `FORCE ROW LEVEL SECURITY`.
-
----
-
-## 6. Full task list (see TODO.md for checkable items and acceptance notes)
-
-| # | Slice | Worker | Verify gate |
-|---|-------|--------|-------------|
-| 1 | Dependencies & env schema (passport*, mime-types, DB_PORT) | implementor | tests green |
-| 2 | Media traversal + upload null fix | implementor | unit tests |
-| 3 | SQLi fix + JWT orgId plumbing + invite | implementor | typecheck + tests |
-| 4 | **RLS isolation wiring (backfill migration, strict policies, tenantMiddleware cleanup, legacy tenant middleware, dataClient org keys) | implementor | check:all |
-| 5 | IDOR closures (users list/get, eod /live, rbac fail-closed) | implementor | unit tests |
-| 6 | Auth hardening (register limiter, no super_admin fallback, cookie, Google domains) | implementor | typecheck + tests |
-| 7 | Format + cleanup + docs refresh | implementor | check:all green |
-| — | Final verification gate | verifier | full check:all + spec review |
-
-Dependencies: 1 → 2/3 → 4 → 5 → 6 → 7. 2/3 are independent of each other after 1.
-
----
-
-## 7. Risks & Mitigations
-
-| Risk | Impact | Mitigation |
-|------|--------|------------|
-| RLS strict policy breaks admin reads (system logs, backups) | High | super_admin policy; verify SystemLogs/BackupLogs are org-scoped in line with ARCHITECTURE §3.2 (they are tenant-scoped) |
-| `set_config` cleanup race under concurrent requests | Med | sequential test in slice 3; always reset at start of request and on finish |
-| Migration order/data issues on real DB | Med | verification step on deploy; migrations run forward-only; keep 001 backfill before 002 |
-| dataClient global branch list race (org A leaks branches list to org B) | Low-Med | org-scoped cache keys; residual risk N2 documented to README/ARCHITECTURE |
-| Cookie change breaks legacy display/agent clients | Med | dual delivery (cookie + body token) keeps all existing clients working |
-
----
-
-## 8. Definition of Done
-- All TODO items checkable & done; `check:all` green; migrations syntax- and schema-checked;
-  verifier gate passed with exact commands/results; `SECURITY_AUDIT.md`/`ARCHITECTURE.md` updated.
-
-## 9. Out of scope → next phase
-- dataClient request-scoped branch refactor (N2)
-- production email/payments
+- No local Docker on the dev machine → compose verified via YAML parse + config
+  review; full container-level proof happens when the user deploys to acerblue.
+- The old docs were deleted in the working tree (unstaged); recreating them will
+  show as modifications in git — expected.
+- `apps/api/AGENTS.md` already exists and stays (real-stack agent doc).

@@ -1,0 +1,176 @@
+# ╔══════════════════════════════════════════════════════════════════════════════╗
+# ║                                                                              ║
+# ║   REAL FULL STACK — REFERENCE ONLY, NOT DEPLOYED FOR THE PORTFOLIO DEMO      ║
+# ║                                                                              ║
+# ╚══════════════════════════════════════════════════════════════════════════════╝
+# This file is the ORIGINAL production stack, kept in the repo for credibility
+# and reference only: real Express API (apps/api) + PostgreSQL 15 (eom-db) +
+# autoheal + external volume eom_postgres_data.
+#
+# The DEFAULT deploy path is the LIGHT PORTFOLIO DEMO (docker-compose.yml:
+# web + mock-api, no DB, no secrets). Do NOT run THIS file for the demo.
+#
+# Deploying this requires DB_PASS and JWT_SECRET in the remote .env (both are
+# required via `:?` in the environment below) and a running PostgreSQL — or the
+# pre-created external volume eom_postgres_data (create once with:
+# docker volume create eom_postgres_data).
+#
+# Reference only — not built or deployed by any default path.
+# ═══════════════════════════════════════════════════════════════════════════════
+services:
+  api:
+    build:
+      context: .
+      dockerfile: apps/api/Dockerfile
+    image: eom-api:latest
+    container_name: eom-api
+    restart: unless-stopped
+    labels:
+      autoheal: 'true'
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '5'
+    ports:
+      - '0.0.0.0:3000:3000'
+    volumes:
+      - ./backups:/backups
+      - ./agent_updates:/agent_updates
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      PORT: '3000'
+      HOSTNAME: 0.0.0.0
+      TZ: Asia/Jakarta
+      DATABASE_URL: postgresql://${DB_USER:-eom_user}:${DB_PASS:?DB_PASS is required}@eom-db:5432/${DB_NAME:-eom_db}
+      DB_HOST: eom-db
+      DB_PORT: '5432'
+      DB_NAME: ${DB_NAME:-eom_db}
+      DB_USER: ${DB_USER:-eom_user}
+      DB_PASS: ${DB_PASS:?DB_PASS is required}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      BACKUP_DIR: /backups
+      AGENT_UPDATE_DIR: /agent_updates
+      DATA_SCHEDULER_ENABLED: ${DATA_SCHEDULER_ENABLED:-true}
+      DATA_PERSIST_ENABLED: ${DATA_PERSIST_ENABLED:-true}
+    depends_on:
+      eom-db:
+        condition: service_healthy
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'node -e "require(''http'').get(''http://localhost:3000/'', (r) => process.exit(r.statusCode === 200 ? 0 : 1)).on(''error'', () => process.exit(1));"',
+        ]
+      interval: 15s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      args:
+        VITE_API_URL: /api
+        VITE_APP_MODE: production
+        VITE_IT_SUPPORT_URL: ${VITE_IT_SUPPORT_URL:-}
+        VITE_IT_SUPPORT_EMAIL: ${VITE_IT_SUPPORT_EMAIL:-}
+    image: eom-web:latest
+    container_name: eom-web
+    restart: unless-stopped
+    labels:
+      autoheal: 'true'
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '5'
+    ports:
+      - '0.0.0.0:5173:5173'
+    depends_on:
+      api:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q -O /dev/null http://localhost:5173/ || exit 1']
+      interval: 15s
+      timeout: 5s
+      start_period: 10s
+      retries: 3
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 128M
+
+  eom-db:
+    image: postgres:15-alpine
+    container_name: eom-db
+    restart: unless-stopped
+    labels:
+      autoheal: 'true'
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '5'
+    volumes:
+      - eom_postgres_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DB_USER:-eom_user}
+      POSTGRES_PASSWORD: ${DB_PASS:?DB_PASS is required}
+      POSTGRES_DB: ${DB_NAME:-eom_db}
+      TZ: Asia/Jakarta
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-eom_user} -d ${DB_NAME:-eom_db}']
+      interval: 5s
+      timeout: 5s
+      start_period: 15s
+      retries: 5
+    ports:
+      - '127.0.0.1:5433:5432'
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
+  autoheal:
+    image: willfarrell/autoheal:latest
+    container_name: eom-autoheal
+    restart: unless-stopped
+    logging:
+      driver: json-file
+      options:
+        max-size: '10m'
+        max-file: '5'
+    environment:
+      AUTOHEAL_CONTAINER_LABEL: autoheal
+      AUTOHEAL_INTERVAL: '30'
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 64M
+
+volumes:
+  # Production data volume. Create once with: docker volume create eom_postgres_data
+  eom_postgres_data:
+    external: true
+
+networks:
+  app-network:
+    driver: bridge

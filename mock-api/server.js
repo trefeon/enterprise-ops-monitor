@@ -4,7 +4,11 @@ const { faker } = require('@faker-js/faker');
 const ExcelJS = require('exceljs');
 
 const app = express();
-app.use(cors());
+// Reflect the request origin (not `*`) so credentialed requests (the web
+// client sends cookies with withCredentials:true) are allowed cross-origin
+// during local dev / e2e. In the Docker deploy nginx proxies /api
+// same-origin, so this only affects direct cross-origin calls.
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 const PORT = process.env.MOCK_API_PORT || 4000;

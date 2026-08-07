@@ -29,12 +29,20 @@ lock_name=""
 
 usage() {
   cat <<'EOF'
-Usage: bash scripts/deploy-ops.sh --host <ssh-target> --mode <demo-db|prod> [options]
+Usage: bash scripts/deploy-ops.sh --host <ssh-target> [--mode <demo|prod>] [options]
+
+Modes:
+  demo (default)  Light PORTFOLIO DEMO: web + mock-api (docker-compose.yml).
+                  No database, no .env, no DB_PASS/JWT_SECRET required.
+  prod            REAL FULL STACK — reference only, NOT deployed for the demo:
+                  web + Express API + PostgreSQL + autoheal
+                  (docker-compose.full.yml). Requires .env with DB_PASS and
+                  JWT_SECRET.
 
 Options:
   --host <target>             SSH target, for example acerblue
   --dir <path>                Remote repo path
-  --mode <demo-db|prod>       Deployment target stack
+  --mode <demo|prod>          Deployment target stack (default: demo)
   --ref <branch|sha>          Origin branch or commit SHA to deploy (default: master)
   --strategy <git|rsync>      Git deploy by default; rsync is explicit fallback only
   --dry-run                   Run checks only; no checkout, upload, restart, or volume change
@@ -137,7 +145,11 @@ parse_args() {
 validate_args() {
   [ -n "$host" ] || die "--host is required"
   [ -n "$remote_dir" ] || die "--dir is required"
-  [ "$mode" = "demo-db" ] || [ "$mode" = "prod" ] || die "--mode must be demo-db or prod"
+  if [ -z "$mode" ]; then
+    mode="demo"
+    info "--mode omitted; defaulting to demo (light portfolio demo: web + mock-api, no secrets)"
+  fi
+  [ "$mode" = "demo" ] || [ "$mode" = "prod" ] || die "--mode must be demo or prod"
   [ "$strategy" = "git" ] || [ "$strategy" = "rsync" ] || die "--strategy must be git or rsync"
   [ "$preserve_remote_env" -eq 1 ] || die "remote .env upload is not supported; preserve remote env"
   [ "$strategy" = "rsync" ] || [ "$bootstrap" -eq 0 ] || die "--bootstrap is only valid with --strategy rsync"
@@ -297,18 +309,25 @@ if [ -n "$dirty" ]; then
   fail "remote worktree is dirty; clean remote edits before deploy"
 fi
 
-if [ ! -f .env ]; then
-  fail "remote .env is missing"
+if [ "$mode" = "demo" ]; then
+  echo "[info] demo mode: web + mock-api light stack — no .env, DB_PASS, or JWT_SECRET required"
+else
+  echo "[warn] PROD MODE DEPLOYS THE REAL FULL STACK (reference only):"
+  echo "[warn]   docker-compose.full.yml — web + Express API + PostgreSQL + autoheal"
+  echo "[warn]   Requires DB_PASS and JWT_SECRET (and PostgreSQL)."
+  if [ ! -f .env ]; then
+    fail "remote .env is missing"
+  fi
+  grep -q '^DB_PASS=.' .env || fail "remote .env missing DB_PASS"
+  grep -q '^JWT_SECRET=.' .env || fail "remote .env missing JWT_SECRET"
 fi
-grep -q '^DB_PASS=.' .env || fail "remote .env missing DB_PASS"
-grep -q '^JWT_SECRET=.' .env || fail "remote .env missing JWT_SECRET"
 
 git fetch --prune origin
 git cat-file -e "$target_sha^{commit}" 2>/dev/null || fail "target SHA not present on remote after fetch"
 
 compose_file="docker-compose.yml"
-if [ "$mode" = "demo-db" ]; then
-  compose_file="docker-compose.demo-db.yml"
+if [ "$mode" = "prod" ]; then
+  compose_file="docker-compose.full.yml"
 fi
 [ -f "$compose_file" ] || fail "missing $compose_file"
 docker compose -f "$compose_file" config -q
@@ -402,34 +421,31 @@ wait_for_container() {
 }
 
 deploy_stack() {
-  if [ "$mode" = "demo-db" ]; then
-    docker compose -f docker-compose.demo-db.yml config -q
+  if [ "$mode" = "prod" ]; then
+    docker compose -f docker-compose.full.yml config -q
     if [ -f docker-compose.yml ]; then
       docker compose -f docker-compose.yml down --remove-orphans >/dev/null 2>&1 || true
     fi
-    docker volume inspect eom_postgres_demo_data >/dev/null 2>&1 || docker volume create eom_postgres_demo_data >/dev/null
-    docker compose -f docker-compose.demo-db.yml up -d --build --remove-orphans
-    wait_for_container eom-demo-db
-    wait_for_container eom-demo-api
-    wait_for_container eom-mock-api
-    wait_for_container eom-web-demo
-    node scripts/deploy-check.js --demo
+    docker volume inspect eom_postgres_data >/dev/null 2>&1 || docker volume create eom_postgres_data >/dev/null
+    docker compose -f docker-compose.full.yml up -d --build --remove-orphans
+    wait_for_container eom-db
+    wait_for_container eom-api
+    wait_for_container eom-web
+    node scripts/deploy-check.js
     return
   fi
 
+  # demo (default): light portfolio demo (web + mock-api, no DB/secrets).
+  # Take down the reference full stack first so its containers/network
+  # cannot conflict as orphans.
   docker compose -f docker-compose.yml config -q
-  if [ -f docker-compose.demo-db.yml ]; then
-    docker compose -f docker-compose.demo-db.yml down --remove-orphans >/dev/null 2>&1 || true
+  if [ -f docker-compose.full.yml ]; then
+    docker compose -f docker-compose.full.yml down --remove-orphans >/dev/null 2>&1 || true
   fi
-  if [ -f docker-compose.demo.yml ]; then
-    docker compose -f docker-compose.demo.yml down --remove-orphans >/dev/null 2>&1 || true
-  fi
-  docker volume inspect eom_postgres_data >/dev/null 2>&1 || docker volume create eom_postgres_data >/dev/null
   docker compose -f docker-compose.yml up -d --build --remove-orphans
-  wait_for_container eom-db
-  wait_for_container eom-api
   wait_for_container eom-web
-  node scripts/deploy-check.js
+  wait_for_container eom-mock-api
+  node scripts/deploy-check.js --demo
 }
 
 if deploy_stack; then
@@ -461,6 +477,13 @@ deploy_remote() {
 main() {
   parse_args "$@"
   validate_args
+  if [ "$mode" = "prod" ]; then
+    warn "================================================================"
+    warn "PROD MODE = REAL FULL STACK (docker-compose.full.yml) — REFERENCE"
+    warn "ONLY, NOT DEPLOYED FOR THE PORTFOLIO DEMO."
+    warn "Requires remote .env with DB_PASS and JWT_SECRET (Postgres stack)."
+    warn "=================================================================="
+  fi
   build_ssh_opts
 
   echo -e "${BOLD}${CYAN}Enterprise Ops Monitor Git Deploy${RESET}"

@@ -46,6 +46,8 @@ playwright/.auth/
 playwright-report/
 test-results/
 *.png
+# Keep the README hero screenshot for GitHub rendering.
+!enterprise-ops-login-smoke.png
 
 # Agent config — personal overrides
 .opencode/local/

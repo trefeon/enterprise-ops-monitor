@@ -1,11 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { apiClient, apiGet, apiPost } from '../lib/api/client';
+import { isDemoMode } from '../lib/appMode';
 import { AuthContext } from './AuthContext';
 
 // ADR-5: the JWT lives in memory ONLY — never in localStorage/sessionStorage
 // (XSS can steal a stored token; the httpOnly auth_token cookie is the
 // durable session). On boot, the session is restored from the cookie via
 // /api/auth/me, which mints a fresh in-memory token.
+
+const TOKEN_KEY = 'token';
+
+// The app itself never writes this key (ADR-5 — token lives in memory only).
+// It is read for demo mode (mock-api has no cookie bridge, so the e2e setup
+// storageState seeds it via apps/web/e2e/auth.setup.ts). A manual browser
+// refresh in demo mode therefore logs out — in-memory sessions reset on
+// mock-api restart, which is the documented demo behavior.
+const getAuthToken = () => {
+  if (typeof window === 'undefined') return null;
+  return window.localStorage.getItem(TOKEN_KEY) || window.sessionStorage.getItem(TOKEN_KEY);
+};
 
 const setAuthHeader = (token) => {
   if (token) {
@@ -38,9 +51,21 @@ export const AuthProvider = ({ children }) => {
     const restoreSession = async () => {
       setLoading(true);
       try {
-        // No token in memory → the httpOnly auth_token cookie is the only
-        // credential. /me accepts the cookie via the API's cookie-to-Bearer
-        // bridge and mints a fresh token for subsequent requests.
+        // Production (real API): /me restores the session from the httpOnly
+        // auth_token cookie, so it is always worth calling even with no token
+        // in memory.
+        // Demo (mock-api): there is no cookie bridge — a stored token is the
+        // only credential. Use it as the Bearer so /me can validate it, and
+        // skip /me entirely when none is present (a guaranteed 401 would be
+        // logged for every public page load).
+        const storedToken = getAuthToken();
+        if (isDemoMode && !storedToken) {
+          setLoading(false);
+          return;
+        }
+        if (storedToken) {
+          setAuthHeader(storedToken);
+        }
         const res = await apiGet('/auth/me');
         if (res.ok && res.data?.user) {
           if (res.data.token) {

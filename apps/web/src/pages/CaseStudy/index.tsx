@@ -57,10 +57,10 @@ const architectureLayers = [
     label: 'Infrastructure',
     tech: 'Docker Compose, nginx, SSH deploy',
     decisions: [
-      'Multi-container stack with health checks and autoheal',
+      'Multi-container stack with health checks (demo: web + mock-api)',
       'nginx SPA routing with API reverse proxy',
       'Git-based remote deployment with automatic rollback',
-      'Three deploy modes: production, demo-db, demo-mock',
+      'Deploy modes: demo (default, light web + mock-api) and full stack (reference only)',
     ],
   },
 ];
