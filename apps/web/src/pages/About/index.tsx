@@ -129,6 +129,15 @@ const About: React.FC = () => {
               </p>
             </div>
           </div>
+          <div className="p-4 rounded-lg border border-border bg-muted/10 flex items-start gap-4">
+            <Rocket className="size-5 text-primary shrink-0 mt-0.5" />
+            <div className="space-y-1">
+              <p className="text-xs font-medium uppercase text-primary tracking-widest">
+                Project origin
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{projectStory.origin}</p>
+            </div>
+          </div>
         </div>
 
         <div className="space-y-4">
@@ -196,109 +205,115 @@ const About: React.FC = () => {
             <div className="grid grid-cols-1 gap-6">
               {featureStories
                 .filter((s: { id: string }) => pillar.stories.includes(s.id))
-                .map((story: {
-                  id: string;
-                  featureName: string;
-                  tagline: string;
-                  route: string;
-                  problem: string;
-                  solution: string;
-                  impact: string;
-                  metrics?: { label: string; value: string }[];
-                  techHighlight?: string;
-                }) => (
-                  <Card
-                    key={story.id}
-                    className="group overflow-hidden border-border/50 hover:border-primary/40 transition-all"
-                  >
-                    <CardContent className="p-0">
-                      <div className="grid grid-cols-1 lg:grid-cols-12">
-                        {/* Title Column */}
-                        <div className="lg:col-span-4 p-6 bg-muted/10 border-b lg:border-b-0 lg:border-r border-border/40">
-                          <div className="flex flex-col h-full justify-between gap-4">
-                            <div>
-                              <div className="portfolio-feature-tag">
-                                {story.id.replace('-', ' ')}
-                              </div>
-                              <h3 className="text-xl font-medium text-foreground mb-1 group-hover:text-primary transition-colors">
-                                {story.featureName}
-                              </h3>
-                              <p className="text-sm text-muted-foreground font-medium italic">
-                                &ldquo;{story.tagline}&rdquo;
-                              </p>
-                            </div>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-fit h-9 hover:bg-foreground hover:text-background transition-all group/btn"
-                              onClick={() => navigate(story.route)}
-                            >
-                              Explore Feature <ExternalLink className="ml-2 size-3" />
-                            </Button>
-                          </div>
-                        </div>
-
-                        {/* Content Column */}
-                        <div className="lg:col-span-8 p-6 space-y-6">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div className="space-y-2">
-                              <p className="portfolio-story-label text-status-error">The Problem</p>
-                              <p className="text-sm leading-relaxed text-muted-foreground">
-                                {story.problem}
-                              </p>
-                            </div>
-                            <div className="space-y-2">
-                              <p className="portfolio-story-label text-status-success">
-                                The Solution
-                              </p>
-                              <p className="text-sm leading-relaxed text-muted-foreground">
-                                {story.solution}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="flex flex-col md:flex-row md:items-center gap-4 pt-4 border-t border-border/40">
-                            <div className="flex-1 space-y-1">
-                              <p className="portfolio-story-label text-primary">Business Impact</p>
-                              <p className="text-sm font-medium text-foreground leading-relaxed">
-                                {story.impact}
-                              </p>
-                            </div>
-                            <div className="flex flex-wrap gap-2">
-                              {story.metrics?.map((m: { label: string; value: string }) => (
-                                <div
-                                  key={m.label}
-                                  className="px-2.5 py-1 rounded-lg bg-background border border-border flex flex-col gap-0.5"
-                                >
-                                  <span className="live-text-3xs font-medium text-muted-foreground uppercase tracking-widest leading-none">
-                                    {m.label}
-                                  </span>
-                                  <span className="text-xs font-medium text-foreground leading-none">
-                                    {m.value}
-                                  </span>
+                .map(
+                  (story: {
+                    id: string;
+                    featureName: string;
+                    tagline: string;
+                    route: string;
+                    problem: string;
+                    solution: string;
+                    impact: string;
+                    metrics?: { label: string; value: string }[];
+                    techHighlight?: string;
+                  }) => (
+                    <Card
+                      key={story.id}
+                      className="group overflow-hidden border-border/50 hover:border-primary/40 transition-all"
+                    >
+                      <CardContent className="p-0">
+                        <div className="grid grid-cols-1 lg:grid-cols-12">
+                          {/* Title Column */}
+                          <div className="lg:col-span-4 p-6 bg-muted/10 border-b lg:border-b-0 lg:border-r border-border/40">
+                            <div className="flex flex-col h-full justify-between gap-4">
+                              <div>
+                                <div className="portfolio-feature-tag">
+                                  {story.id.replace('-', ' ')}
                                 </div>
-                              ))}
+                                <h3 className="text-xl font-medium text-foreground mb-1 group-hover:text-primary transition-colors">
+                                  {story.featureName}
+                                </h3>
+                                <p className="text-sm text-muted-foreground font-medium italic">
+                                  &ldquo;{story.tagline}&rdquo;
+                                </p>
+                              </div>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="w-fit h-9 hover:bg-foreground hover:text-background transition-all group/btn"
+                                onClick={() => navigate(story.route)}
+                              >
+                                Explore Feature <ExternalLink className="ml-2 size-3" />
+                              </Button>
                             </div>
                           </div>
 
-                          {story.techHighlight && (
-                            <div className="portfolio-tech-note">
-                              <div className="mt-0.5 text-primary shrink-0">
-                                <Zap className="size-4" />
+                          {/* Content Column */}
+                          <div className="lg:col-span-8 p-6 space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                              <div className="space-y-2">
+                                <p className="portfolio-story-label text-status-error">
+                                  The Problem
+                                </p>
+                                <p className="text-sm leading-relaxed text-muted-foreground">
+                                  {story.problem}
+                                </p>
                               </div>
-                              <p className="text-xs text-muted-foreground">
-                                <span className="font-medium text-primary mr-1 uppercase">
-                                  Engineering Note:
-                                </span>
-                                {story.techHighlight}
-                              </p>
+                              <div className="space-y-2">
+                                <p className="portfolio-story-label text-status-success">
+                                  The Solution
+                                </p>
+                                <p className="text-sm leading-relaxed text-muted-foreground">
+                                  {story.solution}
+                                </p>
+                              </div>
                             </div>
-                          )}
+
+                            <div className="flex flex-col md:flex-row md:items-center gap-4 pt-4 border-t border-border/40">
+                              <div className="flex-1 space-y-1">
+                                <p className="portfolio-story-label text-primary">
+                                  Business Impact
+                                </p>
+                                <p className="text-sm font-medium text-foreground leading-relaxed">
+                                  {story.impact}
+                                </p>
+                              </div>
+                              <div className="flex flex-wrap gap-2">
+                                {story.metrics?.map((m: { label: string; value: string }) => (
+                                  <div
+                                    key={m.label}
+                                    className="px-2.5 py-1 rounded-lg bg-background border border-border flex flex-col gap-0.5"
+                                  >
+                                    <span className="live-text-3xs font-medium text-muted-foreground uppercase tracking-widest leading-none">
+                                      {m.label}
+                                    </span>
+                                    <span className="text-xs font-medium text-foreground leading-none">
+                                      {m.value}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {story.techHighlight && (
+                              <div className="portfolio-tech-note">
+                                <div className="mt-0.5 text-primary shrink-0">
+                                  <Zap className="size-4" />
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                  <span className="font-medium text-primary mr-1 uppercase">
+                                    Engineering Note:
+                                  </span>
+                                  {story.techHighlight}
+                                </p>
+                              </div>
+                            )}
+                          </div>
                         </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  )
+                )}
             </div>
           </div>
         ))}
@@ -310,15 +325,15 @@ const About: React.FC = () => {
           Ready to see it in action?
         </h2>
         <p className="text-muted-foreground max-w-xl mx-auto mb-8">
-            The Ops Starter demo is fully interactive. You can explore all pillars from monitoring
-          to enterprise governance right now.
+          The Ops Starter demo is fully interactive. You can explore all pillars from monitoring to
+          enterprise governance right now.
         </p>
         <Button
           size="lg"
           className="h-12 px-8 text-base font-medium"
-              onClick={() => navigate('/app')}
+          onClick={() => navigate('/app')}
         >
-              Launch Ops Starter <ChevronRight className="ml-2 size-5" />
+          Launch Ops Starter <ChevronRight className="ml-2 size-5" />
         </Button>
       </section>
     </DashboardLayout>

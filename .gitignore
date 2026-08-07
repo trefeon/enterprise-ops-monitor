@@ -48,6 +48,10 @@ test-results/
 *.png
 # Keep the README hero screenshot for GitHub rendering.
 !enterprise-ops-login-smoke.png
+# Keep the captured UI screenshots + walkthrough GIF (README gallery).
+!docs/screenshots/
+!docs/screenshots/*.png
+!docs/screenshots/*.gif
 
 # Agent config — personal overrides
 .opencode/local/

@@ -12,6 +12,12 @@ The project story, as stated in the app:
 
 **Demo Disclosure** — All data in this demo is simulated or anonymized for portfolio use. No real store, employee, customer, credential, message-provider, or operational data is included.
 
+## Project origin
+
+Built on operational experience from a retail-IT internship: nightly End-of-Day uploads, store sync health, backup confidence, and branch-scoped access were daily realities. The internal system behind that work is confidential and cannot be shown, so this app is a from-scratch rebuild — the same operational domain, on a modern stack, with 100% simulated data. No original code, employer technology, or real records are reused.
+
+> Original code, modern stack, simulated data — nothing from the internal system it models.
+
 ---
 
 ## Feature catalog (18 surfaces)
@@ -191,12 +197,12 @@ The in-app story catalog (`featureStories` in `apps/web/src/data/stories.js`) co
 
 ## Story pillars (as grouped on the About page)
 
-| Pillar | Description | Stories |
-| --- | --- | --- |
-| Real-Time Monitoring | Mission-critical visibility for retail operations and system integrity | Dashboard, Store Sync, EOD Monitor, System Health, Live Sync |
-| Operational Automation | Self-healing processes, scheduled backups, and automated rollout triggers | Backups, Agent Updater, Office Agent Monitor, After Hours, After Hours Report |
-| Enterprise Governance | Strict RBAC, branch-scoped access, and comprehensive accountability audits | Accounts, Roles, Store Directory, Employee Directory |
-| Self-Service & Access | Unified account management and secure session controls | Profile, Logout, About |
+| Pillar                 | Description                                                                | Stories                                                                       |
+| ---------------------- | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| Real-Time Monitoring   | Mission-critical visibility for retail operations and system integrity     | Dashboard, Store Sync, EOD Monitor, System Health, Live Sync                  |
+| Operational Automation | Self-healing processes, scheduled backups, and automated rollout triggers  | Backups, Agent Updater, Office Agent Monitor, After Hours, After Hours Report |
+| Enterprise Governance  | Strict RBAC, branch-scoped access, and comprehensive accountability audits | Accounts, Roles, Store Directory, Employee Directory                          |
+| Self-Service & Access  | Unified account management and secure session controls                     | Profile, Logout, About                                                        |
 
 ## Demo disclosure
 
@@ -204,13 +210,13 @@ All data in this demo is **simulated or anonymized** for portfolio use. No real 
 
 ## Tech stack (as shown in the app)
 
-| Layer | Technologies |
-| --- | --- |
-| Frontend | React, Vite, Tailwind CSS, React Router |
-| Backend | Node.js, Express, Sequelize, PostgreSQL |
-| Security | JWT auth, bcrypt passwords, RBAC v2, branch scoping |
+| Layer      | Technologies                                               |
+| ---------- | ---------------------------------------------------------- |
+| Frontend   | React, Vite, Tailwind CSS, React Router                    |
+| Backend    | Node.js, Express, Sequelize, PostgreSQL                    |
+| Security   | JWT auth, bcrypt passwords, RBAC v2, branch scoping        |
 | Operations | Docker Compose, Nginx, scheduled sync jobs, backup tooling |
-| Demo Data | Mock API plus generated sample records for local demos |
+| Demo Data  | Mock API plus generated sample records for local demos     |
 
 (Deployed demo runtime: React 19 + Vite 7 + TypeScript on the web side; the mock API runs Express 5 + @faker-js/faker + exceljs, so the demo needs no database at all. See `docs/architecture.md`.)
 

@@ -8,6 +8,10 @@ export const projectStory = {
     'The app turns scattered operational checks into a single authenticated console: teams can review EOD progress, isolate sync problems, audit backups, monitor services, manage branch-scoped users, and inspect agent rollout status without leaving the dashboard.',
   disclosure:
     'All data in this demo is simulated or anonymized for portfolio use. No real store, employee, customer, credential, message-provider, or operational data is included.',
+  origin:
+    'Built on operational experience from a retail-IT internship: nightly End-of-Day uploads, store sync health, backup confidence, and branch-scoped access were daily realities. The internal system behind that work is confidential and cannot be shown, so this app is a from-scratch rebuild — the same operational domain, on a modern stack, with 100% simulated data. No original code, employer technology, or real records are reused.',
+  originNote:
+    'Original code, modern stack, simulated data — nothing from the internal system it models.',
   techStack: [
     { label: 'Frontend', value: 'React, Vite, Tailwind CSS, React Router' },
     { label: 'Backend', value: 'Node.js, Express, Sequelize, PostgreSQL' },

@@ -23,6 +23,7 @@
     "format:check": "pnpm -r format:check",
     "check:all": "pnpm lint && pnpm typecheck && pnpm format:check && pnpm test",
     "check:deploy": "node scripts/deploy-check.js",
+    "screenshots": "node scripts/capture-screenshots.mjs",
     "deploy": "node scripts/deploy.js",
     "deploy:demo": "node scripts/deploy.js --demo",
     "deploy:prod": "node scripts/deploy.js --prod",

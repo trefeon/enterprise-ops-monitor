@@ -21,6 +21,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import { projectStory } from '../../data/stories';
 
 /* ─── Data ───────────────────────────────────────────── */
 
@@ -45,47 +46,69 @@ const techStack: { name: string; category: string; icon: LucideIcon }[] = [
 const features: { title: string; description: string; icon: LucideIcon; route: string }[] = [
   {
     title: 'Real-time Dashboard',
-    description: 'KPI grid with health indicators, sync status, EOD completion, and active node count. Auto-refreshes during operational windows.',
+    description:
+      'KPI grid with health indicators, sync status, EOD completion, and active node count. Auto-refreshes during operational windows.',
     icon: Activity,
     route: '/app',
   },
   {
     title: 'Store Sync Monitor',
-    description: 'Live visibility into branch synchronization health. Stale detection, problem flagging, and historical trend analysis.',
+    description:
+      'Live visibility into branch synchronization health. Stale detection, problem flagging, and historical trend analysis.',
     icon: Wifi,
     route: '/app/sync',
   },
   {
     title: 'EOD Process Tracker',
-    description: 'End-of-day completion monitoring across all branches. Area-level rollups, late upload detection, and export-ready reports.',
+    description:
+      'End-of-day completion monitoring across all branches. Area-level rollups, late upload detection, and export-ready reports.',
     icon: FileCheck2,
     route: '/app/eod',
   },
   {
     title: 'RBAC Access Control',
-    description: 'Role-based permissions with branch scoping. 7 built-in roles, granular permission overrides, and audit-ready user management.',
+    description:
+      'Role-based permissions with branch scoping. 7 built-in roles, granular permission overrides, and audit-ready user management.',
     icon: Shield,
     route: '/app/admin/roles',
   },
   {
     title: 'System Health',
-    description: 'Service status monitoring, database connectivity checks, log analysis, and container health metrics in one view.',
+    description:
+      'Service status monitoring, database connectivity checks, log analysis, and container health metrics in one view.',
     icon: Monitor,
     route: '/app/system',
   },
   {
     title: 'Backup Management',
-    description: 'Scheduled and manual PostgreSQL backups with retention policies. Download, restore, and verify backup integrity.',
+    description:
+      'Scheduled and manual PostgreSQL backups with retention policies. Download, restore, and verify backup integrity.',
     icon: Database,
     route: '/app/backups',
   },
 ];
 
 const architecture = [
-  { layer: 'Frontend', tech: 'React + Vite + Tailwind', detail: 'SPA with route guards, base component library, and design token system' },
-  { layer: 'API', tech: 'Express + Zod + JWT', detail: 'REST API with response envelope, input validation, and rate limiting' },
-  { layer: 'Database', tech: 'PostgreSQL + Sequelize', detail: 'Migrations, RBAC schema, demo seeds, and automated backups' },
-  { layer: 'Deploy', tech: 'Docker Compose + nginx', detail: 'Multi-container stack with health checks, autoheal, and remote deploy scripts' },
+  {
+    layer: 'Frontend',
+    tech: 'React + Vite + Tailwind',
+    detail: 'SPA with route guards, base component library, and design token system',
+  },
+  {
+    layer: 'API',
+    tech: 'Express + Zod + JWT',
+    detail: 'REST API with response envelope, input validation, and rate limiting',
+  },
+  {
+    layer: 'Database',
+    tech: 'PostgreSQL + Sequelize',
+    detail: 'Migrations, RBAC schema, demo seeds, and automated backups',
+  },
+  {
+    layer: 'Deploy',
+    tech: 'Docker Compose + nginx',
+    detail: 'Multi-container stack with health checks, autoheal, and remote deploy scripts',
+  },
 ];
 
 const faqs = [
@@ -109,17 +132,26 @@ function NavBar() {
   return (
     <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
       <div className="portfolio-container flex h-14 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2.5 font-display text-sm font-medium tracking-tight text-foreground">
+        <Link
+          to="/"
+          className="flex items-center gap-2.5 font-display text-sm font-medium tracking-tight text-foreground"
+        >
           <span className="flex size-7 items-center justify-center rounded-md bg-foreground font-mono text-xs font-medium text-background">
             E
           </span>
           Enterprise Ops
         </Link>
         <nav className="hidden items-center gap-6 text-sm md:flex">
-          <Link className="text-muted-foreground transition-colors hover:text-foreground" to="/case-study">
+          <Link
+            className="text-muted-foreground transition-colors hover:text-foreground"
+            to="/case-study"
+          >
             Case Study
           </Link>
-          <Link className="text-muted-foreground transition-colors hover:text-foreground" to="/starter">
+          <Link
+            className="text-muted-foreground transition-colors hover:text-foreground"
+            to="/starter"
+          >
             Docs
           </Link>
           <a
@@ -155,7 +187,9 @@ function HeroDashboard() {
               <span className="size-2.5 rounded-full bg-muted-foreground/30" />
               <span className="size-2.5 rounded-full bg-muted-foreground/30" />
             </div>
-            <span className="ml-2 font-mono text-xs text-muted-foreground">dash.lmntea.fun/app</span>
+            <span className="ml-2 font-mono text-xs text-muted-foreground">
+              dash.lmntea.fun/app
+            </span>
           </div>
           <div className="rounded-full border border-status-success/40 bg-status-success/10 px-2 py-0.5 font-mono text-3xs font-medium text-status-success">
             LIVE
@@ -171,8 +205,12 @@ function HeroDashboard() {
               { label: 'Active Nodes', value: '128', color: 'text-foreground' },
             ].map((kpi) => (
               <div key={kpi.label} className="rounded-lg border border-border bg-card p-3">
-                <div className="font-mono text-3xs uppercase tracking-wider text-muted-foreground">{kpi.label}</div>
-                <div className={`mt-2 text-xl font-medium tabular-nums ${kpi.color}`}>{kpi.value}</div>
+                <div className="font-mono text-3xs uppercase tracking-wider text-muted-foreground">
+                  {kpi.label}
+                </div>
+                <div className={`mt-2 text-xl font-medium tabular-nums ${kpi.color}`}>
+                  {kpi.value}
+                </div>
               </div>
             ))}
           </div>
@@ -200,9 +238,14 @@ function HeroDashboard() {
                   { text: 'Agent heartbeat', time: '5m ago', status: 'success' },
                   { text: 'Late EOD upload', time: '12m ago', status: 'warning' },
                 ].map((evt) => (
-                  <div key={evt.text} className="flex items-center justify-between rounded-md border border-border bg-background px-2.5 py-1.5">
+                  <div
+                    key={evt.text}
+                    className="flex items-center justify-between rounded-md border border-border bg-background px-2.5 py-1.5"
+                  >
                     <div className="flex items-center gap-2">
-                      <span className={`size-1.5 rounded-full ${evt.status === 'success' ? 'bg-status-success' : 'bg-status-warning'}`} />
+                      <span
+                        className={`size-1.5 rounded-full ${evt.status === 'success' ? 'bg-status-success' : 'bg-status-warning'}`}
+                      />
                       <span className="text-xs text-foreground">{evt.text}</span>
                     </div>
                     <span className="font-mono text-3xs text-muted-foreground">{evt.time}</span>
@@ -237,7 +280,10 @@ function IconBox({ icon: Icon }: { icon: LucideIcon }) {
 
 export default function Landing() {
   return (
-    <main className="min-h-screen bg-background text-foreground" data-debug-component-root="Landing">
+    <main
+      className="min-h-screen bg-background text-foreground"
+      data-debug-component-root="Landing"
+    >
       <NavBar />
 
       {/* ── Hero ─────────────────────────────────────── */}
@@ -253,8 +299,8 @@ export default function Landing() {
             <span className="text-muted-foreground">with confidence</span>
           </h1>
           <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-muted-foreground">
-            Full-stack operations dashboard with real-time sync monitoring, EOD tracking,
-            RBAC, and Docker deployment. Built for portfolio review with safe demo data.
+            Full-stack operations dashboard with real-time sync monitoring, EOD tracking, RBAC, and
+            Docker deployment. Built for portfolio review with safe demo data.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link
@@ -284,7 +330,9 @@ export default function Landing() {
         <div className="portfolio-container grid grid-cols-2 divide-x divide-border lg:grid-cols-4">
           {metrics.map((m) => (
             <div key={m.label} className="px-6 py-8 text-center">
-              <div className="font-display text-3xl font-medium tabular-nums text-foreground">{m.value}</div>
+              <div className="font-display text-3xl font-medium tabular-nums text-foreground">
+                {m.value}
+              </div>
               <div className="mt-1 text-xs text-muted-foreground">{m.label}</div>
             </div>
           ))}
@@ -299,16 +347,23 @@ export default function Landing() {
             Everything an ops team needs
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Production-ready modules covering the full operations workflow, from monitoring to administration.
+            Production-ready modules covering the full operations workflow, from monitoring to
+            administration.
           </p>
         </div>
         <div className="mx-auto mt-12 grid max-w-4xl gap-4 md:grid-cols-2 lg:grid-cols-3">
           {features.map((f) => (
-            <article key={f.title} className="rounded-lg border border-border bg-card p-5 transition-colors hover:border-muted-foreground/30">
+            <article
+              key={f.title}
+              className="rounded-lg border border-border bg-card p-5 transition-colors hover:border-muted-foreground/30"
+            >
               <IconBox icon={f.icon} />
               <h3 className="mt-4 text-sm font-medium text-foreground">{f.title}</h3>
               <p className="mt-2 text-xs leading-5 text-muted-foreground">{f.description}</p>
-              <Link to={f.route} className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground">
+              <Link
+                to={f.route}
+                className="mt-4 inline-flex items-center gap-1 text-xs font-medium text-muted-foreground transition-colors group-hover:text-foreground"
+              >
                 Explore <ArrowRight aria-hidden="true" className="size-3" />
               </Link>
             </article>
@@ -329,7 +384,10 @@ export default function Landing() {
             {techStack.map((t) => {
               const TIcon = t.icon;
               return (
-                <div key={t.name} className="flex items-center gap-3 rounded-lg border border-border bg-background p-3">
+                <div
+                  key={t.name}
+                  className="flex items-center gap-3 rounded-lg border border-border bg-background p-3"
+                >
                   <TIcon aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium text-foreground">{t.name}</div>
@@ -355,9 +413,14 @@ export default function Landing() {
         </div>
         <div className="mx-auto mt-12 max-w-3xl space-y-3">
           {architecture.map((layer, i) => (
-            <div key={layer.layer} className="grid items-center gap-4 rounded-lg border border-border bg-card p-5 sm:grid-cols-[100px_minmax(0,1fr)]">
+            <div
+              key={layer.layer}
+              className="grid items-center gap-4 rounded-lg border border-border bg-card p-5 sm:grid-cols-[100px_minmax(0,1fr)]"
+            >
               <div>
-                <div className="font-mono text-3xs uppercase tracking-wider text-muted-foreground">Layer {i + 1}</div>
+                <div className="font-mono text-3xs uppercase tracking-wider text-muted-foreground">
+                  Layer {i + 1}
+                </div>
                 <div className="mt-1 text-sm font-medium text-foreground">{layer.layer}</div>
               </div>
               <div>
@@ -378,7 +441,8 @@ export default function Landing() {
               One command to deploy
             </h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Docker Compose stack with automated health checks, database migrations, RBAC seeding, and remote deployment with rollback support.
+              Docker Compose stack with automated health checks, database migrations, RBAC seeding,
+              and remote deployment with rollback support.
             </p>
             <div className="overflow-hidden rounded-lg border border-border bg-background">
               <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
@@ -387,7 +451,8 @@ export default function Landing() {
               </div>
               <div className="p-4 font-mono text-sm leading-7">
                 <div className="text-muted-foreground">
-                  <span className="text-status-success">$</span> git clone https://github.com/trefeon/enterprise-ops-monitor
+                  <span className="text-status-success">$</span> git clone
+                  https://github.com/trefeon/enterprise-ops-monitor
                 </div>
                 <div className="text-muted-foreground">
                   <span className="text-status-success">$</span> cp .env.example .env
@@ -398,15 +463,19 @@ export default function Landing() {
                 <div className="mt-2 text-muted-foreground/60">
                   # API on :3000, Web on :5173, Postgres on :5433
                 </div>
-                <div className="text-muted-foreground/60">
-                  # Demo mode: pnpm deploy --demo
-                </div>
+                <div className="text-muted-foreground/60"># Demo mode: pnpm deploy --demo</div>
               </div>
             </div>
             <div className="mt-6 grid gap-3 sm:grid-cols-3">
               {[
-                { label: 'Health Checks', detail: 'Container-level health monitoring with autoheal' },
-                { label: 'Zero Downtime', detail: 'Git-based remote deploy with automatic rollback' },
+                {
+                  label: 'Health Checks',
+                  detail: 'Container-level health monitoring with autoheal',
+                },
+                {
+                  label: 'Zero Downtime',
+                  detail: 'Git-based remote deploy with automatic rollback',
+                },
                 { label: 'Demo Mode', detail: 'Isolated demo stack with mock API and seeded data' },
               ].map((item) => (
                 <div key={item.label} className="rounded-lg border border-border bg-background p-4">
@@ -419,6 +488,14 @@ export default function Landing() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Project Origin ─────────────────────────────── */}
+      <section className="portfolio-container py-20">
+        <div className="mx-auto max-w-2xl text-center">
+          <SectionLabel>Why this project exists</SectionLabel>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">{projectStory.origin}</p>
         </div>
       </section>
 
@@ -447,7 +524,8 @@ export default function Landing() {
             See it in action
           </h2>
           <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-muted-foreground">
-            Demo account included. No setup needed. Explore the dashboard, review the case study, then check the source.
+            Demo account included. No setup needed. Explore the dashboard, review the case study,
+            then check the source.
           </p>
           <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <Link

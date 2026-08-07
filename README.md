@@ -1,12 +1,20 @@
 # Enterprise Ops Monitor
 
+![CI](https://github.com/trefeon/enterprise-ops-monitor/actions/workflows/ci.yml/badge.svg?branch=master) ![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)
+
 Real-time visibility for End-of-Day operations, store sync health, backups, agents, access control, and after-hours activity across a simulated retail branch network.
 
-![Enterprise Ops Monitor login screen](enterprise-ops-login-smoke.png)
+![Enterprise Ops Monitor — dashboard](docs/screenshots/dashboard.png)
 
 > **Demo Disclosure**
 >
 > This repository is a **portfolio demo**. Every metric, store, employee, user, credential, log line, and system reading you see is **simulated or anonymized** — generated at runtime by the mock API with faker data. No real store, employee, customer, credential, message-provider, or operational data is included. The only account is the demo account (`demo` / `demo123`), and all sessions live in memory (a restart resets everything). A real full-stack codebase (Express + Sequelize + PostgreSQL) is kept in the repo as **reference material only** — it is never built or deployed by the default path.
+
+## Why this project exists
+
+Built on operational experience from a retail-IT internship: nightly End-of-Day uploads, store sync health, backup confidence, and branch-scoped access were daily realities. The internal system behind that work is confidential and cannot be shown, so this app is a from-scratch rebuild — the same operational domain, on a modern stack, with 100% simulated data. No original code, employer technology, or real records are reused.
+
+_Original code, modern stack, simulated data — nothing from the internal system it models._
 
 ---
 
@@ -18,9 +26,9 @@ docker compose up -d --build
 
 Open **http://localhost:5173** and log in with:
 
-| Username | Password |
-| --- | --- |
-| `demo` | `demo123` |
+| Username | Password  |
+| -------- | --------- |
+| `demo`   | `demo123` |
 
 There is a one-click **Demo Account** quick-login button on the login screen that types the credentials for you.
 
@@ -53,15 +61,40 @@ Windows PowerShell: `$env:VITE_API_URL="http://localhost:4000"; pnpm dev`
 
 The full catalog — 18 feature surfaces with problem/solution/impact narratives, routes, and metrics — lives in [docs/portfolio.md](docs/portfolio.md).
 
+## Screenshots
+
+Real captures from a live run of the demo (`pnpm dev:mock` + dev server, 1440x900), taken by `pnpm screenshots`.
+
+| Dashboard                                    | EOD Monitor                              | Store Sync                                     |
+| -------------------------------------------- | ---------------------------------------- | ---------------------------------------------- |
+| ![Dashboard](docs/screenshots/dashboard.png) | ![EOD Monitor](docs/screenshots/eod.png) | ![Store Sync](docs/screenshots/store-sync.png) |
+| KPI cards, health, alerts, quick actions     | Per-store deadline compliance matrix     | Stale-upload radar with live refresh           |
+
+| Backups                                  | Roles                                | After Hours                                     |
+| ---------------------------------------- | ------------------------------------ | ----------------------------------------------- |
+| ![Backups](docs/screenshots/backups.png) | ![Roles](docs/screenshots/roles.png) | ![After Hours](docs/screenshots/afterhours.png) |
+| Snapshot schedule & restore              | RBAC permission editor               | Late-PC violation monitoring                    |
+
+Full walkthrough GIF + all surfaces: [docs/portfolio.md](docs/portfolio.md) · Re-capture anytime with `pnpm screenshots`. Walkthrough GIF: [docs/screenshots/walkthrough.gif](docs/screenshots/walkthrough.gif).
+
+## Skills demonstrated
+
+- **React 19 + Vite + TypeScript SPA** — route-level RBAC gating via a `PrivateRoute` wrapper with typed `Permissions` checks on every protected route.
+- **shadcn/ui + Tailwind design system** — 40+ composable components in `apps/web/src/components/ui/` styled with CSS-variable design tokens in `src/index.css`.
+- **REST API design** — Express mock API with ~95 endpoints, a consistent `{ ok, data, meta, error }` envelope, and a typed API client per domain in `src/lib/api/`.
+- **Deterministic demo data** — faker seeded from a fixed `DEMO_SEED` (mulberry32 RNG), so two boots produce identical data for the same seed.
+- **Automated testing** — Playwright end-to-end suite across desktop and mobile viewports plus vitest unit tests, all wired into GitHub Actions CI.
+- **Zero-config deployment** — two-container Docker Compose demo (web + mock API, no database, no `.env`) with `scripts/` deploy and health-check automation.
+
 ## Tech stack
 
-| Layer | DEMO RUNTIME (the deployed default) | REAL STACK (kept in repo as reference, never deployed) |
-| --- | --- | --- |
-| Frontend | React 19, Vite 7, TypeScript, Tailwind CSS, shadcn/ui, React Router 7 | Same `apps/web` codebase |
-| API | `mock-api`: Node.js, Express 5, @faker-js/faker, exceljs — ~95 endpoints, in-memory sessions | `apps/api`: Express 5, Sequelize 6, Zod, JWT auth, bcrypt, RBAC v2 with branch scoping, passport (local + Google OAuth), schedulers, automated backups |
-| Database | None (in-memory faker data, WIB timezone) | PostgreSQL 15 with Row-Level Security, forward-only migrations |
-| Proxy / Web server | nginx (SPA routing + `/api` → `api:3000`) | Same nginx, plus `/agent_updates` static mount |
-| Deployment | `docker-compose.yml`: `web` + `mock-api` only, health checks, zero config | `docker-compose.full.yml`: `web` + `api` + PostgreSQL + autoheal — **reference only** |
+| Layer              | DEMO RUNTIME (the deployed default)                                                          | REAL STACK (kept in repo as reference, never deployed)                                                                                                 |
+| ------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Frontend           | React 19, Vite 7, TypeScript, Tailwind CSS, shadcn/ui, React Router 7                        | Same `apps/web` codebase                                                                                                                               |
+| API                | `mock-api`: Node.js, Express 5, @faker-js/faker, exceljs — ~95 endpoints, in-memory sessions | `apps/api`: Express 5, Sequelize 6, Zod, JWT auth, bcrypt, RBAC v2 with branch scoping, passport (local + Google OAuth), schedulers, automated backups |
+| Database           | None (in-memory faker data, WIB timezone)                                                    | PostgreSQL 15 with Row-Level Security, forward-only migrations                                                                                         |
+| Proxy / Web server | nginx (SPA routing + `/api` → `api:3000`)                                                    | Same nginx, plus `/agent_updates` static mount                                                                                                         |
+| Deployment         | `docker-compose.yml`: `web` + `mock-api` only, health checks, zero config                    | `docker-compose.full.yml`: `web` + `api` + PostgreSQL + autoheal — **reference only**                                                                  |
 
 ## Repository layout
 
@@ -98,13 +131,17 @@ The real full stack (`docker-compose.full.yml`: web + Express API + PostgreSQL +
 
 ## Documentation
 
-| Document | Purpose |
-| --- | --- |
-| [docs/prd.md](docs/prd.md) | Product brief for the portfolio demo-first conversion |
-| [docs/architecture.md](docs/architecture.md) | Both architectures: deployed demo runtime and reference full stack |
-| [docs/portfolio.md](docs/portfolio.md) | The portfolio story: all 18 feature surfaces, routes, metrics |
-| [docs/security.md](docs/security.md) | Demo security boundaries + reference summary of completed remediation |
-| [docs/development.md](docs/development.md) | Run, extend, test, and deploy guide (human + agent) |
-| [docs/research.md](docs/research.md) | Research log: build-speed audit, security audit, demo-first rationale |
-| [docs/adr/0001-portfolio-demo-first.md](docs/adr/0001-portfolio-demo-first.md) | Architecture decision record: demo-first, real stack as reference |
-| [AGENTS.md](AGENTS.md) | The AI-agent contract: commands, conventions, verification workflow |
+| Document                                                                       | Purpose                                                               |
+| ------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
+| [docs/prd.md](docs/prd.md)                                                     | Product brief for the portfolio demo-first conversion                 |
+| [docs/architecture.md](docs/architecture.md)                                   | Both architectures: deployed demo runtime and reference full stack    |
+| [docs/portfolio.md](docs/portfolio.md)                                         | The portfolio story: all 18 feature surfaces, routes, metrics         |
+| [docs/security.md](docs/security.md)                                           | Demo security boundaries + reference summary of completed remediation |
+| [docs/development.md](docs/development.md)                                     | Run, extend, test, and deploy guide (human + agent)                   |
+| [docs/research.md](docs/research.md)                                           | Research log: build-speed audit, security audit, demo-first rationale |
+| [docs/adr/0001-portfolio-demo-first.md](docs/adr/0001-portfolio-demo-first.md) | Architecture decision record: demo-first, real stack as reference     |
+| [AGENTS.md](AGENTS.md)                                                         | The AI-agent contract: commands, conventions, verification workflow   |
+
+## License
+
+Released under the [MIT License](LICENSE).

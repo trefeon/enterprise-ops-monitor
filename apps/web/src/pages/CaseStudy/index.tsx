@@ -69,11 +69,17 @@ const keyFeatures = featureStories.slice(0, 8);
 
 export default function CaseStudy() {
   return (
-    <main className="min-h-screen bg-background text-foreground" data-debug-component-root="Case-Study">
+    <main
+      className="min-h-screen bg-background text-foreground"
+      data-debug-component-root="Case-Study"
+    >
       {/* Nav */}
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
         <div className="portfolio-container flex h-14 items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5 font-display text-sm font-medium tracking-tight text-foreground">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 font-display text-sm font-medium tracking-tight text-foreground"
+          >
             <span className="flex size-7 items-center justify-center rounded-md bg-foreground font-mono text-xs font-medium text-background">
               E
             </span>
@@ -106,11 +112,12 @@ export default function CaseStudy() {
             <br />
             <span className="text-muted-foreground">production operations platform</span>
           </h1>
-          <p className="mt-6 text-base leading-7 text-muted-foreground">
-            {projectStory.context}
-          </p>
+          <p className="mt-6 text-base leading-7 text-muted-foreground">{projectStory.context}</p>
           <p className="mt-4 rounded-lg border border-border bg-card p-4 text-xs leading-5 text-muted-foreground">
             <strong className="text-foreground">Disclosure:</strong> {projectStory.disclosure}
+          </p>
+          <p className="mt-4 rounded-lg border border-border bg-card p-4 text-xs leading-5 text-muted-foreground">
+            <strong className="text-foreground">Project origin:</strong> {projectStory.origin}
           </p>
         </div>
       </section>
@@ -133,7 +140,9 @@ export default function CaseStudy() {
             },
           ].map((item) => (
             <article key={item.title} className="px-6 py-8">
-              <div className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">{item.title}</div>
+              <div className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                {item.title}
+              </div>
               <p className="mt-3 text-sm leading-6 text-foreground">{item.body}</p>
             </article>
           ))}
@@ -145,7 +154,9 @@ export default function CaseStudy() {
         <div className="portfolio-container grid grid-cols-2 divide-x divide-border lg:grid-cols-4">
           {challengeMetrics.map((m) => (
             <div key={m.label} className="px-6 py-8 text-center">
-              <div className="font-display text-2xl font-medium tabular-nums text-foreground">{m.value}</div>
+              <div className="font-display text-2xl font-medium tabular-nums text-foreground">
+                {m.value}
+              </div>
               <div className="mt-1 text-xs text-muted-foreground">{m.label}</div>
             </div>
           ))}
@@ -155,13 +166,15 @@ export default function CaseStudy() {
       {/* Architecture */}
       <section className="portfolio-container py-20">
         <div className="mx-auto max-w-3xl">
-          <div className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">Architecture</div>
+          <div className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Architecture
+          </div>
           <h2 className="mt-3 font-display text-3xl font-medium tracking-tight text-foreground">
             Four-layer separation of concerns
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Each layer can be replaced or scaled independently. The architecture keeps production-like
-            boundaries while staying safe for public portfolio review.
+            Each layer can be replaced or scaled independently. The architecture keeps
+            production-like boundaries while staying safe for public portfolio review.
           </p>
 
           <div className="mt-12 space-y-4">
@@ -179,7 +192,10 @@ export default function CaseStudy() {
                 <div className="grid gap-2 p-5 sm:grid-cols-2">
                   {layer.decisions.map((decision) => (
                     <div key={decision} className="flex gap-2">
-                      <CheckCircle2 aria-hidden="true" className="mt-0.5 size-3 shrink-0 text-status-success" />
+                      <CheckCircle2
+                        aria-hidden="true"
+                        className="mt-0.5 size-3 shrink-0 text-status-success"
+                      />
                       <span className="text-xs leading-5 text-muted-foreground">{decision}</span>
                     </div>
                   ))}
@@ -194,31 +210,44 @@ export default function CaseStudy() {
       <section className="border-y border-border bg-card/30">
         <div className="portfolio-container py-20">
           <div className="mx-auto max-w-3xl">
-            <div className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">Features</div>
+            <div className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Features
+            </div>
             <h2 className="mt-3 font-display text-3xl font-medium tracking-tight text-foreground">
               Production feature coverage
             </h2>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
-              Each feature demonstrates a specific product decision. Click through to the live demo to explore.
+              Each feature demonstrates a specific product decision. Click through to the live demo
+              to explore.
             </p>
           </div>
 
           <div className="mx-auto mt-12 grid max-w-4xl gap-4 md:grid-cols-2">
             {keyFeatures.map((feature) => (
-              <article key={feature.id} className="rounded-lg border border-border bg-background p-5 transition-colors hover:border-muted-foreground/30">
+              <article
+                key={feature.id}
+                className="rounded-lg border border-border bg-background p-5 transition-colors hover:border-muted-foreground/30"
+              >
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-3xs uppercase tracking-wider text-primary">{feature.route}</span>
+                  <span className="font-mono text-3xs uppercase tracking-wider text-primary">
+                    {feature.route}
+                  </span>
                 </div>
                 <h3 className="mt-3 text-sm font-medium text-foreground">{feature.featureName}</h3>
                 <p className="mt-1 text-xs text-muted-foreground">{feature.tagline}</p>
                 <div className="mt-4 border-t border-border pt-4">
-                  <div className="text-3xs font-medium uppercase tracking-wider text-muted-foreground">Solution</div>
+                  <div className="text-3xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Solution
+                  </div>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{feature.solution}</p>
                 </div>
                 {feature.metrics && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {feature.metrics.map((m) => (
-                      <span key={m.label} className="rounded-md border border-border bg-card px-2 py-0.5 font-mono text-3xs text-muted-foreground">
+                      <span
+                        key={m.label}
+                        className="rounded-md border border-border bg-card px-2 py-0.5 font-mono text-3xs text-muted-foreground"
+                      >
                         {m.label}: {m.value}
                       </span>
                     ))}
@@ -233,7 +262,9 @@ export default function CaseStudy() {
       {/* Tech Stack */}
       <section className="portfolio-container py-20">
         <div className="mx-auto max-w-3xl">
-          <div className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">Stack</div>
+          <div className="font-mono text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            Stack
+          </div>
           <h2 className="mt-3 font-display text-3xl font-medium tracking-tight text-foreground">
             Technology choices
           </h2>
@@ -241,8 +272,12 @@ export default function CaseStudy() {
             <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border bg-card">
-                  <th className="px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Layer</th>
-                  <th className="px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">Technologies</th>
+                  <th className="px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Layer
+                  </th>
+                  <th className="px-5 py-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                    Technologies
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -296,7 +331,9 @@ export default function CaseStudy() {
             <span>v2.0.0</span>
           </div>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <Link to="/" className="transition-colors hover:text-foreground">Home</Link>
+            <Link to="/" className="transition-colors hover:text-foreground">
+              Home
+            </Link>
             <a
               href="https://github.com/trefeon/enterprise-ops-monitor"
               target="_blank"
