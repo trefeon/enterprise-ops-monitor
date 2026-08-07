@@ -23,14 +23,40 @@ const EMPLOYEE_ROLES = [
   'Warehouse Staff',
 ];
 
+// ─── Deterministic demo data ──────────────────────────────────────────────────
+// All demo data is seeded ONCE at boot: two boots with the same seed produce
+// identical datasets (screenshots, docs, live demo stay consistent), while
+// dates stay relative to the real current date so the demo always looks
+// "today". Override with DEMO_SEED (integer); default is used when unset or
+// invalid.
+const DEFAULT_SEED = 20260808;
+const parsedSeed = parseInt(process.env.DEMO_SEED, 10);
+const DEMO_SEED = Number.isInteger(parsedSeed) ? parsedSeed : DEFAULT_SEED;
+
+// Small deterministic PRNG (mulberry32) backing every Math.random-style draw in
+// this file, so boot-time data AND per-request demo generators reproduce
+// exactly for a given seed. faker is seeded from the same value.
+function mulberry32(a) {
+  return function () {
+    a |= 0;
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+const seededRandom = mulberry32(DEMO_SEED);
+faker.seed(DEMO_SEED);
+
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 function randomInt(min, max) {
-  return Math.floor(Math.random() * (max - min + 1)) + min;
+  return Math.floor(seededRandom() * (max - min + 1)) + min;
 }
 
 function randomWeighted(weights) {
   const total = weights.reduce((a, b) => a + b, 0);
-  let r = Math.random() * total;
+  let r = seededRandom() * total;
   for (let i = 0; i < weights.length; i++) {
     r -= weights[i];
     if (r <= 0) return i;
@@ -39,7 +65,7 @@ function randomWeighted(weights) {
 }
 
 function pickRandom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
+  return arr[Math.floor(seededRandom() * arr.length)];
 }
 
 function toWibDate(date) {
@@ -71,6 +97,16 @@ function wibMinute() {
 function daysAgo(n) {
   const d = new Date(Date.now() - n * 86400000);
   return d;
+}
+
+// WIB month key (YYYY-MM) offset from the current WIB month, e.g. wibMonthKey(1)
+// is last month. Keeps report months relative to "today" instead of hardcoded.
+function wibMonthKey(offsetMonths) {
+  const [year, month] = toWibDate().split('-').map(Number);
+  const total = year * 12 + (month - 1) - offsetMonths;
+  const yy = Math.floor(total / 12);
+  const mm = (total % 12) + 1;
+  return `${yy}-${String(mm).padStart(2, '0')}`;
 }
 
 function randomPastMinutes(maxMinutes, baseDate) {
@@ -239,6 +275,10 @@ function buildStores() {
 
 const STORES = buildStores();
 
+// Employees are generated ONCE at boot (same seed -> same roster) and filtered
+// per request, so the roster never churns between requests.
+const MOCK_EMPLOYEES = buildEmployees();
+
 function buildEmployees() {
   let localIdx = 1;
   const now = new Date();
@@ -286,7 +326,7 @@ function filterEmployeesForRequest(query) {
   const needle = String(q || search || '')
     .trim()
     .toLowerCase();
-  let employees = buildEmployees();
+  let employees = [...MOCK_EMPLOYEES];
 
   if (needle) {
     employees = employees.filter(
@@ -339,12 +379,17 @@ function initEodState() {
 
 initEodState();
 
-// Run tick loop to progress EOD status every second
+// Run tick loop to progress EOD status every second. This is a genuinely LIVE
+// simulation: it draws from its own seeded RNG (liveRandom) at wall-clock
+// timing, so it never advances the deterministic `seededRandom` stream that
+// backs the presentation data — while still starting from seeded state.
+const liveRandom = mulberry32(DEMO_SEED ^ 0x9e3779b9);
 setInterval(() => {
   if (Object.keys(eodState.stores).length === 0) return;
 
   const now = new Date();
   let allFinished = true;
+  const liveRandomInt = (min, max) => Math.floor(liveRandom() * (max - min + 1)) + min;
 
   for (const store of STORES) {
     const sState = eodState.stores[store.storeCode];
@@ -354,17 +399,17 @@ setInterval(() => {
       allFinished = false;
 
       // 15% chance to progress the upload percent or status
-      if (Math.random() < 0.15) {
+      if (liveRandom() < 0.15) {
         sState.lastSync = now.toISOString();
         if (sState.uploadPercent === 0) {
-          sState.uploadPercent = randomInt(5, 35);
+          sState.uploadPercent = liveRandomInt(5, 35);
           sState.uploadAt = now.toISOString();
         } else if (sState.uploadPercent < 100) {
-          sState.uploadPercent += randomInt(15, 45);
+          sState.uploadPercent += liveRandomInt(15, 45);
           if (sState.uploadPercent >= 100) {
             sState.uploadPercent = 100;
             // 90% chance it succeeds (done), 10% chance it fails (failed)
-            if (Math.random() < 0.9) {
+            if (liveRandom() < 0.9) {
               sState.status = 'done';
               sState.statusSales = 'OK';
               sState.eodAt = now.toISOString();
@@ -538,7 +583,7 @@ function buildDashboardAlerts() {
   }
 
   // Random service/backup alerts (occasional)
-  if (Math.random() > 0.6) {
+  if (seededRandom() > 0.6) {
     alerts.push({
       id: `backup_${Date.now()}`,
       type: 'BACKUP_FAILED',
@@ -548,7 +593,7 @@ function buildDashboardAlerts() {
     });
   }
 
-  if (Math.random() > 0.8) {
+  if (seededRandom() > 0.8) {
     alerts.push({
       id: `disk_${Date.now()}`,
       type: 'DISK_LOW',
@@ -558,7 +603,7 @@ function buildDashboardAlerts() {
     });
   }
 
-  if (Math.random() > 0.85) {
+  if (seededRandom() > 0.85) {
     alerts.push({
       id: `service_${Date.now()}`,
       type: 'SERVICE_DOWN',
@@ -603,7 +648,7 @@ function buildEodStoreRows(filterDate) {
       status,
       lastEodAt: eodAt ? toWibIso(eodAt) : null,
       lastSyncAt: syncAt ? toWibIso(syncAt) : null,
-      source: isToday ? (Math.random() > 0.3 ? 'api' : 'bot') : 'db',
+      source: isToday ? (seededRandom() > 0.3 ? 'api' : 'bot') : 'db',
       errorMessage: status === 'failed' ? 'EOD not completed by deadline' : null,
     };
   });
@@ -953,7 +998,7 @@ app.get('/api/eod/status', (req, res) => {
     status: r.status,
     lastUpdate: r.lastSyncAt,
     eodDate: toWibDate(),
-    isFinal: r.status === 'done' && Math.random() > 0.2,
+    isFinal: r.status === 'done' && seededRandom() > 0.2,
   }));
   return ok(res, data, {
     summary: {
@@ -1130,8 +1175,7 @@ app.get('/api/employees/export', async (req, res) => {
 });
 
 app.get('/api/employees/:nik', (req, res) => {
-  const employees = buildEmployees();
-  const emp = employees.find((e) => e.nik === req.params.nik);
+  const emp = MOCK_EMPLOYEES.find((e) => e.nik === req.params.nik);
   if (!emp) return fail(res, 404, 'NOT_FOUND', 'Employee not found');
   return ok(res, emp);
 });
@@ -1161,9 +1205,9 @@ app.get('/api/sync/summary', (req, res) => {
     ? STORES.filter((s) => !s.storeName.toLowerCase().includes('bazar'))
     : STORES;
 
-  const synced = stores.filter(() => Math.random() > 0.2).length;
-  const stale = stores.filter(() => Math.random() > 0.7).length;
-  const problem = stores.filter(() => Math.random() > 0.85).length;
+  const synced = stores.filter(() => seededRandom() > 0.2).length;
+  const stale = stores.filter(() => seededRandom() > 0.7).length;
+  const problem = stores.filter(() => seededRandom() > 0.85).length;
   const oldestIdx = randomInt(0, Math.max(0, stores.length - 1));
   const oldest = stores[oldestIdx];
 
@@ -1193,7 +1237,7 @@ app.get('/api/sync/summary', (req, res) => {
 app.get('/api/sync/live', (req, res) => {
   const rows = STORES.map((store) => {
     const lastSyncAgoSec = randomInt(0, 1800);
-    const isProblem = lastSyncAgoSec > 600 || Math.random() > 0.85;
+    const isProblem = lastSyncAgoSec > 600 || seededRandom() > 0.85;
     const isStale = !isProblem && lastSyncAgoSec > 300;
     return {
       storeCode: store.storeCode,
@@ -1270,7 +1314,7 @@ app.get('/api/sync/stores', (req, res) => {
   if (status) {
     stores = stores.filter((s) => {
       const ageSec = randomInt(0, 1800);
-      if (status === 'problem') return ageSec > 600 || Math.random() > 0.85;
+      if (status === 'problem') return ageSec > 600 || seededRandom() > 0.85;
       if (status === 'stale') return ageSec > 300 && ageSec <= 600;
       if (status === 'synced') return ageSec <= 300;
       return true;
@@ -1286,7 +1330,7 @@ app.get('/api/sync/stores', (req, res) => {
 
   const data = stores.map((store) => {
     const lastSyncAgoSec = randomInt(0, 1800);
-    const isProblem = lastSyncAgoSec > 600 || Math.random() > 0.85;
+    const isProblem = lastSyncAgoSec > 600 || seededRandom() > 0.85;
     const isStale = !isProblem && lastSyncAgoSec > 300;
     return {
       storeId: store.storeCode,
@@ -1352,8 +1396,8 @@ app.get('/api/sync/history/:storeCode/summary', (req, res) => {
     const bucketStart = new Date();
     bucketStart.setHours(h, 0, 0, 0);
     const bucketEnd = new Date(bucketStart.getTime() + bucketMin * 60000);
-    const isProblem = Math.random() > 0.8;
-    const isStale = !isProblem && Math.random() > 0.6;
+    const isProblem = seededRandom() > 0.8;
+    const isStale = !isProblem && seededRandom() > 0.6;
     buckets.push({
       id: `bucket-${storeCode}-${h}`,
       storeCode,
@@ -1401,7 +1445,7 @@ app.get('/api/sync/status', (req, res) => {
       rowsPending: randomInt(0, 50),
       status: pickRandom(statuses),
       connection: pickRandom(['online', 'online', 'online', 'offline']),
-      isMissingToday: Math.random() > 0.85,
+      isMissingToday: seededRandom() > 0.85,
     };
   });
   return ok(res, data, { timezone: 'Asia/Jakarta' });
@@ -1455,9 +1499,9 @@ app.post('/api/sync/trigger', (req, res) => {
 let backupFiles = [];
 (function initBackups() {
   for (let i = 0; i < randomInt(15, 30); i++) {
-    const date = new Date(Date.now() - i * 86400000 * (Math.random() > 0.7 ? randomInt(1, 3) : 1));
+    const date = new Date(Date.now() - i * 86400000 * (seededRandom() > 0.7 ? randomInt(1, 3) : 1));
     const type = date.getUTCHours() === 0 && date.getUTCMinutes() < 10 ? 'scheduled' : 'manual';
-    const failed = Math.random() > 0.92;
+    const failed = seededRandom() > 0.92;
     backupFiles.push({
       fileName: `${type}_backup_${date.toISOString().replace(/[:.]/g, '').replace('T', '_').slice(0, 15)}_${String(i + 1).padStart(2, '0')}.sql.gz`,
       type,
@@ -1624,8 +1668,8 @@ app.get('/api/alerts', (req, res) => {
       storeName: store.storeName,
       timestamp: randomPastMinutes(120),
       createdAt: randomPastMinutes(120),
-      acknowledged: Math.random() > 0.6,
-      resolved: Math.random() > 0.8,
+      acknowledged: seededRandom() > 0.6,
+      resolved: seededRandom() > 0.8,
     });
   }
   return ok(res, alerts, { timezone: 'Asia/Jakarta' });
@@ -1867,7 +1911,7 @@ app.get('/api/agent/monitoring', (req, res) => {
     agent_version: `v${randomInt(2, 4)}.${randomInt(0, 9)}.${randomInt(0, 99)}`,
     last_heartbeat: m.status === 'online' ? randomPastMinutes(2) : randomPastMinutes(1440),
     uptime_sec: m.status === 'online' ? randomInt(3600, 604800) : 0,
-    is_update_pending: Math.random() > 0.7,
+    is_update_pending: seededRandom() > 0.7,
     processes: m.status === 'online' ? randomInt(50, 200) : 0,
   }));
 
@@ -2004,7 +2048,7 @@ app.get('/api/afterhours', (req, res) => {
       duration: `${randomInt(10, 300)}s`,
       status: pickRandom(['completed', 'completed', 'flagged']),
       notes: faker.lorem.sentence(),
-      notified: Math.random() > 0.4,
+      notified: seededRandom() > 0.4,
     });
   }
 
@@ -2085,13 +2129,13 @@ app.post('/api/afterhours/check', (req, res) => {
 app.get('/api/afterhours/report/months', (req, res) => {
   const months = [
     {
-      report_month: '2026-05',
+      report_month: wibMonthKey(0),
       store_count: STORES.length,
       total_violation_days: randomInt(15, 45),
       generated_at: new Date().toISOString(),
     },
     {
-      report_month: '2026-04',
+      report_month: wibMonthKey(1),
       store_count: STORES.length,
       total_violation_days: randomInt(30, 80),
       generated_at: daysAgo(30).toISOString(),
@@ -2101,7 +2145,7 @@ app.get('/api/afterhours/report/months', (req, res) => {
 });
 
 app.get('/api/afterhours/report', (req, res) => {
-  const month = req.query.month || '2026-05';
+  const month = req.query.month || wibMonthKey(0);
   const branch = req.query.branch;
   const search = req.query.search;
 
@@ -2151,13 +2195,13 @@ app.get('/api/afterhours/report', (req, res) => {
 app.post('/api/afterhours/report/generate', (req, res) => {
   return ok(res, {
     success: true,
-    month: req.body?.month || '2026-05',
+    month: req.body?.month || wibMonthKey(0),
     generatedAt: new Date().toISOString(),
   });
 });
 
 app.get('/api/afterhours/report/export', async (req, res) => {
-  const month = req.query.month || '2026-05';
+  const month = req.query.month || wibMonthKey(0);
   const rows = BRANCHES.map((branch) => ({
     branch: branch.name,
     month,
