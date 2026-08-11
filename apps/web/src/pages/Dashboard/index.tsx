@@ -268,22 +268,22 @@ export default function DashboardPage() {
                 ].map((item, i) => (
                   <div
                     key={i}
-                    className="flex flex-col justify-between gap-2.5 rounded-lg border border-border bg-surface-muted/60 p-3.5 transition-colors hover:border-primary/30"
+                    className="flex flex-col justify-between gap-2.5 rounded-lg border border-border bg-surface-muted/60 p-3.5 text-left transition-colors hover:border-primary/30"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 text-left">
                       <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-primary">
                         <item.icon className="size-4" />
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-medium text-foreground">{item.label}</p>
-                        <p className="truncate text-3xs font-medium uppercase tracking-wider text-muted-foreground">
+                      <div className="min-w-0 flex-1 text-left">
+                        <p className="truncate text-xs font-medium text-foreground text-left">{item.label}</p>
+                        <p className="truncate text-3xs font-medium uppercase tracking-wider text-muted-foreground text-left">
                           {item.sub}
                         </p>
                       </div>
                     </div>
                     <p
                       className={cn(
-                        'font-mono text-base font-semibold tracking-tight',
+                        'font-mono text-base font-semibold tracking-tight text-left',
                         item.error ? 'text-status-error' : 'text-foreground'
                       )}
                     >

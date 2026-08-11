@@ -406,15 +406,15 @@ const LiveSync = () => {
               {error}
             </span>
           )}
-          <div className="text-right">
+          <div className="text-left">
             <div className="font-mono text-3xl font-medium tabular-nums tracking-tighter text-foreground">
               {clock}
             </div>
-            <div className="text-3xs font-medium uppercase tracking-widest-2xl text-muted-foreground/40 pr-1">
+            <div className="text-3xs font-medium uppercase tracking-widest-2xl text-muted-foreground/40">
               WIB LOCAL TIME
             </div>
           </div>
-          <div className="flex flex-col items-center gap-1 border-l border-border/40 pl-8">
+          <div className="flex flex-col items-start gap-1 border-l border-border/40 pl-8">
             <div className="text-xl font-medium tabular-nums text-primary/60">{countdown}s</div>
             <div className="text-3xs font-medium uppercase tracking-widest text-muted-foreground/40">
               NEXT REFRESH
