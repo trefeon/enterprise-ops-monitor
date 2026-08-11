@@ -21,6 +21,7 @@ import {
 import type { LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
+import PortfolioNav from '../../components/portfolio/PortfolioNav';
 import { projectStory } from '../../data/stories';
 
 /* ─── Data ───────────────────────────────────────────── */
@@ -129,50 +130,7 @@ const faqs = [
 /* ─── Components ─────────────────────────────────────── */
 
 function NavBar() {
-  return (
-    <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
-      <div className="portfolio-container flex h-14 items-center justify-between">
-        <Link
-          to="/"
-          className="flex items-center gap-2.5 font-display text-sm font-medium tracking-tight text-foreground"
-        >
-          <span className="flex size-7 items-center justify-center rounded-md bg-foreground font-mono text-xs font-medium text-background">
-            E
-          </span>
-          Enterprise Ops
-        </Link>
-        <nav className="hidden items-center gap-6 text-sm md:flex">
-          <Link
-            className="text-muted-foreground transition-colors hover:text-foreground"
-            to="/case-study"
-          >
-            Case Study
-          </Link>
-          <Link
-            className="text-muted-foreground transition-colors hover:text-foreground"
-            to="/starter"
-          >
-            Docs
-          </Link>
-          <a
-            className="text-muted-foreground transition-colors hover:text-foreground"
-            href="https://github.com/trefeon/enterprise-ops-monitor"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            GitHub
-          </a>
-        </nav>
-        <Link
-          to="/login"
-          className="inline-flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-opacity hover:opacity-90"
-        >
-          Live Demo
-          <ArrowRight aria-hidden="true" className="size-3" />
-        </Link>
-      </div>
-    </header>
-  );
+  return <PortfolioNav />;
 }
 
 function HeroDashboard() {

@@ -1,15 +1,25 @@
-import { ArrowRight, CheckCircle2, ClipboardList, Code2, Database, ShieldCheck } from 'lucide-react';
+import {
+  ArrowRight,
+  CheckCircle2,
+  ClipboardList,
+  Code2,
+  Database,
+  ShieldCheck,
+} from 'lucide-react';
 import { Link } from 'react-router-dom';
+import PortfolioNav from '../../components/portfolio/PortfolioNav';
 
 const steps = [
   {
     title: 'Replace domain copy',
-    detail: 'Swap product labels, sidebar names, route copy, and disclosure text for the next project.',
+    detail:
+      'Swap product labels, sidebar names, route copy, and disclosure text for the next project.',
     icon: ClipboardList,
   },
   {
     title: 'Add a module',
-    detail: 'Reuse existing page, table, filter, export, and route-guard patterns for a new workflow.',
+    detail:
+      'Reuse existing page, table, filter, export, and route-guard patterns for a new workflow.',
     icon: Code2,
   },
   {
@@ -26,25 +36,13 @@ const steps = [
 
 export default function Starter() {
   return (
-    <main className="min-h-screen bg-background text-foreground" data-debug-component-root="Starter">
-      <header className="portfolio-container flex items-center justify-between py-5">
-        <Link to="/" className="font-display text-sm font-medium text-foreground">
-          Enterprise Ops Starter
-        </Link>
-        <div className="flex items-center gap-3 text-sm">
-          <Link className="text-muted-foreground hover:text-foreground" to="/case-study">
-            Case Study
-          </Link>
-          <Link
-            className="rounded-lg bg-primary px-3 py-2 font-medium text-primary-foreground hover:bg-primary/85"
-            to="/login"
-          >
-            Open Demo
-          </Link>
-        </div>
-      </header>
+    <main
+      className="min-h-screen bg-background text-foreground"
+      data-debug-component-root="Starter"
+    >
+      <PortfolioNav />
 
-      <section className="portfolio-container pb-12 pt-10">
+      <section className="portfolio-container pb-12 pt-28">
         <div className="max-w-3xl">
           <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium uppercase tracking-wide text-primary">
             Reusable project base
@@ -53,8 +51,8 @@ export default function Starter() {
             Start another operations app from proven dashboard patterns.
           </h1>
           <p className="mt-5 text-base leading-7 text-muted-foreground">
-            Use this repo as a bootstrapped foundation for authenticated dashboards that need modules,
-            permissions, exports, fake demo data, and Docker-friendly local runs.
+            Use this repo as a bootstrapped foundation for authenticated dashboards that need
+            modules, permissions, exports, fake demo data, and Docker-friendly local runs.
           </p>
         </div>
       </section>
@@ -75,7 +73,10 @@ export default function Starter() {
       <section className="border-t border-border bg-card/50">
         <div className="portfolio-container grid gap-4 py-10 lg:grid-cols-3">
           {['pnpm dev', 'pnpm --filter web test', 'docker compose up -d'].map((command) => (
-            <div key={command} className="flex items-center gap-3 rounded-lg border border-border bg-background p-4">
+            <div
+              key={command}
+              className="flex items-center gap-3 rounded-lg border border-border bg-background p-4"
+            >
               <CheckCircle2 aria-hidden="true" className="size-4 text-primary" />
               <code className="text-sm text-muted-foreground">{command}</code>
             </div>

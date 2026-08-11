@@ -13,6 +13,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import PortfolioNav from '../../components/portfolio/PortfolioNav';
 import { featureStories, projectStory } from '../../data/stories';
 
 const challengeMetrics = [
@@ -74,31 +75,7 @@ export default function CaseStudy() {
       data-debug-component-root="Case-Study"
     >
       {/* Nav */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-md">
-        <div className="portfolio-container flex h-14 items-center justify-between">
-          <Link
-            to="/"
-            className="flex items-center gap-2.5 font-display text-sm font-medium tracking-tight text-foreground"
-          >
-            <span className="flex size-7 items-center justify-center rounded-md bg-foreground font-mono text-xs font-medium text-background">
-              E
-            </span>
-            Enterprise Ops
-          </Link>
-          <div className="flex items-center gap-4 text-sm">
-            <Link className="text-muted-foreground transition-colors hover:text-foreground" to="/">
-              Home
-            </Link>
-            <Link
-              className="inline-flex h-8 items-center gap-1.5 rounded-md bg-foreground px-3 text-xs font-medium text-background transition-opacity hover:opacity-90"
-              to="/login"
-            >
-              Live Demo
-              <ArrowRight className="size-3" />
-            </Link>
-          </div>
-        </div>
-      </header>
+      <PortfolioNav />
 
       {/* Hero */}
       <section className="portfolio-container pt-28 pb-16">
