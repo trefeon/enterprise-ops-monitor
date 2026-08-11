@@ -335,7 +335,7 @@ const StoreManagement = () => {
       {
         header: 'Name',
         accessor: 'storeName',
-        className: 'min-w-[220px] px-4',
+        className: 'min-w-cell-sm px-4',
         render: (row) => (
           <span className="block min-w-0 max-w-[24rem] truncate font-medium">
             {row.storeName || '-'}

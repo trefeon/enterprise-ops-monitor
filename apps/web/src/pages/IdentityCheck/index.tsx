@@ -338,7 +338,7 @@ const IdentityCheck = () => {
       {
         header: 'Name',
         accessor: 'fullName',
-        className: 'min-w-[220px] px-4 font-medium',
+        className: 'min-w-cell-sm px-4 font-medium',
         render: (row) => (
           <span className="block min-w-0 max-w-[24rem] truncate">
             {getEmployeeName(row) || '-'}
@@ -354,7 +354,7 @@ const IdentityCheck = () => {
       {
         header: 'Store',
         accessor: 'storeName',
-        className: 'min-w-[220px] px-4',
+        className: 'min-w-cell-sm px-4',
         render: (row) => {
           const storeLabel = [row.storeCode, row.storeName].filter(Boolean).join(' - ');
           return <span className="block min-w-0 max-w-[24rem] truncate">{storeLabel || '-'}</span>;

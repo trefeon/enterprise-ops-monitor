@@ -237,7 +237,10 @@ Phases A/B/C/E landed; Phase D continues as roadmap task R3.` Keep the file (it 
     or `designer` if judgment on the token system is needed. Do **not** fan out — findings
     must come from one consistent standard.
 
-- [ ] **R2.2 — Fix the confirmed findings**
+- [x] **R2.2 — Fix the confirmed findings**
+  - **Done 2026-08-11:** fixed F3 (`minWidth.cell-sm: 220px` token + 3 usages) and F6 (8 v4-only
+    combobox forms → v3; emitted CSS verified). LOW findings F1/F2/F4/F5/F7–F11 left as
+    documented known/accepted. `check:all`, build, e2e 101 green; verifier passed.
   - **Precondition:** R2.1 report exists and is reviewed.
   - **Steps:** fix only **HIGH** and **MEDIUM** findings from R2.1. Replace arbitrary values
     with tokens; if a value has no token and is used 3+ times, **add the token** to

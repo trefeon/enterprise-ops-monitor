@@ -94,17 +94,20 @@ export default {
         'widest-lg': '0.2em',
         'widest-xl': '0.25em',
         'widest-2xl': '0.3em',
-        'widest': '0.12em',
+        widest: '0.12em',
       },
       maxWidth: {
         'cell-sm': '180px',
         'cell-md': '200px',
       },
+      minWidth: {
+        'cell-sm': '220px',
+      },
       lineHeight: {
-        'tightest': '1.05',
+        tightest: '1.05',
       },
       scale: {
-        '98': '0.98',
+        98: '0.98',
       },
       backgroundImage: {
         'radial-login':
@@ -138,7 +141,7 @@ export default {
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
         'pulse-alert': 'pulseAlert 1.5s ease-in-out infinite',
-        'shimmer': 'shimmer 1.5s infinite',
+        shimmer: 'shimmer 1.5s infinite',
         'dot-pulse': 'dotPulse 1s ease-in-out infinite',
         'spin-slow': 'spin 600ms linear infinite',
         'status-online': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
