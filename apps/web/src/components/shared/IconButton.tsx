@@ -40,8 +40,8 @@ export function IconButton({
       size="icon"
       onClick={onClick}
       disabled={disabled}
-      title={label}
-      aria-label={label}
+      title={label || (typeof props.title === 'string' ? props.title : undefined)}
+      aria-label={label || (typeof props.title === 'string' ? props.title : 'Action button')}
       className={cn(
         'relative flex h-10 w-10 shrink-0 items-center justify-center rounded-md border p-2 transition-all active:scale-95 duration-150',
         colorClass,
@@ -52,7 +52,7 @@ export function IconButton({
     >
       <span className="flex shrink-0 items-center justify-center [&>svg]:size-5">{icon}</span>
       {showDot && (
-        <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-status-error ring-2 ring-background animate-pulse" />
+        <span className="absolute right-2 top-2 h-2.5 w-2.5 rounded-full bg-status-error ring-2 ring-background motion-safe:animate-pulse" />
       )}
     </Button>
   );

@@ -397,7 +397,7 @@ export default function UsersAdmin() {
                 setQ(val);
                 setPage(1);
               }}
-              placeholder="Search username..."
+              placeholder="Search username…"
               className="w-full md:max-w-sm"
             />
           </div>
@@ -411,6 +411,8 @@ export default function UsersAdmin() {
                 <label htmlFor="username" className="text-xs text-muted-foreground">Username</label>
                 <Input
                   id="username"
+                  autoComplete="username"
+                  spellCheck={false}
                   value={createForm.username}
                   onChange={(e) => setCreateForm((s) => ({ ...s, username: e.target.value }))}
                   placeholder="username"
@@ -421,6 +423,7 @@ export default function UsersAdmin() {
                 <Input
                   id="password"
                   type="password"
+                  autoComplete="new-password"
                   value={createForm.password}
                   onChange={(e) => setCreateForm((s) => ({ ...s, password: e.target.value }))}
                   placeholder="temporary password"
