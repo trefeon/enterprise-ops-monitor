@@ -1,10 +1,24 @@
 import { useEffect, useCallback } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-  RefreshCw, AlertTriangle, CheckCircle2, XCircle,
-  Store, BadgeCheck, Cloud, HeartPulse, Monitor,
-  Clock, ArrowRight, Cpu, ShieldAlert, Wifi,
-  History, FileSpreadsheet, Activity, Zap,
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle2,
+  XCircle,
+  Store,
+  BadgeCheck,
+  Cloud,
+  HeartPulse,
+  Monitor,
+  Clock,
+  ArrowRight,
+  Cpu,
+  ShieldAlert,
+  Wifi,
+  History,
+  FileSpreadsheet,
+  Activity,
+  Zap,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
@@ -30,6 +44,7 @@ import {
 import { StatCard } from '@/components/ui/cards/StatCard';
 import type { DashboardSummary, Alert } from './types';
 import { useDashboard } from './hooks/useDashboard';
+import { demoBlocked } from '@/components/base/demo-toast';
 
 const SEVERITY_STYLES: Record<
   string,
@@ -53,13 +68,33 @@ function formatAlertType(value: string) {
 function getHealthConfig(systemHealth: string) {
   switch (systemHealth) {
     case 'OK':
-      return { label: 'Healthy', dot: 'bg-status-success', pulse: 'bg-status-success/70 animate-status-online', subtext: 'All systems normal' };
+      return {
+        label: 'Healthy',
+        dot: 'bg-status-success',
+        pulse: 'bg-status-success/70 animate-status-online',
+        subtext: 'All systems normal',
+      };
     case 'WARNING':
-      return { label: 'Warning', dot: 'bg-status-warning', pulse: 'bg-status-warning/70 animate-pulse-fast', subtext: 'Some services degraded' };
+      return {
+        label: 'Warning',
+        dot: 'bg-status-warning',
+        pulse: 'bg-status-warning/70 animate-pulse-fast',
+        subtext: 'Some services degraded',
+      };
     case 'CRITICAL':
-      return { label: 'Critical', dot: 'bg-status-error', pulse: 'bg-status-error/70 animate-pulse-alert', subtext: 'Services down' };
+      return {
+        label: 'Critical',
+        dot: 'bg-status-error',
+        pulse: 'bg-status-error/70 animate-pulse-alert',
+        subtext: 'Services down',
+      };
     default:
-      return { label: systemHealth || 'Bad', dot: 'bg-muted-foreground', pulse: null, subtext: 'Status unavailable' };
+      return {
+        label: systemHealth || 'Bad',
+        dot: 'bg-muted-foreground',
+        pulse: null,
+        subtext: 'Status unavailable',
+      };
   }
 }
 
@@ -90,11 +125,19 @@ export default function DashboardPage() {
   const { api, user } = useAuth();
   const navigate = useNavigate();
   const {
-    summary, alerts, loading, error, syncing,
-    fetchData, handleManualSync, autoSyncAttempted,
+    summary,
+    alerts,
+    loading,
+    error,
+    syncing,
+    fetchData,
+    handleManualSync,
+    autoSyncAttempted,
   } = useDashboard(api);
 
-  useEffect(() => { fetchData(); }, [fetchData]);
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   useEffect(() => {
     if (!summary) return;
@@ -109,25 +152,34 @@ export default function DashboardPage() {
     if (storesTotal !== 0 || (eod?.done ?? 0) > 0) return;
     autoSyncAttempted.current = true;
     handleManualSync().then((res) => {
-      if (res.ok) toast.info('No data detected', { description: 'Fetching latest data from API...' });
+      if (res.ok)
+        toast.info('No data detected', { description: 'Fetching latest data from API...' });
     });
   }, [summary, autoSyncAttempted, handleManualSync]);
 
   const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo');
 
   const handleRefresh = useCallback(() => {
-    if (isDemoUser) { toast.warning('Demo Account', { description: 'Action not available in demo.' }); return; }
+    if (isDemoUser) {
+      toast.warning('Demo Account', { description: 'Action not available in demo.' });
+      return;
+    }
     fetchData();
   }, [isDemoUser, fetchData]);
 
   const handleBackup = useCallback(async () => {
-    if (user?.isDemo) { toast.warning('Demo Account', { description: 'Action not available in demo.' }); return; }
+    if (user?.isDemo) {
+      toast.warning('Demo Account', { description: 'Action not available in demo.' });
+      return;
+    }
     try {
       const res = await api.post('/backups/run', { type: 'manual' });
       if (!res.ok) throw new Error(res.error?.message || 'Backup failed');
       toast.success('Backup queued', { description: (res.data as { fileName?: string }).fileName });
     } catch (err) {
-      toast.error('Backup failed', { description: err instanceof Error ? err.message : 'Unknown error' });
+      toast.error('Backup failed', {
+        description: err instanceof Error ? err.message : 'Unknown error',
+      });
     }
   }, [api, user]);
 
@@ -136,7 +188,9 @@ export default function DashboardPage() {
       <DashboardLayout>
         <Skeleton className="h-8 w-64" />
         <DashboardSection columns={4}>
-          {Array.from({ length: 5 }).map((_, i) => (<Skeleton key={i} className="h-28" />))}
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-28" />
+          ))}
         </DashboardSection>
       </DashboardLayout>
     );
@@ -145,9 +199,16 @@ export default function DashboardPage() {
   if (error) {
     return (
       <DashboardLayout>
-        <EmptyState title="Failed to load dashboard" description={error}
+        <EmptyState
+          title="Failed to load dashboard"
+          description={error}
           icon={<AlertTriangle aria-hidden="true" className="size-8" />}
-          action={<Button onClick={() => fetchData()}><RefreshCw /> Retry</Button>} />
+          action={
+            <Button onClick={() => fetchData()}>
+              <RefreshCw /> Retry
+            </Button>
+          }
+        />
       </DashboardLayout>
     );
   }
@@ -155,19 +216,31 @@ export default function DashboardPage() {
   if (!summary) {
     return (
       <DashboardLayout>
-        <EmptyState title="No summary data" description="Dashboard data is unavailable."
-          icon={<Monitor aria-hidden="true" className="size-8" />} />
+        <EmptyState
+          title="No summary data"
+          description="Dashboard data is unavailable."
+          icon={<Monitor aria-hidden="true" className="size-8" />}
+        />
       </DashboardLayout>
     );
   }
 
-  const { storesTotal, eod, systemHealth, interactionsToday, backups, employees, agents, violations, sync } = summary;
+  const {
+    storesTotal,
+    eod,
+    systemHealth,
+    interactionsToday,
+    backups,
+    employees,
+    agents,
+    violations,
+    sync,
+  } = summary;
   const completionRate = storesTotal ? Math.round(((eod?.done ?? 0) / storesTotal) * 100) : 0;
   const health = getHealthConfig(systemHealth);
 
   return (
     <DashboardLayout>
-
       {/* ── Unified Hero Banner ── */}
       <FeatureStoryBanner
         title="Ops Starter"
@@ -226,7 +299,10 @@ export default function DashboardPage() {
       <DashboardSection columns={3}>
         {/* Operational Pulse — spans 2 cols */}
         <div className="col-span-1 lg:col-span-2">
-          <Card data-e2e="dashboard-operational-pulse" className="flex flex-col h-full border-border">
+          <Card
+            data-e2e="dashboard-operational-pulse"
+            className="flex flex-col h-full border-border"
+          >
             <CardHeader className="py-3 px-4 sm:px-5 border-b border-border">
               <div className="flex items-center justify-between gap-3">
                 <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
@@ -268,22 +344,22 @@ export default function DashboardPage() {
                 ].map((item, i) => (
                   <div
                     key={i}
-                    className="flex flex-col justify-between gap-2.5 rounded-lg border border-border bg-surface-muted/60 p-3.5 text-left transition-colors hover:border-primary/30"
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-muted/60 p-3.5 transition-colors hover:border-primary/30"
                   >
-                    <div className="flex items-center gap-3 text-left">
+                    <div className="flex min-w-0 items-center gap-3">
                       <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-primary">
                         <item.icon className="size-4" />
                       </div>
-                      <div className="min-w-0 flex-1 text-left">
-                        <p className="truncate text-xs font-medium text-foreground text-left">{item.label}</p>
-                        <p className="truncate text-3xs font-medium uppercase tracking-wider text-muted-foreground text-left">
+                      <div className="min-w-0">
+                        <p className="truncate text-xs font-medium text-foreground">{item.label}</p>
+                        <p className="truncate text-3xs font-medium uppercase tracking-wider text-muted-foreground">
                           {item.sub}
                         </p>
                       </div>
                     </div>
                     <p
                       className={cn(
-                        'font-mono text-base font-semibold tracking-tight text-left',
+                        'shrink-0 font-mono text-sm font-semibold tracking-tight sm:text-base',
                         item.error ? 'text-status-error' : 'text-foreground'
                       )}
                     >
@@ -322,7 +398,10 @@ export default function DashboardPage() {
             ) : (
               <div className="divide-y divide-border">
                 {alerts.slice(0, 4).map((alert) => (
-                  <div key={alert.id} className="p-3.5 px-4 sm:px-5 hover:bg-surface-hover transition-colors">
+                  <div
+                    key={alert.id}
+                    className="p-3.5 px-4 sm:px-5 hover:bg-surface-hover transition-colors"
+                  >
                     <div className="flex items-start gap-3">
                       <ShieldAlert
                         className={cn(
@@ -357,21 +436,42 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="p-4 sm:p-5">
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <ActionButton icon={<Monitor className="size-4" />} label="Monitor EOD" onClick={() => navigate('/app/eod')} />
-              <ActionButton icon={<Cloud className="size-4" />} label="Trigger Backup" onClick={handleBackup} disabled={user?.isDemo} />
-              <ActionButton icon={<RefreshCw className="size-4" />} label="Run Audit" onClick={async () => {
-                if (user?.isDemo) { toast.warning('Demo Account'); return; }
-                toast.info('Running Store Audit', { description: 'Polling store synchronization clocks...' });
-                const res = await handleManualSync();
-                if (res.ok) toast.success('Audit Complete');
-                else toast.error('Audit Failed', { description: res.error || 'Failed' });
-              }} />
-              <ActionButton icon={<Zap className="size-4" />} label="Deploy Agents" onClick={() => navigate('/app/office-agents')} />
+              <ActionButton
+                icon={<Monitor className="size-4" />}
+                label="Monitor EOD"
+                onClick={() => navigate('/app/eod')}
+              />
+              <ActionButton
+                icon={<Cloud className="size-4" />}
+                label="Trigger Backup"
+                onClick={handleBackup}
+                disabled={user?.isDemo}
+              />
+              <ActionButton
+                icon={<RefreshCw className="size-4" />}
+                label="Run Audit"
+                onClick={async () => {
+                  if (user?.isDemo) {
+                    toast.warning('Demo Account');
+                    return;
+                  }
+                  toast.info('Running Store Audit', {
+                    description: 'Polling store synchronization clocks...',
+                  });
+                  const res = await handleManualSync();
+                  if (res.ok) toast.success('Audit Complete');
+                  else toast.error('Audit Failed', { description: res.error || 'Failed' });
+                }}
+              />
+              <ActionButton
+                icon={<Zap className="size-4" />}
+                label="Deploy Agents"
+                onClick={() => navigate('/app/office-agents')}
+              />
             </div>
           </CardContent>
         </Card>
       </DashboardSection>
-
     </DashboardLayout>
   );
 }

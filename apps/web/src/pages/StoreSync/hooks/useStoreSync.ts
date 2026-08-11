@@ -11,6 +11,7 @@ import type {
   StoreSyncStatus,
   StoreSyncSummary,
 } from '../types';
+import { demoBlocked } from '@/components/base/demo-toast';
 
 const AUTO_REFRESH_INTERVAL = 10000; // stores table refresh: 10 seconds
 const STATUS_REFRESH_INTERVAL = 10000; // KPI/status refresh: 10 seconds
