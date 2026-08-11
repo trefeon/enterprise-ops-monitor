@@ -67,26 +67,11 @@ export function BaseSidebar({
                   {brandLabel}
                 </span>
               </div>
-              {showClose ? (
+              {showClose && (
                 <Button type="button" variant="ghost" size="icon-sm" onClick={onClose}>
                   <X />
                   <span className="sr-only">Close navigation</span>
                 </Button>
-              ) : (
-                hasDesktopCollapse && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="icon-sm"
-                    onClick={() => onCollapsedChange?.(!isCollapsed)}
-                    className="hidden md:inline-flex ml-auto"
-                    aria-label={collapseLabel}
-                    title={collapseLabel}
-                  >
-                    {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
-                    <span className="sr-only">{collapseLabel}</span>
-                  </Button>
-                )
               )}
             </div>
           </SidebarHeader>
@@ -98,38 +83,54 @@ export function BaseSidebar({
               </div>
             </ScrollArea>
           </SidebarContent>
-          {userSummary && (
-            <>
-              <SidebarSeparator />
-              <SidebarFooter className="shrink-0">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={onUserClick}
-                  className={cn(
-                    'h-auto w-full justify-start p-2',
-                    isCollapsed && 'md:justify-center'
-                  )}
-                  aria-label="Open profile"
-                  title={isCollapsed ? 'Profile' : undefined}
-                >
-                  <span className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-primary text-xs font-medium text-primary-foreground">
-                    {userSummary.initials}
+          {(userSummary || hasDesktopCollapse) && <SidebarSeparator />}
+          <SidebarFooter className="shrink-0">
+            {hasDesktopCollapse && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onCollapsedChange?.(!isCollapsed)}
+                className={cn(
+                  'h-auto w-full justify-start gap-3 p-2 text-sm font-medium text-sidebar-foreground/75 hover:text-sidebar-foreground',
+                  isCollapsed && 'md:justify-center'
+                )}
+                aria-label={collapseLabel}
+                title={collapseLabel}
+              >
+                {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
+                <span className="min-w-0 truncate group-data-[state=collapsed]/sidebar-wrapper:hidden">
+                  {isCollapsed ? 'Expand' : 'Collapse'}
+                </span>
+              </Button>
+            )}
+            {userSummary && (
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={onUserClick}
+                className={cn(
+                  'h-auto w-full justify-start p-2',
+                  isCollapsed && 'md:justify-center'
+                )}
+                aria-label="Open profile"
+                title={isCollapsed ? 'Profile' : undefined}
+              >
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-sm bg-primary text-xs font-medium text-primary-foreground">
+                  {userSummary.initials}
+                </span>
+                <span className="ml-2 min-w-0 text-left group-data-[state=collapsed]/sidebar-wrapper:hidden">
+                  <span className="block truncate text-sm font-medium text-foreground">
+                    {userSummary.name}
                   </span>
-                  <span className="ml-2 min-w-0 text-left group-data-[state=collapsed]/sidebar-wrapper:hidden">
-                    <span className="block truncate text-sm font-medium text-foreground">
-                      {userSummary.name}
+                  {userSummary.meta && (
+                    <span className="block truncate font-mono text-3xs uppercase tracking-wider text-muted-foreground">
+                      {userSummary.meta}
                     </span>
-                    {userSummary.meta && (
-                      <span className="block truncate font-mono text-3xs uppercase tracking-wider text-muted-foreground">
-                        {userSummary.meta}
-                      </span>
-                    )}
-                  </span>
-                </Button>
-              </SidebarFooter>
-            </>
-          )}
+                  )}
+                </span>
+              </Button>
+            )}
+          </SidebarFooter>
           <SidebarRail />
         </Sidebar>
       </TooltipProvider>
