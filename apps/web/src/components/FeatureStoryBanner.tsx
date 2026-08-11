@@ -91,30 +91,30 @@ export default function FeatureStoryBanner({ story }: FeatureStoryBannerProps) {
       <Button
         type="button"
         variant="ghost"
-        className="flex h-auto w-full items-center justify-between gap-4 rounded-none px-5 py-4 text-left hover:bg-transparent"
+        className="flex h-auto w-full items-center justify-between gap-4 rounded-none px-4 py-3.5 text-left hover:bg-transparent"
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
       >
-        <span className="flex min-w-0 items-center gap-4">
-          <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-105">
-            <Icon className="size-5" />
+        <span className="flex min-w-0 items-center gap-3">
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-105">
+            <Icon className="size-4" />
           </span>
           <span className="min-w-0">
-            <span className="block text-3xs font-medium uppercase tracking-widest-lg text-primary/70">
+            <span className="block text-3xs font-medium uppercase tracking-widest text-primary/70">
               Feature Narrative
             </span>
-            <span className="line-clamp-2 block text-base font-medium leading-snug text-foreground">
+            <span className="line-clamp-2 block text-sm font-medium leading-snug text-foreground">
               {story.tagline}
             </span>
           </span>
         </span>
-        <div className="flex size-8 items-center justify-center rounded-md border bg-secondary text-muted-foreground transition-colors group-hover:text-primary">
+        <div className="flex size-7 shrink-0 items-center justify-center rounded-md border bg-secondary text-muted-foreground transition-colors group-hover:text-primary">
           {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
         </div>
       </Button>
 
       {open && (
-        <div className="animate-in slide-in-from-top-2 fade-in border-t border-primary/10 px-5 pb-5 pt-5 duration-200">
+        <div className="animate-in slide-in-from-top-2 fade-in border-t border-primary/10 p-4 pt-4 duration-200">
           <p className="mb-5 text-sm font-medium leading-relaxed text-foreground">
             {story.tagline}
           </p>
