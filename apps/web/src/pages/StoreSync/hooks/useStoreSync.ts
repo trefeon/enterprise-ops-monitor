@@ -1,6 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { formatDate, formatDateTime, formatTime, getWibParts, getWibToday } from '../../../lib/date';
+import {
+  formatDate,
+  formatDateTime,
+  formatTime,
+  getWibParts,
+  getWibToday,
+} from '../../../lib/date';
 import type {
   BranchOption,
   HistoryRecord,
@@ -126,7 +132,11 @@ export function useStoreSync(api: ApiClient, user: UserInfo): UseStoreSyncReturn
   const [branchFilter, setBranchFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('problem');
   const [search, setSearch] = useState('');
-  const [pagination, setPagination] = useState<PaginationState>({ page: 1, pageSize: 50, total: 0 });
+  const [pagination, setPagination] = useState<PaginationState>({
+    page: 1,
+    pageSize: 50,
+    total: 0,
+  });
   const [excludeBazar, setExcludeBazar] = useState(true);
 
   const [refreshing, setRefreshing] = useState(false);
@@ -137,7 +147,9 @@ export function useStoreSync(api: ApiClient, user: UserInfo): UseStoreSyncReturn
   const [lastStoresFetchedAt, setLastStoresFetchedAt] = useState<Date | null>(null);
 
   // History modal state
-  const [historyStore, setHistoryStore] = useState<{ storeCode: string; storeName: string } | null>(null);
+  const [historyStore, setHistoryStore] = useState<{ storeCode: string; storeName: string } | null>(
+    null
+  );
   const [historyRecords, setHistoryRecords] = useState<HistoryRecord[]>([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyMode, setHistoryMode] = useState('recent');
@@ -211,9 +223,7 @@ export function useStoreSync(api: ApiClient, user: UserInfo): UseStoreSyncReturn
 
   const handleRefresh = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', {
-        description: 'This action is not available in the demo account.',
-      });
+      demoBlocked();
       return;
     }
     setRefreshing(true);
@@ -358,19 +368,22 @@ export function useStoreSync(api: ApiClient, user: UserInfo): UseStoreSyncReturn
     return new Set(errors.map((e) => String(e?.branchId || '')));
   }, [status?.source?.errors]);
 
-  const getNextAlignedAtMs = useCallback((nowMs: number, intervalSeconds: number): number | null => {
-    if (!Number.isFinite(intervalSeconds) || intervalSeconds <= 0) return null;
-    try {
-      const parts = getWibParts(new Date(nowMs));
-      if (!parts) return nowMs + intervalSeconds * 1000;
-      const secondsSinceMidnight = parts.hour * 3600 + parts.minute * 60 + parts.second;
-      const remainder = secondsSinceMidnight % intervalSeconds;
-      const secondsToNext = remainder === 0 ? intervalSeconds : intervalSeconds - remainder;
-      return nowMs + secondsToNext * 1000;
-    } catch {
-      return nowMs + intervalSeconds * 1000;
-    }
-  }, []);
+  const getNextAlignedAtMs = useCallback(
+    (nowMs: number, intervalSeconds: number): number | null => {
+      if (!Number.isFinite(intervalSeconds) || intervalSeconds <= 0) return null;
+      try {
+        const parts = getWibParts(new Date(nowMs));
+        if (!parts) return nowMs + intervalSeconds * 1000;
+        const secondsSinceMidnight = parts.hour * 3600 + parts.minute * 60 + parts.second;
+        const remainder = secondsSinceMidnight % intervalSeconds;
+        const secondsToNext = remainder === 0 ? intervalSeconds : intervalSeconds - remainder;
+        return nowMs + secondsToNext * 1000;
+      } catch {
+        return nowMs + intervalSeconds * 1000;
+      }
+    },
+    []
+  );
 
   const getNextRefreshAtMs = useCallback(
     (nowMsOverride: number | null = null): number | null => {

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { toast } from 'sonner';
 import type { BackupFile, BackupFileRow, BackupsPagination, BackupSummary } from '../types';
 import type { ApiResponse } from '@/types';
+import { demoBlocked } from '@/components/base/demo-toast';
 
 interface DownloadResponse {
   contentBase64: string;
@@ -35,9 +36,7 @@ interface UseBackupsReturn {
   setDeleteConfirm: (v: string) => void;
   setRestoreTarget: (v: BackupFile | null) => void;
   setRestoreConfirm: (v: string) => void;
-  setPagination: (
-    v: BackupsPagination | ((prev: BackupsPagination) => BackupsPagination),
-  ) => void;
+  setPagination: (v: BackupsPagination | ((prev: BackupsPagination) => BackupsPagination)) => void;
   refreshAll: () => Promise<void>;
   handleRefresh: () => void;
   runManualBackup: () => Promise<void>;
@@ -109,9 +108,7 @@ export function useBackups(api: ApiClient, isDemoUser: boolean): UseBackupsRetur
 
   const handleRefresh = useCallback(() => {
     if (isDemoUser) {
-      toast.warning('Demo Account', {
-        description: 'This action is not available in the demo account.',
-      });
+      demoBlocked();
       return;
     }
     refreshAll();
@@ -125,9 +122,7 @@ export function useBackups(api: ApiClient, isDemoUser: boolean): UseBackupsRetur
 
   const runManualBackup = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', {
-        description: 'This action is not available in the demo account.',
-      });
+      demoBlocked();
       return;
     }
     setManualLoading(true);
@@ -149,17 +144,14 @@ export function useBackups(api: ApiClient, isDemoUser: boolean): UseBackupsRetur
 
   const handleDelete = useCallback(async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', {
-        description: 'This action is not available in the demo account.',
-      });
+      demoBlocked();
       return;
     }
     if (!deleteTarget) return;
     try {
-      const res = await api.delete(
-        `/backups/files/${encodeURIComponent(deleteTarget.fileName)}`,
-        { data: { confirm: deleteConfirm } },
-      );
+      const res = await api.delete(`/backups/files/${encodeURIComponent(deleteTarget.fileName)}`, {
+        data: { confirm: deleteConfirm },
+      });
       if (!res.ok) throw new Error(res.error?.message || 'Delete failed');
       toast.success('Backup deleted', { description: deleteTarget.fileName });
       setDeleteTarget(null);
@@ -173,9 +165,7 @@ export function useBackups(api: ApiClient, isDemoUser: boolean): UseBackupsRetur
 
   const handleRestore = useCallback(async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', {
-        description: 'This action is not available in the demo account.',
-      });
+      demoBlocked();
       return;
     }
     if (!restoreTarget) return;
@@ -197,15 +187,11 @@ export function useBackups(api: ApiClient, isDemoUser: boolean): UseBackupsRetur
   const handleDownload = useCallback(
     async (row: BackupFileRow) => {
       if (isDemoUser) {
-        toast.warning('Demo Account', {
-          description: 'This action is not available in the demo account.',
-        });
+        demoBlocked();
         return;
       }
       try {
-        const res = await api.get(
-          `/backups/files/${encodeURIComponent(row.fileName)}/download`,
-        );
+        const res = await api.get(`/backups/files/${encodeURIComponent(row.fileName)}/download`);
         if (!res.ok) throw new Error(res.error?.message || 'Download failed');
         const downloadData = res.data as DownloadResponse;
         const { contentBase64, contentType, fileName } = downloadData;
@@ -230,7 +216,7 @@ export function useBackups(api: ApiClient, isDemoUser: boolean): UseBackupsRetur
         toast.error('Download failed', { description: message });
       }
     },
-    [api, isDemoUser],
+    [api, isDemoUser]
   );
 
   const filesWithMeta = useMemo(
@@ -240,7 +226,7 @@ export function useBackups(api: ApiClient, isDemoUser: boolean): UseBackupsRetur
         typeLabel: getBackupTypeLabel(file.type),
         typeIcon: null,
       })),
-    [files],
+    [files]
   );
 
   const isLoading = loadingSummary || loadingFiles;

@@ -38,6 +38,7 @@ import {
   validateWarningScheduleTimes,
   formatWibTime,
 } from '../utils';
+import { demoBlocked } from '@/components/base/demo-toast';
 
 export interface AfterHoursDerived {
   totalViolations: number;
@@ -96,10 +97,18 @@ export interface AfterHoursActions {
   syncTelegramTargets: (nextMap: NotificationTargetMap, nextDraft?: string) => void;
   syncWhatsappTargets: (nextMap: NotificationTargetMap, nextDraft?: string) => void;
   handleNotificationModeChange: (nextMode: NotificationEditorMode) => void;
-  updateNotificationBranchTarget: (channel: 'telegram' | 'whatsapp', branchId: string, value: string) => void;
+  updateNotificationBranchTarget: (
+    channel: 'telegram' | 'whatsapp',
+    branchId: string,
+    value: string
+  ) => void;
   updateNotificationDraft: (channel: 'telegram' | 'whatsapp', value: string) => void;
   updateScheduleTime: (index: number, value: string) => void;
-  updateTemplateByStage: (channel: 'telegram' | 'whatsapp', stageIndex: number, value: string) => void;
+  updateTemplateByStage: (
+    channel: 'telegram' | 'whatsapp',
+    stageIndex: number,
+    value: string
+  ) => void;
   handleSaveSettings: () => Promise<void>;
   handleDiscardSettings: () => Promise<void>;
   handleRunCheck: () => Promise<void>;
@@ -137,19 +146,18 @@ export function useAfterHours(): {
   const [whatsappTargetsError, setWhatsappTargetsError] = useState('');
   const [savingSettings, setSavingSettings] = useState(false);
   const [warningScheduleTimes, setWarningScheduleTimes] = useState<ScheduleTimes>(
-    EMPTY_WARNING_SCHEDULE_TIMES,
+    EMPTY_WARNING_SCHEDULE_TIMES
   );
   const [telegramStageTemplates, setTelegramStageTemplates] = useState<StageTemplates>(
-    DEFAULT_TELEGRAM_STAGE_TEMPLATES,
+    DEFAULT_TELEGRAM_STAGE_TEMPLATES
   );
   const [whatsappStageTemplates, setWhatsappStageTemplates] = useState<StageTemplates>(
-    DEFAULT_WHATSAPP_STAGE_TEMPLATES,
+    DEFAULT_WHATSAPP_STAGE_TEMPLATES
   );
   const [activeTab, setActiveTab] = useState<ActiveTab>('monitor');
 
   const { user } = useAuth();
-  const isDemoUser =
-    user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo';
+  const isDemoUser = user?.isDemo || user?.roleNames?.includes('demo') || user?.role === 'demo';
 
   // ── Data loading ──────────────────────────────────────────────────
   const loadData = useCallback(async () => {
@@ -206,31 +214,19 @@ export function useAfterHours(): {
     try {
       const res = await apiGet('/afterhours/settings');
       if (res.ok) {
-        const normalizedSettings = normalizeWhatsappCredentials(
-          res.data.settings,
-        );
+        const normalizedSettings = normalizeWhatsappCredentials(res.data.settings);
         setSettings(normalizedSettings);
-        const telegramState = buildNotificationTargetState(
-          normalizedSettings.telegram_chat_ids,
-        );
-        const whatsappState = buildNotificationTargetState(
-          normalizedSettings.whatsapp_targets,
-        );
+        const telegramState = buildNotificationTargetState(normalizedSettings.telegram_chat_ids);
+        const whatsappState = buildNotificationTargetState(normalizedSettings.whatsapp_targets);
         setTelegramTargetMap(telegramState.mapping);
         setWhatsappTargetMap(whatsappState.mapping);
         setTelegramTargetsDraft(telegramState.draft);
         setWhatsappTargetsDraft(whatsappState.draft);
         setTelegramTargetsError('');
         setWhatsappTargetsError('');
-        setWarningScheduleTimes(
-          deriveWarningScheduleTimes(normalizedSettings),
-        );
-        setTelegramStageTemplates(
-          resolveStageTemplates(normalizedSettings, 'telegram'),
-        );
-        setWhatsappStageTemplates(
-          resolveStageTemplates(normalizedSettings, 'whatsapp'),
-        );
+        setWarningScheduleTimes(deriveWarningScheduleTimes(normalizedSettings));
+        setTelegramStageTemplates(resolveStageTemplates(normalizedSettings, 'telegram'));
+        setWhatsappStageTemplates(resolveStageTemplates(normalizedSettings, 'whatsapp'));
         return true;
       }
     } catch {
@@ -250,7 +246,7 @@ export function useAfterHours(): {
 
   const syncTelegramTargets = (
     nextMap: NotificationTargetMap,
-    nextDraft = serializeNotificationTargetMap(nextMap),
+    nextDraft = serializeNotificationTargetMap(nextMap)
   ) => {
     setTelegramTargetMap(nextMap);
     setTelegramTargetsDraft(nextDraft);
@@ -260,7 +256,7 @@ export function useAfterHours(): {
 
   const syncWhatsappTargets = (
     nextMap: NotificationTargetMap,
-    nextDraft = serializeNotificationTargetMap(nextMap),
+    nextDraft = serializeNotificationTargetMap(nextMap)
   ) => {
     setWhatsappTargetMap(nextMap);
     setWhatsappTargetsDraft(nextDraft);
@@ -282,7 +278,7 @@ export function useAfterHours(): {
   const updateNotificationBranchTarget = (
     channel: 'telegram' | 'whatsapp',
     branchId: string,
-    value: string,
+    value: string
   ) => {
     if (channel === 'telegram') {
       const nextMap = normalizeNotificationTargetMap({
@@ -300,10 +296,7 @@ export function useAfterHours(): {
     syncWhatsappTargets(nextMap);
   };
 
-  const updateNotificationDraft = (
-    channel: 'telegram' | 'whatsapp',
-    value: string,
-  ) => {
+  const updateNotificationDraft = (channel: 'telegram' | 'whatsapp', value: string) => {
     const draftValue = String(value ?? '');
     const raw = draftValue.trim();
 
@@ -328,9 +321,7 @@ export function useAfterHours(): {
         // fall through to validation error below
       }
 
-      setTelegramTargetsError(
-        'JSON must be an object like {"2":"-100...","_all":"-100..."}',
-      );
+      setTelegramTargetsError('JSON must be an object like {"2":"-100...","_all":"-100..."}');
       return;
     }
 
@@ -354,9 +345,7 @@ export function useAfterHours(): {
       // fall through to validation error below
     }
 
-    setWhatsappTargetsError(
-      'JSON must be an object like {"2":"120...","_all":"120..."}',
-    );
+    setWhatsappTargetsError('JSON must be an object like {"2":"120...","_all":"120..."}');
   };
 
   const updateScheduleTime = (index: number, value: string) => {
@@ -370,7 +359,7 @@ export function useAfterHours(): {
   const updateTemplateByStage = (
     channel: 'telegram' | 'whatsapp',
     stageIndex: number,
-    value: string,
+    value: string
   ) => {
     if (channel === 'telegram') {
       setTelegramStageTemplates((prev) => {
@@ -391,9 +380,7 @@ export function useAfterHours(): {
   // ── Save / Discard ───────────────────────────────────────────────
   const handleSaveSettings = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', {
-        description: 'This action is not available in the demo account.',
-      });
+      demoBlocked();
       return;
     }
     setSavingSettings(true);
@@ -406,23 +393,17 @@ export function useAfterHours(): {
 
       const normalizedSchedule = scheduleValidation.times;
       const normalizedTelegramTemplates = TELEGRAM_STAGE_TEMPLATE_KEYS.map(
-        (_, idx) =>
-          telegramStageTemplates[idx] || DEFAULT_TELEGRAM_STAGE_TEMPLATES[idx],
+        (_, idx) => telegramStageTemplates[idx] || DEFAULT_TELEGRAM_STAGE_TEMPLATES[idx]
       );
       const normalizedWhatsappTemplates = WHATSAPP_STAGE_TEMPLATE_KEYS.map(
-        (_, idx) =>
-          whatsappStageTemplates[idx] || DEFAULT_WHATSAPP_STAGE_TEMPLATES[idx],
+        (_, idx) => whatsappStageTemplates[idx] || DEFAULT_WHATSAPP_STAGE_TEMPLATES[idx]
       );
       const telegramChatIdsValue = serializeNotificationTargetMap(telegramTargetMap);
       const whatsappTargetsValue = serializeNotificationTargetMap(whatsappTargetMap);
 
-      if (
-        notificationEditorMode === 'advanced' &&
-        (telegramTargetsError || whatsappTargetsError)
-      ) {
+      if (notificationEditorMode === 'advanced' && (telegramTargetsError || whatsappTargetsError)) {
         toast.error('Error', {
-          description:
-            'Fix the JSON mapping error before saving notification settings',
+          description: 'Fix the JSON mapping error before saving notification settings',
         });
         return;
       }
@@ -439,7 +420,7 @@ export function useAfterHours(): {
         telegram_chat_ids: telegramChatIdsValue,
         whatsapp_targets: whatsappTargetsValue,
         monthly_report_whatsapp_targets: String(
-          settings.monthly_report_whatsapp_targets || '',
+          settings.monthly_report_whatsapp_targets || ''
         ).trim(),
       };
 
@@ -455,18 +436,10 @@ export function useAfterHours(): {
       });
       if (res.ok) {
         setSettings(settingsToSave as AfterHoursSettings);
-        setTelegramTargetMap(
-          normalizeNotificationTargetMap(settingsToSave.telegram_chat_ids),
-        );
-        setWhatsappTargetMap(
-          normalizeNotificationTargetMap(settingsToSave.whatsapp_targets),
-        );
-        setTelegramTargetsDraft(
-          settingsToSave.telegram_chat_ids as string,
-        );
-        setWhatsappTargetsDraft(
-          settingsToSave.whatsapp_targets as string,
-        );
+        setTelegramTargetMap(normalizeNotificationTargetMap(settingsToSave.telegram_chat_ids));
+        setWhatsappTargetMap(normalizeNotificationTargetMap(settingsToSave.whatsapp_targets));
+        setTelegramTargetsDraft(settingsToSave.telegram_chat_ids as string);
+        setWhatsappTargetsDraft(settingsToSave.whatsapp_targets as string);
         setWarningScheduleTimes(normalizedSchedule);
         setTelegramStageTemplates(normalizedTelegramTemplates as StageTemplates);
         setWhatsappStageTemplates(normalizedWhatsappTemplates as StageTemplates);
@@ -475,8 +448,7 @@ export function useAfterHours(): {
         });
       } else {
         toast.error('Error', {
-          description:
-            (res as any).error?.message || 'Failed to save',
+          description: (res as any).error?.message || 'Failed to save',
         });
       }
     } catch {
@@ -500,9 +472,7 @@ export function useAfterHours(): {
   // ── Run check ─────────────────────────────────────────────────────
   const handleRunCheck = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', {
-        description: 'This action is not available in the demo account.',
-      });
+      demoBlocked();
       return;
     }
     setChecking(true);
@@ -512,15 +482,13 @@ export function useAfterHours(): {
         stageDelayMs: 2000,
       });
       if (res.ok) {
-        const stageResults = Array.isArray(res.data?.stageResults)
-          ? res.data.stageResults
-          : [];
+        const stageResults = Array.isArray(res.data?.stageResults) ? res.data.stageResults : [];
         const stageSummary =
           stageResults.length > 0
             ? stageResults
                 .map(
                   (stage: any) =>
-                    `S${stage.warningStage}(${stage.scheduledTime}) TG ${stage.telegramSuccess || 0}/${stage.telegramAttempt || 0}`,
+                    `S${stage.warningStage}(${stage.scheduledTime}) TG ${stage.telegramSuccess || 0}/${stage.telegramAttempt || 0}`
                 )
                 .join(' | ')
             : null;
@@ -534,8 +502,7 @@ export function useAfterHours(): {
         loadDates();
       } else {
         toast.error('Check Failed', {
-          description:
-            (res as any).error?.message || 'Failed to run after-hours check',
+          description: (res as any).error?.message || 'Failed to run after-hours check',
         });
       }
     } catch {
@@ -551,25 +518,18 @@ export function useAfterHours(): {
   const totalViolations = summary?.totalViolations || 0;
   const branchSummaries = summary?.byBranch || [];
   const branchCount = branchSummaries.length;
-  const latestSyncIso = branchSummaries.reduce<string | null>(
-    (latest, row) => {
-      if (!row?.latest_sync) return latest;
-      if (!latest) return row.latest_sync;
-      return new Date(row.latest_sync).getTime() >
-        new Date(latest).getTime()
-        ? row.latest_sync
-        : latest;
-    },
-    null,
-  );
+  const latestSyncIso = branchSummaries.reduce<string | null>((latest, row) => {
+    if (!row?.latest_sync) return latest;
+    if (!latest) return row.latest_sync;
+    return new Date(row.latest_sync).getTime() > new Date(latest).getTime()
+      ? row.latest_sync
+      : latest;
+  }, null);
   const latestSyncTime = formatWibTime(latestSyncIso);
 
-  const notifyEnabled =
-    settings.notify_enabled === 'true' ||
-    settings.notify_enabled === true;
+  const notifyEnabled = settings.notify_enabled === 'true' || settings.notify_enabled === true;
 
-  const normalizedScheduleTimes =
-    normalizeWarningScheduleTimes(warningScheduleTimes);
+  const normalizedScheduleTimes = normalizeWarningScheduleTimes(warningScheduleTimes);
 
   const totalItems = pagination?.total || violations.length || 0;
   const totalPages = pagination?.totalPages || 1;
@@ -577,8 +537,7 @@ export function useAfterHours(): {
   const rangeEnd = Math.min(page * PAGE_SIZE, totalItems);
   const selectedBranchLabel =
     BRANCH_OPTIONS.find((item) => String(item.id) === String(branch))?.label ||
-    branchSummaries.find((row) => String(row.branch_id) === String(branch))
-      ?.branch_name ||
+    branchSummaries.find((row) => String(row.branch_id) === String(branch))?.branch_name ||
     'All Branches';
 
   return {

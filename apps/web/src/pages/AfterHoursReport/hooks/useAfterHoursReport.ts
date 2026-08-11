@@ -3,11 +3,7 @@ import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { apiGet, apiPost, apiPut } from '../../../lib/api/client';
 import { toast } from 'sonner';
 import { useAuth } from '../../../context/AuthContext';
-import type {
-  AfterHoursRankingItem,
-  AfterHoursSummary,
-  AvailableMonth,
-} from '../types';
+import type { AfterHoursRankingItem, AfterHoursSummary, AvailableMonth } from '../types';
 import {
   getDefaultMonth,
   shiftMonth,
@@ -19,6 +15,7 @@ import {
   base64ToBlob,
 } from '../utils';
 import { DEFAULT_WINDOW_START, MONTHLY_REPORT_WHATSAPP_TARGETS_SAMPLE } from '../types';
+import { demoBlocked } from '@/components/base/demo-toast';
 
 export function useAfterHoursReport() {
   const [ranking, setRanking] = useState<AfterHoursRankingItem[]>([]);
@@ -128,7 +125,7 @@ export function useAfterHoursReport() {
 
   const handleSaveMonthlyReportSettings = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      demoBlocked();
       return;
     }
     setSavingMonthlyReportSettings(true);
@@ -148,7 +145,9 @@ export function useAfterHoursReport() {
             : 'Monthly report WhatsApp target cleared',
         });
       } else {
-        toast.error('Save Failed', { description: res.error?.message || 'Failed to save monthly report target' });
+        toast.error('Save Failed', {
+          description: res.error?.message || 'Failed to save monthly report target',
+        });
       }
     } catch {
       toast.error('Error', { description: 'Failed to save monthly report target' });
@@ -159,7 +158,7 @@ export function useAfterHoursReport() {
 
   const handleGenerate = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      demoBlocked();
       return;
     }
     setGenerating(true);
@@ -175,7 +174,9 @@ export function useAfterHoursReport() {
         loadReport();
         loadMonths();
       } else {
-        toast.error('Generation Failed', { description: res.error?.message || 'Failed to generate report' });
+        toast.error('Generation Failed', {
+          description: res.error?.message || 'Failed to generate report',
+        });
       }
     } catch {
       toast.error('Error', { description: 'Failed to generate report' });
@@ -186,7 +187,7 @@ export function useAfterHoursReport() {
 
   const handleDownloadReport = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      demoBlocked();
       return;
     }
     setDownloading(true);
@@ -229,7 +230,9 @@ export function useAfterHoursReport() {
       loadReport();
       loadMonths();
     } catch (error) {
-      toast.error('Download Failed', { description: (error as Error)?.message || 'Failed to download report' });
+      toast.error('Download Failed', {
+        description: (error as Error)?.message || 'Failed to download report',
+      });
     } finally {
       setDownloading(false);
     }

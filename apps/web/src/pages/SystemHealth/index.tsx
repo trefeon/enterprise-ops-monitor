@@ -43,6 +43,7 @@ import {
   Copy,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { demoBlocked } from '@/components/base/demo-toast';
 
 const LEVEL_OPTIONS = ['ALL', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'];
 
@@ -198,7 +199,7 @@ const SystemHealth = () => {
 
   const refreshAll = useCallback(async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      demoBlocked();
       return;
     }
     setError(null);
@@ -216,7 +217,7 @@ const SystemHealth = () => {
 
   const handleHealthCheck = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      demoBlocked();
       return;
     }
     setHealthLoading(true);
@@ -243,7 +244,7 @@ const SystemHealth = () => {
   const handleRestart = async () => {
     if (!restartTarget) return;
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      demoBlocked();
       setRestartTarget(null);
       setRestartConfirm('');
       return;
@@ -266,18 +267,15 @@ const SystemHealth = () => {
     }
   };
 
-  const handleCopyLog = useCallback(
-    async (log) => {
-      const payload = `${log.createdAt} [${log.level}] ${log.component}: ${log.message}`;
-      try {
-        await navigator.clipboard.writeText(payload);
-        toast.success('Copied', { description: 'Log entry copied.' });
-      } catch (err) {
-        toast.error('Copy failed', { description: err?.message || 'Clipboard unavailable.' });
-      }
-    },
-    []
-  );
+  const handleCopyLog = useCallback(async (log) => {
+    const payload = `${log.createdAt} [${log.level}] ${log.component}: ${log.message}`;
+    try {
+      await navigator.clipboard.writeText(payload);
+      toast.success('Copied', { description: 'Log entry copied.' });
+    } catch (err) {
+      toast.error('Copy failed', { description: err?.message || 'Clipboard unavailable.' });
+    }
+  }, []);
 
   const filteredLogs = useMemo(() => {
     const query = logQuery.trim().toLowerCase();
@@ -292,7 +290,7 @@ const SystemHealth = () => {
 
   const handleExportLogs = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      demoBlocked();
       return;
     }
     try {
@@ -377,9 +375,9 @@ const SystemHealth = () => {
           <Button
             type="button"
             variant="ghost"
-                    size="icon"
-                    aria-label="Copy log entry"
-                    className="size-8 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
+            size="icon"
+            aria-label="Copy log entry"
+            className="size-8 text-muted-foreground opacity-0 transition-opacity hover:text-foreground group-hover:opacity-100"
             onClick={(e) => {
               e.stopPropagation();
               handleCopyLog(log);

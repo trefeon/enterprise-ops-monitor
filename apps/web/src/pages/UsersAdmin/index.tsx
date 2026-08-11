@@ -12,12 +12,7 @@ import {
 } from '@/components/ui/select';
 import { DataTable } from '@/components/ui/data-table';
 import ConfirmDialog from '@/components/shared/ConfirmDialog';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { hasPermission, Permissions } from '../../lib/auth/permissions';
@@ -28,6 +23,7 @@ import { SearchBar } from '@/components/shared/SearchBar';
 import { getFeatureStory } from '../../data/stories';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { demoBlocked } from '@/components/base/demo-toast';
 
 export default function UsersAdmin() {
   const { user } = useAuth();
@@ -189,9 +185,7 @@ export default function UsersAdmin() {
           const withDemoCheck = (action) => (e) => {
             e.stopPropagation();
             if (isDemoUser) {
-              toast.warning('Demo Account', {
-                description: 'This action is restricted in the demo environment.',
-              });
+              demoBlocked('This action is restricted in the demo environment.')
               return;
             }
             action();
@@ -408,7 +402,9 @@ export default function UsersAdmin() {
           <CardContent>
             <div className="grid grid-cols-1 gap-3 md:grid-cols-3">
               <div>
-                <label htmlFor="username" className="text-xs text-muted-foreground">Username</label>
+                <label htmlFor="username" className="text-xs text-muted-foreground">
+                  Username
+                </label>
                 <Input
                   id="username"
                   autoComplete="username"
@@ -419,7 +415,9 @@ export default function UsersAdmin() {
                 />
               </div>
               <div>
-                <label htmlFor="password" className="text-xs text-muted-foreground">Password</label>
+                <label htmlFor="password" className="text-xs text-muted-foreground">
+                  Password
+                </label>
                 <Input
                   id="password"
                   type="password"
@@ -433,7 +431,9 @@ export default function UsersAdmin() {
                 </div>
               </div>
               <div>
-                <label htmlFor="role" className="text-xs text-muted-foreground">Role</label>
+                <label htmlFor="role" className="text-xs text-muted-foreground">
+                  Role
+                </label>
                 <Select
                   id="role"
                   value={createForm.role}
@@ -573,38 +573,45 @@ export default function UsersAdmin() {
         onConfirm={handleDelete}
         confirmDisabled={deleteLoading}
       />
-      <Dialog open={changePassOpen} onOpenChange={(next) => { if (!next) closeChangePasswordModal(); }}>
+      <Dialog
+        open={changePassOpen}
+        onOpenChange={(next) => {
+          if (!next) closeChangePasswordModal();
+        }}
+      >
         <DialogContent className="sm:max-w-md" style={{ overscrollBehavior: 'contain' }}>
           <DialogHeader>
             <DialogTitle>Change Password for {changePassUser?.username || ''}</DialogTitle>
           </DialogHeader>
-        <div className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">New Password</label>
-            <Input
-              type="password"
-              value={changePassForm}
-              onChange={(e) => setChangePassForm(e.target.value)}
-              placeholder="Enter new password (min 8 chars)"
-              minLength={8}
-            />
-          </div>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-foreground mb-1.5">
+                New Password
+              </label>
+              <Input
+                type="password"
+                value={changePassForm}
+                onChange={(e) => setChangePassForm(e.target.value)}
+                placeholder="Enter new password (min 8 chars)"
+                minLength={8}
+              />
+            </div>
 
-          <div className="flex gap-3 pt-2">
-            <Button variant="secondary" className="flex-1" onClick={closeChangePasswordModal}>
-              Cancel
-            </Button>
-            <Button
-              className="flex-1"
-              disabled={changePassLoading || changePassForm.length < 8}
-              onClick={handleChangePassword}
-            >
-              {changePassLoading ? 'Changing...' : 'Change Password'}
-            </Button>
+            <div className="flex gap-3 pt-2">
+              <Button variant="secondary" className="flex-1" onClick={closeChangePasswordModal}>
+                Cancel
+              </Button>
+              <Button
+                className="flex-1"
+                disabled={changePassLoading || changePassForm.length < 8}
+                onClick={handleChangePassword}
+              >
+                {changePassLoading ? 'Changing...' : 'Change Password'}
+              </Button>
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 }

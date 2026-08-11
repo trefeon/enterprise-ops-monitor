@@ -4,12 +4,7 @@ import { useAuth } from '../../context/AuthContext';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -43,6 +38,7 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
+import { demoBlocked } from '@/components/base/demo-toast';
 
 function base64ToBlob(base64, contentType) {
   const binary = atob(String(base64 || ''));
@@ -142,7 +138,7 @@ const AgentUpdater = () => {
 
   const handleRefresh = () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      demoBlocked();
       return;
     }
     fetchData();
@@ -208,7 +204,7 @@ const AgentUpdater = () => {
 
   const handleDeleteAgent = async (storeId) => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      demoBlocked();
       return;
     }
     if (
@@ -234,7 +230,7 @@ const AgentUpdater = () => {
 
   const handleDownloadSetup = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      demoBlocked();
       return;
     }
     try {
@@ -262,7 +258,7 @@ const AgentUpdater = () => {
 
   const handleExportExcel = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      demoBlocked();
       return;
     }
     setExporting(true);
@@ -302,7 +298,7 @@ const AgentUpdater = () => {
 
   const handleOpenDeployModal = () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'This action is not available in the demo account.' });
+      demoBlocked();
       return;
     }
     setVersion(suggestedVersion || currentVersion || '');
@@ -313,7 +309,9 @@ const AgentUpdater = () => {
     e.preventDefault();
 
     if (!file || !version) {
-      toast.warning('Validation Error', { description: 'Please select a file and provide a version.' });
+      toast.warning('Validation Error', {
+        description: 'Please select a file and provide a version.',
+      });
       return;
     }
 
@@ -399,7 +397,10 @@ const AgentUpdater = () => {
               disabled={loading}
               className="w-full sm:w-auto"
             >
-              <RefreshCw className={cn('mr-2 size-4', loading && 'animate-spin')} aria-hidden="true" />
+              <RefreshCw
+                className={cn('mr-2 size-4', loading && 'animate-spin')}
+                aria-hidden="true"
+              />
               Refresh
             </Button>
             <Button
@@ -572,9 +573,22 @@ const AgentUpdater = () => {
 
         <DataTable
           columns={[
-            { header: 'Store Code', className: 'text-xs font-medium tabular-nums', render: (node) => node.store_id || 'Unknown' },
-            { header: 'Store Name', className: 'text-foreground/90 font-medium', render: (node) => node.store_name || node.hostname || '-' },
-            { header: 'Branch', className: 'live-text-3xs uppercase font-medium text-muted-foreground tracking-widest', render: (node) => node.branch_name || '-' },
+            {
+              header: 'Store Code',
+              className: 'text-xs font-medium tabular-nums',
+              render: (node) => node.store_id || 'Unknown',
+            },
+            {
+              header: 'Store Name',
+              className: 'text-foreground/90 font-medium',
+              render: (node) => node.store_name || node.hostname || '-',
+            },
+            {
+              header: 'Branch',
+              className:
+                'live-text-3xs uppercase font-medium text-muted-foreground tracking-widest',
+              render: (node) => node.branch_name || '-',
+            },
             {
               header: 'Publisher',
               className: 'text-center',
@@ -610,7 +624,10 @@ const AgentUpdater = () => {
                   {getStatusBadge(getNodeStatus(node, currentVersion))}
                   {node.last_error && (
                     <span title={node.last_error}>
-                      <AlertCircle className="size-3.5 text-status-error cursor-help" aria-hidden="true" />
+                      <AlertCircle
+                        className="size-3.5 text-status-error cursor-help"
+                        aria-hidden="true"
+                      />
                     </span>
                   )}
                 </div>
@@ -653,99 +670,104 @@ const AgentUpdater = () => {
         />
       </section>
 
-      <Dialog open={deployModalOpen} onOpenChange={(next) => { if (!next && !isDeploying) setDeployModalOpen(false); }}>
+      <Dialog
+        open={deployModalOpen}
+        onOpenChange={(next) => {
+          if (!next && !isDeploying) setDeployModalOpen(false);
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Deploy New Publisher Version</DialogTitle>
           </DialogHeader>
-        <form onSubmit={handleDeploy} className="space-y-6 pt-4">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <label className="text-3xs font-medium uppercase tracking-widest-lg text-muted-foreground/60 ml-4">
-                Publisher Binary (.exe)
-              </label>
-              <div className="flex items-center justify-center w-full">
-                <div className="group/upload flex h-40 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/20 transition-[border-color,background-color] hover:border-primary/40 hover:bg-muted">
-                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                    <div className="mb-4 flex size-12 items-center justify-center rounded-lg border border-border bg-muted transition-colors group-hover/upload:bg-primary/10 group-hover/upload:text-primary">
-                      <FileUp className="size-6" aria-hidden="true" />
+          <form onSubmit={handleDeploy} className="space-y-6 pt-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <label className="text-3xs font-medium uppercase tracking-widest-lg text-muted-foreground/60 ml-4">
+                  Publisher Binary (.exe)
+                </label>
+                <div className="flex items-center justify-center w-full">
+                  <div className="group/upload flex h-40 w-full flex-col items-center justify-center rounded-lg border-2 border-dashed border-border bg-muted/20 transition-[border-color,background-color] hover:border-primary/40 hover:bg-muted">
+                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                      <div className="mb-4 flex size-12 items-center justify-center rounded-lg border border-border bg-muted transition-colors group-hover/upload:bg-primary/10 group-hover/upload:text-primary">
+                        <FileUp className="size-6" aria-hidden="true" />
+                      </div>
+                      <p className="text-sm font-medium text-foreground">
+                        {file ? (
+                          <span className="text-primary">{file.name}</span>
+                        ) : (
+                          'Select DemoAgentPublisher.exe'
+                        )}
+                      </p>
+                      <div className="mt-3">
+                        <BaseFileUploadControl
+                          id="publisher-binary"
+                          accept=".exe"
+                          label="Select publisher binary"
+                          onChange={handleFileChange}
+                        />
+                      </div>
                     </div>
-                    <p className="text-sm font-medium text-foreground">
-                      {file ? (
-                        <span className="text-primary">{file.name}</span>
-                      ) : (
-                        'Select DemoAgentPublisher.exe'
-                      )}
-                    </p>
-                    <div className="mt-3">
-                      <BaseFileUploadControl
-                        id="publisher-binary"
-                        accept=".exe"
-                        label="Select publisher binary"
-                        onChange={handleFileChange}
-                      />
-                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-3xs font-medium uppercase tracking-widest-lg text-muted-foreground/60 ml-4">
+                  Release Version
+                </label>
+                <Input
+                  placeholder="e.g. 1.0.15a"
+                  value={version}
+                  onChange={(e) => setVersion(e.target.value)}
+                  required
+                  className="h-12 rounded-sm pl-5 font-medium"
+                />
+                <div className="flex items-center gap-3 px-4 pt-1">
+                  <div className="flex flex-col">
+                    <span className="text-3xs font-medium text-muted-foreground uppercase tracking-widest leading-none mb-1">
+                      Current
+                    </span>
+                    <span className="text-xs font-medium text-foreground">
+                      {currentVersion || 'None'}
+                    </span>
+                  </div>
+                  <div className="w-px h-6 bg-border/40" />
+                  <div className="flex flex-col">
+                    <span className="text-3xs font-medium text-primary uppercase tracking-widest leading-none mb-1">
+                      Suggested
+                    </span>
+                    <span className="text-xs font-medium text-primary">{suggestedVersion}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-3xs font-medium uppercase tracking-widest-lg text-muted-foreground/60 ml-4">
-                Release Version
-              </label>
-              <Input
-                placeholder="e.g. 1.0.15a"
-                value={version}
-                onChange={(e) => setVersion(e.target.value)}
-                required
-                className="h-12 rounded-sm pl-5 font-medium"
-              />
-              <div className="flex items-center gap-3 px-4 pt-1">
-                <div className="flex flex-col">
-                  <span className="text-3xs font-medium text-muted-foreground uppercase tracking-widest leading-none mb-1">
-                    Current
-                  </span>
-                  <span className="text-xs font-medium text-foreground">
-                    {currentVersion || 'None'}
-                  </span>
-                </div>
-                <div className="w-px h-6 bg-border/40" />
-                <div className="flex flex-col">
-                  <span className="text-3xs font-medium text-primary uppercase tracking-widest leading-none mb-1">
-                    Suggested
-                  </span>
-                  <span className="text-xs font-medium text-primary">{suggestedVersion}</span>
-                </div>
-              </div>
+            <div className="flex justify-end gap-3 pt-4">
+              <Button
+                variant="secondary"
+                onClick={() => setDeployModalOpen(false)}
+                disabled={isDeploying}
+                className="h-12 rounded-sm font-medium"
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="h-12 rounded-sm font-medium uppercase tracking-widest px-8 shadow-lg shadow-primary/20"
+                disabled={isDeploying}
+              >
+                {isDeploying ? (
+                  <Loader2 className="animate-spin mr-2 size-4" aria-hidden="true" />
+                ) : (
+                  <UploadCloud className="mr-2 size-4" aria-hidden="true" />
+                )}
+                Deploy Version
+              </Button>
             </div>
-          </div>
-
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              variant="secondary"
-              onClick={() => setDeployModalOpen(false)}
-              disabled={isDeploying}
-              className="h-12 rounded-sm font-medium"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              className="h-12 rounded-sm font-medium uppercase tracking-widest px-8 shadow-lg shadow-primary/20"
-              disabled={isDeploying}
-            >
-              {isDeploying ? (
-                <Loader2 className="animate-spin mr-2 size-4" aria-hidden="true" />
-              ) : (
-                <UploadCloud className="mr-2 size-4" aria-hidden="true" />
-              )}
-              Deploy Version
-            </Button>
-          </div>
-        </form>
-      </DialogContent>
-    </Dialog>
+          </form>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };

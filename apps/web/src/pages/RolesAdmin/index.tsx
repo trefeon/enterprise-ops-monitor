@@ -13,6 +13,7 @@ import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
 import { Card, CardContent } from '@/components/ui/card';
 import { Edit3, Loader2, Plus, Trash2 } from 'lucide-react';
+import { demoBlocked } from '@/components/base/demo-toast';
 
 export default function RolesAdmin() {
   const { user } = useAuth();
@@ -52,9 +53,7 @@ export default function RolesAdmin() {
 
   const handleCreate = () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', {
-        description: 'This action is not available in the demo account.',
-      });
+      demoBlocked();
       return;
     }
     setSelectedRole(null);
@@ -64,9 +63,7 @@ export default function RolesAdmin() {
 
   const handleEdit = (role) => {
     if (isDemoUser) {
-      toast.warning('Demo Account', {
-        description: 'This action is not available in the demo account.',
-      });
+      demoBlocked();
       return;
     }
     setSelectedRole(role);
@@ -81,9 +78,7 @@ export default function RolesAdmin() {
 
   const handleDelete = async (role) => {
     if (isDemoUser) {
-      toast.warning('Demo Account', {
-        description: 'This action is not available in the demo account.',
-      });
+      demoBlocked();
       return;
     }
     if (role.is_system) {
@@ -109,9 +104,7 @@ export default function RolesAdmin() {
 
   const handleSave = async () => {
     if (isDemoUser) {
-      toast.warning('Demo Account', {
-        description: 'This action is not available in the demo account.',
-      });
+      demoBlocked();
       return;
     }
     const payload = {
@@ -180,7 +173,10 @@ export default function RolesAdmin() {
       />
       {/* Role Editor Modal */}
       {isEditing && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm" style={{ overscrollBehavior: 'contain' }}>
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm"
+          style={{ overscrollBehavior: 'contain' }}
+        >
           <Card className="w-full max-w-2xl max-h-screen overflow-y-auto m-4">
             <CardContent>
               <div className="p-6">
@@ -211,7 +207,9 @@ export default function RolesAdmin() {
                   )}
 
                   <div>
-                    <label htmlFor="role-label" className="block text-sm font-medium mb-1">Label</label>
+                    <label htmlFor="role-label" className="block text-sm font-medium mb-1">
+                      Label
+                    </label>
                     <Input
                       id="role-label"
                       type="text"
@@ -223,7 +221,9 @@ export default function RolesAdmin() {
                   </div>
 
                   <div>
-                    <label htmlFor="role-description" className="block text-sm font-medium mb-1">Description</label>
+                    <label htmlFor="role-description" className="block text-sm font-medium mb-1">
+                      Description
+                    </label>
                     <Textarea
                       id="role-description"
                       value={editForm.description}
@@ -248,7 +248,9 @@ export default function RolesAdmin() {
                                 key={perm}
                                 type="button"
                                 size="sm"
-                                variant={editForm.permissions.includes(perm) ? 'default' : 'secondary'}
+                                variant={
+                                  editForm.permissions.includes(perm) ? 'default' : 'secondary'
+                                }
                                 onClick={() => togglePermission(perm)}
                                 className={`h-7 rounded px-2 py-1 text-xs ${
                                   editForm.permissions.includes(perm)
@@ -297,7 +299,9 @@ export default function RolesAdmin() {
                     <p className="text-sm text-muted-foreground mt-1">{role.description}</p>
                   )}
                   <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                    <span className="tabular-nums">{role.permissions?.length || 0} permissions</span>
+                    <span className="tabular-nums">
+                      {role.permissions?.length || 0} permissions
+                    </span>
                     <span className="tabular-nums">{role.userCount || 0} users</span>
                   </div>
                   <div className="flex flex-wrap gap-1 mt-2">
@@ -318,13 +322,23 @@ export default function RolesAdmin() {
                 </div>
                 <div className="flex items-center gap-2">
                   <Guard user={user} permission="ROLES_EDIT">
-                    <Button variant="ghost" size="sm" aria-label="Edit role" onClick={() => handleEdit(role)}>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      aria-label="Edit role"
+                      onClick={() => handleEdit(role)}
+                    >
                       <Edit3 className="size-4" aria-hidden="true" />
                     </Button>
                   </Guard>
                   {!role.is_system && (
                     <Guard user={user} permission="ROLES_EDIT">
-                      <Button variant="ghost" size="sm" aria-label="Delete role" onClick={() => handleDelete(role)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label="Delete role"
+                        onClick={() => handleDelete(role)}
+                      >
                         <Trash2 className="size-4 text-destructive" aria-hidden="true" />
                       </Button>
                     </Guard>

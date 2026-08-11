@@ -161,7 +161,7 @@ export default function DashboardPage() {
 
   const handleRefresh = useCallback(() => {
     if (isDemoUser) {
-      toast.warning('Demo Account', { description: 'Action not available in demo.' });
+      demoBlocked('Action not available in demo.')
       return;
     }
     fetchData();
@@ -169,7 +169,7 @@ export default function DashboardPage() {
 
   const handleBackup = useCallback(async () => {
     if (user?.isDemo) {
-      toast.warning('Demo Account', { description: 'Action not available in demo.' });
+      demoBlocked('Action not available in demo.')
       return;
     }
     try {
@@ -242,10 +242,11 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
       {/* ── Unified Hero Banner ── */}
-      <FeatureStoryBanner
+      <FeatureStoryBanner story={getFeatureStory('dashboard')} />
+
+      <DashboardPageHeader
         title="Ops Starter"
         subtitle={`Business date ${formatDate(getWibToday())}`}
-        story={getFeatureStory('dashboard')}
       />
 
       {/* ── KPI Stats Grid ── */}
@@ -452,7 +453,7 @@ export default function DashboardPage() {
                 label="Run Audit"
                 onClick={async () => {
                   if (user?.isDemo) {
-                    toast.warning('Demo Account');
+                    demoBlocked();
                     return;
                   }
                   toast.info('Running Store Audit', {

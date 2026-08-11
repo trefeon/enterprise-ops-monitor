@@ -11,6 +11,7 @@ import type {
   PaginationMeta,
   EODFilters,
 } from '../types';
+import { demoBlocked } from '@/components/base/demo-toast';
 
 const AUTO_REFRESH_INTERVAL = 30000;
 
@@ -104,9 +105,7 @@ function normalizeEodExportFileName(
 }
 
 function demoBlockedToast(): void {
-  toast.warning('Demo Account', {
-    description: 'This action is not available in the demo account.',
-  });
+  demoBlocked();
 }
 
 export function useEODMonitor(api: ApiClient, user: UserInfo): UseEODMonitorReturn {
