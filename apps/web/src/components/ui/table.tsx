@@ -62,6 +62,7 @@ function TableHead({ className, ...props }: React.ComponentProps<'th'>) {
   return (
     <th
       data-slot="table-head"
+      scope="col"
       className={cn(
         'h-10 bg-muted/50 px-cell-x text-left align-middle text-3xs font-medium leading-4 tracking-wider whitespace-nowrap text-muted-foreground uppercase [&:has([role=checkbox])]:pr-0',
         className

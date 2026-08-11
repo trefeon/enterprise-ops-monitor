@@ -263,7 +263,11 @@ Phases A/B/C/E landed; Phase D continues as roadmap task R3.` Keep the file (it 
   - **Accept:** `git status` shows the updated images as tracked changes; README gallery
     images render; GIF plays.
 
-- [ ] **R2.4 — Accessibility spot-check (bounded)**
+- [x] **R2.4 — Accessibility spot-check (bounded)**
+  - **Done 2026-08-11:** 5 surfaces × 5 checks, browser-verified (32 tab stops, 100% visible
+    focus, StatCard Enter-activation). All surfaces PASS. 3 cheap shared-component fixes landed
+    (`ring-3`→`ring-2` in 8 ui files, 4 pagination `aria-label`s, `TableHead scope="col"`);
+    7 structural items logged in `docs/ui-audit.md` §7c with rationale.
   - **Why:** `web-design-guidelines` compliance is a credibility signal; a full WCAG program
     is out of scope for a desktop ops demo.
   - **Steps:** on **5 surfaces** (Login, Dashboard, EOD Monitor, Roles, After Hours) check:
