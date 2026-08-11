@@ -22,6 +22,14 @@ pnpm-debug.log*
 .env.test.local
 .env.production.local
 
+# Secrets & credentials — certs/keys never belong in a public repo
+*.pfx
+*.p12
+*.cer
+*.pem
+*.key
+*.jks
+
 # IDE and OS files
 .DS_Store
 .vscode/
@@ -33,6 +41,11 @@ pnpm-debug.log*
 # Runtime directories
 backups/
 agent_updates/
+
+# Private reference material — real-project source (DashITops), DO NOT COMMIT.
+# This repo is public; reference/ contains the original internal project,
+# including its own nested .git history, compiled agent binaries and TLS certs.
+reference/
 
 # Coverage & cache
 coverage/
