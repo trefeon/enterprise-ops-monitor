@@ -24,7 +24,7 @@ Built on operational experience from a retail-IT internship: nightly End-of-Day 
 
 **18 = 17 + 1.** The in-app story catalog (`featureStories` in `apps/web/src/data/stories.js`) contains **17 story entries**; the **Login** screen below is the 18th, documented from the page itself (`apps/web/src/pages/Login/index.tsx`) because it is a route the portfolio showcases but carries no story card.
 
-Beyond these 18, the app also ships 6 routed marketing and auxiliary surfaces that the story catalog deliberately does not cover: Landing (`/`), Pricing (`/pricing`), Signup (`/signup`), Starter (`/starter`), Live TV Display (`/display/:screenToken`), and Live Menu Dashboard (`/app/live-menu`).
+Beyond these 18, the app also ships 6 routed marketing and auxiliary surfaces that the story catalog deliberately does not cover: Landing (`/`), Pricing (`/pricing`), Signup (`/signup`), Starter (`/starter`), Live TV Display (`/display/:screenToken`), and Live Menu Dashboard (`/app/live-menu`). Together that is **24 routed page components across 25 directories** in `apps/web/src/pages/`; the one un-routed directory — `Billing/` — is a refactor remnant kept in the tree by decision (roadmap task R1.5).
 
 ### 1. Dashboard
 

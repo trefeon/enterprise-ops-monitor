@@ -46,7 +46,7 @@ standalone: `pnpm --dir mock-api --ignore-workspace install`.
 | Layer                                                                                      | State                          | Evidence                                                  |
 | ------------------------------------------------------------------------------------------ | ------------------------------ | --------------------------------------------------------- |
 | Demo runtime (web + mock-api, zero config)                                                 | ✅ done                        | `docker-compose.yml`, 99 mock endpoints                   |
-| 26 page surfaces, all reading mock-api via `src/lib/api/`                                  | ✅ done                        | `apps/web/src/pages/`                                     |
+| 25 page surfaces (24 routed + 1 unrouted remnant), all reading mock-api via `src/lib/api/` | ✅ done                        | `apps/web/src/pages/`                                     |
 | Docs suite (README, AGENTS, architecture, portfolio, security, development, research, ADR) | ✅ done                        | `docs/`                                                   |
 | Origin story (Phase A)                                                                     | ✅ done                        | commit `c95c016`, README §"Why this project exists"       |
 | Deterministic demo data (Phase C)                                                          | ✅ done                        | commit `81d40dd`, `DEMO_SEED=20260808`                    |
@@ -93,7 +93,7 @@ already done or were never real. **R2** re-runs the audit against the real token
 
 ### R0 — Housekeeping (blocking, do first)
 
-- [ ] **R0.1 — Commit the `.gitignore` hygiene change**
+- [x] **R0.1 — Commit the `.gitignore` hygiene change**
   - **Why:** the working tree carries an uncommitted `.gitignore` adding `reference/` and
     secret patterns (`*.pfx`, `*.p12`, `*.cer`, `*.pem`, `*.key`, `*.jks`). This repo is
     **public** and `reference/` holds the real internal project (nested `.git`, TLS certs,
@@ -112,7 +112,10 @@ already done or were never real. **R2** re-runs the audit against the real token
     tracked, so no history rewrite is needed. Re-confirm both before committing; if either
     is non-empty, **stop and escalate** — history rewrite is an owner decision.
 
-- [ ] **R0.2 — Establish the green baseline**
+- [x] **R0.2 — Establish the green baseline**
+  - **Baseline recorded 2026-08-11:** `pnpm check:all` green (lint 0 errors, typecheck clean,
+    format clean, 185 tests: api 176 pass / web 9 pass); `pnpm test:e2e:demo` **101 passed**
+    (56.8 s). Baseline is green — proceed to R1.
   - **Why:** every later task is measured against a known-good starting point.
   - **Steps:** run `pnpm check:all`, then `pnpm test:e2e:demo`.
   - **Accept:** both green. Record the e2e pass count in this file under R0.2 as the
@@ -123,12 +126,13 @@ already done or were never real. **R2** re-runs the audit against the real token
 
 ### R1 — Documentation truth pass
 
-- [ ] **R1.1 — Reconcile the feature-surface count**
+- [x] **R1.1 — Reconcile the feature-surface count**
   - **Why:** the count "18 feature surfaces" is **correct but unexplained** — it is the 17
     `featureStories` entries in `apps/web/src/data/stories.js` plus the Login screen, which is a
-    showcased route with no story card. The gap to the **26 directories** in `apps/web/src/pages/`
-    is what needs stating: 26 = 18 documented + 6 routed-but-undocumented (Landing, Pricing,
-    Signup, Starter, Live TV Display, Live Menu Dashboard) + 2 dead (see R1.5).
+    showcased route with no story card. The gap to the **25 directories** in `apps/web/src/pages/`
+    (26 before R1.5 deleted the dead About page) is what needs stating: 25 = 18 documented +
+    6 routed-but-undocumented (Landing, Pricing, Signup, Starter, Live TV Display, Live Menu
+    Dashboard) + 1 unrouted remnant (Billing, kept by decision).
     A recruiter who counts is a recruiter who stops trusting the doc.
   - **Steps:**
     1. Enumerate `apps/web/src/pages/` and classify each: _feature surface_ (an operational
@@ -139,8 +143,14 @@ already done or were never real. **R2** re-runs the audit against the real token
        `docs/prd.md`, `apps/web/src/data/stories.js`.
   - **Accept:** `rg -n "18 feature|18 surfaces|26 feature" README.md docs/ apps/web/src` returns
     only the reconciled wording; the count matches an actual directory listing.
+  - **Done 2026-08-11:** one reconciled sentence — "18 documented feature surfaces (17 story
+    cards + the Login screen) across 24 routed page components of 25 in `apps/web/src/pages/`" —
+    now in README §Feature highlights and `docs/portfolio.md` §Feature catalog; the definition
+    (18 = 17 story cards + Login; 25 dirs = 18 + 6 routed-undocumented + 1 unrouted remnant
+    `Billing/`) propagates to `docs/prd.md`; `stories.js` carries no count comment (unchanged);
+    mock endpoint count 99 already stated in README §Skills demonstrated + §Tech stack.
 
-- [ ] **R1.2 — Retire or rewrite the stale UI audit**
+- [x] **R1.2 — Retire or rewrite the stale UI audit**
   - **Why:** §1.1 — the report documents a design system (Geist `--ds-*`) that no longer
     exists, and flags a legitimate token (`text-3xs`) as a violation. Leaving it in the repo
     is worse than deleting it: a reviewer reads it as current.
@@ -152,6 +162,9 @@ in 761357e`, or **(b)** delete it and let R2 produce the replacement.
   - **Steps:** move/annotate; remove any inbound links; note the change in `docs/research.md`.
   - **Accept:** no file in the repo presents `--ds-*` tokens or `rounded-xl` findings as
     current; `rg -l "\-\-ds-" apps/web/src` returns nothing outside the archived file.
+  - **Done 2026-08-11 (option a):** audit moved to `docs/archive/ui-audit-2026-07-08.md` with an
+    `ARCHIVED — DO NOT ACT` banner; the only inbound links are this roadmap's own R2 tracking
+    lines; `rg -l -- "--ds-" apps/web/src` returns **nothing**; noted in `docs/research.md` §(d).
 
 - [ ] **R1.3 — Mark `docs/plan-showcase.md` as superseded**
   - **Why:** two competing plan docs confuse the next agent.
@@ -160,25 +173,33 @@ Phases A/B/C/E landed; Phase D continues as roadmap task R3.` Keep the file (it 
     Cloudflare recon that R3 depends on).
   - **Accept:** header present; `docs/roadmap.md` is the only doc describing _active_ work.
 
-- [ ] **R1.4 — Refresh `TODO.md` or fold it into this roadmap**
+- [x] **R1.4 — Refresh `TODO.md` or fold it into this roadmap**
   - **Why:** `TODO.md` is 100% complete and scoped to a finished conversion; as the root-level
     task file it now misleads.
   - **Steps:** either add `> COMPLETE — historical record. Active work: docs/roadmap.md` or
     replace its contents with a pointer. Update the `README.md` repo-layout line that
     describes `TODO.md`.
   - **Accept:** root `TODO.md` cannot be mistaken for the active task list.
+  - **Done 2026-08-11:** already satisfied in commit `52e59cf` — `TODO.md` carries the
+    `> **COMPLETE — historical record** … Active work lives in docs/roadmap.md` header and the
+    README §Repository layout line reads `# historical: the finished demo-first conversion
+(active roadmap: docs/roadmap.md)`. Verified, no edit needed.
 
-- [ ] **R1.5 — Remove or route the two dead page components**
+- [x] **R1.5 — Remove or route the two dead page components**
   - **Why:** `apps/web/src/pages/Billing/` and `apps/web/src/pages/About/` are never imported or
     routed (verified 2026-08-11 against `apps/web/src/router/index.tsx` + a repo-wide import scan).
     Dead code in a portfolio repo reads as abandoned work to a reviewer.
-  - **Decision needed:** delete both, or wire them up. `About` is genuinely superseded by
-    `/case-study` (the legacy `/about` route already redirects there) → **recommend delete**.
-    `Billing` has no route and belongs to the multi-tenant SaaS refactor, not the demo →
-    **recommend delete**, noting it stays in git history as reference.
+  - **Decision (2026-08-11, owner):** delete **About only** — it is genuinely superseded by
+    `/case-study` (the legacy `/about` route already redirects there). **Billing stays** in the
+    tree as a documented unrouted refactor remnant (multi-tenant SaaS direction, out of the demo
+    scope) — this supersedes the "delete both" recommendation below.
   - **Steps:** confirm zero inbound imports, delete the directories, run `pnpm check:all` +
     `pnpm build`, then `pnpm test:e2e:demo`.
   - **Accept:** `rg -l "pages/(About|Billing)" apps/web/src` returns nothing; all checks green.
+  - **As executed:** `rg -l "pages/About" apps/web/src` → nothing; `apps/web/src/pages/About/`
+    deleted; Billing intentionally kept, so the combined `pages/(About|Billing)` pattern no
+    longer applies; e2e "About legacy redirect resolves safely" still green (`/about` →
+    `/case-study` is a router-only `<Navigate>`, no component import).
   - **Note:** this is a CODE change, not doc work — it is deliberately separated from R1's doc pass.
 
 ---
@@ -325,9 +346,9 @@ Phases A/B/C/E landed; Phase D continues as roadmap task R3.` Keep the file (it 
   - **Accept:** CI green on a real push; workflow has no unpinned `@master` actions.
 
 - [ ] **R4.4 — README final pass**
-  - **Steps:** verify every claim end-to-end: endpoint count (currently **99** mock routes —
-    README says "~95", fix it), feature-surface count (R1.1), screenshot links, demo creds,
-    every command in the Quickstart actually runs, all doc links resolve.
+  - **Steps:** verify every claim end-to-end: endpoint count (**99** mock routes — already
+    reconciled in R1.1; README says 99), feature-surface count (R1.1), screenshot links, demo
+    creds, every command in the Quickstart actually runs, all doc links resolve.
   - **Accept:** a link checker or manual pass shows zero broken links; every number in the
     README is reproducible by a command stated in this roadmap.
 

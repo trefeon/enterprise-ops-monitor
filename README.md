@@ -59,7 +59,7 @@ Windows PowerShell: `$env:VITE_API_URL="http://localhost:4000"; pnpm dev`
 - **Agent Updater & Office Agent Monitor** — rollout status, version drift, laptop heartbeat health.
 - **Accounts, Roles, After Hours** — branch-scoped RBAC with 30+ permissions, permission overrides, and after-hours violation monitoring with monthly reports.
 
-The full catalog — **18 documented feature surfaces** (17 story entries plus the Login screen) with problem/solution/impact narratives, routes, and metrics — lives in [docs/portfolio.md](docs/portfolio.md).
+The full catalog — **18 documented feature surfaces** (17 story cards plus the Login screen) across 24 routed page components of 25 in `apps/web/src/pages/` (the one unrouted directory, `Billing/`, is a refactor remnant) — with problem/solution/impact narratives, routes, and metrics — lives in [docs/portfolio.md](docs/portfolio.md).
 
 ## Screenshots
 

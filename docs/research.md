@@ -10,14 +10,14 @@ Historical notes from the work behind this repository: the build-speed audit, th
 
 **Root causes found (timed per layer):**
 
-| Cause | Measured cost |
-| --- | --- |
-| Mock-api image layer export (gzip compression) | **771.7 s** |
-| Web `vite build` stage | **416.3 s** |
-| `COPY node_modules` after install | **115.9 s** |
-| `chown -R /app` over the whole node_modules tree | multi-minute chown pass on HDD (also broke `/backups` ownership semantics) |
-| Unpinned pnpm (re-downloading corepack pnpm each image) | 20 s+ per image |
-| `DB_PORT` missing from Sequelize constructors | caused DB connectivity workarounds during prod-mode runs |
+| Cause                                                   | Measured cost                                                              |
+| ------------------------------------------------------- | -------------------------------------------------------------------------- |
+| Mock-api image layer export (gzip compression)          | **771.7 s**                                                                |
+| Web `vite build` stage                                  | **416.3 s**                                                                |
+| `COPY node_modules` after install                       | **115.9 s**                                                                |
+| `chown -R /app` over the whole node_modules tree        | multi-minute chown pass on HDD (also broke `/backups` ownership semantics) |
+| Unpinned pnpm (re-downloading corepack pnpm each image) | 20 s+ per image                                                            |
+| `DB_PORT` missing from Sequelize constructors           | caused DB connectivity workarounds during prod-mode runs                   |
 
 **Fixes applied (commit `1db054d` "perf: speed up docker deploys on slow hardware" + DB_PORT fix commits):**
 
@@ -36,17 +36,17 @@ Historical notes from the work behind this repository: the build-speed audit, th
 
 A security audit of the **real full stack** (`apps/api`) identified **3 critical and 6 high findings; all were remediated** in two remediation commits (`0174f42` / `14e1fbc` "security remediation — media traversal, SQLi, tenant isolation, auth hardening" and `d68bc50` "close security audit issues #5 #7 #11 #12 #14 #15").
 
-| # | Severity | Finding | Remediation |
-| --- | --- | --- | --- |
-| 1 | Critical | Media upload/download path traversal | Paths resolved inside the media root, traversal rejected; magic-byte MIME sniffing rejects header spoofing |
-| 2 | Critical | SQL injection in tenant middleware | Parameterized tenant queries; no raw interpolation of tenant ids |
-| 3 | Critical | Cross-tenant data exposure | RLS enabled + strict tenant policies; `org_id` backfill migration; JWT `orgId` plumbed through auth middleware; tenant-scoped queries everywhere |
-| 4 | High | Legacy SHA256 password path | Removed — bcrypt-only, fails closed |
-| 5 | High | Login brute force | Rate limit tightened 100 → 10 attempts per 15 minutes (production) |
-| 6 | High | Refresh token reuse | DB-backed rotation + revocation with strict RLS migration |
-| 7 | High | OAuth callback CSRF | Stateless HMAC-signed `state` parameter verified pre-callback |
-| 8 | High | Cross-tenant cache leak (EOD live ranking) | Tenant-keyed cache — no shared cache rows across orgs |
-| 9 | High | RBAC soft-fail | Fail-closed RBAC: missing permission / unresolved role denies |
+| #   | Severity | Finding                                    | Remediation                                                                                                                                      |
+| --- | -------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Critical | Media upload/download path traversal       | Paths resolved inside the media root, traversal rejected; magic-byte MIME sniffing rejects header spoofing                                       |
+| 2   | Critical | SQL injection in tenant middleware         | Parameterized tenant queries; no raw interpolation of tenant ids                                                                                 |
+| 3   | Critical | Cross-tenant data exposure                 | RLS enabled + strict tenant policies; `org_id` backfill migration; JWT `orgId` plumbed through auth middleware; tenant-scoped queries everywhere |
+| 4   | High     | Legacy SHA256 password path                | Removed — bcrypt-only, fails closed                                                                                                              |
+| 5   | High     | Login brute force                          | Rate limit tightened 100 → 10 attempts per 15 minutes (production)                                                                               |
+| 6   | High     | Refresh token reuse                        | DB-backed rotation + revocation with strict RLS migration                                                                                        |
+| 7   | High     | OAuth callback CSRF                        | Stateless HMAC-signed `state` parameter verified pre-callback                                                                                    |
+| 8   | High     | Cross-tenant cache leak (EOD live ranking) | Tenant-keyed cache — no shared cache rows across orgs                                                                                            |
+| 9   | High     | RBAC soft-fail                             | Fail-closed RBAC: missing permission / unresolved role denies                                                                                    |
 
 Each fix shipped with regression tests in `apps/api/tests/` (media traversal, tenant context/middleware, auth middleware `orgId`, login `orgId`, RBAC branch scope, refresh rotation, OAuth state, auth hardening, EOD live auth, billing guard).
 
@@ -61,3 +61,15 @@ Three factors drove the decision (full record: `docs/adr/0001-portfolio-demo-fir
 1. **Portfolio goal.** The deliverable a recruiter should see is the dashboard itself — working, live, and explorable. A heavy Postgres-backed stack adds operational noise (migrations, volumes, seeds, backups, env files) that gets in the way of "clone, up, explore".
 2. **Heavy stack cost.** The real stack builds in 40+ minutes on slow hardware (section a), needs `DB_PASS` / `JWT_SECRET`, a database volume, and a running Postgres. That cost is justified for production, not for a demo.
 3. **Deploy lightness.** The demo is two containers, zero config, zero secrets, and a deploy script whose only requirement is an SSH target. The real stack stays in the repo — visible on GitHub, documented as reference — without burdening the default path.
+
+---
+
+## (d) UI audit — archived 2026-08-11
+
+The 2026-07-08 visual-consistency audit (originally `apps/web/src/docs/`, now
+`docs/archive/ui-audit-2026-07-08.md`) was archived with an `ARCHIVED — DO NOT ACT` banner on
+2026-08-11: it described the pre-Supabase Geist `--ds-*` token system (superseded by commit
+`761357e` — the current tokens are the ~105 CSS variables in `apps/web/src/index.css` plus the
+`theme.extend` entries in `apps/web/tailwind.config.js`) and it flagged a legitimate token
+(`text-3xs`, defined in `tailwind.config.js`) as a violation. It will be replaced by the R2.1
+audit (`docs/ui-audit.md`); until then, do not act on its "Priority Actions".
