@@ -225,65 +225,116 @@ export default function DashboardPage() {
       {/* ── Charts + Alerts Row (3-col grid) ── */}
       <DashboardSection columns={3}>
         {/* Operational Pulse — spans 2 cols */}
-        <div className="col-span-2">
-          <Card data-e2e="dashboard-operational-pulse" className="h-full">
-            <CardHeader className="pb-3">
+        <div className="col-span-1 lg:col-span-2">
+          <Card data-e2e="dashboard-operational-pulse" className="flex flex-col h-full border-border">
+            <CardHeader className="py-3 px-4 sm:px-5 border-b border-border">
               <div className="flex items-center justify-between gap-3">
-                <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Operational Pulse</CardTitle>
-                <StatusBadge variant={health.label === 'Healthy' ? 'success' : 'warning'}>LIVE</StatusBadge>
+                <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                  Operational Pulse
+                </CardTitle>
+                <StatusBadge variant={health.label === 'Healthy' ? 'success' : 'warning'}>
+                  LIVE
+                </StatusBadge>
               </div>
             </CardHeader>
-            <CardContent className="space-y-4" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              {[
-                { icon: Clock, label: 'Last EOD Sync', sub: 'Across 8 regions', value: eod?.lastSyncAt ? formatTime(eod.lastSyncAt) : '--:--:--' },
-                { icon: Cloud, label: 'Backup Status', sub: 'Database & Media', value: (backups?.failedCount ?? 0) > 0 ? 'DEGRADED' : 'SUCCESS', error: (backups?.failedCount ?? 0) > 0 },
-                { icon: Zap, label: 'Worker Interactions', sub: 'Active sessions today', value: `${interactionsToday ?? 0}` },
-                { icon: RefreshCw, label: 'Sync Queue', sub: 'Active monitors', value: `${sync?.healthyPercentage ?? '--'}%` },
-              ].map((item, i) => (
-                <div key={i} className="flex flex-col gap-3 rounded-lg border border-border bg-surface-muted p-3">
-                  <div className="flex items-center gap-3">
-                    <div className="shrink-0 rounded border border-border bg-card p-2">
-                      <item.icon className="size-4 text-primary" />
+            <CardContent className="flex-1 p-4 sm:p-5">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 h-full">
+                {[
+                  {
+                    icon: Clock,
+                    label: 'Last EOD Sync',
+                    sub: 'Across 8 regions',
+                    value: eod?.lastSyncAt ? formatTime(eod.lastSyncAt) : '--:--:--',
+                  },
+                  {
+                    icon: Cloud,
+                    label: 'Backup Status',
+                    sub: 'Database & Media',
+                    value: (backups?.failedCount ?? 0) > 0 ? 'DEGRADED' : 'SUCCESS',
+                    error: (backups?.failedCount ?? 0) > 0,
+                  },
+                  {
+                    icon: Zap,
+                    label: 'Worker Interactions',
+                    sub: 'Active sessions today',
+                    value: `${interactionsToday ?? 0}`,
+                  },
+                  {
+                    icon: RefreshCw,
+                    label: 'Sync Queue',
+                    sub: 'Active monitors',
+                    value: `${sync?.healthyPercentage ?? '--'}%`,
+                  },
+                ].map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex flex-col justify-between gap-2.5 rounded-lg border border-border bg-surface-muted/60 p-3.5 transition-colors hover:border-primary/30"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-primary">
+                        <item.icon className="size-4" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-medium text-foreground">{item.label}</p>
+                        <p className="truncate text-3xs font-medium uppercase tracking-wider text-muted-foreground">
+                          {item.sub}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-xs font-medium text-foreground">{item.label}</p>
-                      <p className="text-3xs text-muted-foreground uppercase tracking-tight">{item.sub}</p>
-                    </div>
+                    <p
+                      className={cn(
+                        'font-mono text-base font-semibold tracking-tight',
+                        item.error ? 'text-status-error' : 'text-foreground'
+                      )}
+                    >
+                      {item.value}
+                    </p>
                   </div>
-                  <p className={cn('font-mono text-sm font-medium', item.error ? 'text-status-error' : 'text-foreground')}>
-                    {item.value}
-                  </p>
-                </div>
-              ))}
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Alerts Panel */}
-        <Card data-e2e="dashboard-alerts" className="flex flex-col">
-          <CardHeader className="pb-3 border-b border-border">
+        <Card data-e2e="dashboard-alerts" className="flex flex-col h-full border-border">
+          <CardHeader className="py-3 px-4 sm:px-5 border-b border-border">
             <div className="flex items-center justify-between gap-3">
-              <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Recent Alerts</CardTitle>
-              <Button variant="ghost" size="sm" className="h-7 text-3xs font-medium" onClick={() => navigate('/app/sync')}>
+              <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                Recent Alerts
+              </CardTitle>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 text-3xs font-medium uppercase tracking-wider"
+                onClick={() => navigate('/app/sync')}
+              >
                 VIEW ALL <ArrowRight className="ml-1 size-3" />
               </Button>
             </div>
           </CardHeader>
           <CardContent className="flex-1 p-0">
             {alerts.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-48 text-center px-6">
+              <div className="flex flex-col items-center justify-center h-full min-h-48 text-center px-6 py-8">
                 <CheckCircle2 className="size-8 text-status-success/40 mb-2" />
                 <p className="text-xs text-muted-foreground">All clear. No active alerts.</p>
               </div>
             ) : (
               <div className="divide-y divide-border">
                 {alerts.slice(0, 4).map((alert) => (
-                  <div key={alert.id} className="p-4 hover:bg-surface-hover transition-colors">
+                  <div key={alert.id} className="p-3.5 px-4 sm:px-5 hover:bg-surface-hover transition-colors">
                     <div className="flex items-start gap-3">
-                      <ShieldAlert className={cn('size-4 shrink-0 mt-0.5', alert.severity === 'HIGH' ? 'text-status-error' : 'text-status-warning')} />
+                      <ShieldAlert
+                        className={cn(
+                          'size-4 shrink-0 mt-0.5',
+                          alert.severity === 'HIGH' ? 'text-status-error' : 'text-status-warning'
+                        )}
+                      />
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs font-medium text-foreground leading-none mb-1 break-words">{alert.title}</p>
-                        <p className="text-3xs text-muted-foreground uppercase break-words">
+                        <p className="text-xs font-medium text-foreground leading-snug mb-1 break-words">
+                          {alert.title}
+                        </p>
+                        <p className="text-3xs text-muted-foreground uppercase tracking-wider break-words">
                           {formatAlertType(alert.type)} • {formatDateTime(alert.createdAt)}
                         </p>
                       </div>
@@ -299,11 +350,13 @@ export default function DashboardPage() {
       {/* ── Quick Actions ── */}
       <DashboardSection gridTemplateColumns="1fr" className="mt-2">
         <Card data-e2e="dashboard-actions" className="border-border">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium uppercase tracking-wider text-muted-foreground">Quick Actions</CardTitle>
+          <CardHeader className="py-3 px-4 sm:px-5 border-b border-border">
+            <CardTitle className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Quick Actions
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 12 }}>
+          <CardContent className="p-4 sm:p-5">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <ActionButton icon={<Monitor className="size-4" />} label="Monitor EOD" onClick={() => navigate('/app/eod')} />
               <ActionButton icon={<Cloud className="size-4" />} label="Trigger Backup" onClick={handleBackup} disabled={user?.isDemo} />
               <ActionButton icon={<RefreshCw className="size-4" />} label="Run Audit" onClick={async () => {
