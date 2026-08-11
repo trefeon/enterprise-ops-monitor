@@ -73,3 +73,18 @@ The 2026-07-08 visual-consistency audit (originally `apps/web/src/docs/`, now
 `theme.extend` entries in `apps/web/tailwind.config.js`) and it flagged a legitimate token
 (`text-3xs`, defined in `tailwind.config.js`) as a violation. It will be replaced by the R2.1
 audit (`docs/ui-audit.md`); until then, do not act on its "Priority Actions".
+
+---
+
+## (e) UI audit R2 outcome — 2026-08-11
+
+The R2.1 re-audit (`docs/ui-audit.md`) replaced the archived report: 11 findings against the
+real Supabase token system (118 CSS vars + `theme.extend`), zero HIGH, 2 MEDIUM — F3
+(`min-w-[220px]` ×3, no `minWidth` tokens) and F6 (shadcn `combobox.tsx` used Tailwind v4-only
+syntax `(--var)`/`--spacing()` on Tailwind 3.4.17, so those utilities silently generated no
+CSS). Both fixed: `minWidth.cell-sm: 220px` token added, all 8 v4 forms converted to v3
+(`--spacing(7)`→`1.75rem` etc.) with the emitted CSS verified. R2.4 accessibility spot-check
+(5 surfaces, browser-verified): all pass; 3 cheap shared-component fixes landed (`ring-3`→`ring-2`
+— dead utility in 8 ui files, 4 pagination `aria-label`s, `TableHead scope="col"`); 7 structural
+items logged in §7c. R2.3 re-capture: screenshots visually identical, only date-relative faker
+data drifted (no visual regression).

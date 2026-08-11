@@ -54,8 +54,8 @@ standalone: `pnpm --dir mock-api --ignore-workspace install`.
 | CI + LICENSE + badges (Phase E)                                                            | ✅ done                        | `.github/workflows/ci.yml`, MIT `LICENSE`                 |
 | e2e suite                                                                                  | ✅ 101 passing (last full run) | `pnpm test:e2e:demo`                                      |
 | **Public live demo URL**                                                                   | ❌ **missing**                 | biggest remaining gap → **R3**                            |
-| **UI audit report**                                                                        | ⚠️ **stale + partly wrong**    | archived → `docs/archive/ui-audit-2026-07-08.md` → **R2** |
-| Uncommitted `.gitignore` (reference/ hygiene)                                              | ⚠️ dirty tree                  | `git status` → **R0.1**                                   |
+| **UI audit report**                                                                        | ✅ re-audited        | `docs/ui-audit.md` (R2.1–R2.4 done 2026-08-11)                                       |
+| Uncommitted `.gitignore` (reference/ hygiene)                                              | ✅ done              | commits `644919a` + `52e59cf`                                                        |
 | GitHub repo metadata (description, topics)                                                 | ❌ missing                     | → **R4.1**                                                |
 
 ### 1.1 Critical finding — the UI audit is stale
