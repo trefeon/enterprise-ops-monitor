@@ -251,7 +251,11 @@ Phases A/B/C/E landed; Phase D continues as roadmap task R3.` Keep the file (it 
   - **Guard:** if a fix changes layout, re-capture screenshots (R2.3) — the README gallery
     must never show a UI that no longer exists.
 
-- [ ] **R2.3 — Re-capture screenshots if the UI changed**
+- [x] **R2.3 — Re-capture screenshots if the UI changed**
+  - **Done 2026-08-11:** `pnpm screenshots` re-run (14 PNG + GIF, zero console errors). Vision
+    comparison of old-vs-new dashboard/eod/system: layout & styling pixel-identical; only
+    date-relative faker data drifted (business date 08→11 Aug) — no visual regression.
+    New screenshots committed.
   - **Precondition:** R2.2 changed anything visible.
   - **Steps:** `pnpm screenshots` (boots mock-api :4000 + web :5182, 1440×900, 14 PNGs +
     walkthrough GIF into `docs/screenshots/`). Verify the `.gitignore` negation for
