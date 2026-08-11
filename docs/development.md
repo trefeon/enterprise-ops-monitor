@@ -88,7 +88,7 @@ export async function getMyFeatureData(): Promise<MyFeatureItem[]> {
 
 ## 3. Add a mock endpoint
 
-Everything lives in one file: `mock-api/server.js` (CommonJS, Express 5). ~95 endpoints already exist under `/api/*`.
+Everything lives in one file: `mock-api/server.js` (CommonJS, Express 5). 99 endpoints already exist under `/api/*`.
 
 **Pattern** (copy an existing endpoint):
 

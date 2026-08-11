@@ -27,7 +27,7 @@ Both share the same frontend (`apps/web`). The difference is the backend: a tiny
                         │   listen :3000  (published host :4000)         │
                         │   network alias: api  ← nginx proxy target     │
                         │   express + @faker-js/faker + exceljs          │
-                        │   ~95 endpoints under /api/*                   │
+                        │   99 endpoints under /api/*                    │
                         │   in-memory sessions Map (demo/demo123)        │
                         │   WIB timezone (Asia/Jakarta)                  │
                         └────────────────────────────────────────────────┘
@@ -111,6 +111,7 @@ enterprise-ops-monitor/
 │   │   └── Dockerfile             # node:22 build → nginx:1.27-alpine
 │   └── api/                       # REFERENCE ONLY — Express + Sequelize + Postgres
 ├── mock-api/                      # Express 5 + faker demo server (standalone lockfile)
+├── reference/                      # gitignored local copy of the original internal project (private)
 ├── packages/shared/               # @eom/shared TypeScript package
 ├── scripts/                       # deploy.js, deploy-ops.sh, deploy-check.js, start-web-e2e.mjs
 ├── docs/                          # prd, architecture, portfolio, security, development, research, adr

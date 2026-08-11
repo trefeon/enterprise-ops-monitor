@@ -31,7 +31,7 @@ project without asking a human.
 | Root docs                                 | **all deleted** (PRD, ARCHITECTURE, PORTFOLIO, RESEARCH, SECURITY_AUDIT, TODO, docs/\*) | full suite recreated (see §5)                                                         |
 | `README.md`                               | **missing** (bad for portfolio)                                                         | portfolio-first README with screenshot, demo creds, quickstart                        |
 
-Already in place (do not rebuild): `mock-api/server.js` (~95 endpoints, faker data,
+Already in place (do not rebuild): `mock-api/server.js` (99 endpoints, faker data,
 single `demo` / `demo123` account), demo login quick-select, `/about` portfolio page,
 `isDemoMode` flag (`apps/web/src/lib/appMode.ts`, `VITE_APP_MODE=demo`), nginx
 `/api` → `api:3000` proxy (satisfied by the mock-api network alias `api`),

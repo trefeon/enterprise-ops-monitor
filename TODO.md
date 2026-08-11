@@ -1,3 +1,5 @@
+> **COMPLETE — historical record.** This tracked the finished demo-first conversion. Active work lives in [docs/roadmap.md](docs/roadmap.md).
+
 # TODO — Portfolio Demo-First Conversion
 
 Checkable task list for the conversion. **Status: ALL COMPLETE (2026-08-07) — Slice A (deploy path), Slice B (docs suite), e2e gate, and final verifier pass are all done.**

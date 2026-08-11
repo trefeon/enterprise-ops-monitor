@@ -1,3 +1,5 @@
+> **Superseded by [docs/roadmap.md](roadmap.md)** (2026-08-11). Phases A/B/C/E landed; Phase D continues as roadmap task R3. Retained for the Cloudflare/deploy recon in §Phase D, which R3 depends on.
+
 # PLAN — Portfolio Showcase Completion (Phase 4)
 
 **Date:** 2026-08-08 · **Status:** Plan — awaiting decisions

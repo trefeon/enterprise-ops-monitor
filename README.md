@@ -59,7 +59,7 @@ Windows PowerShell: `$env:VITE_API_URL="http://localhost:4000"; pnpm dev`
 - **Agent Updater & Office Agent Monitor** — rollout status, version drift, laptop heartbeat health.
 - **Accounts, Roles, After Hours** — branch-scoped RBAC with 30+ permissions, permission overrides, and after-hours violation monitoring with monthly reports.
 
-The full catalog — 18 feature surfaces with problem/solution/impact narratives, routes, and metrics — lives in [docs/portfolio.md](docs/portfolio.md).
+The full catalog — **18 documented feature surfaces** (17 story entries plus the Login screen) with problem/solution/impact narratives, routes, and metrics — lives in [docs/portfolio.md](docs/portfolio.md).
 
 ## Screenshots
 
@@ -81,20 +81,20 @@ Full walkthrough GIF + all surfaces: [docs/portfolio.md](docs/portfolio.md) · R
 
 - **React 19 + Vite + TypeScript SPA** — route-level RBAC gating via a `PrivateRoute` wrapper with typed `Permissions` checks on every protected route.
 - **shadcn/ui + Tailwind design system** — 40+ composable components in `apps/web/src/components/ui/` styled with CSS-variable design tokens in `src/index.css`.
-- **REST API design** — Express mock API with ~95 endpoints, a consistent `{ ok, data, meta, error }` envelope, and a typed API client per domain in `src/lib/api/`.
+- **REST API design** — Express mock API with 99 endpoints, a consistent `{ ok, data, meta, error }` envelope, and a typed API client per domain in `src/lib/api/`.
 - **Deterministic demo data** — faker seeded from a fixed `DEMO_SEED` (mulberry32 RNG), so two boots produce identical data for the same seed.
 - **Automated testing** — Playwright end-to-end suite across desktop and mobile viewports plus vitest unit tests, all wired into GitHub Actions CI.
 - **Zero-config deployment** — two-container Docker Compose demo (web + mock API, no database, no `.env`) with `scripts/` deploy and health-check automation.
 
 ## Tech stack
 
-| Layer              | DEMO RUNTIME (the deployed default)                                                          | REAL STACK (kept in repo as reference, never deployed)                                                                                                 |
-| ------------------ | -------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Frontend           | React 19, Vite 7, TypeScript, Tailwind CSS, shadcn/ui, React Router 7                        | Same `apps/web` codebase                                                                                                                               |
-| API                | `mock-api`: Node.js, Express 5, @faker-js/faker, exceljs — ~95 endpoints, in-memory sessions | `apps/api`: Express 5, Sequelize 6, Zod, JWT auth, bcrypt, RBAC v2 with branch scoping, passport (local + Google OAuth), schedulers, automated backups |
-| Database           | None (in-memory faker data, WIB timezone)                                                    | PostgreSQL 15 with Row-Level Security, forward-only migrations                                                                                         |
-| Proxy / Web server | nginx (SPA routing + `/api` → `api:3000`)                                                    | Same nginx, plus `/agent_updates` static mount                                                                                                         |
-| Deployment         | `docker-compose.yml`: `web` + `mock-api` only, health checks, zero config                    | `docker-compose.full.yml`: `web` + `api` + PostgreSQL + autoheal — **reference only**                                                                  |
+| Layer              | DEMO RUNTIME (the deployed default)                                                         | REAL STACK (kept in repo as reference, never deployed)                                                                                                 |
+| ------------------ | ------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Frontend           | React 19, Vite 7, TypeScript, Tailwind CSS, shadcn/ui, React Router 7                       | Same `apps/web` codebase                                                                                                                               |
+| API                | `mock-api`: Node.js, Express 5, @faker-js/faker, exceljs — 99 endpoints, in-memory sessions | `apps/api`: Express 5, Sequelize 6, Zod, JWT auth, bcrypt, RBAC v2 with branch scoping, passport (local + Google OAuth), schedulers, automated backups |
+| Database           | None (in-memory faker data, WIB timezone)                                                   | PostgreSQL 15 with Row-Level Security, forward-only migrations                                                                                         |
+| Proxy / Web server | nginx (SPA routing + `/api` → `api:3000`)                                                   | Same nginx, plus `/agent_updates` static mount                                                                                                         |
+| Deployment         | `docker-compose.yml`: `web` + `mock-api` only, health checks, zero config                   | `docker-compose.full.yml`: `web` + `api` + PostgreSQL + autoheal — **reference only**                                                                  |
 
 ## Repository layout
 
@@ -114,7 +114,7 @@ enterprise-ops-monitor/
 ├── docker-compose.yml      # DEFAULT: light demo (web + mock-api)
 ├── docker-compose.full.yml # REAL FULL STACK — reference only, never deployed
 ├── AGENTS.md         # AI-agent contract (commands, conventions, verification)
-└── TODO.md           # conversion task list
+└── TODO.md           # historical: the finished demo-first conversion (active roadmap: docs/roadmap.md)
 ```
 
 ## Deployment
@@ -135,7 +135,8 @@ The real full stack (`docker-compose.full.yml`: web + Express API + PostgreSQL +
 | ------------------------------------------------------------------------------ | --------------------------------------------------------------------- |
 | [docs/prd.md](docs/prd.md)                                                     | Product brief for the portfolio demo-first conversion                 |
 | [docs/architecture.md](docs/architecture.md)                                   | Both architectures: deployed demo runtime and reference full stack    |
-| [docs/portfolio.md](docs/portfolio.md)                                         | The portfolio story: all 18 feature surfaces, routes, metrics         |
+| [docs/portfolio.md](docs/portfolio.md)                                         | The portfolio story: 18 documented feature surfaces, routes, metrics  |
+| [docs/roadmap.md](docs/roadmap.md)                                             | The active execution roadmap (supersedes `TODO.md`)                   |
 | [docs/security.md](docs/security.md)                                           | Demo security boundaries + reference summary of completed remediation |
 | [docs/development.md](docs/development.md)                                     | Run, extend, test, and deploy guide (human + agent)                   |
 | [docs/research.md](docs/research.md)                                           | Research log: build-speed audit, security audit, demo-first rationale |

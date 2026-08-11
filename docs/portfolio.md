@@ -1,6 +1,6 @@
 # Portfolio Story — Enterprise Ops Monitor
 
-This document restores the in-app portfolio catalog: every feature surface, its route, tagline, problem/solution/impact narrative, and the key metrics exactly as shown in the app. The source of truth is `apps/web/src/data/stories.js`, rendered on the About page (`/case-study` renders the Case Study view; the About page lives under `/app` layout at `apps/web/src/pages/About/index.tsx` and `/case-study` at `apps/web/src/pages/CaseStudy/index.tsx`).
+This document restores the in-app portfolio catalog: every feature surface, its route, tagline, problem/solution/impact narrative, and the key metrics exactly as shown in the app. The source of truth is `apps/web/src/data/stories.js`, rendered on the Case Study page at `/case-study` (`apps/web/src/pages/CaseStudy/index.tsx`); the legacy `/about` route redirects to `/case-study`.
 
 The project story, as stated in the app:
 
@@ -22,7 +22,9 @@ Built on operational experience from a retail-IT internship: nightly End-of-Day 
 
 ## Feature catalog (18 surfaces)
 
-The in-app story catalog (`featureStories` in `apps/web/src/data/stories.js`) contains 17 story entries; the Login screen below is documented from the page itself (`apps/web/src/pages/Login/index.tsx`) because it is a route the portfolio showcases but carries no story card.
+**18 = 17 + 1.** The in-app story catalog (`featureStories` in `apps/web/src/data/stories.js`) contains **17 story entries**; the **Login** screen below is the 18th, documented from the page itself (`apps/web/src/pages/Login/index.tsx`) because it is a route the portfolio showcases but carries no story card.
+
+Beyond these 18, the app also ships 6 routed marketing and auxiliary surfaces that the story catalog deliberately does not cover: Landing (`/`), Pricing (`/pricing`), Signup (`/signup`), Starter (`/starter`), Live TV Display (`/display/:screenToken`), and Live Menu Dashboard (`/app/live-menu`).
 
 ### 1. Dashboard
 
@@ -186,7 +188,7 @@ The in-app story catalog (`featureStories` in `apps/web/src/data/stories.js`) co
 
 ### 18. About This Project
 
-- **Route:** `/case-study` (legacy `/about` redirects here; the About page also renders inside the app)
+- **Route:** `/case-study` (the legacy `/about` route redirects here)
 - **Tagline:** "The portfolio context is documented inside the product, not only in README files."
 - **The Problem:** A reviewer needs to understand the project purpose, simulated data boundary, tech stack, and feature intent while using the app.
 - **The Solution:** About centralizes the project story, demo disclosure, tech stack, verified surfaces, and per-feature Problem/Solution/Impact narratives.
