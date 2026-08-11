@@ -12,7 +12,7 @@ export function SearchBar({
   value,
   onValueChange,
   onChange,
-  placeholder = 'Search...',
+  placeholder = 'Search…',
   className,
   size = 'default',
   ...props

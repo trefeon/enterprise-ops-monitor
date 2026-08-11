@@ -24,7 +24,7 @@ export interface DataTableToolbarProps<TData> {
 
 export function DataTableToolbar<TData>({
   table,
-  searchPlaceholder = "Search...",
+  searchPlaceholder = "Search…",
   filters,
   actions,
   bulkActions,
@@ -43,6 +43,7 @@ export function DataTableToolbar<TData>({
             <Input
               type="search"
               placeholder={searchPlaceholder}
+              aria-label={searchPlaceholder}
               value={table.getState().globalFilter ?? ""}
               onChange={(e) => table.setGlobalFilter(e.target.value)}
               className="h-9 pl-8 pr-8 text-sm"
@@ -52,6 +53,7 @@ export function DataTableToolbar<TData>({
                 type="button"
                 variant="ghost"
                 size="icon"
+                aria-label="Clear search filter"
                 className="absolute right-1 top-1/2 size-6 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 onClick={() => table.setGlobalFilter("")}
               >

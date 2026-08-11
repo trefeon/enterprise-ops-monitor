@@ -34,7 +34,7 @@ export interface SearchInputProps {
 export function SearchInput({
   value,
   onChange,
-  placeholder = "Search...",
+  placeholder = "Search…",
   debounceMs = 300,
   className,
   size = "default",
@@ -80,7 +80,7 @@ export function SearchInput({
   return (
     <div className={cn("relative w-full", className)}>
       <div className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-muted-foreground">
-        <Search className={cn(size === "sm" ? "size-3" : "size-3.5")} />
+        <Search className={cn(size === "sm" ? "size-3" : "size-3.5")} aria-hidden="true" />
       </div>
       <Input
         value={localValue}
