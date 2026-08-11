@@ -209,7 +209,11 @@ Phases A/B/C/E landed; Phase D continues as roadmap task R3.` Keep the file (it 
 > This replaces the stale audit. Scope is **audit + targeted fixes only** — no redesign,
 > no new features, no dependency changes.
 
-- [ ] **R2.1 — Re-audit against the current Supabase token system**
+- [x] **R2.1 — Re-audit against the current Supabase token system**
+  - **Done 2026-08-11:** `docs/ui-audit.md` written (118 CSS vars + tailwind extend as token
+    source of truth; 11 findings: F6 combobox v4-syntax-on-v3 MEDIUM, F3 `min-w-[220px]` x3
+    MEDIUM, F1/F2/F4/F5/F7–F11 LOW, zero HIGH; raw-hex scan clean; contrast spot-check passes
+    AA). Supersedes the archived 2026-07-08 audit.
   - **Precondition:** R1.2 done (old report archived).
   - **Steps:**
     1. Extract the real token vocabulary: all custom properties in `apps/web/src/index.css`
