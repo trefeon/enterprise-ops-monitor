@@ -45,6 +45,9 @@ interface FeatureStory {
 
 interface FeatureStoryBannerProps {
   story?: FeatureStory | null;
+  title?: ReactNode;
+  subtitle?: ReactNode;
+  className?: string;
 }
 
 interface StoryBlockProps {
@@ -74,44 +77,95 @@ const ICON_MAP: Record<string, LucideIcon> = {
   live_tv: Tv,
 };
 
-export default function FeatureStoryBanner({ story }: FeatureStoryBannerProps) {
+export default function FeatureStoryBanner({
+  story,
+  title,
+  subtitle,
+  className,
+}: FeatureStoryBannerProps) {
   const [open, setOpen] = useState(false);
 
-  if (!story || story.banner === false) return null;
+  if (!story || story.banner === false) {
+    if (!title && !subtitle) return null;
+    return (
+      <div className={cn('py-1', className)}>
+        {title && (
+          <h1 className="font-display text-[2rem] font-medium leading-tight tracking-normal text-foreground">
+            {title}
+          </h1>
+        )}
+        {subtitle && (
+          <p className="mt-1 text-sm leading-6 text-muted-foreground">{subtitle}</p>
+        )}
+      </div>
+    );
+  }
 
   const Icon = ICON_MAP[story.materialIcon || 'info'] || ICON_MAP.info;
 
   return (
     <BaseAnimatedSection
-      className="group rounded-lg border border-primary/20 bg-primary/[0.03] transition-colors hover:border-primary/30"
+      className={cn(
+        'group rounded-xl border border-primary/20 bg-primary/[0.03] transition-colors hover:border-primary/30',
+        className
+      )}
       direction="down"
       offset={10}
       transition={{ duration: 0.35, ease: 'easeOut' }}
     >
-      <Button
-        type="button"
-        variant="ghost"
-        className="flex h-auto w-full items-center justify-between gap-4 rounded-none px-4 py-3.5 text-left hover:bg-transparent"
-        onClick={() => setOpen((value) => !value)}
-        aria-expanded={open}
-      >
-        <span className="flex min-w-0 items-center gap-3">
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-105">
-            <Icon className="size-4" />
-          </span>
-          <span className="min-w-0">
-            <span className="block text-3xs font-medium uppercase tracking-widest text-primary/70">
-              Feature Narrative
-            </span>
-            <span className="line-clamp-2 block text-sm font-medium leading-snug text-foreground">
-              {story.tagline}
-            </span>
-          </span>
-        </span>
-        <div className="flex size-7 shrink-0 items-center justify-center rounded-md border bg-secondary text-muted-foreground transition-colors group-hover:text-primary">
-          {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+      {title ? (
+        <div className="flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div className="min-w-0">
+            <h1 className="font-display text-2xl font-medium leading-tight tracking-normal text-foreground sm:text-[2rem]">
+              {title}
+            </h1>
+            {subtitle && (
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">{subtitle}</p>
+            )}
+          </div>
+          <Button
+            type="button"
+            variant="secondary"
+            size="sm"
+            className="h-9 shrink-0 gap-2 border border-primary/20 bg-background/80 px-3 text-xs font-medium hover:border-primary/40 hover:bg-background"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+          >
+            <Icon className="size-3.5 text-primary" />
+            <span>Feature Narrative</span>
+            {open ? (
+              <ChevronUp className="size-3.5 text-muted-foreground" />
+            ) : (
+              <ChevronDown className="size-3.5 text-muted-foreground" />
+            )}
+          </Button>
         </div>
-      </Button>
+      ) : (
+        <Button
+          type="button"
+          variant="ghost"
+          className="flex h-auto w-full items-center justify-between gap-4 rounded-none px-4 py-3.5 text-left hover:bg-transparent"
+          onClick={() => setOpen((value) => !value)}
+          aria-expanded={open}
+        >
+          <span className="flex min-w-0 items-center gap-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary transition-transform group-hover:scale-105">
+              <Icon className="size-4" />
+            </span>
+            <span className="min-w-0">
+              <span className="block text-3xs font-medium uppercase tracking-widest text-primary/70">
+                Feature Narrative
+              </span>
+              <span className="line-clamp-2 block text-sm font-medium leading-snug text-foreground">
+                {story.tagline}
+              </span>
+            </span>
+          </span>
+          <div className="flex size-7 shrink-0 items-center justify-center rounded-md border bg-secondary text-muted-foreground transition-colors group-hover:text-primary">
+            {open ? <ChevronUp className="size-4" /> : <ChevronDown className="size-4" />}
+          </div>
+        </Button>
+      )}
 
       {open && (
         <div className="animate-in slide-in-from-top-2 fade-in border-t border-primary/10 p-4 pt-4 duration-200">

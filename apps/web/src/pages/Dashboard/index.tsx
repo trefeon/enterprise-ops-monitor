@@ -168,12 +168,11 @@ export default function DashboardPage() {
   return (
     <DashboardLayout>
 
-      <FeatureStoryBanner story={getFeatureStory('dashboard')} />
-
-      {/* ── Hero Row ── */}
-      <DashboardWelcome
+      {/* ── Unified Hero Banner ── */}
+      <FeatureStoryBanner
         title="Ops Starter"
         subtitle={`Business date ${formatDate(getWibToday())}`}
+        story={getFeatureStory('dashboard')}
       />
 
       {/* ── KPI Stats Grid ── */}
