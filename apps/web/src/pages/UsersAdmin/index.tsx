@@ -1,6 +1,6 @@
 // @ts-nocheck
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
+import { DashboardLayout } from '@/components/base/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -24,6 +24,7 @@ import { getFeatureStory } from '../../data/stories';
 import { Loader2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { demoBlocked } from '@/components/base/demo-toast';
+import { PageTemplate, PageHeader, TableCard } from '@/components/template';
 
 export default function UsersAdmin() {
   const { user } = useAuth();
@@ -356,7 +357,7 @@ export default function UsersAdmin() {
     return (
       <DashboardLayout>
         <FeatureStoryBanner story={getFeatureStory('accounts')} />
-        <DashboardPageHeader title="Accounts" subtitle="Account management" />
+        <PageHeader title="Accounts" subtitle="Account management" />
         <Card className="p-6">
           <CardContent>
             <div className="text-sm text-muted-foreground">
@@ -369,34 +370,40 @@ export default function UsersAdmin() {
   }
 
   return (
-    <DashboardLayout>
-      <FeatureStoryBanner story={getFeatureStory('accounts')} />
-      <DashboardPageHeader
-        title="Accounts"
-        subtitle="Manage accounts, roles, and access permissions"
-        actions={
-          canCreate ? (
-            <Button onClick={() => setCreateOpen((v) => !v)} variant="default">
-              {createOpen ? 'Close' : 'Add User'}
-            </Button>
-          ) : null
+    <PageTemplate
+      story={getFeatureStory('accounts')}
+      title="Accounts"
+      subtitle="Manage accounts, roles, and access permissions"
+      actions={
+        canCreate ? (
+          <Button onClick={() => setCreateOpen((v) => !v)} variant="default">
+            {createOpen ? 'Close' : 'Add User'}
+          </Button>
+        ) : undefined
+      }
+    >
+      <TableCard
+        toolbar={
+          <SearchBar
+            value={q}
+            onValueChange={(val) => {
+              setQ(val);
+              setPage(1);
+            }}
+            placeholder="Search username…"
+            className="w-full md:max-w-sm"
+          />
         }
-      />
-      <Card className="p-4">
-        <CardContent>
-          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-            <SearchBar
-              value={q}
-              onValueChange={(val) => {
-                setQ(val);
-                setPage(1);
-              }}
-              placeholder="Search username…"
-              className="w-full md:max-w-sm"
-            />
-          </div>
-        </CardContent>
-      </Card>
+      >
+        <DataTable
+          columns={columns}
+          data={users}
+          loading={loading}
+          pagination={pagination}
+          onPageChange={(next) => setPage(next)}
+          keyExtractor={(row) => row.id}
+        />
+      </TableCard>
       {createOpen && (
         <Card className="p-4">
           <CardContent>
@@ -473,14 +480,6 @@ export default function UsersAdmin() {
           </CardContent>
         </Card>
       )}
-      <DataTable
-        columns={columns}
-        data={users}
-        loading={loading}
-        pagination={pagination}
-        onPageChange={(next) => setPage(next)}
-        keyExtractor={(row) => row.id}
-      />
       {/* RBAC v2: Edit Access Modal */}
       <UserAccessModal
         open={accessModalOpen}
@@ -579,16 +578,17 @@ export default function UsersAdmin() {
           if (!next) closeChangePasswordModal();
         }}
       >
-        <DialogContent className="sm:max-w-md" style={{ overscrollBehavior: 'contain' }}>
+        <DialogContent className="sm:max-w-md overscroll-contain">
           <DialogHeader>
             <DialogTitle>Change Password for {changePassUser?.username || ''}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-foreground mb-1.5">
+              <label htmlFor="usersadmin-new-password" className="block text-sm font-medium text-foreground mb-1.5">
                 New Password
               </label>
               <Input
+                id="usersadmin-new-password"
                 type="password"
                 value={changePassForm}
                 onChange={(e) => setChangePassForm(e.target.value)}
@@ -612,6 +612,6 @@ export default function UsersAdmin() {
           </div>
         </DialogContent>
       </Dialog>
-    </DashboardLayout>
+    </PageTemplate>
   );
 }

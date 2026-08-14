@@ -8,6 +8,11 @@ export interface BasePageShellProps {
   debugLabel?: string;
 }
 
+/**
+ * @deprecated Superseded by PageTemplate from `@/components/template`
+ * (page shell + header + meta + content composition). Keep working until
+ * the page-refactor phase migrates its call sites.
+ */
 export function BasePageShell({ children, className, constrained = true, debugLabel }: BasePageShellProps) {
   return (
     <div

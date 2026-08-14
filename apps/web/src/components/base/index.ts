@@ -18,6 +18,5 @@ export {
 export * from "./base-file-upload-control";
 export * from "./base-login-form";
 export * from "./base-page-shell";
-export * from "./base-section";
 export * from "./base-sidebar";
 export * from "./base-sidebar-nav";

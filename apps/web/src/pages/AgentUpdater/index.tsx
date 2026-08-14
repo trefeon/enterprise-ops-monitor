@@ -17,10 +17,10 @@ import { DataTable } from '@/components/ui/data-table';
 import { BaseFileUploadControl } from '@/components/base';
 import { formatDateTime } from '../../lib/date';
 import { EmptyState } from '@/components/shared/EmptyState';
-import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
+import { DashboardLayout } from '@/components/base/dashboard-layout';
 import { StatCard } from '@/components/ui/cards';
 import { SearchBar } from '@/components/shared/SearchBar';
-import FeatureStoryBanner from '../../components/FeatureStoryBanner';
+import { PageTemplate, KpiRow, TableCard } from '@/components/template';
 import { getFeatureStory } from '../../data/stories';
 import {
   Loader2,
@@ -36,7 +36,6 @@ import {
   Trash2,
   FileUp,
 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { demoBlocked } from '@/components/base/demo-toast';
 
@@ -384,50 +383,49 @@ const AgentUpdater = () => {
   }).length;
 
   return (
-    <DashboardLayout>
-      <FeatureStoryBanner story={getFeatureStory('agent-updater')} />
-      <DashboardPageHeader
-        title="Agent Updater"
-        subtitle="One-way update flow: worker checks server version, downloads publisher if outdated, then replaces and restarts DemoAgentPublisher.exe."
-        actions={
-          <>
-            <Button
-              variant="outline"
-              onClick={handleRefresh}
-              disabled={loading}
-              className="w-full sm:w-auto"
-            >
-              <RefreshCw
-                className={cn('mr-2 size-4', loading && 'animate-spin')}
-                aria-hidden="true"
-              />
-              Refresh
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleExportExcel}
-              disabled={exporting || loading}
-              className="w-full sm:w-auto"
-            >
-              {exporting ? (
-                <Loader2 className="animate-spin mr-2 size-4" aria-hidden="true" />
-              ) : (
-                <Download className="mr-2 size-4" aria-hidden="true" />
-              )}
-              Export Excel
-            </Button>
-            <Button variant="outline" onClick={handleDownloadSetup} className="w-full sm:w-auto">
+    <PageTemplate
+      story={getFeatureStory('agent-updater')}
+      title="Agent Updater"
+      subtitle="One-way update flow: worker checks server version, downloads publisher if outdated, then replaces and restarts DemoAgentPublisher.exe."
+      actions={
+        <>
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={loading}
+            className="w-full sm:w-auto"
+          >
+            <RefreshCw
+              className={cn('mr-2 size-4', loading && 'animate-spin')}
+              aria-hidden="true"
+            />
+            Refresh
+          </Button>
+          <Button
+            variant="outline"
+            onClick={handleExportExcel}
+            disabled={exporting || loading}
+            className="w-full sm:w-auto"
+          >
+            {exporting ? (
+              <Loader2 className="animate-spin mr-2 size-4" aria-hidden="true" />
+            ) : (
               <Download className="mr-2 size-4" aria-hidden="true" />
-              Setup Script
-            </Button>
-            <Button onClick={handleOpenDeployModal} className="w-full sm:w-auto">
-              <UploadCloud className="mr-2 size-4" aria-hidden="true" />
-              Deploy Update
-            </Button>
-          </>
-        }
-      />
-      <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            )}
+            Export Excel
+          </Button>
+          <Button variant="outline" onClick={handleDownloadSetup} className="w-full sm:w-auto">
+            <Download className="mr-2 size-4" aria-hidden="true" />
+            Setup Script
+          </Button>
+          <Button onClick={handleOpenDeployModal} className="w-full sm:w-auto">
+            <UploadCloud className="mr-2 size-4" aria-hidden="true" />
+            Deploy Update
+          </Button>
+        </>
+      }
+    >
+      <KpiRow columns={4}>
         <StatCard
           title="Current Deployed Version"
           value={metricsLoading ? '...' : currentVersion || 'None'}
@@ -492,85 +490,86 @@ const AgentUpdater = () => {
           status={nonModernWorkers > 0 ? 'warning' : 'default'}
           subtext="Setup script required for non-modern workers"
         />
-      </section>
+      </KpiRow>
 
-      <section className="grid grid-cols-1 gap-2 md:flex md:flex-wrap md:items-center md:gap-3 py-4">
-        <SearchBar
-          placeholder="Search by store code or name..."
-          name="q"
-          value={filters.q}
-          onChange={handleFilterChange}
-          onKeyDown={handleSearch}
-          className="flex-1"
-        />
-        <div className="flex items-center gap-2 w-full md:w-auto">
-          <Select
-            value={filters.areaId ? String(filters.areaId) : ''}
-            onValueChange={(val) =>
-              handleFilterChange({
-                target: {
-                  name: 'areaId',
-                  value: val,
-                },
-              })
-            }
-          >
-            <SelectTrigger className="w-full md:w-40 h-11">
-              <SelectValue placeholder="All Branches">
-                {filters.areaId
-                  ? `Branch: ${AREA_OPTIONS.find((a) => String(a.id) === String(filters.areaId))?.label || filters.areaId}`
-                  : undefined}
-              </SelectValue>
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Branches</SelectItem>
-              {AREA_OPTIONS.map((branch) => (
-                <SelectItem key={branch.id} value={branch.id}>
-                  {branch.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Select
-            value={filters.region}
-            onValueChange={(val) =>
-              handleFilterChange({
-                target: {
-                  name: 'region',
-                  value: val,
-                },
-              })
-            }
-          >
-            <SelectTrigger className="w-full md:w-48 h-11">
-              <SelectValue placeholder="All Regional Heads" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="">All Regional Heads</SelectItem>
-              {regionalHeads.map((rh) => (
-                <SelectItem key={rh} value={rh}>
-                  {rh}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <Button variant="secondary" onClick={applyFilters} className="w-full md:w-auto h-11">
-          <Search className="mr-2 size-4" aria-hidden="true" />
-          Apply
-        </Button>
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg font-medium tracking-tight uppercase">Deployment Monitoring</h2>
-          {publisherOutdatedCount > 0 && (
+      <TableCard
+        title="Deployment Monitoring"
+        actions={
+          publisherOutdatedCount > 0 ? (
             <StatusBadge variant="warning">
               {publisherOutdatedCount} Node(s) Need Update
             </StatusBadge>
-          )}
-        </div>
-
+          ) : undefined
+        }
+        toolbar={
+          <div className="grid grid-cols-1 gap-2 md:flex md:flex-wrap md:items-center md:gap-3">
+            <SearchBar
+              placeholder="Search by store code or name..."
+              name="q"
+              value={filters.q}
+              onChange={handleFilterChange}
+              onKeyDown={handleSearch}
+              className="flex-1"
+            />
+            <div className="flex items-center gap-2 w-full md:w-auto">
+              <Select
+                value={filters.areaId ? String(filters.areaId) : ''}
+                onValueChange={(val) =>
+                  handleFilterChange({
+                    target: {
+                      name: 'areaId',
+                      value: val,
+                    },
+                  })
+                }
+              >
+                <SelectTrigger className="w-full md:w-40 h-11">
+                  <SelectValue placeholder="All Branches">
+                    {filters.areaId
+                      ? `Branch: ${AREA_OPTIONS.find((a) => String(a.id) === String(filters.areaId))?.label || filters.areaId}`
+                      : undefined}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Branches</SelectItem>
+                  {AREA_OPTIONS.map((branch) => (
+                    <SelectItem key={branch.id} value={branch.id}>
+                      {branch.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={filters.region}
+                onValueChange={(val) =>
+                  handleFilterChange({
+                    target: {
+                      name: 'region',
+                      value: val,
+                    },
+                  })
+                }
+              >
+                <SelectTrigger className="w-full md:w-48 h-11">
+                  <SelectValue placeholder="All Regional Heads" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Regional Heads</SelectItem>
+                  {regionalHeads.map((rh) => (
+                    <SelectItem key={rh} value={rh}>
+                      {rh}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button variant="secondary" onClick={applyFilters} className="w-full md:w-auto h-11">
+              <Search className="mr-2 size-4" aria-hidden="true" />
+              Apply
+            </Button>
+          </div>
+        }
+      >
         <DataTable
           columns={[
             {
@@ -668,7 +667,7 @@ const AgentUpdater = () => {
               : '';
           }}
         />
-      </section>
+      </TableCard>
 
       <Dialog
         open={deployModalOpen}
@@ -768,7 +767,7 @@ const AgentUpdater = () => {
           </form>
         </DialogContent>
       </Dialog>
-    </DashboardLayout>
+    </PageTemplate>
   );
 };
 

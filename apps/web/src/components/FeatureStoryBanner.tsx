@@ -34,6 +34,7 @@ interface FeatureMetric {
 
 interface FeatureStory {
   banner?: boolean;
+  featureName?: string;
   materialIcon?: string;
   tagline?: string;
   problem?: string;
@@ -132,7 +133,7 @@ export default function FeatureStoryBanner({
             aria-expanded={open}
           >
             <Icon className="size-3.5 text-primary" />
-            <span>Feature Narrative</span>
+            <span>{story.featureName || 'Feature Narrative'}</span>
             {open ? (
               <ChevronUp className="size-3.5 text-muted-foreground" />
             ) : (
@@ -154,7 +155,7 @@ export default function FeatureStoryBanner({
             </span>
             <span className="min-w-0">
               <span className="block text-3xs font-medium uppercase tracking-widest text-primary/70">
-                Feature Narrative
+                {story.featureName || 'Feature Narrative'}
               </span>
               <span className="line-clamp-2 block text-sm font-medium leading-snug text-foreground">
                 {story.tagline}

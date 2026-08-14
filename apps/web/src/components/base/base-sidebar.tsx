@@ -76,9 +76,9 @@ export function BaseSidebar({
             </div>
           </SidebarHeader>
           <SidebarSeparator />
-          <SidebarContent className="overflow-hidden p-0">
+          <SidebarContent className="min-h-0 overflow-hidden p-0">
             <ScrollArea className="h-full min-h-0">
-              <div className="p-2">
+              <div className="p-2 pb-5">
                 <BaseSidebarNav groups={groups} collapsed={isCollapsed} onNavigate={onNavigate} />
               </div>
             </ScrollArea>

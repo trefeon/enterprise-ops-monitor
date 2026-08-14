@@ -10,14 +10,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { DataTable } from '@/components/ui/data-table';
 import { SearchBar } from '@/components/shared/SearchBar';
-import { BaseSection } from '@/components/base';
 import { Card, CardContent } from '@/components/ui/card';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { EmptyState } from '@/components/shared/EmptyState';
-import FeatureStoryBanner from '../../components/FeatureStoryBanner';
+import { PageTemplate, MetaLine, TableCard } from '@/components/template';
+import { DashboardLayout } from '@/components/base/dashboard-layout';
 import { getFeatureStory } from '../../data/stories';
 import { formatTime, formatDate } from '../../lib/date';
 import {
@@ -138,26 +137,23 @@ export default function StoreSync() {
 
   // ── Normal render ────────────────────────────────────────────
   return (
-    <DashboardLayout>
-      <FeatureStoryBanner story={getFeatureStory('store-sync')} />
-
-      <DashboardPageHeader
-        title="Store Sync Monitor"
-        subtitle="Real-time store data synchronization status. Stores sync from their computers every ~3 minutes."
-        actions={
-          <Button onClick={s.handleRefresh}>
-            {s.refreshing && <Loader2 aria-hidden="true" className="animate-spin mr-2" />}
-            <RefreshCw aria-hidden="true" className="mr-2 size-4" />
-            {s.refreshing ? 'Refreshing...' : 'Refresh Now'}
-          </Button>
-        }
-      />
-
-      {/* Meta info */}
-      <p className="text-xs text-muted-foreground">
-        Updated {s.updatedLabel} • Auto-refresh {s.countdown}s{s.sourceMeta ? ` • ${s.sourceMeta}` : ''}
-      </p>
-
+    <PageTemplate
+      story={getFeatureStory('store-sync')}
+      title="Store Sync Monitor"
+      subtitle="Real-time store data synchronization status. Stores sync from their computers every ~3 minutes."
+      actions={
+        <Button onClick={s.handleRefresh}>
+          {s.refreshing && <Loader2 aria-hidden="true" className="animate-spin mr-2" />}
+          <RefreshCw aria-hidden="true" className="mr-2 size-4" />
+          {s.refreshing ? 'Refreshing...' : 'Refresh Now'}
+        </Button>
+      }
+      meta={[
+        <>Updated {s.updatedLabel}</>,
+        <>Auto-refresh {s.countdown}s</>,
+        ...(s.sourceMeta ? [<>{s.sourceMeta}</>] : []),
+      ]}
+    >
       {/* Error banner */}
       {(s.summaryError || s.statusError || s.storesError) && (
         <Card className="py-3 border-status-warning/30 bg-status-warning/5">
@@ -213,9 +209,9 @@ export default function StoreSync() {
 
       {/* Store Table */}
       <div ref={s.storeTableRef}>
-        <BaseSection
+        <TableCard
           title="Store Sync Status"
-          actions={
+          toolbar={
             <div className="flex flex-col sm:flex-row items-center gap-3">
               <div className="flex h-11 w-full cursor-pointer items-center gap-2 whitespace-nowrap rounded-lg border border-border bg-background px-3 py-2 text-xs text-muted-foreground transition-colors hover:bg-muted/30 sm:w-auto">
                 <Checkbox
@@ -323,7 +319,7 @@ export default function StoreSync() {
               )
             }
           />
-        </BaseSection>
+        </TableCard>
       </div>
 
       {/* History Dialog */}
@@ -340,6 +336,6 @@ export default function StoreSync() {
         onModeChange={(val) => s.setHistoryMode(val)}
         onDateChange={(val) => s.setHistoryDate(val)}
       />
-    </DashboardLayout>
+    </PageTemplate>
   );
 }

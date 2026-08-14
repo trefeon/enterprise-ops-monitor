@@ -33,7 +33,7 @@ export function EODDetailsModal({ detail, loading, error, onClose }: EODDetailsM
         ) : error ? (
           <div className="text-sm text-status-error">{error}</div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-section text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
             {/* Store Information */}
             <div className="space-y-4">
               <div className="text-xs uppercase tracking-wider text-muted-foreground">

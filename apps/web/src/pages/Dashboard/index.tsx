@@ -29,18 +29,13 @@ import { DataTable } from '@/components/ui/data-table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { Guard } from '@/components/auth/Guard';
-import FeatureStoryBanner from '@/components/FeatureStoryBanner';
+import { PageTemplate, KpiRow } from '@/components/template';
 import { hasPermission, Permissions } from '@/lib/auth/permissions';
 import { formatDate, formatDateTime, formatTime } from '@/lib/date';
 import { getWibToday, isWithinEodWindowNow } from '@/lib/date';
 import { getFeatureStory } from '@/data/stories';
 import { cn } from '@/lib/utils';
-import {
-  DashboardLayout,
-  DashboardSection,
-  DashboardWelcome,
-  DashboardPageHeader,
-} from '@/components/base/dashboard-layout';
+import { DashboardLayout, DashboardSection } from '@/components/base/dashboard-layout';
 import { StatCard } from '@/components/ui/cards/StatCard';
 import type { DashboardSummary, Alert } from './types';
 import { useDashboard } from './hooks/useDashboard';
@@ -161,7 +156,7 @@ export default function DashboardPage() {
 
   const handleRefresh = useCallback(() => {
     if (isDemoUser) {
-      demoBlocked('Action not available in demo.')
+      demoBlocked('Action not available in demo.');
       return;
     }
     fetchData();
@@ -169,7 +164,7 @@ export default function DashboardPage() {
 
   const handleBackup = useCallback(async () => {
     if (user?.isDemo) {
-      demoBlocked('Action not available in demo.')
+      demoBlocked('Action not available in demo.');
       return;
     }
     try {
@@ -240,20 +235,19 @@ export default function DashboardPage() {
   const health = getHealthConfig(systemHealth);
 
   return (
-    <DashboardLayout>
-      {/* ── Unified Hero Banner ── */}
-      <FeatureStoryBanner story={getFeatureStory('dashboard')} />
-
-      <DashboardPageHeader
-        title="Ops Starter"
-        subtitle={`Business date ${formatDate(getWibToday())}`}
-      />
-
+    <PageTemplate
+      story={getFeatureStory('dashboard')}
+      title="Dashboard"
+      subtitle={`Business date ${formatDate(getWibToday())}`}
+      actions={
+        <Button onClick={handleRefresh}>
+          <RefreshCw aria-hidden="true" className="mr-2 size-4" />
+          Refresh
+        </Button>
+      }
+    >
       {/* ── KPI Stats Grid ── */}
-      <div
-        data-e2e="dashboard-kpi-grid"
-        className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
-      >
+      <KpiRow columns={4} data-e2e="dashboard-kpi-grid">
         <StatCard
           className="min-h-32"
           title="Global Health"
@@ -294,7 +288,7 @@ export default function DashboardPage() {
           subtext={`${agents?.updatePending ?? 0} need update`}
           onClick={() => navigate('/app/office-agents')}
         />
-      </div>
+      </KpiRow>
 
       {/* ── Charts + Alerts Row (3-col grid) ── */}
       <DashboardSection columns={3}>
@@ -345,14 +339,14 @@ export default function DashboardPage() {
                 ].map((item, i) => (
                   <div
                     key={i}
-                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-muted/60 p-3.5 transition-colors hover:border-primary/30"
+                    className="flex items-center justify-between gap-3 rounded-lg border border-border bg-surface-muted/60 p-4 transition-colors hover:border-primary/30"
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background text-primary">
                         <item.icon className="size-4" />
                       </div>
                       <div className="min-w-0">
-                        <p className="truncate text-xs font-medium text-foreground">{item.label}</p>
+                        <p className="text-xs font-medium text-foreground">{item.label}</p>
                         <p className="truncate text-3xs font-medium uppercase tracking-wider text-muted-foreground">
                           {item.sub}
                         </p>
@@ -401,7 +395,7 @@ export default function DashboardPage() {
                 {alerts.slice(0, 4).map((alert) => (
                   <div
                     key={alert.id}
-                    className="p-3.5 px-4 sm:px-5 hover:bg-surface-hover transition-colors"
+                    className="px-4 py-4 sm:px-5 hover:bg-surface-hover transition-colors"
                   >
                     <div className="flex items-start gap-3">
                       <ShieldAlert
@@ -473,6 +467,6 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </DashboardSection>
-    </DashboardLayout>
+    </PageTemplate>
   );
 }

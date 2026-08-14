@@ -1,7 +1,6 @@
 // @ts-nocheck
 import React, { useState, useEffect, useCallback } from 'react';
 import { apiGet, apiPost, apiPut, apiDelete } from '../../lib/api/client';
-import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,11 +8,12 @@ import { Guard } from '../../components/auth/Guard';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
 import { PermissionGroups } from '../../lib/auth/permissions';
-import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
 import { Card, CardContent } from '@/components/ui/card';
 import { Edit3, Loader2, Plus, Trash2 } from 'lucide-react';
 import { demoBlocked } from '@/components/base/demo-toast';
+import { PageTemplate } from '@/components/template';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 export default function RolesAdmin() {
   const { user } = useAuth();
@@ -146,22 +146,10 @@ export default function RolesAdmin() {
 
   if (loading) {
     return (
-      <DashboardLayout>
-        <FeatureStoryBanner story={getFeatureStory('roles')} />
-        <DashboardPageHeader title="Roles" subtitle="Manage system and custom roles" />
-        <div className="flex justify-center items-center h-64">
-          <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
-        </div>
-      </DashboardLayout>
-    );
-  }
-
-  return (
-    <DashboardLayout>
-      <FeatureStoryBanner story={getFeatureStory('roles')} />
-      <DashboardPageHeader
+      <PageTemplate
+        story={getFeatureStory('roles')}
         title="Roles"
-        subtitle="Create and manage roles with permissions"
+        subtitle="Manage system and custom roles"
         actions={
           <Guard user={user} permission="ROLES_EDIT">
             <Button onClick={handleCreate}>
@@ -170,115 +158,130 @@ export default function RolesAdmin() {
             </Button>
           </Guard>
         }
-      />
-      {/* Role Editor Modal */}
-      {isEditing && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background/70 backdrop-blur-sm"
-          style={{ overscrollBehavior: 'contain' }}
-        >
-          <Card className="w-full max-w-2xl max-h-screen overflow-y-auto m-4">
-            <CardContent>
-              <div className="p-6">
-                <h2 className="text-lg font-medium mb-4">
-                  {selectedRole ? `Edit Role: ${selectedRole.label}` : 'Create New Role'}
-                </h2>
+      >
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
+        </div>
+      </PageTemplate>
+    );
+  }
 
-                <div className="space-y-4">
-                  {!selectedRole && (
-                    <div>
-                      <label htmlFor="role-name" className="block text-sm font-medium mb-1">
-                        Name (lowercase, underscores)
-                      </label>
-                      <Input
-                        id="role-name"
-                        type="text"
-                        value={editForm.name}
-                        onChange={(e) =>
-                          setEditForm({
-                            ...editForm,
-                            name: e.target.value.toLowerCase().replace(/[^a-z_]/g, ''),
-                          })
-                        }
-                        className="px-3"
-                        placeholder="custom_role"
-                      />
+  return (
+    <PageTemplate
+      story={getFeatureStory('roles')}
+      title="Roles"
+      subtitle="Create and manage roles with permissions"
+      actions={
+        <Guard user={user} permission="ROLES_EDIT">
+          <Button onClick={handleCreate}>
+            <Plus className="size-4" aria-hidden="true" />
+            Create Role
+          </Button>
+        </Guard>
+      }
+    >
+      {/* Role Editor Dialog (F4 resolution: shadcn Dialog replaces hand-rolled overlay) */}
+      <Dialog open={isEditing} onOpenChange={(next) => { if (!next) setIsEditing(false); }}>
+        <DialogContent className="sm:max-w-2xl overscroll-contain">
+          <DialogHeader>
+            <DialogTitle>
+              {selectedRole ? `Edit Role: ${selectedRole.label}` : 'Create New Role'}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {!selectedRole && (
+              <div>
+                <label htmlFor="role-name" className="block text-sm font-medium mb-1">
+                  Name (lowercase, underscores)
+                </label>
+                <Input
+                  id="role-name"
+                  type="text"
+                  value={editForm.name}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      name: e.target.value.toLowerCase().replace(/[^a-z_]/g, ''),
+                    })
+                  }
+                  className="px-3"
+                  placeholder="custom_role"
+                />
+              </div>
+            )}
+
+            <div>
+              <label htmlFor="role-label" className="block text-sm font-medium mb-1">
+                Label
+              </label>
+              <Input
+                id="role-label"
+                type="text"
+                value={editForm.label}
+                onChange={(e) => setEditForm({ ...editForm, label: e.target.value })}
+                className="px-3"
+                placeholder="Custom Role"
+              />
+            </div>
+
+            <div>
+              <label htmlFor="role-description" className="block text-sm font-medium mb-1">
+                Description
+              </label>
+              <Textarea
+                id="role-description"
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                className="resize-none"
+                rows={2}
+                placeholder="Role description..."
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Permissions</label>
+              <div className="max-h-64 space-y-4 overflow-y-auto rounded-lg border border-border p-3">
+                {Object.entries(PermissionGroups).map(([group, perms]) => (
+                  <div key={group}>
+                    <div className="text-xs font-medium text-muted-foreground uppercase mb-1">
+                      {group}
                     </div>
-                  )}
-
-                  <div>
-                    <label htmlFor="role-label" className="block text-sm font-medium mb-1">
-                      Label
-                    </label>
-                    <Input
-                      id="role-label"
-                      type="text"
-                      value={editForm.label}
-                      onChange={(e) => setEditForm({ ...editForm, label: e.target.value })}
-                      className="px-3"
-                      placeholder="Custom Role"
-                    />
-                  </div>
-
-                  <div>
-                    <label htmlFor="role-description" className="block text-sm font-medium mb-1">
-                      Description
-                    </label>
-                    <Textarea
-                      id="role-description"
-                      value={editForm.description}
-                      onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
-                      className="resize-none"
-                      rows={2}
-                      placeholder="Role description..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Permissions</label>
-                    <div className="max-h-64 space-y-4 overflow-y-auto rounded-lg border border-border p-3">
-                      {Object.entries(PermissionGroups).map(([group, perms]) => (
-                        <div key={group}>
-                          <div className="text-xs font-medium text-muted-foreground uppercase mb-1">
-                            {group}
-                          </div>
-                          <div className="flex flex-wrap gap-2">
-                            {perms.map((perm) => (
-                              <Button
-                                key={perm}
-                                type="button"
-                                size="sm"
-                                variant={
-                                  editForm.permissions.includes(perm) ? 'default' : 'secondary'
-                                }
-                                onClick={() => togglePermission(perm)}
-                                className={`h-7 rounded px-2 py-1 text-xs ${
-                                  editForm.permissions.includes(perm)
-                                    ? ''
-                                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                                }`}
-                              >
-                                {perm}
-                              </Button>
-                            ))}
-                          </div>
-                        </div>
+                    <div className="flex flex-wrap gap-2">
+                      {perms.map((perm) => (
+                        <Button
+                          key={perm}
+                          type="button"
+                          size="sm"
+                          variant={
+                            editForm.permissions.includes(perm) ? 'default' : 'secondary'
+                          }
+                          onClick={() => togglePermission(perm)}
+                          className={`h-7 rounded px-2 py-1 text-xs ${
+                            editForm.permissions.includes(perm)
+                              ? ''
+                              : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                          }`}
+                        >
+                          {perm}
+                        </Button>
                       ))}
                     </div>
                   </div>
-                </div>
-
-                <div className="flex justify-end gap-2 mt-6">
-                  <Button variant="secondary" onClick={() => setIsEditing(false)}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSave}>Save</Button>
-                </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            </div>
+          </div>
+
+          <div className="flex justify-end gap-2 mt-6">
+            <Button variant="secondary" onClick={() => setIsEditing(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave}>Save</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Roles List */}
       <div className="grid gap-4">
         {roles.map((role) => (
@@ -349,6 +352,6 @@ export default function RolesAdmin() {
           </Card>
         ))}
       </div>
-    </DashboardLayout>
+    </PageTemplate>
   );
 }

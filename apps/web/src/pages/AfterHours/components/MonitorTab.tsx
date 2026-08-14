@@ -163,13 +163,12 @@ export default function MonitorTab({
 
       {/* Notification Settings Card */}
       <Card
-        className="overflow-hidden p-0"
-        style={{ overscrollBehavior: 'contain' }}
+        className="overflow-hidden p-0 overscroll-contain"
       >
         <div className="flex flex-col gap-3 border-b border-border bg-card px-5 py-4 md:flex-row md:items-center md:justify-between">
           <div className="flex items-center gap-4">
             <div
-              className={`rounded-lg border p-2.5 ${
+              className={`rounded-lg border p-3 ${
                 notifyEnabled
                   ? 'border-status-success/20 bg-status-success/10 text-status-success'
                   : 'border-border bg-muted text-muted-foreground'
@@ -266,7 +265,7 @@ export default function MonitorTab({
         {showSettings && (
           <>
             {/* Mode toggle */}
-            <div className="flex flex-col gap-3 border-b border-border bg-secondary/30 px-5 py-3.5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-col gap-3 border-b border-border bg-secondary/30 px-5 py-4 lg:flex-row lg:items-center lg:justify-between">
               <p className="text-xs text-muted-foreground">
                 Branch form adalah mode default. Advanced JSON dipakai kalau mau
                 custom penuh atau bulk edit mapping.

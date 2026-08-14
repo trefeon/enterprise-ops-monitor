@@ -13,13 +13,10 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
-import { Toolbar } from '@/components/shared/Toolbar';
 import { DataTable } from '@/components/ui/data-table';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
-import FeatureStoryBanner from '../../components/FeatureStoryBanner';
+import { PageTemplate, MetaLine, SectionHeading, TableCard } from '@/components/template';
 import { getFeatureStory } from '../../data/stories';
 import { formatDate, getWibToday } from '../../lib/date';
 import { hasPermission } from '../../lib/auth/permissions';
@@ -62,65 +59,60 @@ export default function EODMonitor() {
     [eod]
   );
 
-  const badgeClass =
-    'inline-flex items-center gap-1.5 rounded-full border border-border bg-muted/30 py-1 px-3 text-xs text-muted-foreground font-medium';
   const as = Math.round(AUTO_REFRESH_INTERVAL / 1000);
 
   return (
-    <DashboardLayout>
-      <FeatureStoryBanner story={getFeatureStory('eod-monitor')} />
-      <DashboardPageHeader
-        title="EOD Monitor"
-        subtitle={formatDate(getWibToday())}
-        actions={
-          <>
-            <Button
-              variant={eod.autoRefresh ? 'default' : 'secondary'}
-              onClick={() => eod.setAutoRefresh((p) => !p)}
-            >
-              {eod.autoRefresh ? (
-                <RefreshCw aria-hidden="true" className="mr-2 size-4 animate-spin" />
-              ) : (
-                <Pause aria-hidden="true" className="mr-2 size-4" />
-              )}
-              {eod.autoRefresh ? <span className="tabular">Auto ({as}s)</span> : 'Auto Off'}
-            </Button>
-            <Button variant="secondary" onClick={eod.handleRefresh}>
-              <RotateCw aria-hidden="true" className="mr-2 size-4" /> Refresh
-            </Button>
-            {(hasPermission(user, 'EOD_SYNC') || eod.isDemoUser) && (
-              <Button
-                variant="default"
-                className={eod.isDemoUser ? 'opacity-60 cursor-not-allowed' : ''}
-                onClick={() => {
-                  if (eod.isDemoUser) {
-                    demoBlocked('Unavailable in demo.')
-                    return;
-                  }
-                  eod.setSyncOpen(true);
-                }}
-              >
-                <RefreshCw aria-hidden="true" className="mr-2 size-4" /> Sync All
-              </Button>
+    <PageTemplate
+      story={getFeatureStory('eod-monitor')}
+      title="EOD Monitor"
+      subtitle={formatDate(getWibToday())}
+      actions={
+        <>
+          <Button
+            variant={eod.autoRefresh ? 'default' : 'secondary'}
+            onClick={() => eod.setAutoRefresh((p) => !p)}
+          >
+            {eod.autoRefresh ? (
+              <RefreshCw aria-hidden="true" className="mr-2 size-4 animate-spin" />
+            ) : (
+              <Pause aria-hidden="true" className="mr-2 size-4" />
             )}
-          </>
-        }
-      />
-
-      <div className="flex flex-wrap items-center gap-2">
-        <span className={badgeClass}>
+            {eod.autoRefresh ? <span className="tabular">Auto ({as}s)</span> : 'Auto Off'}
+          </Button>
+          <Button variant="secondary" onClick={eod.handleRefresh}>
+            <RotateCw aria-hidden="true" className="mr-2 size-4" /> Refresh
+          </Button>
+          {(hasPermission(user, 'EOD_SYNC') || eod.isDemoUser) && (
+            <Button
+              variant="default"
+              className={eod.isDemoUser ? 'opacity-60 cursor-not-allowed' : ''}
+              onClick={() => {
+                if (eod.isDemoUser) {
+                  demoBlocked('Unavailable in demo.')
+                  return;
+                }
+                eod.setSyncOpen(true);
+              }}
+            >
+              <RefreshCw aria-hidden="true" className="mr-2 size-4" /> Sync All
+            </Button>
+          )}
+        </>
+      }
+      meta={[
+        <span key="last">
           <Clock aria-hidden="true" className="size-3.5" /> Last:{' '}
           <span className="tabular">{eod.lastUpdatedLabel}</span>
-        </span>
-        <span className={badgeClass}>
+        </span>,
+        <span key="user">
           <User aria-hidden="true" className="size-3.5" /> {user?.username || 'Admin'}
-        </span>
-        <span className={badgeClass}>
+        </span>,
+        <span key="role">
           <Shield aria-hidden="true" className="size-3.5" />{' '}
           {user?.role ? String(user.role).replace(/_/g, ' ') : 'IT Ops'}
-        </span>
-      </div>
-
+        </span>,
+      ]}
+    >
       <EODStatsRow
         stats={eod.stats}
         statsLoading={eod.statsLoading}
@@ -132,8 +124,8 @@ export default function EODMonitor() {
 
       {!eod.statsLoading && eod.branches.length > 0 && (
         <div className="flex flex-col gap-4">
-          <h3 className="section-title">Branch Network Health</h3>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-section">
+          <SectionHeading title="Branch Network Health" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {eod.branches.map((b: EODArea) => (
               <EODSummaryCard
                 key={b.areaId || b.areaName}
@@ -145,60 +137,60 @@ export default function EODMonitor() {
         </div>
       )}
 
-      <Toolbar
-        left={<EODFilters filters={eod.filters} onFilterChange={eod.handleFilterChange} />}
-        right={
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <Button variant="secondary" size="sm" onClick={eod.handleExport}>
-              {eod.exporting && <Loader2 aria-hidden="true" className="size-4 animate-spin" />}
-              <Download aria-hidden="true" className="size-4" />{' '}
-              {formatDate(eod.filters.date) ? `Export ${formatDate(eod.filters.date)}` : 'Export'}
-            </Button>
-            <Button variant="ghost" size="sm" onClick={eod.handleResetFilters}>
-              <RotateCw aria-hidden="true" className="size-4" /> Reset
-            </Button>
+      <TableCard
+        toolbar={
+          <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div className="flex min-w-0 flex-1 flex-col gap-2 md:flex-row md:items-center">
+              <EODFilters filters={eod.filters} onFilterChange={eod.handleFilterChange} />
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+              <Button variant="secondary" size="sm" onClick={eod.handleExport}>
+                {eod.exporting && <Loader2 aria-hidden="true" className="size-4 animate-spin" />}
+                <Download aria-hidden="true" className="size-4" />{' '}
+                {formatDate(eod.filters.date) ? `Export ${formatDate(eod.filters.date)}` : 'Export'}
+              </Button>
+              <Button variant="ghost" size="sm" onClick={eod.handleResetFilters}>
+                <RotateCw aria-hidden="true" className="size-4" /> Reset
+              </Button>
+            </div>
           </div>
         }
-      />
-
-      <Card className="p-0 overflow-hidden flex min-h-80 flex-col">
-        <CardContent className="p-0">
-          {eod.error ? (
-            <div className="p-card">
-              <EmptyState
-                title="Failed to load EOD data"
-                description={eod.error}
-                icon={<AlertTriangle aria-hidden="true" className="size-8" />}
-                action={
-                  <Button onClick={eod.fetchData}>
-                    <RefreshCw aria-hidden="true" className="mr-2 size-4" /> Retry
-                  </Button>
-                }
-              />
-            </div>
-          ) : (
-            <DataTable
-              columns={mainTableColumns}
-              data={eod.data}
-              loading={eod.loading}
-              keyExtractor={(r: EODStore) => r.storeId}
-              onRowClick={eod.openDetail}
-              pagination={eod.pagination}
-              onPageChange={(p: number) => eod.setPagination((prev) => ({ ...prev, page: p }))}
-              onPageSizeChange={(s: number) =>
-                eod.setPagination((prev) => ({ ...prev, page: 1, pageSize: s }))
+      >
+        {eod.error ? (
+          <div className="p-card">
+            <EmptyState
+              title="Failed to load EOD data"
+              description={eod.error}
+              icon={<AlertTriangle aria-hidden="true" className="size-8" />}
+              action={
+                <Button onClick={eod.fetchData}>
+                  <RefreshCw aria-hidden="true" className="mr-2 size-4" /> Retry
+                </Button>
               }
-              pageSizeOptions={[10, 20, 50, 100]}
-              emptyState={
-                <div className="text-center text-muted-foreground py-8">
-                  No results. Adjust filters.
-                </div>
-              }
-              noCard
             />
-          )}
-        </CardContent>
-      </Card>
+          </div>
+        ) : (
+          <DataTable
+            columns={mainTableColumns}
+            data={eod.data}
+            loading={eod.loading}
+            keyExtractor={(r: EODStore) => r.storeId}
+            onRowClick={eod.openDetail}
+            pagination={eod.pagination}
+            onPageChange={(p: number) => eod.setPagination((prev) => ({ ...prev, page: p }))}
+            onPageSizeChange={(s: number) =>
+              eod.setPagination((prev) => ({ ...prev, page: 1, pageSize: s }))
+            }
+            pageSizeOptions={[10, 20, 50, 100]}
+            emptyState={
+              <div className="text-center text-muted-foreground py-8">
+                No results. Adjust filters.
+              </div>
+            }
+            noCard
+          />
+        )}
+      </TableCard>
 
       <EODDetailsModal
         detail={eod.detail}
@@ -233,6 +225,6 @@ export default function EODMonitor() {
         onPageChange={handleBranchPageChange}
         onClose={eod.closeBranchModal}
       />
-    </DashboardLayout>
+    </PageTemplate>
   );
 }

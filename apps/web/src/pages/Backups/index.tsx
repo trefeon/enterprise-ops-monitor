@@ -1,20 +1,18 @@
 import { useCallback } from 'react';
-import type { PaginationState } from '@tanstack/react-table';
 import { RefreshCw, Play, Loader2, Database, Clock, HardDrive, AlertCircle, CheckCircle2, PauseCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
-import { BaseDataTable } from '@/components/ui/data-table';
+import { DashboardLayout } from '@/components/base/dashboard-layout';
+import { PageTemplate, KpiRow, SectionCard, TableCard } from '@/components/template';
+import { DataTable } from '@/components/ui/data-table';
 import { StatCard } from '@/components/ui/cards';
-import { SectionCard } from '@/components/ui/cards';
 import { EmptyState } from '@/components/shared/EmptyState';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { StatusBadge } from '@/components/shared/StatusBadge';
 import { ProgressBar } from '@/components/shared/ProgressBar';
 import { Guard } from '@/components/auth/Guard';
-import FeatureStoryBanner from '@/components/FeatureStoryBanner';
 import { getFeatureStory } from '@/data/stories';
-import { formatDate, formatDateTime, formatTime } from '@/lib/date';
+import { formatDateTime } from '@/lib/date';
 import { useAuth } from '@/context/AuthContext';
 import { useBackups } from './hooks/useBackups';
 import { getBackupColumns } from './columns';
@@ -42,6 +40,15 @@ const getStorageStatus = (percent: number): { label: string; variant: 'success' 
   if (percent >= 90) return { label: 'Critical', variant: 'destructive' };
   if (percent >= 75) return { label: 'High', variant: 'warning' };
   return { label: 'Healthy', variant: 'success' };
+};
+
+const storageStatusToStatStatus = (variant: 'success' | 'warning' | 'destructive' | 'outline') => {
+  switch (variant) {
+    case 'success': return 'success' as const;
+    case 'warning': return 'warning' as const;
+    case 'destructive': return 'error' as const;
+    default: return 'default' as const;
+  }
 };
 
 const formatBackupSchedule = (schedule: { cron?: string }) => {
@@ -96,25 +103,6 @@ export default function Backups() {
     onDelete: handleDeleteTarget,
     user: user as Record<string, unknown>,
   });
-  const tablePagination: PaginationState = {
-    pageIndex: Math.max(b.pagination.page - 1, 0),
-    pageSize: b.pagination.pageSize,
-  };
-
-  const handleTablePaginationChange = useCallback(
-    (updaterOrValue: PaginationState | ((old: PaginationState) => PaginationState)) => {
-      const next =
-        typeof updaterOrValue === 'function'
-          ? updaterOrValue(tablePagination)
-          : updaterOrValue;
-      b.setPagination((prev) => ({
-        ...prev,
-        page: next.pageIndex + 1,
-        pageSize: next.pageSize,
-      }));
-    },
-    [b, tablePagination],
-  );
 
   // -----------------------------------------------------------------------
   // Error state – no data at all
@@ -143,37 +131,29 @@ export default function Backups() {
   // -----------------------------------------------------------------------
 
   return (
-    <DashboardLayout>
-      <FeatureStoryBanner story={getFeatureStory('backups')} />
-
-      <DashboardPageHeader
-        title="Backups Management"
-        subtitle="Manage database snapshots, schedule automated tasks, and restore points."
-        actions={
-          <>
-            <Button variant="outline" onClick={b.handleRefresh} disabled={b.isLoading}>
-              <RefreshCw aria-hidden="true" className={`mr-2 size-4 ${b.isLoading ? 'animate-spin' : ''}`} />
-              Refresh
+    <PageTemplate
+      story={getFeatureStory('backups')}
+      title="Backups Management"
+      subtitle="Manage database snapshots, schedule automated tasks, and restore points."
+      actions={
+        <>
+          <Button variant="outline" onClick={b.handleRefresh} disabled={b.isLoading}>
+            <RefreshCw aria-hidden="true" className={`mr-2 size-4 ${b.isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Guard user={user} permission="BACKUPS_RUN">
+            <Button onClick={b.runManualBackup} disabled={b.manualLoading}>
+              {b.manualLoading ? (
+                <Loader2 aria-hidden="true" className="animate-spin mr-2 size-4" />
+              ) : (
+                <Play aria-hidden="true" className="mr-2 size-4" />
+              )}
+              Run Backup Now
             </Button>
-            <Guard user={user} permission="BACKUPS_RUN">
-              <Button onClick={b.runManualBackup} disabled={b.manualLoading}>
-                {b.manualLoading ? (
-                  <Loader2 aria-hidden="true" className="animate-spin mr-2 size-4" />
-                ) : (
-                  <Play aria-hidden="true" className="mr-2 size-4" />
-                )}
-                Run Backup Now
-              </Button>
-            </Guard>
-          </>
-        }
-      />
-      {b.summary?.latestBackupAt ? (
-        <span className="text-xs text-muted-foreground -mt-4 block">
-          Latest backup {formatDateTime(b.summary.latestBackupAt)}
-        </span>
-      ) : undefined}
-
+          </Guard>
+        </>
+      }
+    >
       {/* Inline error banner when data partially loaded */}
       {b.error && !b.hasNoData && (
         <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive flex items-center gap-2">
@@ -182,136 +162,180 @@ export default function Backups() {
         </div>
       )}
 
-      {/* Stats grid */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <SectionCard
-          title={
-            <div className="flex items-center gap-2">
-              <HardDrive className="size-5 text-muted-foreground" />
-              <span className="text-sm font-medium uppercase tracking-wider">Storage Usage</span>
-            </div>
+      {/* KPI row */}
+      <KpiRow>
+        <StatCard
+          title="Storage Used"
+          value={diskUsed != null ? formatBytes(diskUsed) : '-'}
+          icon={<HardDrive aria-hidden="true" />}
+          subtext={
+            diskTotal != null
+              ? `${formatBytes(diskTotal)} total · ${diskPercent != null ? `${diskPercent.toFixed(0)}% used` : '-'}`
+              : 'Disk usage data unavailable'
           }
-          right={<StatusBadge variant={storageStatus.variant}>{storageStatus.label}</StatusBadge>}
-        >
-          <div className="space-y-4">
-            <div className="flex items-end justify-between">
-              <span className="text-3xl font-medium tabular-nums text-foreground">
-                {diskUsed != null ? formatBytes(diskUsed) : '-'}{' '}
-                <span className="text-sm font-normal text-muted-foreground">
-                  / {diskTotal != null ? formatBytes(diskTotal) : '-'}
-                </span>
+          status={storageStatusToStatStatus(storageStatus.variant)}
+        />
+        <StatCard
+          title="Snapshots"
+          value={snapshotCount}
+          icon={<Database aria-hidden="true" />}
+          subtext="total backup files"
+        />
+        <StatCard
+          title="Schedule"
+          value={formatBackupSchedule(backupSchedule)}
+          icon={<Clock aria-hidden="true" />}
+          subtext={scheduleEnabled ? 'Active' : 'Paused'}
+          status={scheduleEnabled ? 'success' : 'default'}
+        />
+        <StatCard
+          title="Latest Backup"
+          value={
+            <span className="whitespace-nowrap">
+              {b.summary?.latestBackupAt ? formatDateTime(b.summary.latestBackupAt) : 'Never'}
+            </span>
+          }
+          icon={b.summary?.latestBackupAt ? <CheckCircle2 aria-hidden="true" /> : <PauseCircle aria-hidden="true" />}
+          subtext={
+            <span className="block truncate font-mono" title={b.summary?.latestFileName || undefined}>
+              {b.summary?.latestFileName || 'No backup yet'}
+            </span>
+          }
+          status={b.summary?.latestBackupAt ? 'success' : 'default'}
+        />
+      </KpiRow>
+
+      {/* Storage Usage section */}
+      <SectionCard
+        title={
+          <div className="flex items-center gap-2">
+            <HardDrive className="size-5 text-muted-foreground" />
+            <span className="text-sm font-medium uppercase tracking-wider">Storage Usage</span>
+          </div>
+        }
+        actions={<StatusBadge variant={storageStatus.variant}>{storageStatus.label}</StatusBadge>}
+      >
+        <div className="space-y-4">
+          <div className="flex items-end justify-between">
+            <span className="text-3xl font-medium tabular-nums text-foreground">
+              {diskUsed != null ? formatBytes(diskUsed) : '-'}{' '}
+              <span className="text-sm font-normal text-muted-foreground">
+                / {diskTotal != null ? formatBytes(diskTotal) : '-'}
               </span>
-              <span className="tabular-nums text-sm font-medium text-foreground">
-                {diskPercent != null ? `${diskPercent.toFixed(0)}%` : '-'}
-              </span>
-            </div>
-            <ProgressBar
-              value={diskPercent != null ? Math.min(diskPercent, 100) : 0}
-              trackClassName="bg-muted border border-border/20 h-2"
-              barClassName="bg-primary"
-            />
-            <div className="space-y-1">
-              <p className="text-xs text-muted-foreground">
-                {diskFree != null
-                  ? `${formatBytes(diskFree)} free space remaining`
-                  : 'Disk usage data unavailable'}
+            </span>
+            <span className="tabular-nums text-sm font-medium text-foreground">
+              {diskPercent != null ? `${diskPercent.toFixed(0)}%` : '-'}
+            </span>
+          </div>
+          <ProgressBar
+            value={diskPercent != null ? Math.min(diskPercent, 100) : 0}
+            trackClassName="bg-muted border border-border/20 h-2"
+            barClassName="bg-primary"
+          />
+          <div className="space-y-1">
+            <p className="text-xs text-muted-foreground">
+              {diskFree != null
+                ? `${formatBytes(diskFree)} free space remaining`
+                : 'Disk usage data unavailable'}
+            </p>
+            {b.summary?.storagePath && (
+              <p className="text-3xs text-muted-foreground uppercase font-medium">
+                Path:{' '}
+                <code className="text-foreground lowercase font-mono break-all">{b.summary.storagePath}</code>
               </p>
-              {b.summary?.storagePath && (
-                <p className="text-3xs text-muted-foreground uppercase font-medium">
-                  Path:{' '}
-                  <code className="text-foreground lowercase font-mono break-all">{b.summary.storagePath}</code>
+            )}
+            <p className="text-3xs font-medium text-primary uppercase tracking-widest pt-1">
+              Snapshot volume: <span className="tabular-nums">{formatBytes(b.summary?.totalSizeBytes ?? 0)}</span>
+            </p>
+          </div>
+        </div>
+      </SectionCard>
+
+      {/* Backup Schedule section */}
+      <SectionCard
+        title={
+          <div className="flex items-center gap-2">
+            <Clock className="size-5 text-muted-foreground" />
+            <span className="text-sm font-medium uppercase tracking-wider">Backup Schedule</span>
+          </div>
+        }
+        actions={
+          <StatusBadge variant={scheduleEnabled ? 'success' : 'outline'}>
+            {scheduleEnabled ? 'Active' : 'Paused'}
+          </StatusBadge>
+        }
+      >
+        <div className="space-y-4">
+          <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Schedule</p>
+                <p className="mt-1 text-2xl font-medium text-foreground">
+                  {formatBackupSchedule(backupSchedule)}
                 </p>
+                <p className="mt-1 text-xs text-muted-foreground">TZ: {backupSchedule.tz || 'Asia/Jakarta'}</p>
+              </div>
+              {scheduleEnabled ? (
+                <CheckCircle2 className="size-6 shrink-0 text-status-success" />
+              ) : (
+                <PauseCircle className="size-6 shrink-0 text-muted-foreground" />
               )}
-              <p className="text-3xs font-medium text-primary uppercase tracking-widest pt-1">
-                Snapshot volume: <span className="tabular-nums">{formatBytes(b.summary?.totalSizeBytes ?? 0)}</span>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-border/60 bg-card/60 p-3">
+              <p className="text-3xs font-medium uppercase tracking-widest text-muted-foreground">
+                Latest Backup
+              </p>
+              <p className="mt-1 text-sm font-medium text-foreground">
+                {formatDateTime(b.summary?.latestBackupAt)}
+              </p>
+              <p className="mt-1 truncate text-xs font-medium text-muted-foreground" title={b.summary?.latestFileName || undefined}>
+                {b.summary?.latestFileName || 'No backup yet'}
+              </p>
+            </div>
+            <div className="rounded-lg border border-border/60 bg-card/60 p-3">
+              <p className="text-3xs font-medium uppercase tracking-widest text-muted-foreground">Scheduler</p>
+              <div className="mt-2 flex items-center gap-2 text-sm font-medium text-foreground">
+                {scheduleEnabled ? (
+                  <CheckCircle2 className="size-4 text-status-success" />
+                ) : (
+                  <AlertCircle className="size-4 text-muted-foreground" />
+                )}
+                {scheduleEnabled ? 'Scheduler ready' : 'Scheduler unavailable'}
+              </div>
+              <p className="mt-2 text-xs text-muted-foreground">
+                Total snapshots <span className="font-medium text-foreground">{snapshotCount}</span>
               </p>
             </div>
           </div>
-        </SectionCard>
-
-        <SectionCard
-          title={
-            <div className="flex items-center gap-2">
-              <Clock className="size-5 text-muted-foreground" />
-              <span className="text-sm font-medium uppercase tracking-wider">Backup Schedule</span>
-            </div>
-          }
-          right={
-            <StatusBadge variant={scheduleEnabled ? 'success' : 'outline'}>
-              {scheduleEnabled ? 'Active' : 'Paused'}
-            </StatusBadge>
-          }
-        >
-          <div className="space-y-4">
-            <div className="rounded-lg border border-border/60 bg-muted/20 p-4">
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-widest text-muted-foreground">Schedule</p>
-                  <p className="mt-1 text-2xl font-medium text-foreground">
-                    {formatBackupSchedule(backupSchedule)}
-                  </p>
-                  <p className="mt-1 text-xs text-muted-foreground">TZ: {backupSchedule.tz || 'Asia/Jakarta'}</p>
-                </div>
-                {scheduleEnabled ? (
-                  <CheckCircle2 className="size-6 shrink-0 text-status-success" />
-                ) : (
-                  <PauseCircle className="size-6 shrink-0 text-muted-foreground" />
-                )}
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              <div className="rounded-lg border border-border/60 bg-card/60 p-3">
-                <p className="text-3xs font-medium uppercase tracking-widest text-muted-foreground">
-                  Latest Backup
-                </p>
-                <p className="mt-1 text-sm font-medium text-foreground">
-                  {formatDateTime(b.summary?.latestBackupAt)}
-                </p>
-                <p className="mt-1 truncate text-xs font-medium text-muted-foreground" title={b.summary?.latestFileName || undefined}>
-                  {b.summary?.latestFileName || 'No backup yet'}
-                </p>
-              </div>
-              <div className="rounded-lg border border-border/60 bg-card/60 p-3">
-                <p className="text-3xs font-medium uppercase tracking-widest text-muted-foreground">Scheduler</p>
-                <div className="mt-2 flex items-center gap-2 text-sm font-medium text-foreground">
-                  {scheduleEnabled ? (
-                    <CheckCircle2 className="size-4 text-status-success" />
-                  ) : (
-                    <AlertCircle className="size-4 text-muted-foreground" />
-                  )}
-                  {scheduleEnabled ? 'Scheduler ready' : 'Scheduler unavailable'}
-                </div>
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Total snapshots <span className="font-medium text-foreground">{snapshotCount}</span>
-                </p>
-              </div>
-            </div>
-          </div>
-        </SectionCard>
-      </section>
+        </div>
+      </SectionCard>
 
       {/* Snapshots table */}
-      <section className="pt-2">
-        <SectionCard title={<span className="text-lg font-medium tracking-tight uppercase">Recent Snapshots</span>}>
-          <BaseDataTable
-            columns={columns}
-            data={b.files}
-            loading={b.loadingFiles && b.files.length === 0}
-            manualPagination
-            pageCount={Math.ceil(b.pagination.total / b.pagination.pageSize)}
-            rowCount={b.pagination.total}
-            pagination={tablePagination}
-            onPaginationChange={handleTablePaginationChange}
-            getRowId={(row) => row.fileName}
-            frame="plain"
-            enableSearch={false}
-          />
-        </SectionCard>
-      </section>
+      <TableCard title="Recent Snapshots">
+        <DataTable
+          columns={columns}
+          data={b.files}
+          loading={b.loadingFiles && b.files.length === 0}
+          pagination={{
+            page: b.pagination.page,
+            pageSize: b.pagination.pageSize,
+            total: b.pagination.total,
+          }}
+          onPageChange={(page) =>
+            b.setPagination((prev) => ({ ...prev, page }))
+          }
+          onPageSizeChange={(pageSize) =>
+            b.setPagination((prev) => ({ ...prev, pageSize, page: 1 }))
+          }
+          keyExtractor={(row) => row.fileName}
+        />
+      </TableCard>
 
       {/* Delete confirmation */}
-      <div style={{ overscrollBehavior: 'contain' }}>
+      <div className="overscroll-contain">
         <ConfirmDialog
           open={Boolean(b.deleteTarget)}
           title="Delete backup file"
@@ -331,7 +355,7 @@ export default function Backups() {
       </div>
 
       {/* Restore confirmation */}
-      <div style={{ overscrollBehavior: 'contain' }}>
+      <div className="overscroll-contain">
         <ConfirmDialog
           open={Boolean(b.restoreTarget)}
           title="Restore database"
@@ -351,6 +375,6 @@ export default function Backups() {
           confirmLabel="Type RESTORE"
         />
       </div>
-    </DashboardLayout>
+    </PageTemplate>
   );
 }

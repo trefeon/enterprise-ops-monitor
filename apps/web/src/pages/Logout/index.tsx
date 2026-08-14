@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
-import { SectionCard } from '@/components/ui/cards';
+import { PageTemplate, SectionCard } from '@/components/template';
 import { Button } from '@/components/ui/button';
 import { ConfirmDialog } from '@/components/shared/ConfirmDialog';
 import { toast } from 'sonner';
 import { useAuth } from '../../context/AuthContext';
-import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
 
 const Logout: React.FC = () => {
@@ -31,28 +29,28 @@ const Logout: React.FC = () => {
   };
 
   return (
-    <DashboardLayout>
-      <FeatureStoryBanner story={getFeatureStory('logout')} />
-
-      <div className="space-y-6 max-w-2xl w-full">
-        <DashboardPageHeader title="Logout" subtitle="End your current session safely." />
-        <SectionCard>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              You are about to sign out from Enterprise Ops Starter. Any unsaved changes will be
-              lost.
-            </p>
-            <div className="flex gap-2">
-              <Button variant="secondary" onClick={() => navigate('/app')}>
-                Cancel
-              </Button>
-              <Button variant="destructive" onClick={() => setOpen(true)} disabled={loading}>
-                Confirm Logout
-              </Button>
-            </div>
+    <PageTemplate
+      story={getFeatureStory('logout')}
+      title="Logout"
+      subtitle="End your current session safely."
+      constrained
+    >
+      <SectionCard>
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            You are about to sign out from Enterprise Ops Starter. Any unsaved changes will be
+            lost.
+          </p>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={() => navigate('/app')}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={() => setOpen(true)} disabled={loading}>
+              Confirm Logout
+            </Button>
           </div>
-        </SectionCard>
-      </div>
+        </div>
+      </SectionCard>
 
       <ConfirmDialog
         open={open}
@@ -64,7 +62,7 @@ const Logout: React.FC = () => {
         onClose={() => setOpen(false)}
         confirmDisabled={loading}
       />
-    </DashboardLayout>
+    </PageTemplate>
   );
 };
 

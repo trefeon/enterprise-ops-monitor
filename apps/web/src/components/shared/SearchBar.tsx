@@ -23,7 +23,7 @@ export function SearchBar({
   };
 
   return (
-    <div className="relative w-full">
+    <div className={cn('relative w-full min-w-0', className)}>
       <div className="pointer-events-none absolute inset-y-0 left-3 z-10 flex items-center text-muted-foreground">
         <Search className={cn(size === 'sm' ? 'size-3' : 'size-3.5')} aria-hidden="true" />
       </div>
@@ -33,9 +33,8 @@ export function SearchBar({
         placeholder={placeholder}
         aria-label="Search"
         className={cn(
-          'pl-9 border-border bg-card hover:border-border/80 focus-visible:border-primary/50 focus-visible:ring-primary/10',
-          size === 'sm' && 'min-h-0 h-9 py-1 text-xs pl-8',
-          className
+          'w-full min-w-0 pl-9 border-border bg-card hover:border-border/80 focus-visible:border-primary/50 focus-visible:ring-primary/10',
+          size === 'sm' && 'min-h-0 h-9 py-1 text-xs pl-8'
         )}
         {...props}
       />

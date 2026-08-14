@@ -11,7 +11,6 @@ import { toast } from 'sonner';
 import { AlertTriangle, Archive, Pencil, Plus, RefreshCw, Search } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
-import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,9 +34,8 @@ import {
   EntityFormGrid,
 } from '@/components/shared/EntityFormDialog';
 import { ExportButton } from '@/components/shared/ExportButton';
-import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
+import { PageTemplate, TableCard } from '@/components/template';
 import { SearchBar } from '@/components/shared/SearchBar';
-import { Toolbar } from '@/components/shared/Toolbar';
 import { downloadWorkbookExport, type WorkbookExportPayload } from '@/lib/api/downloadExport';
 import { isDemoMode } from '@/lib/appMode';
 import { hasPermission, Permissions } from '@/lib/auth/permissions.js';
@@ -402,122 +400,124 @@ const StoreManagement = () => {
   }, [canManageStores]);
 
   return (
-    <DashboardLayout>
-      <DashboardPageHeader
-        title="Store Directory"
-        subtitle="Monitor operational status and manage canonical store data."
-        actions={
-          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <Badge variant={isDemoMode ? 'info' : 'success'}>
-              {isDemoMode ? 'Demo' : 'Production'}
-            </Badge>
-            {canManageStores && (
-              <Button onClick={openCreateDialog}>
-                <Plus aria-hidden="true" className="size-4" />
-                <span className="truncate">Add Store</span>
+    <PageTemplate
+      story={getFeatureStory('store-directory')}
+      title="Store Directory"
+      subtitle="Monitor operational status and manage canonical store data."
+      actions={
+        <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <Badge variant={isDemoMode ? 'info' : 'success'}>
+            {isDemoMode ? 'Demo' : 'Production'}
+          </Badge>
+          {canManageStores && (
+            <Button onClick={openCreateDialog}>
+              <Plus aria-hidden="true" className="size-4" />
+              <span className="truncate">Add Store</span>
+            </Button>
+          )}
+          <ExportButton onClick={handleExport} loading={exporting} />
+        </div>
+      }
+    >
+      <TableCard
+        toolbar={
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <div className="flex min-w-0 flex-1 flex-col gap-2 md:flex-row md:items-center">
+              <SearchBar
+                placeholder="Search stores by code or name..."
+                name="q"
+                value={filters.q}
+                onChange={handleFilterChange}
+                onKeyDown={handleSearch}
+                className="flex-1"
+              />
+              <div className="grid min-w-0 gap-2 sm:grid-cols-2 md:grid-cols-3 md:w-auto">
+                <Select
+                  value={filters.areaId}
+                  onValueChange={(value) =>
+                    handleFilterChange({ target: { name: 'areaId', value: String(value ?? '') } })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All Branches" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Branches</SelectItem>
+                    {BRANCH_OPTIONS.map((branch) => (
+                      <SelectItem key={branch.id} value={branch.id}>
+                        {branch.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={filters.region}
+                  onValueChange={(value) =>
+                    handleFilterChange({ target: { name: 'region', value: String(value ?? '') } })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All Regional Heads" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Regional Heads</SelectItem>
+                    {regionalHeads.map((regionalHead) => (
+                      <SelectItem key={regionalHead} value={regionalHead}>
+                        {regionalHead}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={filters.status}
+                  onValueChange={(value) =>
+                    handleFilterChange({
+                      target: { name: 'status', value: String(value || 'active') },
+                    })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Active</SelectItem>
+                    <SelectItem value="inactive">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+              <Button variant="secondary" onClick={applyFilters}>
+                <Search aria-hidden="true" className="size-4" />
+                Apply
               </Button>
-            )}
-            <ExportButton onClick={handleExport} loading={exporting} />
+            </div>
           </div>
         }
-      />
-      <FeatureStoryBanner story={getFeatureStory('store-directory')} />
-      <Toolbar
-        left={
-          <>
-            <SearchBar
-              placeholder="Search stores by code or name..."
-              name="q"
-              value={filters.q}
-              onChange={handleFilterChange}
-              onKeyDown={handleSearch}
-              className="flex-1"
-            />
-            <div className="grid w-full min-w-0 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:w-auto">
-              <Select
-                value={filters.areaId}
-                onValueChange={(value) =>
-                  handleFilterChange({ target: { name: 'areaId', value: String(value ?? '') } })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Branches" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Branches</SelectItem>
-                  {BRANCH_OPTIONS.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.id}>
-                      {branch.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.region}
-                onValueChange={(value) =>
-                  handleFilterChange({ target: { name: 'region', value: String(value ?? '') } })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Regional Heads" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Regional Heads</SelectItem>
-                  {regionalHeads.map((regionalHead) => (
-                    <SelectItem key={regionalHead} value={regionalHead}>
-                      {regionalHead}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.status}
-                onValueChange={(value) =>
-                  handleFilterChange({
-                    target: { name: 'status', value: String(value || 'active') },
-                  })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        }
-        right={
-          <Button variant="secondary" onClick={applyFilters}>
-            <Search aria-hidden="true" className="size-4" />
-            Apply
-          </Button>
-        }
-      />
-      {error && !loading && data.length === 0 ? (
-        <EmptyState
-          title="Failed to load stores"
-          description={error}
-          icon={<AlertTriangle className="size-8" />}
-          action={
-            <Button onClick={fetchData}>
-              <RefreshCw aria-hidden="true" className="mr-2 size-4" /> Retry
-            </Button>
-          }
-        />
-      ) : (
-        <DataTable
-          columns={columns}
-          data={data}
-          loading={loading}
-          pagination={pagination}
-          onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
-          emptyState="No stores found."
-          keyExtractor={(row) => row.storeCode ?? row.id ?? ''}
-        />
-      )}
+      >
+        {error && !loading && data.length === 0 ? (
+          <EmptyState
+            title="Failed to load stores"
+            description={error}
+            icon={<AlertTriangle className="size-8" />}
+            action={
+              <Button onClick={fetchData}>
+                <RefreshCw aria-hidden="true" className="mr-2 size-4" /> Retry
+              </Button>
+            }
+          />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={data}
+            loading={loading}
+            pagination={pagination}
+            onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
+            emptyState="No stores found."
+            keyExtractor={(row) => row.storeCode ?? row.id ?? ''}
+          />
+        )}
+      </TableCard>
 
       <EntityFormDialog
         open={formOpen}
@@ -620,7 +620,7 @@ const StoreManagement = () => {
         onConfirm={handleArchiveStore}
         onClose={() => setArchiveTarget(null)}
       />
-    </DashboardLayout>
+    </PageTemplate>
   );
 };
 

@@ -36,7 +36,8 @@ function MetricCell({ value }: { value: number }) {
 
 export function MachineTable({ machines, onView, onEditLabel }: MachineTableProps) {
   return (
-    <DataTable
+    <div className="overflow-x-auto min-w-0">
+      <DataTable
       columns={[
         {
           header: "Hostname",
@@ -114,6 +115,7 @@ export function MachineTable({ machines, onView, onEditLabel }: MachineTableProp
       data={machines}
       keyExtractor={(machine) => machine.id}
       emptyState="No machines match the current filters."
-    />
+      />
+    </div>
   );
 }

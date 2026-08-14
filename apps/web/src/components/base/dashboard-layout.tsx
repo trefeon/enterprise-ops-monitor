@@ -63,22 +63,31 @@ export function DashboardSection({
   className,
   label,
 }: DashboardSectionProps) {
-  const gridCols = gridTemplateColumns
-    ? gridTemplateColumns
-    : columns
-      ? `repeat(${columns}, minmax(0, 1fr))`
-      : undefined;
+  const responsiveCols = columns
+    ? ({
+        1: 'lg:grid-cols-1',
+        2: 'lg:grid-cols-2',
+        3: 'lg:grid-cols-3',
+        4: 'lg:grid-cols-4',
+      } as const)[columns]
+    : undefined;
 
   return (
     <section
       aria-label={label}
-      className={cn(className)}
-      style={{
-        display: gridCols ? "grid" : "block",
-        gridTemplateColumns: gridCols,
-        gap: `${gap}px`,
-        width: "100%",
-      }}
+      className={cn(columns && 'grid grid-cols-1', responsiveCols, className)}
+      style={
+        gridTemplateColumns
+          ? {
+              display: 'grid',
+              gridTemplateColumns,
+              gap: `${gap}px`,
+              width: '100%',
+            }
+          : columns
+            ? { display: 'grid', gap: `${gap}px`, width: '100%' }
+            : undefined
+      }
     >
       {children}
     </section>
@@ -86,104 +95,14 @@ export function DashboardSection({
 }
 
 /* ------------------------------------------------------------------ */
-/*  Welcome Hero — top-of-page greeting block                          */
-/* ------------------------------------------------------------------ */
-
-export interface DashboardWelcomeProps {
-  title: string;
-  subtitle?: string;
-  className?: string;
-}
-
-export function DashboardWelcome({
-  title,
-  subtitle,
-  className,
-}: DashboardWelcomeProps) {
-  return (
-    <div className={cn("py-1", className)}>
-      <h1
-        className="font-display text-[2rem] font-medium leading-tight tracking-normal text-foreground"
-        style={{ height: 36, display: "flex", alignItems: "center" }}
-      >
-        {title}
-      </h1>
-      {subtitle && (
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-muted-foreground">
-          {subtitle}
-        </p>
-      )}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
-/*  KPI Stat Card                                                      */
-/* ------------------------------------------------------------------ */
-
-export interface DashboardStatCardProps {
-  label: string;
-  value: string | number;
-  /** Optional delta like "+12.5%" */
-  delta?: string;
-  /** Optional icon (React element) */
-  icon?: ReactNode;
-  trend?: "up" | "down" | "neutral";
-  className?: string;
-}
-
-export function DashboardStatCard({
-  label,
-  value,
-  delta,
-  icon,
-  trend,
-  className,
-}: DashboardStatCardProps) {
-  const deltaColor =
-    trend === "up"
-      ? "var(--supabase-success,#3ecf8e)"
-      : trend === "down"
-        ? "var(--supabase-danger,#e54d2e)"
-        : "var(--text-secondary,#898989)";
-
-  return (
-    <div
-      className={cn(
-        "surface-card flex flex-col gap-2",
-        "hover:border-hover transition-colors duration-150",
-        className,
-      )}
-      style={{
-        boxShadow: "var(--elevation-level1, 0 0 0 1px #2e2e2e)",
-      }}
-    >
-      <div className="flex items-center justify-between">
-        <span className="text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
-          {label}
-        </span>
-        {icon && (
-          <span className="text-muted-foreground/60">{icon}</span>
-        )}
-      </div>
-      <span
-        className="font-display text-[2rem] font-medium leading-none tracking-tight text-foreground"
-      >
-        {value}
-      </span>
-      {delta && (
-        <span className="text-xs font-medium" style={{ color: deltaColor }}>
-          {delta}
-        </span>
-      )}
-    </div>
-  );
-}
-
-/* ------------------------------------------------------------------ */
 /*  Page Header (with optional breadcrumb & actions)                   */
 /* ------------------------------------------------------------------ */
 
+/**
+ * @deprecated Superseded by PageHeader from `@/components/template`
+ * (same visual, part of the unified PageTemplate stack). Keep working
+ * until the page-refactor phase migrates all 14 call sites.
+ */
 export interface DashboardPageHeaderProps {
   title: string;
   subtitle?: string;

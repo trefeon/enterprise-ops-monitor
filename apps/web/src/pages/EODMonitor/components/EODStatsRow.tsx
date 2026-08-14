@@ -23,7 +23,7 @@ export function EODStatsRow({
   const isLoadingOrError = statsLoading || !!statsError;
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-section">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
       <StatCard
         title="Total Stores"
         value={isLoadingOrError ? '-' : stats.total}

@@ -55,7 +55,7 @@ const statusStyles: Record<StatStatus, { value: string; rail: string; icon: stri
 };
 
 const paddingSizes = {
-  sm: 'pt-3.5 px-3.5 pb-3.5',
+  sm: 'px-4 py-4',
   default: 'pt-4 px-4 pb-4 sm:pt-5 sm:px-5 sm:pb-5',
   lg: 'pt-5 px-5 pb-5 sm:pt-6 sm:px-6 sm:pb-6',
 };

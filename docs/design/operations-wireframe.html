@@ -1,0 +1,945 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Enterprise Ops Starter - Operations Page Template (Wireframe &amp; Spec)</title>
+<style>
+  /* ─────────────────────────── tokens ─────────────────────────── */
+  :root {
+    --canvas: #0d0d0d;
+    --surface: #171717;        /* app --background (hsl 0 0% 9%) */
+    --card: #1c1c1c;
+    --raise: #212121;
+    --border: #2e2e2e;
+    --border-strong: #3d3d3d;
+    --text: #f2f2f2;
+    --muted: #a8a8a8;
+    --faint: #858585;
+    --accent: #3ecf8e;
+    --accent-dim: #2ea06b;
+    --accent-soft: rgba(62, 207, 142, 0.10);
+    --accent-line: rgba(62, 207, 142, 0.28);
+    --danger: #e54d2e;
+    --danger-soft: rgba(229, 77, 46, 0.10);
+    --danger-line: rgba(229, 77, 46, 0.35);
+    --warning: #e5a50a;
+    --info: #4c8dff;
+    --ok: #3ecf8e;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "Cascadia Code", Menlo, Consolas, monospace;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { background: var(--canvas); }
+
+  body {
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .doc {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 48px 56px 96px;
+  }
+
+  /* ─────────────────────────── typography ─────────────────────────── */
+  h1, h2, h3, h4 { font-weight: 600; line-height: 1.25; letter-spacing: -0.01em; }
+  h1 { font-size: 26px; }
+  h2 {
+    font-size: 16px;
+    margin-top: 64px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+  }
+  h2 .sec-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border: 1px solid var(--accent-line);
+    border-radius: 4px;
+    padding: 1px 7px;
+  }
+  h2 .sec-note { font-family: var(--mono); font-size: 11px; font-weight: 400; color: var(--faint); letter-spacing: 0; }
+  h3 { font-size: 13px; margin: 22px 0 8px; }
+  p { color: var(--muted); max-width: 72ch; }
+  p.lead { font-size: 15px; color: var(--text); }
+  a { color: var(--accent); text-decoration: none; }
+  code, .mono { font-family: var(--mono); font-size: 12px; }
+  .muted { color: var(--muted); }
+  .faint { color: var(--faint); }
+  .accent { color: var(--accent); }
+  .danger { color: var(--danger); }
+  strong { color: var(--text); font-weight: 600; }
+
+  /* ─────────────────────────── doc header ─────────────────────────── */
+  .doc-header {
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 28px;
+    margin-bottom: 8px;
+  }
+  .doc-header .kicker {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  .doc-header h1 { font-size: 28px; }
+  .doc-header .sub { color: var(--muted); margin-top: 6px; max-width: 90ch; }
+  .doc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 18px;
+  }
+  .doc-meta .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--muted);
+    border: 1px solid var(--border-strong);
+    background: var(--surface);
+    border-radius: 4px;
+    padding: 3px 9px;
+  }
+  .doc-meta .tag.hot { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); }
+
+  /* ─────────────────────────── legend ─────────────────────────── */
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 24px;
+    padding: 12px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+  }
+  .legend .item { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+  .sw { width: 14px; height: 14px; border-radius: 3px; flex: none; }
+  .sw.solid { background: var(--card); border: 1px solid var(--border-strong); }
+  .sw.slot { background: transparent; border: 1px dashed var(--border-strong); }
+  .sw.accent { background: var(--accent-soft); border: 1px solid var(--accent-line); }
+  .sw.bad { background: var(--danger-soft); border: 1px solid var(--danger-line); }
+  .sw.ok { background: rgba(62, 207, 142, 0.16); border: 1px solid var(--accent-line); }
+
+  /* ─────────────────────────── anatomy ─────────────────────────── */
+  .anatomy-wrap {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 28px;
+    margin-top: 18px;
+    align-items: start;
+  }
+  @media (max-width: 1080px) { .anatomy-wrap { grid-template-columns: 1fr; } }
+
+  .skeleton {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    position: relative;
+  }
+
+  .part { position: relative; }
+  .part .pin {
+    position: absolute;
+    left: -18px;
+    top: 10px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--raise);
+    border: 1px solid var(--border-strong);
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+  }
+  .part.hot .pin { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); }
+
+  /* banner mock */
+  .mock-banner {
+    border: 1px solid var(--accent-line);
+    background: var(--accent-soft);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+  .mock-banner .left { display: flex; align-items: center; gap: 10px; min-width: 0; }
+  .mock-banner .tile {
+    width: 30px; height: 30px; border-radius: 6px; flex: none;
+    background: rgba(62, 207, 142, 0.16);
+    border: 1px solid var(--accent-line);
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .mock-banner .eyebrow {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--accent); opacity: 0.8;
+  }
+  .mock-banner .tagline { font-size: 12px; font-weight: 500; color: var(--text); }
+  .mock-banner .btn {
+    font-size: 11px; color: var(--muted); border: 1px solid var(--border-strong);
+    border-radius: 4px; padding: 4px 9px; background: var(--card); white-space: nowrap;
+  }
+  .mock-banner .btn .caret { color: var(--faint); margin-left: 6px; }
+
+  /* page header mock */
+  .mock-header { border-bottom: 1px solid var(--border); padding-bottom: 16px; display: flex; justify-content: space-between; gap: 16px; align-items: flex-end; flex-wrap: wrap; }
+  .mock-header .t { font-family: var(--sans); font-size: 19px; font-weight: 500; color: var(--text); }
+  .mock-header .s { font-size: 12px; color: var(--muted); margin-top: 3px; max-width: 62ch; }
+  .mock-actions { display: flex; gap: 8px; }
+  .mock-actions .btn {
+    font-size: 11px; border-radius: 4px; padding: 5px 11px; border: 1px solid var(--border-strong);
+    color: var(--muted); background: var(--card); white-space: nowrap;
+  }
+  .mock-actions .btn.primary { background: var(--accent); border-color: var(--accent); color: #06231a; font-weight: 600; }
+
+  /* meta mock */
+  .mock-meta { font-family: var(--mono); font-size: 11px; color: var(--muted); }
+  .mock-meta .dot { color: var(--faint); margin: 0 7px; }
+
+  /* KPI row mock */
+  .mock-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  @media (max-width: 900px) { .mock-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  .mock-kpi {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 12px 14px 13px;
+    position: relative;
+    overflow: hidden;
+  }
+  .mock-kpi .rail { position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--border-strong); }
+  .mock-kpi.ok .rail { background: var(--ok); }
+  .mock-kpi.warn .rail { background: var(--warning); }
+  .mock-kpi.err .rail { background: var(--danger); }
+  .mock-kpi .l {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--faint);
+  }
+  .mock-kpi .v { font-family: var(--mono); font-size: 21px; color: var(--text); margin-top: 5px; }
+  .mock-kpi .v.accent { color: var(--accent); }
+  .mock-kpi .v.warn { color: var(--warning); }
+  .mock-kpi .v.err { color: var(--danger); }
+  .mock-kpi .s { font-size: 10px; color: var(--faint); margin-top: 3px; }
+
+  /* section card mock */
+  .mock-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .mock-card .ch {
+    display: flex; justify-content: space-between; align-items: center; gap: 10px;
+    padding: 11px 14px;
+  }
+  .mock-card .ch .t { font-size: 13px; font-weight: 600; color: var(--text); }
+  .mock-card .ch .hint { font-size: 10px; color: var(--faint); font-family: var(--mono); }
+  .mock-card .ch.bordered { border-bottom: 1px solid var(--border); }
+  .mock-card .body { padding: 12px 14px; }
+  .mock-card .body.flush { padding: 0; }
+
+  /* table mock */
+  .mock-table { width: 100%; border-collapse: collapse; }
+  .mock-table th {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--faint); text-align: left; font-weight: 500;
+    padding: 8px 14px; border-bottom: 1px solid var(--border); background: var(--raise);
+  }
+  .mock-table td { padding: 9px 14px; border-bottom: 1px solid rgba(46, 46, 46, 0.55); font-size: 12px; color: var(--muted); }
+  .mock-table tr:last-child td { border-bottom: none; }
+  .mock-table .badge {
+    font-family: var(--mono); font-size: 9px; padding: 2px 7px; border-radius: 3px;
+    border: 1px solid; white-space: nowrap;
+  }
+  .badge.ok { color: var(--ok); border-color: rgba(62, 207, 142, 0.35); background: rgba(62, 207, 142, 0.08); }
+  .badge.warn { color: var(--warning); border-color: rgba(229, 165, 10, 0.35); background: rgba(229, 165, 10, 0.08); }
+  .badge.err { color: var(--danger); border-color: var(--danger-line); background: var(--danger-soft); }
+  .badge.neu { color: var(--muted); border-color: var(--border-strong); background: transparent; }
+
+  /* toolbar mock */
+  .mock-toolbar { display: flex; gap: 8px; align-items: center; padding: 9px 14px; border-bottom: 1px solid var(--border); }
+  .mock-toolbar .field {
+    height: 24px; border: 1px solid var(--border-strong); border-radius: 4px;
+    background: var(--surface); padding: 0 9px; font-size: 10px; color: var(--faint);
+    display: flex; align-items: center; gap: 6px; white-space: nowrap;
+  }
+  .mock-toolbar .field.wide { width: 190px; justify-content: space-between; }
+
+  /* dialog mock */
+  .mock-dialog-wrap { position: relative; }
+  .mock-dialog {
+    position: absolute; right: 24px; top: -8px; width: 260px;
+    background: var(--raise); border: 1px solid var(--border-strong); border-radius: 6px;
+    padding: 13px 14px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  }
+  .mock-dialog .d-t { font-size: 12px; font-weight: 600; color: var(--text); }
+  .mock-dialog .d-l { height: 7px; border-radius: 2px; background: #2a2a2a; margin-top: 8px; }
+  .mock-dialog .d-l.w50 { width: 50%; }
+  .mock-dialog .d-l.w70 { width: 70%; }
+  .mock-dialog .d-actions { display: flex; gap: 7px; margin-top: 12px; justify-content: flex-end; }
+  .mock-dialog .d-actions .btn { font-size: 10px; border-radius: 4px; padding: 4px 10px; border: 1px solid var(--border-strong); color: var(--muted); background: var(--surface); }
+  .mock-dialog .d-actions .btn.primary { background: var(--accent); border-color: var(--accent); color: #06231a; font-weight: 600; }
+
+  /* annotations */
+  .annotations { border-left: 1px solid var(--border); padding-left: 20px; }
+  .annotations .anno { margin-bottom: 16px; }
+  .annotations .anno .num {
+    font-family: var(--mono); font-size: 10px; color: var(--accent);
+    border: 1px solid var(--accent-line); background: var(--accent-soft);
+    border-radius: 50%; width: 18px; height: 18px; display: inline-flex; align-items: center;
+    justify-content: center; margin-right: 6px;
+  }
+  .annotations .anno .n { font-size: 12px; font-weight: 600; color: var(--text); }
+  .annotations .anno p { font-size: 11px; color: var(--muted); margin-top: 3px; max-width: 44ch; }
+  .annotations .anno code { color: var(--accent); }
+
+  /* ─────────────────────────── archetypes ─────────────────────────── */
+  .arch-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; margin-top: 16px; }
+  @media (max-width: 1000px) { .arch-grid { grid-template-columns: 1fr; } }
+
+  .arch {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    padding: 18px 20px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+  .arch .a-head { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+  .arch .a-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .arch .a-name .tag {
+    font-family: var(--mono); font-size: 10px; color: var(--accent);
+    border: 1px solid var(--accent-line); background: var(--accent-soft);
+    border-radius: 4px; padding: 1px 7px; margin-right: 8px;
+  }
+  .arch .a-pages { font-family: var(--mono); font-size: 10px; color: var(--faint); }
+
+  .sk { display: flex; flex-direction: column; gap: 10px; }
+  .sk .bar { height: 8px; border-radius: 2px; background: #262626; }
+  .sk .bar.w30 { width: 30%; } .sk .bar.w40 { width: 40%; } .sk .bar.w50 { width: 50%; }
+  .sk .bar.w60 { width: 60%; } .sk .bar.w70 { width: 70%; } .sk .bar.w80 { width: 80%; }
+  .sk .bar.w90 { width: 90%; }
+  .sk .row { display: flex; gap: 8px; align-items: center; }
+  .sk .row .bar { flex: 1; }
+  .sk .row .bar.fixed { flex: none; width: 64px; }
+
+  .skb { border: 1px dashed #3a3a3a; border-radius: 4px; padding: 8px 10px; }
+  .skb.label { position: relative; }
+  .skb.label::after {
+    content: attr(data-label);
+    position: absolute; top: -8px; left: 8px;
+    font-family: var(--mono); font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--faint); background: var(--surface); padding: 0 5px;
+  }
+  .sk-card { border: 1px dashed #3a3a3a; border-radius: 4px; padding: 9px 10px; position: relative; }
+  .sk-card::before {
+    content: attr(data-label);
+    position: absolute; top: -8px; left: 8px;
+    font-family: var(--mono); font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--faint); background: var(--surface); padding: 0 5px;
+  }
+  .sk-table { margin-top: 7px; }
+  .sk-table .trow { display: grid; grid-template-columns: 1fr 1fr 0.7fr 0.5fr; gap: 8px; margin-top: 5px; align-items: center; }
+  .sk-table .trow.head .bar { background: #2e2e2e; height: 6px; }
+  .sk-table .trow .bar { height: 6px; }
+  .sk-kpis { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .sk-kpi { border: 1px dashed #3a3a3a; border-radius: 4px; padding: 7px 8px; display: flex; flex-direction: column; gap: 5px; }
+  .sk-kpi .bar { height: 6px; }
+  .sk-kpi .bar.v { height: 11px; background: #333; }
+  .sk-kpi .bar.v.accent { background: rgba(62, 207, 142, 0.55); }
+  .sk-kpi .bar.v.warn { background: rgba(229, 165, 10, 0.55); }
+  .sk-kpi .bar.v.err { background: rgba(229, 77, 46, 0.6); }
+
+  /* ─────────────────────────── sidebar ─────────────────────────── */
+  .side-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 16px; }
+  @media (max-width: 900px) { .side-grid { grid-template-columns: 1fr; } }
+  .side {
+    border: 1px solid var(--border); border-radius: 8px; background: var(--surface); padding: 16px;
+  }
+  .side .side-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 12px; }
+  .side .side-head .t { font-size: 12px; font-weight: 600; color: var(--text); }
+  .side .side-head .n { font-family: var(--mono); font-size: 9px; color: var(--faint); letter-spacing: 0.1em; text-transform: uppercase; }
+  .side .g-label {
+    font-family: var(--mono); font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--faint); margin: 12px 0 4px;
+  }
+  .side .item {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--muted);
+    padding: 5px 9px; border-radius: 4px; border: 1px solid transparent;
+  }
+  .side .item .ico { width: 13px; height: 13px; border-radius: 3px; background: #2b2b2b; flex: none; }
+  .side .item.active { color: var(--accent); background: var(--accent-soft); border-color: var(--accent-line); }
+  .side .item.moved { color: var(--accent); }
+  .side .item.moved .ico { background: var(--accent-line); }
+  .side .item.sub { padding-left: 26px; }
+  .side .item .chev { margin-left: auto; color: var(--faint); font-size: 9px; }
+  .side .foot { border-top: 1px solid var(--border); margin-top: 12px; padding-top: 12px; font-size: 10px; color: var(--faint); }
+
+  /* ─────────────────────────── audit findings ─────────────────────────── */
+  .finding {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--surface);
+    padding: 16px 18px;
+    margin-top: 14px;
+  }
+  .finding .f-head { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+  .finding .f-id { font-family: var(--mono); font-size: 11px; color: var(--accent); border: 1px solid var(--accent-line); background: var(--accent-soft); border-radius: 4px; padding: 1px 8px; }
+  .finding .f-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .finding .f-where { font-family: var(--mono); font-size: 10px; color: var(--faint); }
+  .ba-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+  @media (max-width: 900px) { .ba-grid { grid-template-columns: 1fr; } }
+  .ba { border-radius: 6px; padding: 11px 13px; font-size: 12px; }
+  .ba .ba-head { font-family: var(--mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 6px; }
+  .ba.before { background: var(--danger-soft); border: 1px solid var(--danger-line); }
+  .ba.before .ba-head { color: var(--danger); }
+  .ba.before p, .ba.before li { color: #d8b3ab; }
+  .ba.after { background: rgba(62, 207, 142, 0.06); border: 1px solid var(--accent-line); }
+  .ba.after .ba-head { color: var(--accent); }
+  .ba.after p, .ba.after li { color: #a9c9bc; }
+  .ba p, .ba li { font-size: 11.5px; line-height: 1.55; }
+  .ba ul { padding-left: 16px; margin-top: 4px; }
+
+  /* ─────────────────────────── inventory table ─────────────────────────── */
+  table.inv { width: 100%; border-collapse: collapse; margin-top: 14px; font-size: 12.5px; }
+  table.inv th {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--faint); text-align: left; font-weight: 500;
+    padding: 9px 12px; border-bottom: 1px solid var(--border-strong);
+  }
+  table.inv td { padding: 10px 12px; border-bottom: 1px solid var(--border); color: var(--muted); vertical-align: top; }
+  table.inv tr:last-child td { border-bottom: none; }
+  table.inv td.c { font-family: var(--mono); font-size: 11.5px; color: var(--text); white-space: nowrap; }
+  table.inv td.c.new { color: var(--accent); }
+  table.inv td.c.dep { color: var(--danger); }
+  table.inv .grp td {
+    font-family: var(--mono); font-size: 9.5px; letter-spacing: 0.16em; text-transform: uppercase;
+    color: var(--faint); padding-top: 16px; border-bottom: none;
+  }
+
+  /* ─────────────────────────── footer ─────────────────────────── */
+  .doc-footer {
+    margin-top: 72px; padding-top: 20px; border-top: 1px solid var(--border);
+    font-size: 11.5px; color: var(--faint);
+  }
+  .callout {
+    border-left: 3px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0 6px 6px 0;
+    padding: 12px 16px;
+    margin-top: 14px;
+    font-size: 12.5px;
+    color: #b9d8cc;
+    max-width: 96ch;
+  }
+  .callout.warn { border-left-color: var(--warning); background: rgba(229, 165, 10, 0.07); color: #d8c39a; }
+  ul.tight { padding-left: 18px; }
+  ul.tight li { margin-top: 3px; }
+</style>
+</head>
+<body>
+<div class="doc">
+
+  <!-- ══════════════════ header ══════════════════ -->
+  <header class="doc-header">
+    <div class="kicker">Enterprise Ops Starter · Design</div>
+    <h1>Unified Operations Page Template</h1>
+    <p class="sub">
+      One page skeleton for all 15 operational pages, parameterized into six archetypes. This document is the
+      <strong>approval artifact</strong> for the design phase: nothing under <code>apps/web/src/pages/</code> changes
+      until this wireframe and its spec (<code>docs/design/operations-template.md</code>) are approved.
+    </p>
+    <div class="doc-meta">
+      <span class="tag hot">DESIGN PHASE - NOT IMPLEMENTED IN PAGES</span>
+      <span class="tag">v0.1 · 2026-08-12</span>
+      <span class="tag">15 pages · 6 archetypes · 7 template components</span>
+      <span class="tag">dark theme · border-defined · one accent</span>
+    </div>
+
+    <div class="legend">
+      <div class="item"><span class="sw solid"></span> existing component (unchanged)</div>
+      <div class="item"><span class="sw slot"></span> template slot / new component</div>
+      <div class="item"><span class="sw accent"></span> primary accent (actions, banner)</div>
+      <div class="item"><span class="sw bad"></span> before: current inconsistency</div>
+      <div class="item"><span class="sw ok"></span> after: unified behavior</div>
+      <div class="item" style="font-family:var(--mono);font-size:11px;color:var(--faint)">blocks are structural, not pixels; text is placeholder</div>
+    </div>
+  </header>
+
+  <!-- ══════════════════ 0 · summary ══════════════════ -->
+  <section id="summary">
+    <h2><span class="sec-num">0</span> The idea in one line <span class="sec-note">/ mode: operate · density: high · motion: minimal</span></h2>
+    <p class="lead">
+      Every page is the same vertical stack - <strong>story banner, page header, meta line, KPI row, section or table
+      cards, dialogs</strong> - and the six archetypes only change which of those blocks a page fills in, never the
+      shell around them.
+    </p>
+    <p>
+      The three locks hold across all 15 pages: <strong>one accent</strong> (the existing green, status colors reserved
+      for data states), <strong>one radius system</strong> (6px cards, 4px small tiles, pills only for badges), and
+      <strong>one theme</strong> (dark, border-defined elevation, no shadows - the product's existing doctrine).
+    </p>
+  </section>
+
+  <!-- ══════════════════ 1 · anatomy ══════════════════ -->
+  <section id="anatomy">
+    <h2><span class="sec-num">1</span> (a) Shared page anatomy <span class="sec-note">/ the one skeleton every page uses</span></h2>
+    <p>
+      The skeleton below is the template rendered with Store Sync's real structure as the example. Numbered parts map
+      to the annotation column. The stack is fixed: the banner is always first, the data table is always the last
+      content block, dialogs float above.
+    </p>
+
+    <div class="anatomy-wrap">
+      <figure class="skeleton" style="margin-top:18px">
+        <!-- 1 · banner -->
+        <div class="part hot">
+          <span class="pin">1</span>
+          <div class="mock-banner">
+            <div class="left">
+              <span class="tile">&#8635;</span>
+              <div>
+                <div class="eyebrow">Store Sync</div>
+                <div class="tagline">Every store's sync health, one screen</div>
+              </div>
+            </div>
+            <span class="btn">Feature narrative <span class="caret">&#9662;</span></span>
+          </div>
+        </div>
+
+        <!-- 2 · header -->
+        <div class="part">
+          <span class="pin">2</span>
+          <div class="mock-header">
+            <div>
+              <div class="t">Store Sync Monitor</div>
+              <div class="s">Real-time store data synchronization status. Stores sync from their computers every ~3 minutes.</div>
+            </div>
+            <div class="mock-actions">
+              <span class="btn primary">Refresh Now</span>
+              <span class="btn">Export</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3 · meta -->
+        <div class="part">
+          <span class="pin">3</span>
+          <div class="mock-meta">Updated 12:00:01 <span class="dot">&#8226;</span> Auto-refresh 9s <span class="dot">&#8226;</span> Live source</div>
+        </div>
+
+        <!-- 4 · KPI row -->
+        <div class="part">
+          <span class="pin">4</span>
+          <div class="mock-kpis">
+            <div class="mock-kpi ok"><div class="rail"></div><div class="l">Stores synced</div><div class="v">87 / 92</div><div class="s">on-time within 3 min</div></div>
+            <div class="mock-kpi warn"><div class="rail"></div><div class="l">Warning</div><div class="v warn">4</div><div class="s">3-6 min late</div></div>
+            <div class="mock-kpi err"><div class="rail"></div><div class="l">Late</div><div class="v err">1</div><div class="s">over 6 min</div></div>
+            <div class="mock-kpi"><div class="rail"></div><div class="l">Oldest sync</div><div class="v">14m</div><div class="s">store 2041</div></div>
+          </div>
+        </div>
+
+        <!-- 5 · bare section heading -->
+        <div class="part">
+          <span class="pin">5</span>
+          <div class="skb label" data-label="SectionHeading · h2, bare" style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+            <div class="row" style="flex:1"><div class="bar w40" style="height:10px"></div></div>
+            <div class="row" style="flex:none;gap:6px"><div class="bar fixed" style="width:46px"></div><div class="bar fixed" style="width:46px"></div></div>
+          </div>
+        </div>
+
+        <!-- 6 · table card -->
+        <div class="part">
+          <span class="pin">6</span>
+          <div class="mock-card">
+            <div class="ch bordered"><span class="t">Store Sync Status</span><span class="hint">TableCard · flush body · header border-b</span></div>
+            <div class="mock-toolbar">
+              <span class="field wide">&#128269;&nbsp; Search store... <span class="faint">&#9662;</span></span>
+              <span class="field">All Branches &#9662;</span>
+              <span class="field">All statuses &#9662;</span>
+            </div>
+            <table class="mock-table">
+              <tr><th>Store Code</th><th>Store Name</th><th>Branch</th><th>Last Sync</th><th>Status</th><th></th></tr>
+              <tr><td>M-001</td><td>Main Street</td><td>Downtown</td><td>12:00:01</td><td><span class="badge ok">On-time</span></td><td class="faint">&#8942;</td></tr>
+              <tr><td>M-014</td><td>Harborview</td><td>Portside</td><td>11:57:22</td><td><span class="badge warn">Warning</span></td><td class="faint">&#8942;</td></tr>
+              <tr><td>M-022</td><td>Northgate</td><td>North</td><td>11:51:03</td><td><span class="badge err">Late</span></td><td class="faint">&#8942;</td></tr>
+            </table>
+          </div>
+        </div>
+
+        <!-- 7 · dialog -->
+        <div class="part hot">
+          <span class="pin">7</span>
+          <div class="mock-dialog-wrap" style="height:24px"></div>
+          <div class="mock-dialog">
+            <div class="d-t">Sync history - M-014</div>
+            <div class="d-l w70"></div>
+            <div class="d-l w50"></div>
+            <div class="d-actions"><span class="btn">Cancel</span><span class="btn primary">Close</span></div>
+          </div>
+        </div>
+      </figure>
+
+      <aside class="annotations">
+        <div class="anno"><span class="num">1</span><span class="n">FeatureStoryBanner</span>
+          <p>Finalized, untouched. Renders only when a story is passed. <code>PageTemplate</code> guarantees it is always the first block (fixes Store Management / Employee Directory, which currently render it after the header).</p></div>
+        <div class="anno"><span class="num">2</span><span class="n">PageHeader (new)</span>
+          <p><code>title · subtitle · actions</code>. Display h1, border-b, actions right. Same visual as today's <code>DashboardPageHeader</code>, now part of the template stack.</p></div>
+        <div class="anno"><span class="num">3</span><span class="n">MetaLine (new)</span>
+          <p><code>items: ReactNode[]</code> rendered as a bullet-separated line. Own component so live values (countdowns, timestamps) re-render without touching the header.</p></div>
+        <div class="anno"><span class="num">4</span><span class="n">KpiRow (new)</span>
+          <p><code>columns: 2 | 3 | 4</code>. Grid strip whose children are <code>StatCard</code> (ui/cards, the one KPI card; <code>DashboardStatCard</code> is deprecated dead code).</p></div>
+        <div class="anno"><span class="num">5</span><span class="n">SectionHeading (new)</span>
+          <p>Bare h2 + subtitle + actions for unframed content. Replaces raw <code>&lt;h3 class="section-title"&gt;</code> in System Health and restores correct heading levels.</p></div>
+        <div class="anno"><span class="num">6</span><span class="n">TableCard (new)</span>
+          <p><code>title · subtitle · actions · toolbar · footer</code>. Header with border-b, optional toolbar strip, flush table body. The terminal element of every table page.</p></div>
+        <div class="anno"><span class="num">7</span><span class="n">Dialogs</span>
+          <p>Existing shadcn primitives stay (<code>Dialog</code>, <code>ConfirmDialog</code>, <code>EntityFormDialog</code>). Roles Admin's hand-rolled overlay is replaced by <code>Dialog</code> in the refactor phase.</p></div>
+        <div class="anno"><span class="num">8</span><span class="n">Fatal / empty states</span>
+          <p>Bypass the template: <code>DashboardLayout</code> + <code>EmptyState</code> directly, exactly like today's early returns. The template is for the loaded path only.</p></div>
+        <div class="anno"><span class="num">9</span><span class="n">Constrained variant</span>
+          <p><code>constrained</code> prop narrows the whole column to max-w-2xl for utility pages (Profile, Logout). Spec'd now, applied later.</p></div>
+      </aside>
+    </div>
+
+    <div class="callout">
+      Skeleton constants: page padding 32px, section gap 24px, card padding 16px, card radius 6px, table row 48px.
+      All values are the existing tokens (<code>--page-px</code>, <code>--section-gap</code>, <code>--card-p</code>,
+      <code>--rounded-sm</code>) - the template introduces no new dimensions.
+    </div>
+  </section>
+
+  <!-- ══════════════════ 2 · archetypes ══════════════════ -->
+  <section id="archetypes">
+    <h2><span class="sec-num">2</span> (b) Six archetypes, one template <span class="sec-note">/ the middle blocks vary, the shell never does</span></h2>
+    <p>
+      Each page picks an archetype and fills its slots. Slots marked with a dashed outline are optional per page.
+      Dialogs float above every flow where the page needs them.
+    </p>
+
+    <div class="arch-grid">
+
+      <!-- A -->
+      <div class="arch">
+        <div class="a-head"><span class="a-name"><span class="tag">A</span>KPI overview</span><span class="a-pages">Dashboard</span></div>
+        <div class="sk">
+          <div class="skb label" data-label="banner"></div>
+          <div class="sk-card" data-label="PageHeader + actions"></div>
+          <div class="sk-kpis">
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v accent"></div><div class="bar w50"></div></div>
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v"></div><div class="bar w50"></div></div>
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v"></div><div class="bar w50"></div></div>
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v"></div><div class="bar w50"></div></div>
+          </div>
+          <div class="row" style="gap:10px">
+            <div class="sk-card" data-label="panel · KPI detail" style="flex:2"><div class="sk-table"><div class="trow head"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div><div class="trow"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div><div class="trow"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div></div></div>
+            <div class="sk-card" data-label="quick actions" style="flex:1"><div class="bar w80"></div><div class="bar w60" style="margin-top:6px"></div><div class="bar w70" style="margin-top:6px"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- B -->
+      <div class="arch">
+        <div class="a-head"><span class="a-name"><span class="tag">B</span>Monitor + summary + table</span><span class="a-pages">Store Sync · EOD Monitor · System Health · Daily Monitor · Monthly Report</span></div>
+        <div class="sk">
+          <div class="skb label" data-label="banner"></div>
+          <div class="sk-card" data-label="PageHeader + actions"></div>
+          <div class="skb label" data-label="MetaLine · updated / countdown"></div>
+          <div class="sk-kpis">
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v"></div><div class="bar w50"></div></div>
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v warn"></div><div class="bar w50"></div></div>
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v err"></div><div class="bar w50"></div></div>
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v"></div><div class="bar w50"></div></div>
+          </div>
+          <div class="sk-card" data-label="summary section (optional per page)"></div>
+          <div class="sk-card" data-label="TableCard · terminal">
+            <div class="sk-table">
+              <div class="trow head"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+              <div class="trow"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+              <div class="trow"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+              <div class="trow"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- C -->
+      <div class="arch">
+        <div class="a-head"><span class="a-name"><span class="tag">C</span>Directory + toolbar + dialogs</span><span class="a-pages">Store Directory · Employee Directory · Accounts</span></div>
+        <div class="sk">
+          <div class="skb label" data-label="banner"></div>
+          <div class="sk-card" data-label="PageHeader + Create / Export"></div>
+          <div class="sk-card" data-label="TableCard">
+            <div class="skb label" data-label="toolbar · search + filters" style="margin-bottom:8px"></div>
+            <div class="sk-table">
+              <div class="trow head"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+              <div class="trow"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+              <div class="trow"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+              <div class="trow"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+              <div class="trow"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+            </div>
+          </div>
+          <div class="skb label" data-label="dialogs · EntityFormDialog / ConfirmDialog / Dialog" style="width:56%"></div>
+        </div>
+      </div>
+
+      <!-- D -->
+      <div class="arch">
+        <div class="a-head"><span class="a-name"><span class="tag">D</span>Stats + search + table</span><span class="a-pages">Agent Updater · Office Agents</span></div>
+        <div class="sk">
+          <div class="skb label" data-label="banner"></div>
+          <div class="sk-card" data-label="PageHeader + actions"></div>
+          <div class="sk-kpis">
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v"></div><div class="bar w50"></div></div>
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v"></div><div class="bar w50"></div></div>
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v warn"></div><div class="bar w50"></div></div>
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v"></div><div class="bar w50"></div></div>
+          </div>
+          <div class="sk-card" data-label="TableCard · search toolbar">
+            <div class="skb label" data-label="toolbar · search" style="margin-bottom:8px;width:64%"></div>
+            <div class="sk-table">
+              <div class="trow head"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+              <div class="trow"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+              <div class="trow"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- E -->
+      <div class="arch">
+        <div class="a-head"><span class="a-name"><span class="tag">E</span>Summary cards + table</span><span class="a-pages">Backups</span></div>
+        <div class="sk">
+          <div class="skb label" data-label="banner"></div>
+          <div class="sk-card" data-label="PageHeader + Backup Now"></div>
+          <div class="sk-kpis">
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v"></div><div class="bar w50"></div></div>
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v"></div><div class="bar w50"></div></div>
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v"></div><div class="bar w50"></div></div>
+            <div class="sk-kpi"><div class="bar w70"></div><div class="bar v err"></div><div class="bar w50"></div></div>
+          </div>
+          <div class="row" style="gap:10px">
+            <div class="sk-card" data-label="SectionCard · storage" style="flex:1"><div class="bar w70"></div><div class="bar w40" style="margin-top:6px"></div></div>
+            <div class="sk-card" data-label="SectionCard · schedule" style="flex:1"><div class="bar w70"></div><div class="bar w40" style="margin-top:6px"></div></div>
+          </div>
+          <div class="sk-card" data-label="TableCard · recent snapshots">
+            <div class="sk-table">
+              <div class="trow head"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+              <div class="trow"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- F -->
+      <div class="arch">
+        <div class="a-head"><span class="a-name"><span class="tag">F</span>Card grid admin</span><span class="a-pages">Roles</span></div>
+        <div class="sk">
+          <div class="skb label" data-label="banner"></div>
+          <div class="sk-card" data-label="PageHeader + Create Role"></div>
+          <div class="row" style="gap:10px">
+            <div class="sk-card" data-label="SectionCard · role" style="flex:1"><div class="bar w60"></div><div class="bar w80" style="margin-top:6px"></div><div class="bar w40" style="margin-top:6px"></div></div>
+            <div class="sk-card" data-label="SectionCard · role" style="flex:1"><div class="bar w60"></div><div class="bar w80" style="margin-top:6px"></div><div class="bar w40" style="margin-top:6px"></div></div>
+            <div class="sk-card" data-label="SectionCard · role" style="flex:1"><div class="bar w60"></div><div class="bar w80" style="margin-top:6px"></div><div class="bar w40" style="margin-top:6px"></div></div>
+          </div>
+          <div class="skb label" data-label="Dialog · replaces hand-rolled overlay" style="width:56%"></div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="callout">
+      <strong>Utility pages (Profile, Logout):</strong> the same template with <code>constrained</code> set - the whole
+      column narrows to max-w-2xl, SectionCards carry the form content. They are deliberately out of scope this round
+      and stay exactly as they are today.
+    </div>
+  </section>
+
+  <!-- ══════════════════ 3 · sidebar ══════════════════ -->
+  <section id="sidebar">
+    <h2><span class="sec-num">3</span> (c) Sidebar restructure <span class="sec-note">/ proposal only - not implemented in this phase</span></h2>
+    <p>
+      Today "Tools" is a collapsible nested under Operations (Office Agents / Agent Updater hidden one level deep).
+      Proposal: promote Tools to its own top-level group with flat items. The nav component already supports flat
+      groups, so this is a data-shape change in <code>components/layout/Sidebar.tsx</code>, no component work.
+    </p>
+
+    <div class="side-grid">
+      <div class="side">
+        <div class="side-head"><span class="t">Before</span><span class="n">current grouping</span></div>
+        <div class="g-label">Operations</div>
+        <div class="item active"><span class="ico"></span>Dashboard</div>
+        <div class="item"><span class="ico"></span>Store Sync</div>
+        <div class="item"><span class="ico"></span>EOD Monitor</div>
+        <div class="item"><span class="ico"></span>Store Directory</div>
+        <div class="item"><span class="ico"></span>Employee Directory</div>
+        <div class="item"><span class="ico"></span>Backups</div>
+        <div class="item"><span class="ico"></span>System</div>
+        <div class="item"><span class="ico"></span>Tools <span class="chev">&#9662;</span></div>
+        <div class="item sub moved"><span class="ico"></span>Agent Updater</div>
+        <div class="item sub moved"><span class="ico"></span>Office Agents</div>
+        <div class="g-label">Administration</div>
+        <div class="item"><span class="ico"></span>Accounts</div>
+        <div class="item"><span class="ico"></span>Roles</div>
+        <div class="item"><span class="ico"></span>Daily Monitor</div>
+        <div class="item"><span class="ico"></span>Monthly Report</div>
+        <div class="foot">Tools is a collapsible: two agent pages hide behind one more click, nested under a group they do not belong to.</div>
+      </div>
+
+      <div class="side">
+        <div class="side-head"><span class="t">After</span><span class="n">proposed grouping</span></div>
+        <div class="g-label">Operations</div>
+        <div class="item active"><span class="ico"></span>Dashboard</div>
+        <div class="item"><span class="ico"></span>Store Sync</div>
+        <div class="item"><span class="ico"></span>EOD Monitor</div>
+        <div class="item"><span class="ico"></span>Store Directory</div>
+        <div class="item"><span class="ico"></span>Employee Directory</div>
+        <div class="item"><span class="ico"></span>Backups</div>
+        <div class="item"><span class="ico"></span>System</div>
+        <div class="g-label" style="color:var(--accent)">Tools</div>
+        <div class="item moved"><span class="ico"></span>Agent Updater</div>
+        <div class="item moved"><span class="ico"></span>Office Agents</div>
+        <div class="g-label">Administration</div>
+        <div class="item"><span class="ico"></span>Accounts</div>
+        <div class="item"><span class="ico"></span>Roles</div>
+        <div class="item"><span class="ico"></span>Daily Monitor</div>
+        <div class="item"><span class="ico"></span>Monthly Report</div>
+        <div class="foot">Tools becomes a flat top-level group: two items, one fewer click, and Operations reads as the 7 monitoring pages it actually is.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 4 · audit findings ══════════════════ -->
+  <section id="audit">
+    <h2><span class="sec-num">4</span> (d) Audit findings, before / after <span class="sec-note">/ all eight reconcile into the template</span></h2>
+
+    <div class="finding">
+      <div class="f-head"><span class="f-id">F1</span><span class="f-title">System Health uses a different shell</span><span class="f-where">pages/SystemHealth + shared/PageShell + shared/PageHeader</span></div>
+      <div class="ba-grid">
+        <div class="ba before"><div class="ba-head">Before</div><p>PageShell + PageHeader instead of DashboardLayout + DashboardPageHeader; raw <code>&lt;h3 class="section-title"&gt;</code> headings; carries a <code>@ts-nocheck</code>.</p></div>
+        <div class="ba after"><div class="ba-head">After</div><p>PageTemplate (archetype B), SectionHeading h2 for "Services Status" / "System Logs", TableCard for the logs table. <code>@ts-nocheck</code> removed during the refactor.</p></div>
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="f-head"><span class="f-id">F2</span><span class="f-title">Banner after header on two pages</span><span class="f-where">pages/StoreManagement, pages/IdentityCheck</span></div>
+      <div class="ba-grid">
+        <div class="ba before"><div class="ba-head">Before</div><p>FeatureStoryBanner renders after DashboardPageHeader, breaking the story-first rhythm every other page uses.</p></div>
+        <div class="ba after"><div class="ba-head">After</div><p>PageTemplate hard-codes the order: banner always first, header second. The two pages just stop overriding the sequence.</p></div>
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="f-head"><span class="f-id">F3</span><span class="f-title">Store Sync table section differs</span><span class="f-where">pages/StoreSync/index.tsx</span></div>
+      <div class="ba-grid">
+        <div class="ba before"><div class="ba-head">Before</div><p>Bare BaseSection wraps the table while every other table page uses a card or raw Card; filter controls crammed into the section header row.</p></div>
+        <div class="ba after"><div class="ba-head">After</div><p>TableCard with title + toolbar slot: search, branch and status selects move into the toolbar strip, the table sits flush beneath.</p></div>
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="f-head"><span class="f-id">F4</span><span class="f-title">Roles editor is a hand-rolled overlay</span><span class="f-where">pages/RolesAdmin/index.tsx</span></div>
+      <div class="ba-grid">
+        <div class="ba before"><div class="ba-head">Before</div><p>Fixed-position div overlay: no <code>role="dialog"</code>, no focus trap or restore (logged as ui-audit 7c.8).</p></div>
+        <div class="ba after"><div class="ba-head">After</div><p>shadcn Dialog (already in the repo): keyboard navigation, focus management, Escape to close. The role cards stay SectionCards in a grid.</p></div>
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="f-head"><span class="f-id">F5</span><span class="f-title">Backups uses BaseDataTable</span><span class="f-where">pages/Backups/index.tsx</span></div>
+      <div class="ba-grid">
+        <div class="ba before"><div class="ba-head">Before</div><p>Raw BaseDataTable with hand-managed manual pagination; one of two table implementations across pages.</p></div>
+        <div class="ba after"><div class="ba-head">After</div><p>Standard DataTable (pagination prop covers manual mode) inside TableCard. One table primitive everywhere.</p></div>
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="f-head"><span class="f-id">F6</span><span class="f-title">Dead KPI components</span><span class="f-where">components/base/dashboard-layout.tsx</span></div>
+      <div class="ba-grid">
+        <div class="ba before"><div class="ba-head">Before</div><p>DashboardWelcome and DashboardStatCard unused; two KPI card implementations exist (the live one is ui/cards StatCard).</p></div>
+        <div class="ba after"><div class="ba-head">After</div><p>Marked <code>@deprecated</code> in this phase; deleted in the refactor phase. StatCard is the single KPI card, composed via KpiRow.</p></div>
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="f-head"><span class="f-id">F7</span><span class="f-title">Utility pages constrain themselves</span><span class="f-where">pages/Profile, pages/Logout</span></div>
+      <div class="ba-grid">
+        <div class="ba before"><div class="ba-head">Before</div><p>Each hand-rolls <code>max-w-2xl</code> wrappers; Profile also uses ui/cards SectionCard directly.</p></div>
+        <div class="ba after"><div class="ba-head">After</div><p>The <code>constrained</code> prop on PageTemplate encodes the pattern. Utility pages stay untouched this round; the variant is designed and documented.</p></div>
+      </div>
+    </div>
+
+    <div class="finding">
+      <div class="f-head"><span class="f-id">F8</span><span class="f-title">Banner usage is consistent</span><span class="f-where">all 15 pages</span></div>
+      <div class="ba-grid">
+        <div class="ba before"><div class="ba-head">Before</div><p>Already uniform (banner component, story keys, compact button variant) - the good baseline.</p></div>
+        <div class="ba after"><div class="ba-head">After</div><p>Kept exactly as is. PageTemplate just slots it in first position and stops pages from mis-ordering it.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════ 5 · inventory ══════════════════ -->
+  <section id="inventory">
+    <h2><span class="sec-num">5</span> (e) Component inventory <span class="sec-note">/ what this phase adds, what it retires</span></h2>
+    <table class="inv">
+      <tr><th style="width:26%">Component</th><th style="width:44%">Purpose</th><th>Replaces / status</th></tr>
+      <tr class="grp"><td colspan="3">New - apps/web/src/components/template/</td></tr>
+      <tr><td class="c new">PageTemplate</td><td>The fixed shell: banner, header, meta line, content. Options for story, title, subtitle, actions, meta, constrained.</td><td>Composes everything below</td></tr>
+      <tr><td class="c new">PageHeader</td><td>The one page header: display h1, subtitle, actions, border-b.</td><td>DashboardPageHeader, shared PageHeader</td></tr>
+      <tr><td class="c new">MetaLine</td><td>Bullet-separated status line ("Updated X - Auto-refresh Ys").</td><td>Hand-rolled meta paragraphs</td></tr>
+      <tr><td class="c new">KpiRow</td><td>Responsive KPI strip (2/3/4 columns) for StatCard children.</td><td>Ad-hoc KPI grids</td></tr>
+      <tr><td class="c new">SectionHeading</td><td>Bare h2 + subtitle + actions for unframed content.</td><td>BaseSection header, h3.section-title</td></tr>
+      <tr><td class="c new">SectionCard</td><td>Framed section: h2 header, optional toolbar, padded or flush body.</td><td>ui/cards SectionCard</td></tr>
+      <tr><td class="c new">TableCard</td><td>The table terminal: bordered header, toolbar strip, flush table, optional footer.</td><td>Raw Card p-0 wraps, BaseSection wraps</td></tr>
+      <tr class="grp"><td colspan="3">Deprecated this phase - delete during the page refactor</td></tr>
+      <tr><td class="c dep">DashboardWelcome</td><td>Unused greeting block.</td><td>Dead code (F6)</td></tr>
+      <tr><td class="c dep">DashboardStatCard</td><td>Unused KPI card; the live card is ui/cards StatCard.</td><td>Dead code (F6)</td></tr>
+      <tr><td class="c dep">DashboardPageHeader</td><td>14 call sites migrate to template PageHeader.</td><td>template PageHeader</td></tr>
+      <tr><td class="c dep">BaseSection</td><td>StoreSync migrates to TableCard.</td><td>template SectionCard / TableCard</td></tr>
+      <tr><td class="c dep">BasePageShell / shared PageShell</td><td>SystemHealth migrates to PageTemplate.</td><td>template PageTemplate</td></tr>
+      <tr><td class="c dep">shared PageHeader</td><td>SystemHealth only user.</td><td>template PageHeader</td></tr>
+      <tr><td class="c dep">ui/cards SectionCard</td><td>Backups, Profile, Logout, LiveMenuDashboard migrate when touched.</td><td>template SectionCard</td></tr>
+      <tr class="grp"><td colspan="3">Untouched - stay as the building blocks</td></tr>
+      <tr><td class="c">FeatureStoryBanner</td><td>Finalized story banner; PageTemplate only repositions it first.</td><td>Keep (F8)</td></tr>
+      <tr><td class="c">ui/cards StatCard</td><td>The single KPI card (loading, trend, status rail, keyboard activation).</td><td>Keep - KpiRow children</td></tr>
+      <tr><td class="c">DashboardLayout / DashboardSection</td><td>Layout primitives; PageTemplate builds on them.</td><td>Keep</td></tr>
+      <tr><td class="c">DataTable / dialogs / SearchBar / StatusBadge</td><td>Table and overlay primitives.</td><td>Keep</td></tr>
+    </table>
+  </section>
+
+  <!-- ══════════════════ footer ══════════════════ -->
+  <footer class="doc-footer">
+    This wireframe is the approval artifact for the operations template framework. Next phase: refactor the 15 pages
+    in the documented order (spec section 8), then remove the deprecated components. Nothing under
+    <code>apps/web/src/pages/</code> was changed by this phase; <code>pnpm --filter web typecheck</code> and
+    <code>pnpm --filter web build</code> stay green.
+  </footer>
+
+</div>
+</body>
+</html>

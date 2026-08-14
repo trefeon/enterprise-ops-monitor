@@ -46,7 +46,7 @@ export function MachineDetailDrawer({ machine, onClose }: Props) {
         if (!open) onClose();
       }}
     >
-      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
+      <SheetContent side="right" className="w-full sm:max-w-lg overflow-y-auto overscroll-contain">
         <SheetHeader className="mb-6">
           <SheetTitle className="text-lg">{machine.hostname}</SheetTitle>
           <SheetDescription>

@@ -380,7 +380,7 @@ const LiveSync = () => {
   const eodSummary = eodData?.summary || ({} as EodSummary);
 
   return (
-    <div className="fixed inset-0 flex flex-col gap-4 overflow-hidden bg-background text-foreground dark" data-debug-component-root="Live-Sync" style={{ overscrollBehavior: 'contain' }}>
+    <div className="fixed inset-0 flex flex-col gap-4 overflow-hidden overscroll-contain bg-background text-foreground dark" data-debug-component-root="Live-Sync">
       {/* ── Header Bar ─────────────────────────────────────────── */}
       <header className="flex shrink-0 items-center justify-between border-b border-border/40 bg-card px-6 py-4 backdrop-blur-xl">
         <div className="flex items-center gap-5">
@@ -482,7 +482,7 @@ const LiveSync = () => {
           </h2>
           <div className="h-px flex-1 bg-border/20" />
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
           {branches.map((b: SyncBranch) => (
             <BranchCard
               key={b.id}
@@ -516,8 +516,7 @@ const LiveSync = () => {
           </div>
           <div
             ref={scrollRef}
-            className="flex-1 overflow-y-auto rounded-lg border border-border bg-card scrollbar-none"
-            style={{ overscrollBehavior: 'contain' }}
+            className="flex-1 overflow-y-auto overscroll-contain rounded-lg border border-border bg-card scrollbar-none"
           >
             {lateStores.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 gap-4">
@@ -577,8 +576,7 @@ const LiveSync = () => {
           </div>
           <div
             ref={eodScrollRef}
-            className="flex-1 overflow-y-auto rounded-lg border border-border bg-card scrollbar-none"
-            style={{ overscrollBehavior: 'contain' }}
+            className="flex-1 overflow-y-auto overscroll-contain rounded-lg border border-border bg-card scrollbar-none"
           >
             {eodRanking.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-muted-foreground/40 gap-4">

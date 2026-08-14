@@ -10,7 +10,6 @@ import { toast } from 'sonner';
 import { AlertTriangle, Archive, Pencil, Plus, RefreshCw, Search } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
-import FeatureStoryBanner from '../../components/FeatureStoryBanner';
 import { getFeatureStory } from '../../data/stories';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -32,9 +31,8 @@ import {
   EntityFormGrid,
 } from '@/components/shared/EntityFormDialog';
 import { ExportButton } from '@/components/shared/ExportButton';
-import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
+import { PageTemplate, TableCard } from '@/components/template';
 import { SearchBar } from '@/components/shared/SearchBar';
-import { Toolbar } from '@/components/shared/Toolbar';
 import { downloadWorkbookExport, type WorkbookExportPayload } from '@/lib/api/downloadExport';
 import { isDemoMode } from '@/lib/appMode';
 import { hasPermission, Permissions } from '@/lib/auth/permissions.js';
@@ -406,120 +404,122 @@ const IdentityCheck = () => {
   }, [canManageEmployees]);
 
   return (
-    <DashboardLayout>
-      <DashboardPageHeader
-        title="Employee Directory"
-        subtitle="Search employees and manage canonical production employee data."
-        actions={
-          <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
-            <Badge variant={isDemoMode ? 'info' : 'success'}>
-              {isDemoMode ? 'Demo' : 'Production'}
-            </Badge>
-            {canManageEmployees && (
-              <Button onClick={openCreateDialog}>
-                <Plus aria-hidden="true" className="size-4" />
-                <span className="truncate">Add Employee</span>
+    <PageTemplate
+      story={getFeatureStory('employee-directory')}
+      title="Employee Directory"
+      subtitle="Search employees and manage canonical production employee data."
+      actions={
+        <div className="flex w-full min-w-0 flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <Badge variant={isDemoMode ? 'info' : 'success'}>
+            {isDemoMode ? 'Demo' : 'Production'}
+          </Badge>
+          {canManageEmployees && (
+            <Button onClick={openCreateDialog}>
+              <Plus aria-hidden="true" className="size-4" />
+              <span className="truncate">Add Employee</span>
+            </Button>
+          )}
+          <ExportButton onClick={handleExport} loading={exporting} />
+        </div>
+      }
+    >
+      <TableCard
+        toolbar={
+          <div className="flex flex-col gap-3 md:flex-row md:items-center">
+            <div className="flex min-w-0 flex-1 flex-col gap-2 md:flex-row md:items-center">
+              <SearchBar
+                placeholder="Search employees by NIK or name..."
+                name="q"
+                value={filters.q}
+                onChange={(event) => handleFilterChange(event.target)}
+                onKeyDown={handleSearchKeyDown}
+                className="flex-1"
+              />
+              <div className="grid min-w-0 gap-2 sm:grid-cols-2 md:grid-cols-3 md:w-auto">
+                <Select
+                  value={filters.branchId}
+                  onValueChange={(value) =>
+                    handleFilterChange({ name: 'branchId', value: String(value ?? '') })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All Branches" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Branches</SelectItem>
+                    {BRANCH_OPTIONS.map((branch) => (
+                      <SelectItem key={branch.id} value={branch.id}>
+                        {branch.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={filters.role}
+                  onValueChange={(value) =>
+                    handleFilterChange({ name: 'role', value: String(value ?? '') })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="All Roles" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">All Roles</SelectItem>
+                    {roles.map((role) => (
+                      <SelectItem key={role} value={role}>
+                        {role}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <Select
+                  value={filters.status}
+                  onValueChange={(value) =>
+                    handleFilterChange({ name: 'status', value: String(value || 'ACTIVE') })
+                  }
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="ACTIVE">Active</SelectItem>
+                    <SelectItem value="INACTIVE">Archived</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+              <Button variant="secondary" onClick={applyFilters}>
+                <Search aria-hidden="true" className="size-4" />
+                Apply
               </Button>
-            )}
-            <ExportButton onClick={handleExport} loading={exporting} />
+            </div>
           </div>
         }
-      />
-      <FeatureStoryBanner story={getFeatureStory('employee-directory')} />
-      <Toolbar
-        left={
-          <>
-            <SearchBar
-              placeholder="Search employees by NIK or name..."
-              name="q"
-              value={filters.q}
-              onChange={(event) => handleFilterChange(event.target)}
-              onKeyDown={handleSearchKeyDown}
-              className="flex-1"
-            />
-            <div className="grid w-full min-w-0 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:w-auto">
-              <Select
-                value={filters.branchId}
-                onValueChange={(value) =>
-                  handleFilterChange({ name: 'branchId', value: String(value ?? '') })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Branches" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Branches</SelectItem>
-                  {BRANCH_OPTIONS.map((branch) => (
-                    <SelectItem key={branch.id} value={branch.id}>
-                      {branch.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.role}
-                onValueChange={(value) =>
-                  handleFilterChange({ name: 'role', value: String(value ?? '') })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="All Roles" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="">All Roles</SelectItem>
-                  {roles.map((role) => (
-                    <SelectItem key={role} value={role}>
-                      {role}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <Select
-                value={filters.status}
-                onValueChange={(value) =>
-                  handleFilterChange({ name: 'status', value: String(value || 'ACTIVE') })
-                }
-              >
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ACTIVE">Active</SelectItem>
-                  <SelectItem value="INACTIVE">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </>
-        }
-        right={
-          <Button variant="secondary" onClick={applyFilters}>
-            <Search aria-hidden="true" className="size-4" />
-            Apply
-          </Button>
-        }
-      />
-      {error && !loading && results.length === 0 ? (
-        <EmptyState
-          title="Failed to load employees"
-          description={error}
-          icon={<AlertTriangle className="size-8" />}
-          action={
-            <Button onClick={fetchEmployees}>
-              <RefreshCw aria-hidden="true" className="mr-2 size-4" /> Retry
-            </Button>
-          }
-        />
-      ) : (
-        <DataTable
-          columns={columns}
-          data={results}
-          loading={loading}
-          pagination={pagination}
-          onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
-          emptyState="No employees found."
-          keyExtractor={(row) => getEmployeeNik(row)}
-        />
-      )}
+      >
+        {error && !loading && results.length === 0 ? (
+          <EmptyState
+            title="Failed to load employees"
+            description={error}
+            icon={<AlertTriangle className="size-8" />}
+            action={
+              <Button onClick={fetchEmployees}>
+                <RefreshCw aria-hidden="true" className="mr-2 size-4" /> Retry
+              </Button>
+            }
+          />
+        ) : (
+          <DataTable
+            columns={columns}
+            data={results}
+            loading={loading}
+            pagination={pagination}
+            onPageChange={(page) => setPagination((prev) => ({ ...prev, page }))}
+            emptyState="No employees found."
+            keyExtractor={(row) => getEmployeeNik(row)}
+          />
+        )}
+      </TableCard>
 
       <EntityFormDialog
         open={formOpen}
@@ -619,7 +619,7 @@ const IdentityCheck = () => {
         onConfirm={handleArchiveEmployee}
         onClose={() => setArchiveTarget(null)}
       />
-    </DashboardLayout>
+    </PageTemplate>
   );
 };
 

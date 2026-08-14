@@ -55,7 +55,7 @@ export function StoreSyncHistoryDialog({
             <p className="text-sm text-muted-foreground">
               {historyStore.storeCode} - {historyStore.storeName}
             </p>
-            <div className="modal-scroll-70 overflow-y-auto" style={{ overscrollBehavior: 'contain' }}>
+            <div className="modal-scroll-70 overflow-y-auto overscroll-contain">
               <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
                 <div className="flex flex-wrap items-center gap-3">
                   <Select value={historyMode} onValueChange={(val) => onModeChange(val === null ? '' : val)}>

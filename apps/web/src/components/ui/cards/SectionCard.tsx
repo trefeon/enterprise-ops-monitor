@@ -18,6 +18,11 @@ export interface SectionCardProps {
   noPadding?: boolean;
 }
 
+/**
+ * @deprecated Superseded by SectionCard from `@/components/template`
+ * (same visual, plus h2 title semantics and a toolbar slot). Keep working
+ * until the page-refactor phase migrates its call sites.
+ */
 export function SectionCard({
   title,
   subtitle,

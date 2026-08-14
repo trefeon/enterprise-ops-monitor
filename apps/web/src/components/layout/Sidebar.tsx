@@ -14,7 +14,6 @@ import {
   ShieldCheck,
   Store,
   Users,
-  Wrench,
 } from 'lucide-react';
 import { BaseSidebar, type BaseNavItem, type BaseSidebarNavGroup } from '@/components/base';
 import { hasPermission, Permissions } from '../../lib/auth/permissions';
@@ -82,23 +81,20 @@ export default function Sidebar({ onClose, inSheet = false }: SidebarProps) {
     },
     { href: '/app/backups', title: 'Backups', icon: Database, permission: Permissions.BACKUPS_VIEW },
     { href: '/app/system', title: 'System', icon: Activity, permission: Permissions.SYSTEM_VIEW },
+  ];
+
+  const toolsNav: AppNavItem[] = [
     {
-      title: 'Tools',
-      icon: Wrench,
-      children: [
-        {
-          href: '/app/agent-updater',
-          title: 'Agent Updater',
-          icon: ShieldCheck,
-          permission: Permissions.AGENT_UPDATE,
-        },
-        {
-          href: '/app/office-agents',
-          title: 'Office Agents',
-          icon: Laptop,
-          permission: Permissions.AGENT_UPDATE,
-        },
-      ],
+      href: '/app/agent-updater',
+      title: 'Agent Updater',
+      icon: ShieldCheck,
+      permission: Permissions.AGENT_UPDATE,
+    },
+    {
+      href: '/app/office-agents',
+      title: 'Office Agents',
+      icon: Laptop,
+      permission: Permissions.AGENT_UPDATE,
     },
   ];
 
@@ -121,6 +117,7 @@ export default function Sidebar({ onClose, inSheet = false }: SidebarProps) {
 
   const groups: BaseSidebarNavGroup[] = [
     { label: 'Operations', items: filterNav(primaryNav, user as object | null | undefined) },
+    { label: 'Tools', items: filterNav(toolsNav, user as object | null | undefined) },
     {
       label: 'Administration',
       items: filterNav(administrationNav, user as object | null | undefined),

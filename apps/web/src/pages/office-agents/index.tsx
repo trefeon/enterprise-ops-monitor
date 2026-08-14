@@ -19,8 +19,7 @@ import {
 
 import { SearchBar } from '@/components/shared/SearchBar';
 import { StatCard } from '@/components/ui/cards';
-import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
-import FeatureStoryBanner from '@/components/FeatureStoryBanner';
+import { PageTemplate, KpiRow, TableCard } from '@/components/template';
 import { getFeatureStory } from '@/data/stories';
 import { useOfficeAgents } from './hooks/useOfficeAgents';
 import { LabelEditDialog } from './components/LabelEditDialog';
@@ -94,21 +93,20 @@ export default function OfficeAgentsPage() {
   const [labelTarget, setLabelTarget] = useState<AgentMachine | null>(null);
 
   return (
-    <DashboardLayout>
-      <FeatureStoryBanner story={getFeatureStory('office-agents')} />
-      <DashboardPageHeader
-        title="Office Agent Monitor"
-        subtitle="Real-time health monitoring for office laptops. Agents report CPU, RAM, disk, network, process, and heartbeat data every 60 seconds."
-        actions={
-          <>
-            <Button onClick={refreshMetrics}>
-              <RefreshCw className="size-4" aria-hidden="true" />
-              Refresh
-            </Button>
-          </>
-        }
-      />
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+    <PageTemplate
+      story={getFeatureStory('office-agents')}
+      title="Office Agent Monitor"
+      subtitle="Real-time health monitoring for office laptops. Agents report CPU, RAM, disk, network, process, and heartbeat data every 60 seconds."
+      actions={
+        <>
+          <Button onClick={refreshMetrics}>
+            <RefreshCw className="size-4" aria-hidden="true" />
+            Refresh
+          </Button>
+        </>
+      }
+    >
+      <KpiRow columns={4}>
         <StatCard
           title="Total Machines"
           value={stats.total}
@@ -133,7 +131,7 @@ export default function OfficeAgentsPage() {
           icon={<XCircle className="size-5 text-status-error" aria-hidden="true" />}
           className="border-status-error/30"
         />
-      </div>
+      </KpiRow>
       <Card>
         <CardContent className="flex flex-col gap-3 py-4 md:flex-row md:items-center">
           <SearchBar
@@ -182,7 +180,9 @@ export default function OfficeAgentsPage() {
           )}
         </CardContent>
       </Card>
-      <MachineTable machines={machines} onView={setSelectedMachine} onEditLabel={setLabelTarget} />
+      <TableCard>
+        <MachineTable machines={machines} onView={setSelectedMachine} onEditLabel={setLabelTarget} />
+      </TableCard>
       <MachineDetailDrawer machine={selectedMachine} onClose={() => setSelectedMachine(null)} />
       {labelTarget && (
         <LabelEditDialog
@@ -193,6 +193,6 @@ export default function OfficeAgentsPage() {
           onSave={updateLabel}
         />
       )}
-    </DashboardLayout>
+    </PageTemplate>
   );
 }

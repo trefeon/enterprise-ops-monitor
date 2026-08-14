@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { DashboardLayout, DashboardPageHeader } from '@/components/base/dashboard-layout';
-import { SectionCard } from '@/components/ui/cards';
+import { PageTemplate, SectionCard } from '@/components/template';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -13,7 +12,6 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { hasPermission, Permissions } from '@/lib/auth/permissions';
 import { apiPatch } from '@/lib/api/client';
-import FeatureStoryBanner from '@/components/FeatureStoryBanner';
 import { getFeatureStory } from '@/data/stories';
 import { AlertCircle, Key, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -112,61 +110,60 @@ const Profile: React.FC = () => {
   };
 
   return (
-    <DashboardLayout>
-      <FeatureStoryBanner story={getFeatureStory('profile')} />
-
-      <div className="space-y-6 max-w-2xl w-full">
-        <DashboardPageHeader title="Profile" subtitle="Basic account information" />
-
-        <SectionCard>
-          <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-lg font-medium text-primary-foreground ring-2 ring-ring/20">
-              {initials}
-            </div>
-            <div className="min-w-0">
-              <div className="text-base font-medium text-foreground break-words">
-                {username || 'Admin'}
-              </div>
-              <div className="text-xs text-muted-foreground uppercase tracking-wide">{role}</div>
-            </div>
+    <PageTemplate
+      story={getFeatureStory('profile')}
+      title="Profile"
+      subtitle="Basic account information"
+      constrained
+    >
+      <SectionCard>
+        <div className="flex items-center gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-primary text-lg font-medium text-primary-foreground ring-2 ring-ring/20">
+            {initials}
           </div>
-
-          <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <div className="text-xs text-muted-foreground">Username</div>
-              <div className="text-sm font-medium text-foreground">{username || '-'}</div>
+          <div className="min-w-0">
+            <div className="text-base font-medium text-foreground break-words">
+              {username || 'Admin'}
             </div>
-            <div>
-              <div className="text-xs text-muted-foreground">Role</div>
-              <div className="text-sm font-medium text-foreground">{role}</div>
-            </div>
+            <div className="text-xs text-muted-foreground uppercase tracking-wide">{role}</div>
           </div>
+        </div>
 
-          <div className="mt-6 flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => navigate('/app')}>
-              Back
-            </Button>
-            {!isEnvAdmin &&
-              !user?.isDemo &&
-              !user?.roleNames?.includes('demo') &&
-              user?.role !== 'demo' && (
-                <Button variant="secondary" onClick={() => setShowPasswordModal(true)}>
-                  <Key className="size-4" aria-hidden="true" />
-                  Change Password
-                </Button>
-              )}
-            {canManageAccounts && (
-              <Button onClick={() => navigate('/app/admin/users')}>Account Management</Button>
+        <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <div className="text-xs text-muted-foreground">Username</div>
+            <div className="text-sm font-medium text-foreground">{username || '-'}</div>
+          </div>
+          <div>
+            <div className="text-xs text-muted-foreground">Role</div>
+            <div className="text-sm font-medium text-foreground">{role}</div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-wrap gap-2">
+          <Button variant="secondary" onClick={() => navigate('/app')}>
+            Back
+          </Button>
+          {!isEnvAdmin &&
+            !user?.isDemo &&
+            !user?.roleNames?.includes('demo') &&
+            user?.role !== 'demo' && (
+              <Button variant="secondary" onClick={() => setShowPasswordModal(true)}>
+                <Key className="size-4" aria-hidden="true" />
+                Change Password
+              </Button>
             )}
-            <Button variant="destructive" onClick={() => navigate('/app/logout')}>
-              Logout
-            </Button>
-          </div>
-        </SectionCard>
-      </div>
+          {canManageAccounts && (
+            <Button onClick={() => navigate('/app/admin/users')}>Account Management</Button>
+          )}
+          <Button variant="destructive" onClick={() => navigate('/app/logout')}>
+            Logout
+          </Button>
+        </div>
+      </SectionCard>
 
       <Dialog open={showPasswordModal} onOpenChange={(next) => { if (!next) closePasswordModal(); }}>
-        <DialogContent className="sm:max-w-md" style={{ overscrollBehavior: 'contain' }}>
+        <DialogContent className="sm:max-w-md overscroll-contain">
           <DialogHeader>
             <DialogTitle>Change Password</DialogTitle>
           </DialogHeader>
@@ -179,10 +176,11 @@ const Profile: React.FC = () => {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
+            <label htmlFor="profile-current-password" className="block text-sm font-medium text-foreground mb-1.5">
               Current Password
             </label>
             <Input
+              id="profile-current-password"
               type="password"
               value={passwordForm.currentPassword}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -194,8 +192,9 @@ const Profile: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">New Password</label>
+            <label htmlFor="profile-new-password" className="block text-sm font-medium text-foreground mb-1.5">New Password</label>
             <Input
+              id="profile-new-password"
               type="password"
               value={passwordForm.newPassword}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
@@ -206,10 +205,11 @@ const Profile: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-foreground mb-1.5">
+            <label htmlFor="profile-confirm-password" className="block text-sm font-medium text-foreground mb-1.5">
               Confirm New Password
             </label>
             <Input
+              id="profile-confirm-password"
               type="password"
               value={passwordForm.confirmPassword}
               onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -238,7 +238,7 @@ const Profile: React.FC = () => {
         </form>
       </DialogContent>
     </Dialog>
-    </DashboardLayout>
+    </PageTemplate>
   );
 };
 
